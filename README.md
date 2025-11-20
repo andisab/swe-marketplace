@@ -101,7 +101,7 @@ After installation and restart, verify by running `/help` to see new commands an
 
 ## Contributing
 
-I will continue incrementally building out more agents for agentic systems and adding them here to make your day a good day. Contributions are also very welcome!
+I will continue incrementally building out more agents for agentic systems and adding them here to make your day a good day (no AK). If you are actively using one of these agents and are getting better results with changes or additions, contributions are also very welcome and appreciated. 🙏
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -121,14 +121,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email**: andis.blukis@gmail.com
 - **GitHub**: [@andisab](https://github.com/andisab)
 - **LinkedIn**: [andisab](https://www.linkedin.com/in/andisab)
-
-## Roadmap
-
-- [ ] Plugin dependency resolution
-- [ ] Automated security scanning
-- [ ] CI/CD integration
-- [ ] Multi-language support
-- [ ] Plugin analytics dashboard
-- [ ] Webhook notifications
 
 *Last updated: November 2025* 
