@@ -40,7 +40,7 @@ NOTE: A marketplace can be a remote repository like this one, a private reposito
 | [kivilaid/plugin-marketplace](https://github.com/kivilaid/plugin-marketplace) | ⭐ 2 | Claude Code plugin marketplace showcasing all component types. |
 | [netresearch/claude-code-marketplace](https://github.com/netresearch/claude-code-marketplace) | ⭐ 3 | Curated collection of Claude Code skills developed by Netresearch DTT GmbH. |
 
-There are many other Awesome lists of agents, skills, and slash commands, but these are specifically plugin MARKETPLACES. 
+There are many other Awesome lists of agents, skills, and slash commands, but these are specifically plugin MARKETPLACES. It is always advisable to verify the source of the marketplace and the plugins you are loading before using them. Read what your are running before running it and monitor permissions carefully!
 
 
 ## How Claude Code Plugins Work
@@ -80,7 +80,9 @@ Manage plugins directly from Claude Code:
 /plugin uninstall plugin-name
 
 # Add a marketplace
-/plugin marketplace add <url-or-path>
+/plugin marketplace add git@github.com:andisab/swe-marketplace.git (git URL)
+# OR 
+/plugin marketplace add /Users/foo/Projects/swe-marketplace (example path)
 
 # View marketplaces
 /plugin marketplace list
