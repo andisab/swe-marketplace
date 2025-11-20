@@ -11,6 +11,33 @@
   },
   "plugins": [
     {
+      "name": "arch",
+      "source": "./plugins/arch",
+      "description": "Architecture and build orchestration agents for system design, multi-agent coordination, and context management.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "architecture",
+        "orchestration",
+        "system-design",
+        "coordination",
+        "planning"
+      ],
+      "category": "architecture",
+      "strict": false,
+      "agents": [
+        "./agents/arch-context-agent.md",
+        "./agents/build-orchestrator.md"
+      ]
+    },
+    {
       "name": "context-engineering",
       "source": "./plugins/context-engineering",
       "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
@@ -81,6 +108,271 @@
       ],
       "skills": [
         "./skills/joplin-research"
+      ]
+    },
+    {
+      "name": "data",
+      "source": "./plugins/data",
+      "description": "Data science and data engineering agents for visualization (D3, Highcharts), notebooks (Jupyter, Google Colab), R, and Python data engineering.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "data-science",
+        "visualization",
+        "jupyter",
+        "notebooks",
+        "d3",
+        "r",
+        "data-engineering"
+      ],
+      "category": "data-science",
+      "strict": false,
+      "agents": [
+        "./agents/data-d3-expert.md",
+        "./agents/data-google-colab-expert.md",
+        "./agents/data-highcharts-expert.md",
+        "./agents/data-jupyter-expert.md",
+        "./agents/data-python-data-engineer.md",
+        "./agents/data-r-expert.md"
+      ]
+    },
+    {
+      "name": "databases",
+      "source": "./plugins/databases",
+      "description": "Database experts for SQL, NoSQL, graph databases, and vector databases. Includes Postgres, MongoDB, Neo4j, Cassandra, MariaDB, and vector DB specialists.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "databases",
+        "sql",
+        "nosql",
+        "postgres",
+        "mongodb",
+        "neo4j",
+        "graph-db",
+        "vector-db",
+        "cassandra"
+      ],
+      "category": "databases",
+      "strict": false,
+      "agents": [
+        "./agents/db-cassandra-expert.md",
+        "./agents/db-mariadb-expert.md",
+        "./agents/db-mongodb-expert.md",
+        "./agents/db-neo4j-expert.md",
+        "./agents/db-postgres-expert.md",
+        "./agents/db-sql-expert.md",
+        "./agents/db-vector-expert.md"
+      ]
+    },
+    {
+      "name": "dev",
+      "source": "./plugins/dev",
+      "description": "Language-specific development experts covering 13 programming languages including Python, TypeScript, JavaScript, Go, Rust, C++, and more. Includes refactoring specialist.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "programming-languages",
+        "development",
+        "python",
+        "typescript",
+        "javascript",
+        "go",
+        "rust",
+        "cpp",
+        "refactoring"
+      ],
+      "category": "development",
+      "strict": false,
+      "agents": [
+        "./agents/dev-cpp-expert.md",
+        "./agents/dev-fastapi-architect.md",
+        "./agents/dev-go-expert.md",
+        "./agents/dev-javascript-expert.md",
+        "./agents/dev-kotlin-expert.md",
+        "./agents/dev-lua-expert.md",
+        "./agents/dev-nodejs-expert.md",
+        "./agents/dev-perl-expert.md",
+        "./agents/dev-php-expert.md",
+        "./agents/dev-python-expert.md",
+        "./agents/dev-refactor-agent.md",
+        "./agents/dev-rust-expert.md",
+        "./agents/dev-typescript-expert.md"
+      ]
+    },
+    {
+      "name": "frontend",
+      "source": "./plugins/frontend",
+      "description": "Frontend development specialists for React, Vue, Next.js, CSS, HTML, and UI/UX design. Comprehensive coverage of modern frontend technologies.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "frontend",
+        "react",
+        "vue",
+        "nextjs",
+        "css",
+        "html",
+        "ui",
+        "design"
+      ],
+      "category": "frontend",
+      "strict": false,
+      "agents": [
+        "./agents/fe-css-expert.md",
+        "./agents/fe-frontend-designer.md",
+        "./agents/fe-html-expert.md",
+        "./agents/fe-nextjs-expert.md",
+        "./agents/fe-react-expert.md",
+        "./agents/fe-vue-expert.md"
+      ]
+    },
+    {
+      "name": "genai",
+      "source": "./plugins/genai",
+      "description": "Generative AI development specialist focused on LangChain for building LLM applications, chains, and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "genai",
+        "langchain",
+        "llm",
+        "ai-development",
+        "chains"
+      ],
+      "category": "ai",
+      "strict": false,
+      "agents": [
+        "./agents/genai-langchain-expert.md"
+      ]
+    },
+    {
+      "name": "infrastructure",
+      "source": "./plugins/infrastructure",
+      "description": "Infrastructure and DevOps specialists for AWS, GCP, Kubernetes, Docker, Terraform, GitHub Actions, GitLab CI, and security auditing.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "devops",
+        "cloud",
+        "aws",
+        "gcp",
+        "kubernetes",
+        "docker",
+        "terraform",
+        "ci-cd",
+        "security"
+      ],
+      "category": "infrastructure",
+      "strict": false,
+      "agents": [
+        "./agents/infra-aws-architect.md",
+        "./agents/infra-docker-engineer.md",
+        "./agents/infra-gcp-architect.md",
+        "./agents/infra-github-actions-expert.md",
+        "./agents/infra-gitlab-ci-expert.md",
+        "./agents/infra-k8s-engineer.md",
+        "./agents/infra-security-auditor.md",
+        "./agents/infra-terraform-engineer.md"
+      ]
+    },
+    {
+      "name": "machine-learning",
+      "source": "./plugins/machine-learning",
+      "description": "Machine learning framework specialists for PyTorch, TensorFlow, and scikit-learn. Expert guidance for ML model development and training.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "machine-learning",
+        "ml",
+        "pytorch",
+        "tensorflow",
+        "scikit-learn",
+        "deep-learning"
+      ],
+      "category": "machine-learning",
+      "strict": false,
+      "agents": [
+        "./agents/ml-pytorch-expert.md",
+        "./agents/ml-scikit-learn-expert.md",
+        "./agents/ml-tensorflow-expert.md"
+      ]
+    },
+    {
+      "name": "product-management",
+      "source": "./plugins/product-management",
+      "description": "Product management specialists for PRD writing, content creation, and project planning. Tools for product managers and technical writers.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "product-management",
+        "prd",
+        "content-writing",
+        "planning",
+        "documentation"
+      ],
+      "category": "product",
+      "strict": false,
+      "agents": [
+        "./agents/pm-content-writer.md",
+        "./agents/pm-prd-writer.md",
+        "./agents/pm-project-planner.md"
       ]
     }
   ]

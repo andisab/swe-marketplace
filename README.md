@@ -16,14 +16,14 @@ NOTE: A marketplace can be a remote repository like this one, a private reposito
 
 
 ## Documentation
-- **[Plugins Guide](https://code.claude.com/docs/en/plugins.md)** - Plugin creation, installation, and marketplace management
-- **[Plugin Reference](https://code.claude.com/docs/en/plugins-reference.md)** - Complete manifest schema and specifications
-- **[Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces.md)** - Distribution and team configuration
+- **[Plugins Guide](https://code.claude.com/docs/en/plugins)** - Plugin creation, installation, and marketplace management
+- **[Plugin Reference](https://code.claude.com/docs/en/plugins-reference)** - Complete manifest schema and specifications
+- **[Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)** - Distribution and team configuration
 
-- **[Sub-Agents](https://code.claude.com/docs/en/sub-agents.md)** - Specialized agent configuration
-- **[Skills Documentation](https://code.claude.com/docs/en/skills.md)** - Creating model-invoked capabilities
-- **[Slash Commands](https://code.claude.com/docs/en/slash-commands.md)** - Custom command structure and syntax
-- **[Hooks Guide](https://code.claude.com/docs/en/hooks-guide.md)** - Event handler configuration
+- **[Sub-Agents](https://code.claude.com/docs/en/sub-agents)** - Specialized agent configuration
+- **[Skills Documentation](https://code.claude.com/docs/en/skills)** - Creating model-invoked capabilities
+- **[Slash Commands](https://code.claude.com/docs/en/slash-commands)** - Custom command structure and syntax
+- **[Hooks Guide](https://code.claude.com/docs/en/hooks-guide)** - Event handler configuration
 
 
 
