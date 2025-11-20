@@ -1,0 +1,87 @@
+{
+  "name": "swe-marketplace",
+  "owner": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "metadata": {
+    "description": "Production-ready Claude Code context engineering toolkit with agents, skills, templates, and patterns for building AI workflows",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "context-engineering",
+      "source": "./plugins/context-engineering",
+      "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "claude-code",
+        "context-engineering",
+        "agent-development",
+        "skill-creation",
+        "plugin-development",
+        "mcp",
+        "claude-sdk",
+        "automation",
+        "workflows",
+        "templates"
+      ],
+      "category": "development",
+      "strict": false,
+      "agents": [
+        "./agents/context-engineer.md"
+      ],
+      "skills": [
+        "./skills/agent-definition-creation",
+        "./skills/skill-creation",
+        "./skills/plugin-development",
+        "./skills/command-creation",
+        "./skills/hook-configuration"
+      ]
+    },
+    {
+      "name": "research-team",
+      "source": "./plugins/research-team",
+      "description": "Multi-agent research system for comprehensive topic investigation. Coordinates parallel research across multiple subtopics and synthesizes findings into professional reports. Includes specialized agents for orchestration, research, and report writing with Joplin integration.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/research-team",
+      "repository": "https://github.com/andisab/research-team",
+      "license": "MIT",
+      "keywords": [
+        "research",
+        "multi-agent",
+        "parallel-execution",
+        "web-search",
+        "report-writing",
+        "joplin",
+        "orchestration",
+        "synthesis",
+        "investigation"
+      ],
+      "category": "research",
+      "strict": false,
+      "agents": [
+        "./agents/lead-research-coordinator.md",
+        "./agents/research-specialist.md",
+        "./agents/research-report-writer.md"
+      ],
+      "skills": [
+        "./skills/joplin-research"
+      ]
+    }
+  ]
+}
