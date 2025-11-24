@@ -31,6 +31,7 @@ NOTE: A marketplace can be a remote repository like this one, a private reposito
 
 | Repository | Stars | Description |
 |---|---|---|
+| https://claudemarketplaces.com/ | ⭐ 20 | A site that indexes marketplaces. Thank you, Mert! ([Substack](https://mertbuilds.substack.com/) , [Github](https://github.com/mertbuilds)) |
 | [wshobson/agents](https://github.com/wshobson/agents) | ⭐ 21,030 | **Arguably, the OG.** First large collection outside of Anthropic that reached popular acclaim. Thank you, Seth! A comprehensive system with 85 specialized AI agents, 15 multi-agent workflow orchestrators, 47 agent skills, and 44 development tools organized into 63 focused plugins. Includes code-documentation, debugging-toolkit, git-pr-workflows, backend-development, and frontend-mobile-development. Optimized for minimal token usage. |
 | [EveryInc/every-marketplace](https://github.com/EveryInc/every-marketplace) | ⭐ 725 | Official Every-Env plugin marketplace for Claude Code extensions. |
 | [jeremylongshore/claude-code-plugins-plus](https://github.com/jeremylongshore/claude-code-plugins-plus) | ⭐ 468 | Claude Code Plugins Hub with 243 plugins (175 with Agent Skills v1.2.0). First 100% compliant with Anthropic 2025 Skills schema. |
