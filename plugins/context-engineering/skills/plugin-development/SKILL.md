@@ -41,6 +41,8 @@ A plugin is a **bundled collection** of Claude Code components that work togethe
   - Commands: /migrate, /db-status
   - Templates: schema templates
 
+**Design consideration**: Claude supports 20-50 skills simultaneously. When designing plugins with multiple skills, keep each skill focused and avoid overlap. Beyond 50 simultaneous skills, activation accuracy may decrease. Consider bundling related capabilities into fewer, more comprehensive skills rather than many narrow ones.
+
 ## Plugin Structure
 
 ```
@@ -52,8 +54,9 @@ plugin-name/
 │   └── agent-two.md
 ├── skills/                      # Optional: Skill definitions
 │   ├── skill-one/
-│   │   ├── SKILL.md
-│   │   └── examples/
+│   │   ├── SKILL.md             # Do NOT add README.md inside skill dirs
+│   │   ├── examples/
+│   │   └── assets/              # Optional: Static resources
 │   └── skill-two/
 │       └── SKILL.md
 ├── commands/                    # Optional: Slash commands
@@ -643,6 +646,16 @@ plugin-name/agents/company-postgres-expert.md
 ```
 
 ## Advanced Features
+
+### Organization-Level Deployment
+
+For enterprise teams, Anthropic provides the `/v1/skills` API endpoint for programmatic skill management:
+- List and manage skills via the API
+- Add skills to Messages API requests via the `container.skills` parameter
+- Centralized version control and management through the Claude Console
+- Works with the Claude Agent SDK for building custom agents
+
+This is relevant when plugins contain skills intended for organization-wide deployment beyond individual Claude Code installations.
 
 ### Plugin Dependencies
 

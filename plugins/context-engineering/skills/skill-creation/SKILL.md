@@ -28,6 +28,27 @@ This skill helps create production-ready Claude Code skills following Anthropic'
 
 **When to use Agents**: Create specialized AI assistants for complex domains requiring multi-step reasoning (e.g., database expert, security auditor)
 
+## Use Case Categories
+
+Anthropic identifies three common skill categories:
+
+| Category | Purpose | Example |
+|----------|---------|---------|
+| **Document & Asset Creation** | Produce tangible outputs (reports, documents, designs, code) | A `frontend-design` skill that creates production-grade UI components |
+| **Workflow Automation** | Orchestrate multi-step processes with validation gates | A `skill-creator` skill that walks users through use case definition, frontmatter, and validation |
+| **MCP Enhancement** | Add knowledge and best practices on top of MCP tool access | A `sentry-code-review` skill that uses Sentry's MCP to analyze and fix bugs in PRs |
+
+**The kitchen analogy**: MCP provides the professional kitchen (tools, ingredients, equipment). Skills provide the recipes (step-by-step instructions on how to create something valuable). Together, they enable users to accomplish complex tasks without figuring out every step themselves. See `patterns/skill-mcp-integration.md` for in-depth MCP integration guidance.
+
+### Problem-First vs. Tool-First
+
+When designing a skill, choose your framing:
+
+- **Problem-first**: Start from a user pain point, then orchestrate the right tools to solve it. Users describe outcomes; the skill handles the tools. Example: "I need to set up a project workspace" → skill orchestrates MCP calls in the right sequence.
+- **Tool-first**: You have MCP tools connected, and the skill teaches Claude optimal workflows and best practices for using them. Users have access; the skill provides expertise. Example: "I have Notion MCP connected" → skill teaches Claude the best project setup workflows.
+
+Most skills lean one direction. Knowing which framing fits your use case helps you choose the right pattern (see Common Patterns below).
+
 ## Skill Structure
 
 ```
@@ -40,9 +61,13 @@ skill-name/
 │   └── template-file.py
 ├── references/                 # Optional: Reference materials
 │   └── api-docs.md
+├── assets/                     # Optional: Static resources (templates, fonts, icons)
+│   └── report-template.md
 └── scripts/                    # Optional: Helper scripts
     └── helper.py
 ```
+
+**Important**: Do NOT include `README.md` inside skill directories. `SKILL.md` serves as both the skill definition and documentation. When distributing via GitHub, use a repo-level README for human users — that is separate from the skill folder contents.
 
 ## SKILL.md Format
 
@@ -104,6 +129,11 @@ The MOST IMPORTANT field. Claude uses this to decide when to activate the skill.
 2. **Activation triggers**: When should Claude use this? (be specific)
 3. **Key terms**: Words/phrases users might mention
 4. **Scope boundaries**: What this skill does NOT handle
+5. **Negative triggers**: Explicitly state what the skill does NOT handle to prevent over-triggering (see "Do NOT use for:" in example below)
+
+**Constraints**: Description must be under 1024 characters. No XML angle brackets (`<` or `>`).
+
+**Debug technique**: Ask Claude: "When would you use the [skill name] skill?" Claude will quote the description back — adjust based on what's missing or misaligned.
 
 **Good description example**:
 ```yaml
@@ -151,6 +181,24 @@ allowed-tools: Read, Write, Bash, Grep
 - Skills need flexible tool access
 - General-purpose capabilities
 - Orchestration skills
+
+### Optional Frontmatter Fields
+
+Beyond `name`, `description`, and `allowed-tools`, skills support these optional fields:
+
+```yaml
+# Optional fields
+license: MIT                                    # For open-source skills
+compatibility: claude-code, claude-ai, api      # 1-500 chars, environment requirements
+metadata:
+  author: Your Name
+  version: 1.0.0
+  mcp-server: server-name                       # If skill enhances an MCP server
+  category: workflow                            # document | workflow | mcp-enhancement
+  tags: [deployment, automation]
+  documentation: https://example.com/docs
+  support: support@example.com
+```
 
 ## Skill Content Best Practices
 
@@ -429,6 +477,29 @@ After creating a skill:
 
 4. **Review supporting files**: Ensure referenced files exist and are accessible
 
+## Success Criteria & Metrics
+
+Define success criteria before building. These are aspirational targets — rough benchmarks rather than precise thresholds.
+
+**Quantitative**:
+- Skill triggers on 90%+ of relevant queries (test with 10-20 queries that should activate the skill)
+- Completes workflow in expected number of tool calls (compare the same task with and without the skill)
+- 0 failed API/MCP calls per workflow run (monitor server logs during test runs)
+
+**Qualitative**:
+- Users don't need to prompt Claude about next steps
+- Workflows complete without user correction
+- Consistent results across sessions (run the same request 3-5 times and compare)
+
+### Iteration Approach
+
+Before building a skill from scratch:
+1. Work through the target task manually with Claude until it succeeds
+2. Note the exact workflow, prompts, and tool usage that worked
+3. Extract the winning approach into a SKILL.md
+
+This produces higher-quality skills than designing from theory alone. It leverages Claude's in-context learning and provides faster signal than broad testing. Once you have a working foundation, expand to multiple test cases for coverage.
+
 ## Progressive Loading
 
 Skills support progressive disclosure - Claude loads content as needed:
@@ -452,77 +523,205 @@ Consult `references/api-docs.md` for complete API documentation (loaded on deman
 
 ## Common Patterns
 
-### Workflow Skill
-Orchestrates multi-step processes.
+Five canonical patterns for skill design, based on Anthropic's official guidance:
+
+### Pattern 1: Sequential Workflow Orchestration
+Orchestrates multi-step processes in a specific order with validation at each stage.
+
+**Use when**: Users need multi-step processes executed in a defined sequence with dependencies between steps.
 
 ```yaml
 ---
-name: deployment-workflow
+name: customer-onboarding
 description: >
-  Orchestrate application deployment with pre-deployment checks, rollout,
-  and post-deployment verification. Use when user requests "deploy",
-  "release", "push to production", or deployment-related tasks.
+  End-to-end customer onboarding workflow. Handles account creation,
+  payment setup, and subscription management. Use when user says
+  "onboard new customer", "set up subscription", or "create account".
+  Do NOT use for account deletion or billing disputes.
 ---
 
-# Deployment Workflow
+# Customer Onboarding
 
-## Steps
-1. Run pre-deployment checks (tests, linting, security scans)
-2. Build application artifacts
-3. Deploy to staging
-4. Run smoke tests
-5. Deploy to production with rollback plan
-6. Verify deployment health
+## Step 1: Create Account
+Call MCP tool: `create_customer`
+Parameters: name, email, company
+
+## Step 2: Setup Payment
+Call MCP tool: `setup_payment_method`
+Wait for: payment method verification
+
+## Step 3: Create Subscription
+Call MCP tool: `create_subscription`
+Parameters: plan_id, customer_id (from Step 1)
+
+## Step 4: Send Welcome Email
+Call MCP tool: `send_email`
+Template: welcome_email_template
 ```
 
-### Tool Integration Skill
-Wraps external tools or APIs.
+**Key techniques**: Explicit step ordering, dependencies between steps, validation at each stage, rollback instructions for failures.
+
+### Pattern 2: Multi-MCP Coordination
+Orchestrates workflows that span multiple MCP services.
+
+**Use when**: A workflow requires coordinating data and actions across different services.
 
 ```yaml
 ---
-name: api-testing
+name: design-handoff
 description: >
-  Test REST APIs with automated request/response validation. Use when user
-  mentions API testing, endpoint verification, or HTTP request debugging.
-allowed-tools: Bash, Read, Write
+  Design-to-development handoff workflow. Exports assets from Figma,
+  stores in Drive, creates Linear tasks, notifies Slack. Use when
+  user mentions "design handoff", "dev handoff", or "hand off designs".
+  Do NOT use for design review or feedback workflows.
+metadata:
+  category: workflow
+  mcp-server: figma, google-drive, linear, slack
 ---
 
-# API Testing Skill
+# Design-to-Dev Handoff
 
-Uses `curl` and `jq` to test API endpoints.
+## Phase 1: Design Export (Figma MCP)
+1. Export design assets from Figma
+2. Generate design specifications
+3. Create asset manifest
 
-## Usage
-Provide:
-- Endpoint URL
-- Expected status code
-- Response schema validation
+## Phase 2: Asset Storage (Drive MCP)
+1. Create project folder in Drive
+2. Upload all assets
+3. Generate shareable links
 
-## Templates
-See `templates/api-test-template.sh` for test script template.
+## Phase 3: Task Creation (Linear MCP)
+1. Create development tasks
+2. Attach asset links to tasks
+3. Assign to engineering team
+
+## Phase 4: Notification (Slack MCP)
+1. Post handoff summary to #engineering
+2. Include asset links and task references
 ```
 
-### Analysis Skill
-Analyzes and reports on code/data.
+**Key techniques**: Clear phase separation, data passing between MCPs, validation before moving to next phase, centralized error handling.
+
+### Pattern 3: Iterative Refinement
+Output quality improves through validation loops.
+
+**Use when**: The task benefits from draft-check-refine cycles rather than single-pass execution.
 
 ```yaml
 ---
-name: code-complexity-analysis
+name: report-generation
 description: >
-  Analyze code complexity metrics, cyclomatic complexity, and maintainability.
-  Use for code review, refactoring planning, or technical debt assessment.
-allowed-tools: Read, Grep, Glob, Bash(radon:*)
+  Generate and refine data reports with quality validation. Use when user
+  requests "create report", "generate analysis", or "build summary".
+  Do NOT use for ad-hoc data queries or simple lookups.
 ---
 
-# Code Complexity Analysis
+# Iterative Report Creation
 
-Generates complexity reports using radon and custom metrics.
+## Initial Draft
+1. Fetch data via MCP
+2. Generate first draft report
+3. Save to temporary file
 
-## Metrics
-- Cyclomatic complexity
-- Maintainability index
-- Lines of code
-- Cognitive complexity
+## Quality Check
+1. Run validation script: `scripts/check_report.py`
+2. Identify issues: missing sections, inconsistent formatting, data errors
+
+## Refinement Loop
+1. Address each identified issue
+2. Regenerate affected sections
+3. Re-validate
+4. Repeat until quality threshold met
+
+## Finalization
+1. Apply final formatting
+2. Generate summary
+3. Save final version
 ```
+
+**Key techniques**: Explicit quality criteria, iterative improvement, validation scripts, clear exit conditions for the refinement loop.
+
+### Pattern 4: Context-Aware Tool Selection
+Same outcome, different tools depending on context.
+
+**Use when**: The skill needs to dynamically choose between tools or approaches based on input characteristics.
+
+```yaml
+---
+name: smart-file-storage
+description: >
+  Intelligently store files in the appropriate service based on type
+  and size. Use when user wants to "save", "store", or "upload" files.
+  Do NOT use for file retrieval or search.
+---
+
+# Smart File Storage
+
+## Decision Tree
+1. Check file type and size
+2. Determine best storage location:
+   - Large files (>10MB): Use cloud storage MCP
+   - Collaborative docs: Use Notion/Docs MCP
+   - Code files: Use GitHub MCP
+   - Temporary files: Use local storage
+
+## Execute Storage
+Based on decision:
+- Call appropriate MCP tool
+- Apply service-specific metadata
+- Generate access link
+
+## Provide Context to User
+Explain why that storage was chosen
+```
+
+**Key techniques**: Clear decision criteria, fallback options, transparency about choices made.
+
+### Pattern 5: Domain-Specific Intelligence
+Skill adds specialized knowledge beyond raw tool access.
+
+**Use when**: The skill's value comes from embedding domain expertise, compliance rules, or institutional knowledge that users would otherwise need to supply manually.
+
+```yaml
+---
+name: payment-compliance
+description: >
+  Payment processing with regulatory compliance checks. Handles
+  transaction validation, sanctions screening, and audit trails.
+  Use when user mentions "process payment", "transaction", or
+  "payment compliance". Do NOT use for refunds or chargebacks.
+metadata:
+  category: mcp-enhancement
+  mcp-server: payment-gateway
+---
+
+# Payment Processing with Compliance
+
+## Before Processing (Compliance Check)
+1. Fetch transaction details via MCP
+2. Apply compliance rules:
+   - Check sanctions lists
+   - Verify jurisdiction allowances
+   - Assess risk level
+3. Document compliance decision
+
+## Processing
+IF compliance passed:
+  - Call payment processing MCP tool
+  - Apply appropriate fraud checks
+  - Process transaction
+ELSE:
+  - Flag for review
+  - Create compliance case
+
+## Audit Trail
+- Log all compliance checks
+- Record processing decisions
+- Generate audit report
+```
+
+**Key techniques**: Domain expertise embedded in logic, compliance-before-action flow, comprehensive documentation, clear governance.
 
 ## Common Mistakes to Avoid
 
@@ -574,6 +773,22 @@ skill-name/
 ├── examples/
 └── templates/
 ```
+
+## Troubleshooting
+
+**Bundled scripts**: For critical validations, bundle a script in `scripts/` rather than relying on language instructions. Scripts are deterministic; language interpretation isn't.
+
+**Model laziness**: If Claude skips steps, add explicit phrasing: "Take your time. Quality is more important than speed. Do not skip validation steps." Note: this is more effective in user prompts than in SKILL.md.
+
+**SKILL.md size**: Keep SKILL.md under 5,000 words. Move detailed documentation to `references/`. If the skill seems slow or responses degrade, check whether too much content is inline.
+
+**Simultaneous skills**: Claude supports 20-50 skills simultaneously. Beyond that, activation accuracy may decrease. Consider skill "packs" for related capabilities and selective enablement.
+
+## Security Notes
+
+- **No XML angle brackets** (`<` or `>`) in SKILL.md content — they can conflict with Claude's internal processing and create security vulnerabilities
+- **Reserved names**: Skills with "claude" or "anthropic" in the name are reserved by Anthropic
+- **Safe YAML parsing**: Frontmatter uses safe YAML parsing — no code execution in frontmatter fields
 
 ## Skill vs Command vs Agent Decision Matrix
 

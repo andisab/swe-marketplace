@@ -180,9 +180,10 @@ All templates are in `templates/` directory and include:
 
 Architectural documentation in `patterns/` directory:
 
-- **progressive-disclosure.md** (✓ Complete) - Three-level token management
-- **multi-agent-orchestration.md** (Pending) - Agent coordination patterns
-- **tool-restriction-patterns.md** (Pending) - Security best practices
+- **progressive-disclosure.md** (Complete) - Three-level token management
+- **multi-agent-orchestration.md** (Complete) - Agent coordination patterns
+- **tool-restriction-patterns.md** (Complete) - Security best practices
+- **skill-mcp-integration.md** (Complete) - Skills as MCP enhancement layers
 
 ## Integration with Conventions MCP
 
@@ -345,10 +346,8 @@ Optional configuration in `.claude/settings.json`:
 
 ```
 context-engineering/
-├── .claude-plugin/
-│   └── plugin.json              # Plugin metadata
 ├── agents/
-│   └── context-engineer.md  # Main agent
+│   └── context-engineer.md       # Main orchestrator agent
 ├── skills/
 │   ├── agent-definition-creation/
 │   │   ├── SKILL.md
@@ -366,9 +365,10 @@ context-engineering/
 │   └── hook-configuration-template.md
 ├── patterns/
 │   ├── progressive-disclosure.md
-│   ├── multi-agent-orchestration.md      # In progress
-│   └── tool-restriction-patterns.md      # In progress
-└── README.md                    # This file
+│   ├── multi-agent-orchestration.md
+│   ├── tool-restriction-patterns.md
+│   └── skill-mcp-integration.md
+└── README.md                     # This file
 ```
 
 ### Contributing
@@ -376,33 +376,40 @@ context-engineering/
 Contributions welcome! Areas for contribution:
 
 1. **More Templates** - Additional resource type templates
-2. **Pattern Documentation** - Complete multi-agent-orchestration and tool-restriction patterns
-3. **Example Resources** - Reference implementations in various domains
-4. **Testing** - Expand test coverage and validation
+2. **Example Resources** - Reference implementations in various domains
+3. **Testing** - Expand test coverage and validation
+4. **Pattern Documentation** - Additional patterns and use case examples
 
 ## Roadmap
 
-### ✅ v1.0.0 - Core Functionality (Current)
+### v1.0.0 - Core Functionality
 - Expert orchestrator agent
 - 5 specialized skills
 - 5 complete templates
 - Progressive disclosure pattern
 - Conventions MCP integration
 
-### 🚧 v1.0.1 - Pattern Completion (Next)
-- Complete multi-agent-orchestration pattern
-- Complete tool-restriction-patterns pattern
+### v1.0.1 - Pattern Completion
+- Completed multi-agent-orchestration pattern
+- Completed tool-restriction-patterns pattern
 - Additional examples in skills/*/examples/
 
-### 📋 v1.1.0 - Enhanced Examples
+### v1.1.0 - Anthropic Skills Guide Alignment (Current)
+- Aligned with Anthropic's "Complete Guide to Building Skills" (January 2026)
+- Added 3 use case categories (Document Creation, Workflow Automation, MCP Enhancement)
+- Added 5 canonical skill patterns (Sequential Workflow, Multi-MCP Coordination, Iterative Refinement, Context-aware Tool Selection, Domain-specific Intelligence)
+- New `patterns/skill-mcp-integration.md` pattern file
+- Added success criteria, iteration approach, and troubleshooting guidance
+- Added optional frontmatter fields (license, compatibility, metadata)
+- Bug fixes to README.md
+
+### v1.2.0 - Enhanced Examples (Next)
 - 20+ reference agent definitions across domains
 - 10+ skill implementations with full supporting files
 - 5+ complete plugin examples
-- Video tutorials and walkthroughs
 
-### 🔮 v2.0.0 - Advanced Features
+### v2.0.0 - Advanced Features
 - Interactive resource builder
-- Visual component design tools
 - Automated testing frameworks
 - Template customization system
 

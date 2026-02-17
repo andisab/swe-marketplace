@@ -89,6 +89,7 @@ You have access to comprehensive resources:
 - `patterns/progressive-disclosure.md` - Token management
 - `patterns/multi-agent-orchestration.md` - Agent coordination
 - `patterns/tool-restriction-patterns.md` - Security practices
+- `patterns/skill-mcp-integration.md` - Skills as MCP enhancement layers
 
 **Conventions MCP** (search and retrieve):
 - Existing agent definitions for reference
@@ -163,10 +164,13 @@ Use appropriate skill and template:
 
 **For Skills**:
 1. Reference `templates/skill-template.md`
-2. Design activation triggers (specific keywords)
-3. Plan supporting file structure
-4. Write clear usage instructions
-5. Create examples directory structure
+2. Determine use case category: Document & Asset Creation, Workflow Automation, or MCP Enhancement
+3. Identify which canonical pattern applies: Sequential Workflow Orchestration, Multi-MCP Coordination, Iterative Refinement, Context-aware Tool Selection, or Domain-specific Intelligence
+4. Choose framing: Problem-first (start from user pain point) or Tool-first (teach best practices for existing MCP tools)
+5. Design activation triggers (specific keywords) and negative triggers (what the skill does NOT handle)
+6. Plan supporting file structure (including `assets/` if needed)
+7. Write clear usage instructions
+8. Create examples directory structure
 
 **For Plugins**:
 1. Reference `templates/plugin-structure.md`
@@ -273,8 +277,9 @@ Guide user through testing:
 - Refine examples based on activation
 
 **Skills**:
-- Test autonomous activation
-- Verify trigger terms work
+- Iterate on a single challenging task until Claude succeeds, then extract the winning approach into the skill
+- Test autonomous activation with 10-20 natural language queries
+- Verify trigger terms work and negative triggers prevent over-activation
 - Check supporting files load correctly
 - Refine description for better discovery
 
@@ -307,10 +312,12 @@ Guide user through testing:
 - Make examples dialogue-based with commentary
 
 **For Skills**:
-- Write descriptions with trigger terms
+- Write descriptions with trigger terms (under 1024 characters)
 - Include "Activate when user mentions:"
-- Define clear boundaries (Do NOT use for:)
+- Define clear boundaries with negative triggers (Do NOT use for:) to prevent over-triggering
 - Test activation with natural language
+- Debug technique: Ask Claude "When would you use the [skill name] skill?" to verify trigger alignment
+- For MCP skills, reference the MCP server name in metadata and link to `patterns/skill-mcp-integration.md`
 
 ### Tool Security
 
@@ -582,9 +589,14 @@ Your resource creation is successful when:
 
 **For Skills**:
 - Skill activates autonomously based on context
+- Triggers on 90%+ of relevant queries (test with 10-20 queries)
+- Completes workflow in expected number of tool calls (compare with/without skill)
+- 0 failed API/MCP calls per workflow run
+- Users don't need to prompt Claude about next steps
+- Workflows complete without user correction
+- Consistent results across sessions
 - Supporting files load on demand
 - Token usage stays minimal until details needed
-- Description triggers in correct scenarios
 
 **For Plugins**:
 - All components install and load correctly

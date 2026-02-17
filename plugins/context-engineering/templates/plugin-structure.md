@@ -19,6 +19,7 @@ plugin-name/
 │   │   ├── examples/           # Optional: Usage examples
 │   │   ├── templates/          # Optional: Code templates
 │   │   ├── references/         # Optional: Reference docs
+│   │   ├── assets/             # Optional: Static resources (templates, fonts, icons)
 │   │   └── scripts/            # Optional: Helper scripts
 │   └── skill-two/
 │       └── SKILL.md
@@ -67,12 +68,16 @@ plugin-name/
     "domain",
     "feature"
   ],
+  "category": "development",
+  "tags": ["tag1", "tag2", "domain"],
   "engines": {
     "claude-code": ">=2.0.0"
   },
   "dependencies": {
     "other-plugin": "^1.0.0"
   },
+  "documentation": "https://github.com/username/plugin-name/wiki",
+  "support": "https://github.com/username/plugin-name/issues",
   "config": {
     "option1": "default-value",
     "option2": true
@@ -386,6 +391,15 @@ coverage/
 - [ ] Tag first version (v1.0.0)
 - [ ] Document usage examples
 - [ ] (Optional) Create marketplace.json for distribution
+
+## Composability
+
+Plugins should work alongside other plugins without conflict. Design with these principles:
+
+- **Unique naming**: Prefix component names to avoid collisions (e.g., `company-postgres-expert` instead of `postgres-expert`)
+- **No exclusivity assumptions**: Don't assume your plugin is the only one loaded; Claude may have 20-50 skills active simultaneously
+- **Modular skills**: Each skill within the plugin should handle its specific domain without interfering with others
+- **Individual skill directories should NOT include README.md** — `SKILL.md` serves as both definition and documentation
 
 ## Next Steps
 

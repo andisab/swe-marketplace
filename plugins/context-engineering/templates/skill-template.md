@@ -1,8 +1,8 @@
+<!-- Keep SKILL.md under 5,000 words. Move detailed docs to references/ -->
 ---
 name: skill-name
 description: >
   [Detailed description of what this skill does - be specific and include trigger terms]
-
   [Key capabilities this skill provides]
 
   Activate when user mentions:
@@ -17,10 +17,19 @@ description: >
   - [Use case 3]
 
   Do NOT use for:
-  - [Out of scope scenario 1]
+  - [Out of scope scenario 1] (negative triggers prevent over-activation)
   - [Out of scope scenario 2]
 
 allowed-tools: Tool1, Tool2    # Optional: Restrict tool access
+# Optional:
+# license: MIT
+# compatibility: claude-code, claude-ai, api
+# metadata:
+#   author: Your Name
+#   version: 1.0.0
+#   mcp-server: server-name
+#   category: workflow          # document | workflow | mcp-enhancement
+#   tags: [keyword1, keyword2]
 ---
 
 # [Skill Name]
@@ -105,6 +114,10 @@ See `examples/` directory:
 Consult `references/` directory:
 - `references/[reference-name].md` - [Description]
 
+### Assets
+Use static resources from `assets/` directory (optional):
+- `assets/[asset-name]` - [Description]
+
 ## Error Handling
 
 Common issues and solutions:
@@ -131,3 +144,5 @@ Common issues and solutions:
 ---
 
 **Note**: [Any additional context or important considerations]
+
+**Important**: Do not include `README.md` inside skill folders. `SKILL.md` is both definition and documentation. Use a repo-level README when distributing via GitHub.
