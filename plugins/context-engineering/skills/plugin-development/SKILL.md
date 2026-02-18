@@ -64,9 +64,9 @@ plugin-name/
 │   └── subfolder/
 │       └── command-two.md
 ├── hooks/                       # Optional: Hook configurations
-│   └── hooks-config.json
-├── mcp/                         # Optional: MCP server integrations
-│   └── server-config.json
+│   └── hooks.json
+├── .mcp.json                    # Optional: MCP server integrations
+├── .lsp.json                    # Optional: LSP server integrations
 ├── templates/                   # Optional: Code templates
 │   └── template-files/
 ├── patterns/                    # Optional: Design patterns
@@ -84,12 +84,14 @@ plugin-name/
   "name": "database-toolkit",
   "version": "1.0.0",
   "description": "Comprehensive database management toolkit with experts for PostgreSQL, MongoDB, and SQL",
-  "author": "Your Name <email@example.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/username/database-toolkit"
+  "author": {
+    "name": "Your Name",
+    "email": "email@example.com",
+    "url": "https://example.com"
   },
+  "homepage": "https://github.com/username/database-toolkit",
+  "license": "MIT",
+  "repository": "https://github.com/username/database-toolkit",
   "keywords": [
     "database",
     "postgresql",
@@ -97,13 +99,7 @@ plugin-name/
     "sql",
     "migration",
     "optimization"
-  ],
-  "engines": {
-    "claude-code": ">=2.0.0"
-  },
-  "dependencies": {
-    "other-plugin": "^1.2.0"
-  }
+  ]
 }
 ```
 
@@ -124,30 +120,30 @@ plugin-name/
 - Include key features
 
 **author** (required)
-- Name and email: `"Name <email@example.com>"`
-- Organization: `"Company Name"`
+- Object with `name` (required), `email` (optional), and `url` (optional)
+- Example: `{"name": "Your Name", "email": "email@example.com", "url": "https://example.com"}`
+
+**homepage** (optional)
+- URL to plugin homepage or documentation site
+- Example: `"https://github.com/username/plugin-name"`
 
 **license** (recommended)
 - SPDX identifier: `MIT`, `Apache-2.0`, `GPL-3.0`
 - Or `"SEE LICENSE IN <filename>"`
 
 **repository** (recommended)
-- Version control information
-- Helps users find source code
-- Enables issue tracking
+- URL or object pointing to source code
+- String format: `"https://github.com/username/plugin-name"`
 
 **keywords** (optional)
 - Searchable terms for marketplace discovery
 - Array of strings
 - 5-10 relevant keywords
 
-**engines** (optional)
-- Minimum Claude Code version required
-- Semantic version range: `">=2.0.0"`, `"^2.1.0"`
-
-**dependencies** (optional)
-- Other plugins this plugin requires
-- Semantic version ranges
+**Component path overrides** (optional)
+- Override default component directories: `commands`, `agents`, `skills`, `hooks`, `mcpServers`, `outputStyles`, `lspServers`
+- Custom paths supplement default directories — they don't replace them
+- Example: `"agents": ["./custom-agents/expert.md"]`
 
 ## Directory Organization Patterns
 
@@ -657,55 +653,29 @@ For enterprise teams, Anthropic provides the `/v1/skills` API endpoint for progr
 
 This is relevant when plugins contain skills intended for organization-wide deployment beyond individual Claude Code installations.
 
-### Plugin Dependencies
+### Namespacing
 
-Reference other plugins:
+All plugin components are automatically prefixed with the plugin name when installed. For example, a plugin named `my-plugin` with a `/deploy` command becomes accessible as `my-plugin:deploy`. This prevents naming collisions between plugins.
 
-```json
-{
-  "name": "advanced-toolkit",
-  "dependencies": {
-    "database-toolkit": "^1.0.0",
-    "api-testing-suite": "^2.1.0"
-  }
-}
-```
+- Agents: `my-plugin:agent-name`
+- Skills: `my-plugin:skill-name`
+- Commands: `/my-plugin:command-name`
 
-### Conditional Loading
+### Caching Behavior
 
-Load components based on project type:
+Installed plugins are copied to `~/.claude/plugins/cache`. Key implications:
 
-```json
-{
-  "name": "full-stack-toolkit",
-  "conditions": {
-    "hasFile": ["package.json"],
-    "environment": ["development", "staging"]
-  }
-}
-```
+- Plugins **cannot reference files outside their root directory** — all resources must be self-contained
+- Changes to the source directory are **not reflected** until you uninstall and reinstall
+- Use `claude --plugin-dir ./my-plugin` during development for rapid iteration (see Development Workflow below)
 
-### Configuration Schema
+### Development Workflow
 
-Define expected configuration:
+Use these tools for rapid plugin iteration:
 
-```json
-{
-  "name": "deployment-toolkit",
-  "configSchema": {
-    "environments": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {"type": "string"},
-          "url": {"type": "string"}
-        }
-      }
-    }
-  }
-}
-```
+- **`claude --plugin-dir ./my-plugin`** — Load a plugin from a local directory without installing. Changes take effect immediately on next session.
+- **`claude --debug`** — Enable diagnostic output to troubleshoot plugin loading issues, component discovery, and activation.
+- **Uninstall/reinstall cycle** — For installed plugins, run `/plugin uninstall plugin-name` then `/plugin install /path/to/plugin` to pick up changes.
 
 ## Resources
 

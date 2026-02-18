@@ -110,6 +110,7 @@ Reference supporting files with relative paths:
 Unique identifier for the skill.
 
 **Constraints**:
+- Should match the skill folder name
 - Lowercase alphanumeric with hyphens only
 - Maximum 64 characters
 - Descriptive of the capability
@@ -190,6 +191,9 @@ Beyond `name`, `description`, and `allowed-tools`, skills support these optional
 # Optional fields
 license: MIT                                    # For open-source skills
 compatibility: claude-code, claude-ai, api      # 1-500 chars, environment requirements
+# Note: Skills work identically across Claude.ai, Claude Code, and API.
+# Create once, use everywhere — provided the environment supports any
+# dependencies the skill requires.
 metadata:
   author: Your Name
   version: 1.0.0

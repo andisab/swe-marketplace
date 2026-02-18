@@ -245,6 +245,10 @@ plugin-name/
 ├── agents/
 ├── skills/
 ├── commands/
+├── hooks/
+│   └── hooks.json
+├── .mcp.json
+├── .lsp.json
 ├── templates/
 ├── patterns/
 └── README.md
@@ -296,7 +300,9 @@ Guide user through testing:
 - Monitor performance impact
 
 **Plugins**:
-- Test local installation
+- Use `claude --plugin-dir ./my-plugin` for rapid iteration without installing
+- Use `claude --debug` for troubleshooting plugin loading and component discovery
+- Test local installation with `/plugin install /path/to/plugin`
 - Verify all components load
 - Check for naming conflicts
 - Test with team members

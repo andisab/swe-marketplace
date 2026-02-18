@@ -125,4 +125,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **GitHub**: [@andisab](https://github.com/andisab)
 - **LinkedIn**: [andisab](https://www.linkedin.com/in/andisab)
 
-*Last updated: November 2025* 
+*Last updated: February 2026* 

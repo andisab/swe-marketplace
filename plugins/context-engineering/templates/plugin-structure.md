@@ -29,9 +29,9 @@ plugin-name/
 │   └── category/               # Optional: Organize by category
 │       └── specialized-cmd.md
 ├── hooks/                       # Optional: Hook configurations
-│   └── hooks-config.json
-├── mcp/                         # Optional: MCP server integrations
-│   └── server-config.json
+│   └── hooks.json
+├── .mcp.json                    # Optional: MCP server integrations
+├── .lsp.json                    # Optional: LSP server integrations
 ├── templates/                   # Optional: General templates
 │   ├── code-template-one/
 │   └── code-template-two/
@@ -55,33 +55,28 @@ plugin-name/
   "name": "plugin-name",
   "version": "1.0.0",
   "description": "Clear, concise description of plugin capabilities",
-  "author": "Your Name <email@example.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/username/plugin-name"
+  "author": {
+    "name": "Your Name",
+    "email": "email@example.com",
+    "url": "https://example.com"
   },
+  "homepage": "https://github.com/username/plugin-name",
+  "license": "MIT",
+  "repository": "https://github.com/username/plugin-name",
   "keywords": [
     "keyword1",
     "keyword2",
     "keyword3",
     "domain",
     "feature"
-  ],
-  "category": "development",
-  "tags": ["tag1", "tag2", "domain"],
-  "engines": {
-    "claude-code": ">=2.0.0"
-  },
-  "dependencies": {
-    "other-plugin": "^1.0.0"
-  },
-  "documentation": "https://github.com/username/plugin-name/wiki",
-  "support": "https://github.com/username/plugin-name/issues",
-  "config": {
-    "option1": "default-value",
-    "option2": true
-  }
+  ]
+  // Optional: component path overrides (supplement default directories)
+  // "agents": ["./custom-agents/expert.md"],
+  // "skills": ["./custom-skills/capability"],
+  // "commands": ["./custom-commands/cmd.md"],
+  // "hooks": ["./custom-hooks/hooks.json"],
+  // "mcpServers": ["./mcp/server.json"],
+  // "lspServers": ["./lsp/server.json"]
 }
 ```
 

@@ -346,17 +346,21 @@ Optional configuration in `.claude/settings.json`:
 
 ```
 context-engineering/
+├── .claude-plugin/
+│   └── plugin.json               # Plugin manifest
 ├── agents/
 │   └── context-engineer.md       # Main orchestrator agent
 ├── skills/
 │   ├── agent-definition-creation/
-│   │   ├── SKILL.md
-│   │   ├── examples/
-│   │   └── references/
+│   │   └── SKILL.md
 │   ├── skill-creation/
+│   │   └── SKILL.md
 │   ├── plugin-development/
+│   │   └── SKILL.md
 │   ├── command-creation/
+│   │   └── SKILL.md
 │   └── hook-configuration/
+│       └── SKILL.md
 ├── templates/
 │   ├── subagent-template.md
 │   ├── skill-template.md
@@ -394,7 +398,7 @@ Contributions welcome! Areas for contribution:
 - Completed tool-restriction-patterns pattern
 - Additional examples in skills/*/examples/
 
-### v1.1.0 - Anthropic Skills Guide Alignment (Current)
+### v1.1.0 - Anthropic Skills Guide Alignment
 - Aligned with Anthropic's "Complete Guide to Building Skills" (January 2026)
 - Added 3 use case categories (Document Creation, Workflow Automation, MCP Enhancement)
 - Added 5 canonical skill patterns (Sequential Workflow, Multi-MCP Coordination, Iterative Refinement, Context-aware Tool Selection, Domain-specific Intelligence)
@@ -403,7 +407,16 @@ Contributions welcome! Areas for contribution:
 - Added optional frontmatter fields (license, compatibility, metadata)
 - Bug fixes to README.md
 
-### v1.2.0 - Enhanced Examples (Next)
+### v1.2.0 - Official Plugin Docs Alignment (Current)
+- Aligned with official Anthropic plugin documentation (Feb 2026)
+- Created `.claude-plugin/plugin.json` manifest
+- Fixed `plugin.json` schema: object `author`, removed fabricated fields (`engines`, `dependencies`, `category`, `tags`, `config`)
+- Added official fields: `homepage`, component path overrides
+- Fixed directory structure: `hooks.json`, `.mcp.json`, `.lsp.json`
+- Added namespacing, caching behavior, and dev workflow documentation
+- Added cross-platform portability notes for skills
+
+### v1.3.0 - Enhanced Examples (Next)
 - 20+ reference agent definitions across domains
 - 10+ skill implementations with full supporting files
 - 5+ complete plugin examples
@@ -439,6 +452,7 @@ MIT License - see LICENSE file for details
 
 ## Related Projects
 
+- **[anthropics/claude-code](https://github.com/anthropics/claude-code)** - Official Claude Code repo (plugins directory contains demo marketplace with example plugins)
 - **conventions-mcp** - MCP server for accessing coding conventions
 - **Claude Agent SDK** - Official SDK for building Claude agents
 - **awesome-claude-code-subagents** - Community agent collection

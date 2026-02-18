@@ -269,7 +269,13 @@ jq -r '.tool_response'
 - `$CLAUDE_PROJECT_DIR` - Project root absolute path
 - `$CLAUDE_ENV_FILE` - For SessionStart hooks to persist environment variables
 - `$CLAUDE_CODE_REMOTE` - "true" if remote execution, empty if local
-- `${CLAUDE_PLUGIN_ROOT}` - Plugin directory path (plugin hooks only)
+- `${CLAUDE_PLUGIN_ROOT}` - Plugin directory path (plugin hooks only). Use this to reference scripts bundled with your plugin:
+  ```json
+  {
+    "type": "command",
+    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/process.sh"
+  }
+  ```
 
 ## Hook Types
 
