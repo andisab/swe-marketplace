@@ -1,5 +1,5 @@
 ---
-name: command-creation
+name: command-dev
 description: >
   Use this skill when creating or refining custom Claude Code slash commands. Slash commands are
   user-invoked reusable prompts that can accept arguments, reference files, and execute bash operations.
@@ -9,7 +9,7 @@ description: >
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash(ls:*), Bash(tree:*)
 ---
 
-# Command Creation Skill
+# Command Dev Skill
 
 This skill helps create production-ready custom slash commands following Anthropic's official specifications.
 

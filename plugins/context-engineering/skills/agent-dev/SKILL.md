@@ -1,5 +1,5 @@
 ---
-name: agent-definition-creation
+name: agent-dev
 description: >
   Use this skill when creating or refining Claude Code sub-agent definitions. Helps design specialized
   AI assistants with proper YAML frontmatter, system prompts, tool access, and example-driven descriptions.
@@ -9,7 +9,7 @@ description: >
 allowed-tools: Read, Write, Edit, Grep, Glob, mcp__Conventions__search_conventions, mcp__Conventions__get_convention
 ---
 
-# Agent Definition Creation Skill
+# Agent Dev Skill
 
 This skill helps create production-ready Claude Code sub-agent definitions following Anthropic's official specifications and best practices.
 

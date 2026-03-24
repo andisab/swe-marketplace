@@ -184,7 +184,7 @@ When writing the `description` field for MCP-enhanced skills:
 
 ## Resources
 
-- `skills/skill-creation/SKILL.md` - Complete skill creation reference with 5 canonical patterns
+- `skills/skill-dev/SKILL.md` - Complete skill creation reference with 5 canonical patterns
 - `templates/skill-template.md` - Starting template for new skills
 - `patterns/progressive-disclosure.md` - Token management with three disclosure levels
 - Anthropic's "The Complete Guide to Building Skills for Claude" (January 2026)

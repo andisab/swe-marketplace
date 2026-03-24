@@ -20,11 +20,11 @@ A comprehensive Claude Code plugin that helps you design and implement high-qual
 
 Auto-activated skills provide detailed guidance for each resource type:
 
-1. **agent-definition-creation** - Creating sub-agents with proper YAML frontmatter, system prompts, tool access, and example-driven descriptions
-2. **skill-creation** - Designing model-invoked capabilities with discovery optimization and supporting file structures
-3. **plugin-development** - Building plugin bundles with proper directory structure, metadata, and distribution
-4. **command-creation** - Crafting slash commands with arguments, file references, and bash execution
-5. **hook-configuration** - Setting up lifecycle event handlers for automation and workflow control
+1. **agent-dev** - Creating sub-agents with proper YAML frontmatter, system prompts, tool access, and example-driven descriptions
+2. **skill-dev** - Designing model-invoked capabilities with discovery optimization and supporting file structures
+3. **plugin-dev** - Building plugin bundles with proper directory structure, metadata, and distribution
+4. **command-dev** - Crafting slash commands with arguments, file references, and bash execution
+5. **hook-dev** - Setting up lifecycle event handlers for automation and workflow control
 
 ### 📋 Complete Templates
 
@@ -84,7 +84,7 @@ Claude: I'll use the context-engineer agent to design a comprehensive
 The agent will:
 1. Ask clarifying questions about domain and capabilities
 2. Search conventions-mcp for similar agents
-3. Use the agent-definition-creation skill automatically
+3. Use the agent-dev skill automatically
 4. Create proper YAML frontmatter and system prompt
 5. Include discovery-optimized examples
 6. Select appropriate tools and model
@@ -97,7 +97,7 @@ User: "I want Claude to automatically process PDF files when I mention them"
 Claude: I'll create a skill that activates when you mention PDF processing...
 ```
 
-The skill-creation skill automatically activates to:
+The skill-dev skill automatically activates to:
 1. Design activation triggers and keywords
 2. Structure supporting files (examples/, templates/, references/)
 3. Write clear usage instructions
@@ -111,7 +111,7 @@ User: "Help me create a plugin for our deployment workflow with agents, commands
 Claude: I'll design a deployment plugin with proper structure...
 ```
 
-The plugin-development skill handles:
+The plugin-dev skill handles:
 1. Directory organization
 2. plugin.json configuration
 3. Component coordination
@@ -126,7 +126,7 @@ User: "Make a command that runs tests with different environments"
 Claude: I'll create a /run-tests command with environment arguments...
 ```
 
-The command-creation skill creates:
+The command-dev skill creates:
 1. Argument handling ($1, $2, defaults)
 2. File references (@file)
 3. Bash execution (!command)
@@ -141,7 +141,7 @@ User: "Automatically format Python files after I edit them"
 Claude: I'll configure a PostToolUse hook that runs Black and isort...
 ```
 
-The hook-configuration skill sets up:
+The hook-dev skill sets up:
 1. Event selection (PreToolUse, PostToolUse, etc.)
 2. Matchers (tool, file patterns)
 3. Shell commands
@@ -160,11 +160,11 @@ The hook-configuration skill sets up:
 
 | Skill | Activation Triggers | Purpose |
 |-------|-------------------|---------|
-| agent-definition-creation | "create agent", "design sub-agent", "make specialist" | Sub-agent development |
-| skill-creation | "create skill", "make capability", "autonomous behavior" | Skill development |
-| plugin-development | "create plugin", "bundle components", "distribute" | Plugin development |
-| command-creation | "create command", "slash command", "add /command" | Command development |
-| hook-configuration | "create hook", "automation", "event handler" | Hook configuration |
+| agent-dev | "create agent", "design sub-agent", "make specialist" | Sub-agent development |
+| skill-dev | "create skill", "make capability", "autonomous behavior" | Skill development |
+| plugin-dev | "create plugin", "bundle components", "distribute" | Plugin development |
+| command-dev | "create command", "slash command", "add /command" | Command development |
+| hook-dev | "create hook", "automation", "event handler" | Hook configuration |
 
 ### Templates
 
@@ -244,7 +244,7 @@ Claude uses context-engineer to:
 ```
 User: "I need Claude to handle PDF extraction automatically"
 
-The skill-creation skill activates to:
+The skill-dev skill activates to:
 1. Design triggers: "PDF", "extract", "form filling", "document parsing"
 2. Create SKILL.md with core instructions
 3. Structure supporting files:
@@ -260,7 +260,7 @@ The skill-creation skill activates to:
 ```
 User: "Build a deployment plugin for our team"
 
-The plugin-development skill creates:
+The plugin-dev skill creates:
 - .claude-plugin/plugin.json
 - agents/deployment-expert.md
 - skills/pre-deployment-checks/
@@ -351,15 +351,15 @@ context-engineering/
 ├── agents/
 │   └── context-engineer.md       # Main orchestrator agent
 ├── skills/
-│   ├── agent-definition-creation/
+│   ├── agent-dev/
 │   │   └── SKILL.md
-│   ├── skill-creation/
+│   ├── skill-dev/
 │   │   └── SKILL.md
-│   ├── plugin-development/
+│   ├── plugin-dev/
 │   │   └── SKILL.md
-│   ├── command-creation/
+│   ├── command-dev/
 │   │   └── SKILL.md
-│   └── hook-configuration/
+│   └── hook-dev/
 │       └── SKILL.md
 ├── templates/
 │   ├── subagent-template.md

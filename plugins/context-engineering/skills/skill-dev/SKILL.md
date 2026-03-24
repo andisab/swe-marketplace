@@ -1,5 +1,5 @@
 ---
-name: skill-creation
+name: skill-dev
 description: >
   Use this skill when creating or refining Claude Code skill definitions. Skills are model-invoked
   capabilities that Claude activates autonomously based on context. Helps design focused skills with
@@ -9,7 +9,7 @@ description: >
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(tree:*), mcp__Conventions__search_conventions
 ---
 
-# Skill Creation Skill
+# Skill Dev Skill
 
 This skill helps create production-ready Claude Code skills following Anthropic's official specifications and best practices.
 

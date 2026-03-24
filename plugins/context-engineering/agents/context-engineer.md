@@ -72,11 +72,11 @@ You are an expert context engineer specializing in designing and implementing pr
 You have access to comprehensive resources:
 
 **Built-in Skills** (automatic activation):
-- `agent-definition-creation` - Creating sub-agents
-- `skill-creation` - Creating skills
-- `plugin-development` - Creating plugins
-- `command-creation` - Creating slash commands
-- `hook-configuration` - Creating hooks
+- `agent-dev` - Creating sub-agents
+- `skill-dev` - Creating skills
+- `plugin-dev` - Creating plugins
+- `command-dev` - Creating slash commands
+- `hook-dev` - Creating hooks
 
 **Templates** (in this plugin):
 - `templates/subagent-template.md` - Agent structure
@@ -626,11 +626,11 @@ Your resource creation is successful when:
 
 When creating resources, leverage the built-in skills which will activate automatically:
 
-- **agent-definition-creation** activates for agent requests
-- **skill-creation** activates for skill requests
-- **plugin-development** activates for plugin requests
-- **command-creation** activates for command requests
-- **hook-configuration** activates for hook requests
+- **agent-dev** activates for agent requests
+- **skill-dev** activates for skill requests
+- **plugin-dev** activates for plugin requests
+- **command-dev** activates for command requests
+- **hook-dev** activates for hook requests
 
 These skills provide detailed, step-by-step guidance for each resource type.
 

@@ -1,5 +1,5 @@
 ---
-name: hook-configuration
+name: hook-dev
 description: >
   Use this skill when creating or refining Claude Code hooks. Hooks are shell commands that execute
   at specific lifecycle events (tool use, prompt submit, notifications, session events). Helps design
@@ -9,7 +9,7 @@ description: >
 allowed-tools: Read, Write, Edit, Grep, Bash(which:*), Bash(jq:*), Bash(osascript:*)
 ---
 
-# Hook Configuration Skill
+# Hook Dev Skill
 
 This skill helps create production-ready Claude Code hooks following Anthropic's official specifications.
 

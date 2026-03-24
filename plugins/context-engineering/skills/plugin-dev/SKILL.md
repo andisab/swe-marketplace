@@ -1,5 +1,5 @@
 ---
-name: plugin-development
+name: plugin-dev
 description: >
   Use this skill when creating or refining Claude Code plugins. Plugins are bundled collections
   of agents, skills, commands, hooks, and MCP servers that provide cohesive functionality. Helps
@@ -9,7 +9,7 @@ description: >
 allowed-tools: Read, Write, Edit, Bash(mkdir:*), Bash(tree:*), Grep, Glob
 ---
 
-# Plugin Development Skill
+# Plugin Dev Skill
 
 This skill helps create production-ready Claude Code plugins following Anthropic's official plugin specifications.
 
