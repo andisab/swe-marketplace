@@ -33,7 +33,7 @@
         "cross-examination"
       ],
       "category": "code-review",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/adv-review.md"
       ],
