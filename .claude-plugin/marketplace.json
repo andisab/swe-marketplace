@@ -11,6 +11,42 @@
   },
   "plugins": [
     {
+      "name": "adv",
+      "source": "./plugins/adv",
+      "description": "Adversarial multi-model code review and model dispatch. Orchestrates Claude, Codex CLI, and Gemini CLI for cross-examined code review with 5 specialized reviewers.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Andis A. Blukis",
+        "email": "andis.blukis@gmail.com",
+        "url": "https://github.com/andisab"
+      },
+      "homepage": "https://github.com/andisab/swe-marketplace",
+      "repository": "https://github.com/andisab/swe-marketplace",
+      "license": "MIT",
+      "keywords": [
+        "code-review",
+        "adversarial",
+        "multi-model",
+        "codex",
+        "gemini",
+        "dispatch",
+        "cross-examination"
+      ],
+      "category": "code-review",
+      "strict": false,
+      "agents": [
+        "./agents/adv-review.md"
+      ],
+      "commands": [
+        "./commands/adv-codex.md",
+        "./commands/adv-gemini-research.md",
+        "./commands/adv-gemini.md"
+      ],
+      "skills": [
+        "./skills/dispatch"
+      ]
+    },
+    {
       "name": "arch",
       "source": "./plugins/arch",
       "description": "Architecture and build orchestration agents for system design, multi-agent coordination, and context management.",
@@ -68,11 +104,11 @@
         "./agents/context-engineer.md"
       ],
       "skills": [
-        "./skills/agent-definition-creation",
-        "./skills/skill-creation",
-        "./skills/plugin-development",
-        "./skills/command-creation",
-        "./skills/hook-configuration"
+        "./skills/agent-dev",
+        "./skills/skill-dev",
+        "./skills/plugin-dev",
+        "./skills/command-dev",
+        "./skills/hook-dev"
       ]
     },
     {
