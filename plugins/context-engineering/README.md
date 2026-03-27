@@ -16,7 +16,7 @@ A comprehensive Claude Code plugin that helps you design and implement high-qual
 - Uses conventions-mcp to find proven patterns
 - Implements progressive disclosure for token efficiency
 
-### 🎓 Five Specialized Skills
+### 🎓 Seven Specialized Skills
 
 Auto-activated skills provide detailed guidance for each resource type:
 
@@ -25,6 +25,8 @@ Auto-activated skills provide detailed guidance for each resource type:
 3. **plugin-dev** - Building plugin bundles with proper directory structure, metadata, and distribution
 4. **command-dev** - Crafting slash commands with arguments, file references, and bash execution
 5. **hook-dev** - Setting up lifecycle event handlers for automation and workflow control
+6. **mcp-tool-dev** - Creating individual MCP tool functions with proper descriptions, schemas, and testing
+7. **mcp-server-dev** - Building complete MCP servers in Python (FastMCP) or TypeScript (@modelcontextprotocol/sdk) with packaging and distribution
 
 ### 📋 Complete Templates
 
@@ -35,6 +37,10 @@ Ready-to-use starting points for every resource type:
 - **plugin-structure.md** - Complete plugin directory layout and configuration
 - **slash-command-template.md** - Command patterns with 10 real-world examples
 - **hook-configuration-template.md** - 20+ hook configurations for common scenarios
+- **resource-type-guide.md** - Master guide for selecting the right resource type
+- **mcp-tool-template.py** - FastMCP tool pattern with validation and error handling
+- **mcp-server-python-template/** - Complete Python MCP server scaffold (pyproject.toml, tools, tests)
+- **mcp-server-typescript-template/** - Complete TypeScript MCP server scaffold (package.json, tools, tests)
 
 ### 🎨 Best Practice Patterns
 

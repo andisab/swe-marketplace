@@ -76,7 +76,7 @@
     {
       "name": "context-engineering",
       "source": "./plugins/context-engineering",
-      "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
+      "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, MCP tools, MCP servers, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
       "version": "1.0.0",
       "author": {
         "name": "Andis A. Blukis",
@@ -108,7 +108,9 @@
         "./skills/skill-dev",
         "./skills/plugin-dev",
         "./skills/command-dev",
-        "./skills/hook-dev"
+        "./skills/hook-dev",
+        "./skills/mcp-tool-dev",
+        "./skills/mcp-server-dev"
       ]
     },
     {
