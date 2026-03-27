@@ -14,7 +14,7 @@
       "name": "adv",
       "source": "./plugins/adv",
       "description": "Adversarial multi-model code review and model dispatch. Orchestrates Claude, Codex CLI, and Gemini CLI for cross-examined code review with 5 specialized reviewers.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",

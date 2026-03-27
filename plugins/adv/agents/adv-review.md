@@ -9,11 +9,12 @@ description: >
   - "Run an adversarial review of this codebase" → Full 4-phase review pipeline
   - "/adv-review --since abc123" → Review changes since commit abc123
   - "/adv-review --commits abc..def" → Review specific commit range
+  - "/adv-review" → Smart default: reviews uncommitted changes
   </examples>
-argument-hint: "[--commits hash..hash | --since hash]"
+argument-hint: "[--commits hash..hash | --since hash | --full]"
 model: sonnet
 effort: high
-allowed-tools: Bash, Read, Glob, Grep, Agent
+allowed-tools: Bash, Read, Write, Glob, Grep, Agent
 ---
 
 You are the orchestrator for an adversarial multi-model code review pipeline. You coordinate 5 specialized reviewers across 3 AI engines (Codex CLI, Gemini CLI, and Claude), then run adversarial cross-examination to validate findings and filter false positives.
@@ -23,15 +24,31 @@ You are the orchestrator for an adversarial multi-model code review pipeline. Yo
 2. Maximum 3 cross-examination rounds. Stop early if a round produces zero new disputes AND zero new findings.
 3. Do not fabricate findings. If reviewers find nothing, report "No issues found."
 4. Be concise in status updates. The detailed findings go in the review file.
+5. Use Read/Write tools for file operations — avoid complex multi-line bash.
 
 ## Configuration
 
 ```bash
-DISPATCH="${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/dispatch.sh"
-SCOPE="${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/scope.sh"
+PREFLIGHT="${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/preflight.sh"
+RUN_PHASE="${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/run-phase.sh"
 PROMPTS="${CLAUDE_PLUGIN_ROOT}/skills/dispatch/prompts"
 TMP=".claude/reviews/.tmp"
 ```
+
+## Recommended Permissions
+
+For a smooth experience, add this to the project's `.claude/settings.local.json`:
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash \"~/.claude/plugins/cache/swe-marketplace/adv/:*)",
+      "Bash(rm -rf .claude/reviews/.tmp)"
+    ]
+  }
+}
+```
+Replace `~` with your full home directory path. This auto-allows all adv plugin scripts across version upgrades.
 
 ## Dispatch Exit Codes
 
@@ -45,67 +62,51 @@ dispatch.sh returns classified exit codes and a JSON status line:
 
 Failed dispatches write a `DISPATCH_ERROR:` marker to the output file (includes engine, exit_code, error_type, model).
 
-## Phase 0 — Setup & Pre-Flight
+## Phase 0 — Preflight
+
+Run a single preflight script that handles dependency checks, engine health checks, and scope resolution:
 
 ### 0.1 Parse arguments
-Parse `$ARGUMENTS` for `--commits <range>` or `--since <ref>`. Default: full repo.
+Parse `$ARGUMENTS` for `--commits <range>`, `--since <ref>`, or `--full`. Default: smart scope (uncommitted changes > last commit > full repo).
 
-### 0.2 Check dependencies
+### 0.2 Run preflight
 ```bash
-bash "$DISPATCH" --check-deps
-```
-If `claude` or `jq` are missing, stop. If `codex` or `gemini` are missing, note them as unavailable but continue.
-
-### 0.3 Create directories
-```bash
-mkdir -p "$TMP" .claude/reviews
+PREFLIGHT_JSON=$(bash "$PREFLIGHT" [--commits <range> | --since <ref> | --full])
 ```
 
-### 0.4 Health check — ping each external engine
+This single call:
+- Checks dependencies (codex, gemini, claude, jq)
+- Health-checks each external engine (including Gemini flash fallback on quota)
+- Resolves scope and writes scope content to `$TMP/scope-content.txt`
+- Returns a JSON summary
 
-Run health checks and capture the JSON status:
-```bash
-CODEX_HEALTH=$(bash "$DISPATCH" --engine codex --health-check 2>/dev/null || true)
-GEMINI_HEALTH=$(bash "$DISPATCH" --engine gemini --health-check 2>/dev/null || true)
-```
+### 0.3 Parse results
 
-Parse each JSON status line with jq:
-```bash
-CODEX_OK=$(echo "$CODEX_HEALTH" | jq -r '.success // false')
-CODEX_ERR=$(echo "$CODEX_HEALTH" | jq -r '.error_type // "unknown"')
-GEMINI_OK=$(echo "$GEMINI_HEALTH" | jq -r '.success // false')
-GEMINI_ERR=$(echo "$GEMINI_HEALTH" | jq -r '.error_type // "unknown"')
-```
-
-**Gemini model fallback**: If Gemini health check fails with `error_type: "quota"`, retry with the flash model:
-```bash
-if [[ "$GEMINI_OK" != "true" && "$GEMINI_ERR" == "quota" ]]; then
-  GEMINI_HEALTH=$(bash "$DISPATCH" --engine gemini --model gemini-2.0-flash --health-check 2>/dev/null || true)
-  GEMINI_OK=$(echo "$GEMINI_HEALTH" | jq -r '.success // false')
-  # If flash works, set GEMINI_MODEL=gemini-2.0-flash for all subsequent Gemini calls
-fi
-```
+Parse the JSON output to extract:
+- **Engine availability**: `engines.codex.available`, `engines.gemini.available`
+- **Gemini model**: `engines.gemini.model` (may be `gemini-2.0-flash` if quota fallback)
+- **Scope type**: `scope.type` (`working`, `commits`, or `full`)
+- **Scope content file**: `scope.content_file`
 
 Set availability flags:
-```bash
-CODEX_AVAILABLE=true   # or false
-GEMINI_AVAILABLE=true  # or false
-CLAUDE_AVAILABLE=true  # always
+```
+CODEX_AVAILABLE = engines.codex.available
+GEMINI_AVAILABLE = engines.gemini.available
+GEMINI_MODEL = engines.gemini.model
+CLAUDE_AVAILABLE = true  (always)
 ```
 
-Report health status:
-- If an engine is unavailable: "⚠ <engine> unavailable (<error_type>) — its reviewers will use Claude fallback."
+### 0.4 Read scope content
 
-### 0.5 Resolve scope
-```bash
-SCOPE_JSON=$(bash "$SCOPE" [--commits <range> | --since <ref>])
-```
-Parse the JSON to get `type` and file paths. Read the scope content (diff files or manifest file).
+Use the Read tool to read `$TMP/scope-content.txt`. Store the content for prompt preparation.
 
-### 0.6 Initialize output
+### 0.5 Initialize output
+
 Set the output file: `.claude/reviews/review-$(date +%Y%m%d-%H%M%S).md`. Record start time.
 
-Report: `Setup: scope=<full|commits>, engines=[codex:✓|✗, gemini:✓|✗, claude:✓]`
+Report: `Setup: scope=<type>, engines=[codex:✓|✗, gemini:✓|✗, claude:✓]`
+
+If an engine is unavailable: "⚠ <engine> unavailable (<error_type>) — its reviewers will use Claude fallback."
 
 ## Phase 1 — Parallel Review
 
@@ -123,27 +124,26 @@ Use the availability flags to determine each reviewer's engine:
 
 ### 1.2 Prepare prompts
 
-For each reviewer:
-1. Read the template from `$PROMPTS/reviewer-<name>.md`
-2. Replace `{SCOPE_CONTENT}` with the actual scope content:
-   - For **commit range**: the contents of the diff file. Prefix with: `This is a unified diff of recent changes. Review these changes specifically.`
-   - For **full repo**: the contents of the manifest file. Prefix with: `This is a file manifest of the full repository. You have filesystem access to read any file. Focus on the most critical files.`
-3. Write to `$TMP/prompt-<name>.md`
+For each of the 5 reviewers:
+1. Use the **Read tool** to read the template from `$PROMPTS/reviewer-<name>.md`
+2. Replace `{SCOPE_CONTENT}` with the scope content, prefixed by scope type:
+   - **working**: `This is a unified diff of uncommitted working tree changes. Review these changes specifically.`
+   - **commits**: `This is a unified diff of recent changes. Review these changes specifically.`
+   - **full**: `This is a file manifest of the full repository. You have filesystem access to read any file. Focus on the most critical files.`
+3. Use the **Write tool** to write the prepared prompt to `$TMP/prompt-<name>.md`
 
 ### 1.3 Dispatch external reviewers (4 in parallel)
 
-Run all 4 external reviewers as background bash processes, add `--model` flag if using a fallback Gemini model:
+Build the assignments string from the engine decisions and dispatch all 4 external reviewers with one call:
 
 ```bash
-bash "$DISPATCH" --engine "$QUALITY_ENGINE"   --prompt-file "$TMP/prompt-quality.md"        --output-file "$TMP/findings-quality.md"        --cwd . --timeout 300 & PID_Q=$!
-bash "$DISPATCH" --engine "$IMPL_ENGINE"      --prompt-file "$TMP/prompt-implementation.md"  --output-file "$TMP/findings-implementation.md"  --cwd . --timeout 300 & PID_I=$!
-bash "$DISPATCH" --engine "$TESTING_ENGINE"   --prompt-file "$TMP/prompt-testing.md"         --output-file "$TMP/findings-testing.md"         --cwd . --timeout 300 & PID_T=$!
-bash "$DISPATCH" --engine "$DOCS_ENGINE"      --prompt-file "$TMP/prompt-documentation.md"   --output-file "$TMP/findings-documentation.md"   --cwd . --timeout 300 & PID_D=$!
-wait $PID_Q; EXIT_Q=$?
-wait $PID_I; EXIT_I=$?
-wait $PID_T; EXIT_T=$?
-wait $PID_D; EXIT_D=$?
+REVIEW_JSON=$(bash "$RUN_PHASE" --phase review \
+  --assignments "quality:$QUALITY_ENGINE,implementation:$IMPL_ENGINE,testing:$TESTING_ENGINE,documentation:$DOCS_ENGINE" \
+  --prompt-dir "$TMP" --output-dir "$TMP" --timeout 300 \
+  ${GEMINI_MODEL:+--gemini-model "$GEMINI_MODEL"})
 ```
+
+Parse the JSON output to get success count, per-reviewer status, and fallback info.
 
 ### 1.4 Dispatch Claude simplification reviewer (via Agent tool)
 
@@ -151,57 +151,20 @@ Use the Agent tool to spawn a subagent with the content of `$TMP/prompt-simplifi
 - Review the code according to the simplification prompt
 - Return its findings as structured markdown
 
-After the Agent returns, write its response to `$TMP/findings-simplification.md` using the Bash tool.
+After the Agent returns, use the **Write tool** to write its response to `$TMP/findings-simplification.md`.
 
-### 1.5 Post-dispatch validation and fallback
+### 1.5 Count successes — minimum viable review
 
-Read each findings file. Check for the `DISPATCH_ERROR:` marker at the start of the file:
+Count how many reviewers succeeded (from the run-phase JSON + simplification result).
 
-```bash
-for reviewer in quality implementation testing documentation; do
-  if head -1 "$TMP/findings-$reviewer.md" | grep -q "^DISPATCH_ERROR:"; then
-    # Extract error info
-    error_line=$(head -1 "$TMP/findings-$reviewer.md")
-    error_type=$(echo "$error_line" | grep -o 'error_type=[^ ]*' | cut -d= -f2)
-    original_model=$(echo "$error_line" | grep -o 'model=[^ ]*' | cut -d= -f2)
-
-    # For Gemini quota errors: retry with flash model (if not already tried)
-    if [[ "$error_type" == "quota" && "$original_model" != "gemini-2.0-flash" ]]; then
-      bash "$DISPATCH" --engine gemini --model gemini-2.0-flash \
-        --prompt-file "$TMP/prompt-$reviewer.md" --output-file "$TMP/findings-$reviewer.md" --cwd .
-    fi
-
-    # If still failed: fall back to Claude
-    if head -1 "$TMP/findings-$reviewer.md" | grep -q "^DISPATCH_ERROR:"; then
-      bash "$DISPATCH" --engine claude \
-        --prompt-file "$TMP/prompt-$reviewer.md" --output-file "$TMP/findings-$reviewer.md" --cwd .
-    fi
-  fi
-done
+**Minimum viable review**: If fewer than 2 of 5 succeed, abort:
 ```
-
-### 1.6 Count successes — minimum viable review
-
-```bash
-SUCCESS_COUNT=0
-FAILED_REVIEWERS=""
-for reviewer in quality implementation testing simplification documentation; do
-  if head -1 "$TMP/findings-$reviewer.md" 2>/dev/null | grep -q "^DISPATCH_ERROR:"; then
-    FAILED_REVIEWERS="$FAILED_REVIEWERS $reviewer"
-  else
-    SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
-  fi
-done
-```
-
-**Minimum viable review**: If `SUCCESS_COUNT < 2`, abort:
-```
-ERROR: Only $SUCCESS_COUNT/5 reviewers succeeded. Insufficient data for adversarial review.
-Failed: $FAILED_REVIEWERS
+ERROR: Only N/5 reviewers succeeded. Insufficient data for adversarial review.
+Failed: <list>
 Check .claude/reviews/.tmp/dispatch.log for details.
 ```
 
-Otherwise report: `Phase 1 complete: $SUCCESS_COUNT/5 reviewers succeeded. [Failed: $FAILED_REVIEWERS]`
+Otherwise report: `Phase 1 complete: N/5 reviewers succeeded. [Failed: <list>]`
 
 ## Phase 2 — Cross-Examination
 
@@ -226,28 +189,30 @@ Round assignments:
 
 For each round N (1 to 3):
 
-1. Combine all current findings from `$TMP/findings-*.md` into one document (skip files starting with `DISPATCH_ERROR:`).
-2. Read `$PROMPTS/cross-examine.md`. Replace `{ROUND_NUMBER}` with N and `{ALL_FINDINGS}` with combined findings.
-3. Write prepared prompt to `$TMP/prompt-cross-exam-N.md`.
-4. Dispatch to each engine in this round's pair:
+1. Use the **Read tool** to read all findings files: `$TMP/findings-*.md`. Skip any starting with `DISPATCH_ERROR:`. Combine into one document.
+2. If round > 1, also read previous cross-exam results: `$TMP/xr<prev>-*.md`.
+3. Use the **Read tool** to read `$PROMPTS/cross-examine.md`.
+4. Replace `{ROUND_NUMBER}` with N and `{ALL_FINDINGS}` with the combined findings.
+5. Use the **Write tool** to write the prepared prompt to `$TMP/prompt-xr<N>.md`.
+6. Dispatch to the round's engine pair:
    ```bash
-   bash "$DISPATCH" --engine "$ENGINE_A" --prompt-file "$TMP/prompt-cross-exam-N.md" --output-file "$TMP/cross-exam-N-a.md" --cwd . &
-   bash "$DISPATCH" --engine "$ENGINE_B" --prompt-file "$TMP/prompt-cross-exam-N.md" --output-file "$TMP/cross-exam-N-b.md" --cwd . &
-   wait
+   XR_JSON=$(bash "$RUN_PHASE" --phase cross-exam --round N \
+     --assignments "<engine_a>,<engine_b>" \
+     --prompt-dir "$TMP" --output-dir "$TMP" --timeout 300 \
+     ${GEMINI_MODEL:+--gemini-model "$GEMINI_MODEL"})
    ```
-5. Read results. Count VALIDATE, DISPUTE, AMEND, and NEW FINDING entries.
-6. Write combined results to `$TMP/cross-exam-round-N.md`.
+7. Parse the JSON output. Check verdict counts.
 
-**Circuit breaker**: If a round produces zero new disputes AND zero new findings, stop early.
+**Circuit breaker**: If a round produces zero new disputes AND zero new findings (`verdicts.dispute == 0 && verdicts.new_findings == 0`), stop early.
 Report: "Cross-examination converged after N rounds."
 
-**Engine failure during cross-exam**: If one engine fails, skip it and use only the other engine's results. Do not retry — cross-examination is refinement, not critical path.
+**Engine failure during cross-exam**: If one engine fails, the other engine's results still count. Do not retry — cross-examination is refinement, not critical path.
 
 **Maximum**: 3 rounds regardless. Report: "Cross-examination reached maximum rounds."
 
 ## Phase 3 — Synthesis
 
-You are the synthesizer. Apply these rules to produce the final report:
+You are the synthesizer. Use the **Read tool** to read all findings and cross-exam results, then apply these rules to produce the final report:
 
 1. **Merge findings**: Combine all reviewer findings and cross-examination results.
 2. **Deduplicate**: Same issue from multiple reviewers → one entry listing all sources.
@@ -260,7 +225,7 @@ You are the synthesizer. Apply these rules to produce the final report:
 6. **Fix plan**: Group by file. Each item: `[ ] Line N: <description> (severity)`
 7. **Engine health**: Note any unavailable engines and fallbacks used.
 
-Write the final review to the output file using the format from `$PROMPTS/synthesize.md`.
+Use the **Write tool** to write the final review to the output file using the format from `$PROMPTS/synthesize.md`.
 
 ## Phase 4 — Report
 
@@ -291,3 +256,34 @@ If engines were unavailable:
 ⚠ Engine issues: <engine> unavailable (<error_type>). Used Claude fallback.
    Multi-engine adversarial coverage was reduced for this review.
 ```
+
+## Phase 5 — Cleanup
+
+After generating the final report, clean up temporary files:
+
+### 5.1 Write consolidated findings JSON
+
+Use the **Write tool** to create `.claude/reviews/findings-<timestamp>.json` (same timestamp as the review file). This JSON snapshot captures the review metadata for recency detection:
+
+```json
+{
+  "timestamp": "<ISO-8601>",
+  "scope": {"type": "<working|commits|full>", "range": "<if applicable>", "files_changed": N},
+  "engines": {"codex": true|false, "gemini": true|false, "gemini_model": "<model>"},
+  "reviewers": {
+    "quality": {"engine": "<engine>", "status": "success|failed", "fallback_used": false},
+    ...
+  },
+  "cross_examination": {"rounds": N, "converged": true|false},
+  "summary": {"bugs": N, "nits": N, "pre_existing": N},
+  "report_file": "review-<timestamp>.md"
+}
+```
+
+### 5.2 Delete temp directory
+
+```bash
+rm -rf .claude/reviews/.tmp
+```
+
+Report: `Cleanup complete. Findings archived to findings-<timestamp>.json`

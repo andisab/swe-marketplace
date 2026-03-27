@@ -1,6 +1,6 @@
 ---
 name: dispatch
-description: Shared multi-model CLI dispatch infrastructure for the adv plugin. Houses dispatch.sh, scope.sh, and reviewer prompt templates used by the adv-review agent and adv-* commands.
+description: Shared multi-model CLI dispatch infrastructure for the adv plugin. Houses dispatch.sh, preflight.sh, run-phase.sh, scope.sh, and reviewer prompt templates used by the adv-review agent and adv-* commands.
 user-invocable: false
 ---
 
@@ -18,26 +18,129 @@ This skill provides shared infrastructure for multi-model CLI dispatch. It is NO
 
 ## Scripts
 
+### preflight.sh
+**Path**: `${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/preflight.sh`
+
+Combined pre-flight check: dependency verification, engine health checks, and scope resolution in a single call.
+
+```bash
+# Smart default (uncommitted changes > last commit > full repo)
+bash preflight.sh
+
+# Explicit scope modes
+bash preflight.sh --commits abc123..def456
+bash preflight.sh --since HEAD~5
+bash preflight.sh --full
+```
+
+**Arguments**:
+- `--commits <range>` — Review a specific commit range.
+- `--since <ref>` — Review changes since a commit/ref.
+- `--full` — Full repo file manifest.
+- _(no flags)_ — Smart default: uncommitted changes > last commit > full repo.
+
+**Output**: Single JSON object to stdout:
+```json
+{
+  "deps": {"codex": true, "gemini": true, "claude": true, "jq": true},
+  "engines": {
+    "codex": {"available": true, "error_type": "none"},
+    "gemini": {"available": true, "error_type": "none", "model": "gemini-2.5-pro"}
+  },
+  "scope": {
+    "type": "working",
+    "files_changed": 5,
+    "diff_lines": 120,
+    "untracked_files": 2,
+    "content_file": ".claude/reviews/.tmp/scope-content.txt"
+  }
+}
+```
+
+**Scope types**: `working` (uncommitted changes), `commits` (commit range/since), `full` (file manifest).
+
+Internally calls `dispatch.sh --health-check` for engine verification, including automatic Gemini flash fallback on quota errors.
+
+### run-phase.sh
+**Path**: `${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/run-phase.sh`
+
+Parallel dispatch orchestrator for review and cross-examination phases. Handles dispatch, validation, and fallback in a single call.
+
+```bash
+# Review phase — dispatch 4 reviewers in parallel
+bash run-phase.sh --phase review \
+  --assignments "quality:codex,implementation:gemini,testing:codex,documentation:gemini" \
+  --prompt-dir "$TMP" --output-dir "$TMP" --timeout 300
+
+# Cross-exam phase — dispatch 2 engines in parallel
+bash run-phase.sh --phase cross-exam --round 1 \
+  --assignments "codex,gemini" \
+  --prompt-dir "$TMP" --output-dir "$TMP" --timeout 300
+```
+
+**Arguments**:
+- `--phase <review|cross-exam>` — Required. Phase type.
+- `--assignments <spec>` — Required. Engine assignments.
+  - Review: `"quality:codex,implementation:gemini,testing:codex,documentation:gemini"`
+  - Cross-exam: `"codex,gemini"` (just engine names)
+- `--prompt-dir <path>` — Directory containing prepared prompt files.
+- `--output-dir <path>` — Directory for output files.
+- `--timeout <seconds>` — Timeout per dispatch (default: 300).
+- `--round <N>` — Cross-exam round number (required for cross-exam phase).
+- `--gemini-model <model>` — Override Gemini model (e.g., `gemini-2.0-flash`).
+
+**File naming conventions**:
+- Review prompts: `prompt-<reviewer>.md` (e.g., `prompt-quality.md`)
+- Review findings: `findings-<reviewer>.md` (e.g., `findings-quality.md`)
+- Cross-exam prompts: `prompt-xr<N>.md` (e.g., `prompt-xr1.md`)
+- Cross-exam results: `xr<N>-<engine>.md` (e.g., `xr1-codex.md`, `xr1-gemini.md`)
+
+**Output**: JSON summary to stdout:
+```json
+{
+  "phase": "review",
+  "results": {
+    "quality": {"engine": "codex", "status": "success", "fallback_used": false}
+  },
+  "success_count": 4,
+  "failed": []
+}
+```
+
+Cross-exam output also includes verdict counts:
+```json
+{
+  "phase": "cross-exam",
+  "round": 1,
+  "verdicts": {"validate": 8, "dispute": 2, "amend": 1, "new_findings": 0}
+}
+```
+
+**Fallback logic** (review phase only):
+1. If Gemini dispatch fails with quota, retries with `gemini-2.0-flash`
+2. If still failed, falls back to Claude
+3. Final status reported in JSON output
+
 ### dispatch.sh
 **Path**: `${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/dispatch.sh`
 
-Dispatches a prompt to an external model CLI and captures the response.
+Core single-model CLI dispatcher. Called internally by `preflight.sh` and `run-phase.sh`, and directly by the `/adv-codex`, `/adv-gemini`, `/adv-gemini-research` commands.
 
 ```bash
 # Basic dispatch
 bash dispatch.sh --engine codex --prompt "Review this code" --cwd /path/to/repo
 
-# With output file
-bash dispatch.sh --engine gemini --prompt "Find bugs" --output-file /tmp/findings.md
-
-# With prompt file (reads prompt from file instead of --prompt)
-bash dispatch.sh --engine claude --prompt-file /path/to/prompt.md --cwd .
+# With output file and prompt file
+bash dispatch.sh --engine gemini --prompt-file /path/to/prompt.md --output-file /tmp/findings.md
 
 # Research mode (Gemini only)
 bash dispatch.sh --engine gemini --research --prompt "Latest TypeScript best practices"
 
 # Check prerequisites
 bash dispatch.sh --check-deps
+
+# Health check
+bash dispatch.sh --engine codex --health-check
 ```
 
 **Arguments**:
@@ -76,24 +179,19 @@ bash dispatch.sh --check-deps
 ### scope.sh
 **Path**: `${CLAUDE_PLUGIN_ROOT}/skills/dispatch/scripts/scope.sh`
 
-Resolves the review scope (full repo or commit range) and generates scope artifacts.
+Standalone git scope resolver. Used by the ad-hoc commands. The orchestrator uses `preflight.sh` instead (which includes scope resolution).
 
 ```bash
-# Full repo (default)
+# Smart default (uncommitted changes > last commit > full repo)
 bash scope.sh
 
-# Commit range
+# Explicit modes
 bash scope.sh --commits abc123..def456
-
-# Since a specific commit
 bash scope.sh --since HEAD~5
+bash scope.sh --full
 ```
 
-**Output**: JSON to stdout with scope type and artifact paths:
-```json
-{"type":"full","manifest_file":".claude/reviews/.tmp/scope-manifest.txt"}
-{"type":"commits","diff_file":".claude/reviews/.tmp/scope-diff.txt","log_file":".claude/reviews/.tmp/scope-log.txt"}
-```
+**Output**: JSON to stdout with scope type and artifact paths.
 
 ## Prompts
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # scope.sh — Git scope resolver for the adv plugin
-# Resolves review scope (full repo or commit range) and generates scope artifacts.
+# Resolves review scope and generates scope artifacts.
+# Smart default: uncommitted changes > last commit > full repo.
 set -euo pipefail
 
 COMMITS=""
 SINCE=""
+FULL=false
 TMP_DIR=".claude/reviews/.tmp"
 
 usage() {
@@ -14,9 +16,10 @@ Usage: scope.sh [OPTIONS]
 Options:
   --commits <hash..hash>   Review a specific commit range
   --since <hash>           Review changes since a commit/ref (e.g., HEAD~5)
+  --full                   Full repo scope (file manifest)
   -h, --help               Show this help
 
-Default: full repo scope (generates file manifest)
+Default (no flags): smart scope — uncommitted changes > last commit > full repo
 EOF
   exit 1
 }
@@ -26,6 +29,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --commits) COMMITS="$2"; shift 2 ;;
     --since)   SINCE="$2"; shift 2 ;;
+    --full)    FULL=true; shift ;;
     -h|--help) usage ;;
     *)         echo "ERROR: Unknown argument: $1" >&2; usage ;;
   esac
@@ -101,17 +105,15 @@ elif [[ -n "$SINCE" ]]; then
     --arg log_file "$LOG_FILE" \
     '{type: $type, range: $range, diff_file: $diff_file, log_file: $log_file}'
 
-else
-  # Full repo mode — filter to code files
+elif $FULL; then
+  # Explicit full repo mode
   MANIFEST_FILE="$TMP_DIR/scope-manifest.txt"
 
-  # File tree (respecting .gitignore), excluding common non-code files
   git ls-files \
     | grep -vE '\.(png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|mp[34]|wav|zip|tar|gz|lock|min\.(js|css))$' \
     | grep -vE '(node_modules|vendor|dist|build|\.DS_Store)' \
     > "$MANIFEST_FILE"
 
-  # Append summary stats
   {
     echo "---"
     echo "Total files: $(wc -l < "$MANIFEST_FILE" | tr -d ' ')"
@@ -123,4 +125,67 @@ else
     --arg type "full" \
     --arg manifest_file "$MANIFEST_FILE" \
     '{type: $type, manifest_file: $manifest_file}'
+
+else
+  # Smart default: uncommitted changes > last commit > full repo
+  DIFF_FILE="$TMP_DIR/scope-diff.txt"
+
+  working_changes=$(git diff HEAD --stat 2>/dev/null | tail -1 || true)
+  if echo "$working_changes" | grep -qE '[0-9]+ files? changed'; then
+    # Uncommitted working tree changes
+    git diff HEAD > "$DIFF_FILE" 2>/dev/null
+
+    # Include untracked files listing
+    untracked_count=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$untracked_count" -gt 0 ]]; then
+      {
+        echo ""
+        echo "=== UNTRACKED NEW FILES ==="
+        git ls-files --others --exclude-standard 2>/dev/null
+      } >> "$DIFF_FILE"
+    fi
+
+    jq -nc \
+      --arg type "working" \
+      --arg diff_file "$DIFF_FILE" \
+      --argjson untracked "$untracked_count" \
+      '{type: $type, diff_file: $diff_file, untracked_files: $untracked}'
+
+  else
+    last_commit_changes=$(git diff HEAD~1..HEAD --stat 2>/dev/null | tail -1 || true)
+    if echo "$last_commit_changes" | grep -qE '[0-9]+ files? changed'; then
+      # Last commit
+      LOG_FILE="$TMP_DIR/scope-log.txt"
+      git diff HEAD~1..HEAD > "$DIFF_FILE" 2>/dev/null
+      git log --oneline HEAD~1..HEAD > "$LOG_FILE" 2>/dev/null || true
+
+      jq -nc \
+        --arg type "commits" \
+        --arg range "HEAD~1..HEAD" \
+        --arg diff_file "$DIFF_FILE" \
+        --arg log_file "$LOG_FILE" \
+        '{type: $type, range: $range, diff_file: $diff_file, log_file: $log_file}'
+
+    else
+      # Fall back to full repo
+      MANIFEST_FILE="$TMP_DIR/scope-manifest.txt"
+
+      git ls-files \
+        | grep -vE '\.(png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|mp[34]|wav|zip|tar|gz|lock|min\.(js|css))$' \
+        | grep -vE '(node_modules|vendor|dist|build|\.DS_Store)' \
+        > "$MANIFEST_FILE"
+
+      {
+        echo "---"
+        echo "Total files: $(wc -l < "$MANIFEST_FILE" | tr -d ' ')"
+        echo "Languages:"
+        sed -n 's/.*\.\([^./]*\)$/\1/p' "$MANIFEST_FILE" | sort | uniq -c | sort -rn | head -10
+      } >> "$MANIFEST_FILE"
+
+      jq -nc \
+        --arg type "full" \
+        --arg manifest_file "$MANIFEST_FILE" \
+        '{type: $type, manifest_file: $manifest_file}'
+    fi
+  fi
 fi

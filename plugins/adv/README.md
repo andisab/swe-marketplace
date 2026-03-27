@@ -7,8 +7,9 @@ Adversarial code review plugin that orchestrates Claude, Codex CLI, and Gemini C
 - **5 specialized reviewers** across 3 model engines (Codex, Gemini, Claude)
 - **Adversarial cross-examination** with circuit breaker (max 3 rounds)
 - **Structured output** with severity tiers: Bug, Nit, Pre-existing
-- **Scope control**: full repo, commit range, or since a specific commit
+- **Smart scope**: uncommitted changes by default, or commit range / full repo
 - **Graceful degradation**: if Codex or Gemini are unavailable, reviewers fall back to Claude
+- **Auto-cleanup**: temp files removed after review; consolidated JSON archive preserved
 - **Lightweight dispatch commands** for ad-hoc Codex and Gemini queries
 
 ## Prerequisites
@@ -32,6 +33,28 @@ bash plugins/adv/skills/dispatch/scripts/dispatch.sh --check-deps
 /plugin install /path/to/plugins/adv
 ```
 
+## Recommended Permissions
+
+Add these to your project's `.claude/settings.local.json` to auto-allow all adv plugin operations:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash \"/Users/<you>/.claude/plugins/cache/swe-marketplace/adv/:*)",
+      "Bash(rm -rf .claude/reviews/.tmp)"
+    ]
+  }
+}
+```
+
+Replace `/Users/<you>/` with your home directory path. The prefix pattern matches any plugin version, so permissions survive upgrades.
+
+These permissions are safe because:
+- `dispatch.sh` runs external models in sandbox/read-only mode
+- `preflight.sh` and `run-phase.sh` only call `dispatch.sh` internally
+- The `rm` command is scoped to the review temp directory only
+
 ## Components
 
 ### Agent
@@ -48,18 +71,27 @@ bash plugins/adv/skills/dispatch/scripts/dispatch.sh --check-deps
 
 ### Skill (Internal)
 
-- **dispatch** — Shared CLI dispatch infrastructure (not user-invocable). Houses `dispatch.sh`, `scope.sh`, and reviewer prompt templates.
+- **dispatch** — Shared CLI dispatch infrastructure (not user-invocable). Houses `dispatch.sh`, `preflight.sh`, `run-phase.sh`, `scope.sh`, and reviewer prompt templates.
 
 ## Usage
 
 ### Full Adversarial Review
 ```
-/adv-review
-/adv-review --since HEAD~5
-/adv-review --commits abc123..def456
+/adv-review                          # Smart default: reviews uncommitted changes
+/adv-review --since HEAD~5           # Review changes since a ref
+/adv-review --commits abc123..def456 # Review a specific commit range
+/adv-review --full                   # Review entire repository
 ```
 
-Output: `.claude/reviews/review-YYYYMMDD-HHMMSS.md`
+**Smart default** (no flags): If you have uncommitted changes, those are reviewed. Otherwise, the last commit is reviewed. If neither has changes, falls back to full repo.
+
+### Output Files
+
+Each review produces two files in `.claude/reviews/`:
+- `review-YYYYMMDD-HHMMSS.md` — Human-readable review report with findings and fix plan
+- `findings-YYYYMMDD-HHMMSS.json` — Machine-readable metadata (scope, engines, reviewer status, summary counts)
+
+Temporary working files in `.claude/reviews/.tmp/` are automatically cleaned up after each review.
 
 ### Ad-Hoc Model Dispatch
 ```
@@ -70,7 +102,7 @@ Output: `.claude/reviews/review-YYYYMMDD-HHMMSS.md`
 
 ## Review Pipeline
 
-1. **Setup** — Resolve scope, health-check engines, create temp directory
+1. **Preflight** — Resolve scope, health-check engines, verify dependencies (1 script call)
 2. **Parallel Review** — 5 specialized reviewers run simultaneously:
    - Quality (Codex): naming, dead code, complexity
    - Implementation (Gemini): logic bugs, correctness, edge cases
@@ -79,6 +111,7 @@ Output: `.claude/reviews/review-YYYYMMDD-HHMMSS.md`
    - Documentation (Gemini): missing/stale comments, unclear APIs
 3. **Cross-Examination** — 2-3 rounds of adversarial validation (VALIDATE/DISPUTE/AMEND), with early exit on convergence
 4. **Synthesis** — Deduplicate, severity-rank, generate fix plan grouped by file
+5. **Cleanup** — Archive metadata to JSON, delete temp files
 
 ## Engine Fallbacks
 
@@ -98,6 +131,12 @@ Minimum 2 of 5 reviewers must succeed for the review to proceed.
 - 🔴 **Bug** — Breaks correctness, security, or data integrity
 - 🟡 **Nit** — Style, naming, minor improvement
 - 🟣 **Pre-existing** — Not introduced by recent changes
+
+## Cross-Exam File Naming
+
+During execution, cross-examination results use standardized naming:
+- `xr<N>-<engine>.md` — Round N results from a specific engine (e.g., `xr1-codex.md`)
+- `prompt-xr<N>.md` — Prepared prompt for round N
 
 ## Dispatch Exit Codes
 
