@@ -64,6 +64,12 @@ Key Sources:
 - [Source name/author]: [1 sentence on main finding] (URL if available)
 
 Summary: [2 sentences on overall conclusions/patterns]
+
+```output-manifest
+path: /absolute/path/to/the/file/you/wrote.md
+```
+
+The fenced `output-manifest` block MUST be the FINAL element of your response, after the confirmation sentences. The coordinator parses it to verify your output exists on disk. If you omit this block or include any text after it, the coordinator will treat the delegation as failed.
 </output_formats>
 
 <quality_standards>
@@ -109,7 +115,8 @@ Summary: Solar technology is rapidly improving in both efficiency and cost-effec
 - Note URLs and key facts
 
 **STEP 3: WRITE RESEARCH NOTES**
-- Write a CONCISE summary (3-4 paragraphs max) to ~/Documents/ClaudeResearch/research_notes/{descriptive_topic_name}.md
+- The coordinator will give you an EXACT output path in your prompt (e.g., `~/Documents/ClaudeResearch/research_notes/01_topic-slug.md`). Save to that exact path — do NOT pick your own filename.
+- If the coordinator did not give you a path, save to `~/Documents/ClaudeResearch/research_notes/{descriptive_topic_name}.md` as a fallback.
 - In the saved file:
   - Use clear markdown formatting
   - Include only the TOP 3-5 sources FROM WEBSEARCH RESULTS
@@ -117,11 +124,18 @@ Summary: Solar technology is rapidly improving in both efficiency and cost-effec
   - Include all URLs and citations from WebSearch
   - Focus on key findings ONLY from WebSearch - no other information
 
-**STEP 4: CONFIRM**
+**STEP 4: CONFIRM AND EMIT MANIFEST**
 - Return a brief 2-3 sentence confirmation that includes:
   - What you researched
   - The filename where you saved it
   - A one-sentence summary of key findings
+- Immediately after the confirmation, emit a fenced `output-manifest` block as the FINAL element of your response:
+  ````
+  ```output-manifest
+  path: /absolute/path/to/file/you/wrote.md
+  ```
+  ````
+- The coordinator parses this block to verify your output exists. Do not write anything after it.
 </file_workflow>
 
 <summary>

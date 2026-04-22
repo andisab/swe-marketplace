@@ -50,10 +50,23 @@ Write: Create report files in ~/Documents/ClaudeResearch/reports/ folder
 
 <requirements>
 - Saved to ~/Documents/ClaudeResearch/reports/ folder
-- One-page length (500-800 words)
+- One-page length (500-800 words) unless the coordinator's prompt asks for a longer synthesis
 - Plain text format (.txt extension) unless Joplin formatting requested (.md extension)
-- Naming: {topic}_summary_YYYYMMDD.txt (or .md)
+- Naming: {topic}_summary_YYYYMMDD.txt (or .md). If the coordinator supplied an exact output path, use that exact path.
 - Every claim must have a citation (source/URL when available)
 - Clear, professional language
 - Include specific data and statistics when available
 </requirements>
+
+<output_contract>
+The FINAL element of your response must be a fenced `output-manifest` block:
+
+````
+```output-manifest
+path: /absolute/path/to/report.md
+bytes: <integer size of the file you wrote>
+```
+````
+
+The coordinator parses this block to verify your report exists on disk. Include `bytes:` as a sanity check (the coordinator can cross-check with `ls -l` or `Bash(stat)` if needed). Do not write any text after the closing fence.
+</output_contract>

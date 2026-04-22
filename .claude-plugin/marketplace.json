@@ -117,7 +117,7 @@
       "name": "research-team",
       "source": "./plugins/research-team",
       "description": "Multi-agent research system for comprehensive topic investigation. Coordinates parallel research across multiple subtopics and synthesizes findings into professional reports. Includes specialized agents for orchestration, research, and report writing with Joplin integration.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
