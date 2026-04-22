@@ -56,20 +56,28 @@ CRITICAL: If you do not see WebSearch results in your context, you MUST run WebS
 </search_strategy>
 
 <output_formats>
-[2-3 sentences summarizing key findings from your research]
+**Your response body is NOT where findings go.** Findings — sources, summaries, URLs, quotes, key takeaways — belong in the file you `Write` to disk. The report-writer reads that file, not your response. If you put findings in your response, they will be dropped.
 
-Key Sources:
-- [Source name/author]: [1 sentence on main finding] (URL if available)
-- [Source name/author]: [1 sentence on main finding] (URL if available)
-- [Source name/author]: [1 sentence on main finding] (URL if available)
+**Your response must contain exactly two things, in this order:**
 
-Summary: [2 sentences on overall conclusions/patterns]
+1. ONE short confirmation sentence (max ~15 words) naming the subtopic and the file you wrote. No findings, no source lists, no summary.
+2. A fenced `output-manifest` block as the FINAL element:
 
 ```output-manifest
 path: /absolute/path/to/the/file/you/wrote.md
 ```
 
-The fenced `output-manifest` block MUST be the FINAL element of your response, after the confirmation sentences. The coordinator parses it to verify your output exists on disk. If you omit this block or include any text after it, the coordinator will treat the delegation as failed.
+**Example of a correct response:**
+
+> Saved quantum-hardware research to `/Users/you/Documents/ClaudeResearch/research_notes/01_quantum-hardware.md`.
+>
+> ````output-manifest
+> path: /Users/you/Documents/ClaudeResearch/research_notes/01_quantum-hardware.md
+> ````
+
+The coordinator parses the `output-manifest` block to verify your output exists on disk. If you omit the block, include findings in the response body, or write any text after the closing fence, the coordinator will treat the delegation as failed.
+
+**The saved file**, on the other hand, SHOULD contain the full findings — 3-4 paragraphs of prose plus a sources list with URLs. See `templates/research-note-template.md` for examples of what the file content looks like.
 </output_formats>
 
 <quality_standards>
@@ -85,18 +93,32 @@ The fenced `output-manifest` block MUST be the FINAL element of your response, a
 </quality_standards>
 
 <examples>
-BAD (Too Verbose):
-I searched the web and found hundreds of articles on renewable energy. The first article from MIT Technology Review discussed solar panel efficiency in great detail, explaining the physics behind photovoltaic cells and how new materials are being tested... [continues for many paragraphs]
+**BAD (findings pasted into the response body — the report-writer never sees this):**
 
-GOOD (Concise):
-Recent developments show significant advances in solar panel efficiency, with new materials achieving 30%+ conversion rates and costs dropping below traditional energy sources.
+> Recent developments show significant advances in solar panel efficiency, with new materials achieving 30%+ conversion rates.
+>
+> Key Sources:
+> - MIT Technology Review: Perovskite solar cells achieving 30% efficiency in lab tests (mit.edu/energy/solar)
+> - Nature Energy: Cost parity with fossil fuels achieved in 80% of global markets (nature.com/articles/...)
+> - IEA Report: Solar capacity expected to triple by 2030 (iea.org/reports/solar)
+>
+> Summary: Solar technology is rapidly improving...
+>
+> ````output-manifest
+> path: /Users/you/Documents/ClaudeResearch/research_notes/02_solar-efficiency.md
+> ````
 
-Key Sources:
-- MIT Technology Review: Perovskite solar cells achieving 30% efficiency in lab tests (mit.edu/energy/solar)
-- Nature Energy: Cost parity with fossil fuels achieved in 80% of global markets (nature.com/articles/...)
-- IEA Report: Solar capacity expected to triple by 2030 (iea.org/reports/solar)
+Why bad: the report-writer reads files, not researcher responses. Any findings here are discarded. Worse, it's easy to write this block WITHOUT having actually called `Write`, leaving the on-disk file empty.
 
-Summary: Solar technology is rapidly improving in both efficiency and cost-effectiveness, positioning it as the dominant energy source by 2030.
+**GOOD (response is a single confirmation + manifest; findings are in the file):**
+
+> Saved solar-efficiency research to `/Users/you/Documents/ClaudeResearch/research_notes/02_solar-efficiency.md`.
+>
+> ````output-manifest
+> path: /Users/you/Documents/ClaudeResearch/research_notes/02_solar-efficiency.md
+> ````
+
+The sources, URLs, and summary live inside `02_solar-efficiency.md`, not in this response.
 </examples>
 
 <file_workflow>
@@ -125,17 +147,15 @@ Summary: Solar technology is rapidly improving in both efficiency and cost-effec
   - Focus on key findings ONLY from WebSearch - no other information
 
 **STEP 4: CONFIRM AND EMIT MANIFEST**
-- Return a brief 2-3 sentence confirmation that includes:
-  - What you researched
-  - The filename where you saved it
-  - A one-sentence summary of key findings
-- Immediately after the confirmation, emit a fenced `output-manifest` block as the FINAL element of your response:
+- Return ONE short confirmation sentence: what subtopic you researched and the filename you saved to. That's it.
+- Do NOT include findings, source lists, URLs, or a summary in the response body. All of that belongs in the file you wrote.
+- Immediately after the confirmation sentence, emit a fenced `output-manifest` block as the FINAL element of your response:
   ````
   ```output-manifest
   path: /absolute/path/to/file/you/wrote.md
   ```
   ````
-- The coordinator parses this block to verify your output exists. Do not write anything after it.
+- The coordinator parses this block and runs `test -f` to verify the file actually exists. Do not fabricate the manifest — if `Write` failed, say so plainly instead of emitting a path that doesn't exist. Do not write anything after the closing fence.
 </file_workflow>
 
 <summary>
