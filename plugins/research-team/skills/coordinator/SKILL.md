@@ -2,7 +2,7 @@
 name: coordinator
 description: >
   Runs the research-team plugin's multi-agent research pipeline end-to-end from
-  the main thread: decomposes a topic into 2-4 subtopics, spawns parallel
+  the main thread: decomposes a topic into 2-5 subtopics, spawns parallel
   research-team:research-specialist subagents for each, verifies their output on
   disk, then spawns a research-team:research-report-writer subagent to synthesize
   the final report.
@@ -50,11 +50,11 @@ First action every run, exactly once:
 
 **STEP 1: ANALYZE THE USER REQUEST**
 - Understand the research topic and scope.
-- Identify 2-4 distinct, non-overlapping subtopics that together give comprehensive coverage.
+- Identify 2-5 distinct, non-overlapping subtopics that together give comprehensive coverage.
 - Assign each subtopic an output filename using the pattern `NN_slug.md` where NN is a zero-padded index (01, 02, 03, 04) and `slug` is a short kebab-case summary (e.g., `01_quantum-hardware.md`, `02_quantum-algorithms.md`).
 
 **STEP 2: SPAWN RESEARCHER SUBAGENTS (IN PARALLEL)**
-- Spawn 2-4 `research-team:research-specialist` subagents in parallel (single response, multiple tool calls — not sequential). Always use the fully-qualified `research-team:research-specialist` as the `subagent_type`.
+- Spawn 2-5 `research-team:research-specialist` subagents in parallel (single response, multiple tool calls — not sequential). Always use the fully-qualified `research-team:research-specialist` as the `subagent_type`.
 - Each researcher's prompt MUST include:
   - The specific subtopic and focus.
   - The exact output path you assigned in STEP 1: `~/Documents/ClaudeResearch/research_notes/<NN>_<slug>.md`.
@@ -95,15 +95,15 @@ First action every run, exactly once:
 
 ## Output manifest contract
 
-Every researcher and report-writer you spawn must return an `output-manifest` block as the FINAL element of their response. The format:
+Every researcher and report-writer you spawn must return an `output-manifest` block as the FINAL element of their response. The block MUST use **exactly three backticks** as the fence and `output-manifest` as the language tag. Literal format:
 
-```output-manifest
-path: /absolute/path/to/the/file/they/wrote.md
-```
+    ```output-manifest
+    path: /absolute/path/to/the/file/they/wrote.md
+    ```
 
-The report-writer's manifest additionally includes `bytes: <integer>`.
+The report-writer's manifest additionally includes `bytes: <integer>` on its own line inside the block.
 
-Parse these blocks by finding the fenced ```output-manifest section and extracting the `path:` line. If a researcher's response lacks this block, treat the delegation as failed — the file location is unverifiable.
+Parse these blocks by searching each subagent's response for a line matching exactly ` ```output-manifest ` (three backticks, the literal tag) and extracting the `path:` line from the block body. Reject variant fencing (e.g., four backticks) — a non-conforming block signals a malformed response. If a subagent's response lacks this block entirely, treat the delegation as failed.
 
 ## Task tool usage
 
@@ -160,8 +160,8 @@ BAD (sequential, one spawn per response):
 
 You are the COORDINATOR running in the main thread:
 - Bootstrap → `mkdir -p` the working directories (single idempotent call; no prior `test -d`).
-- Analyze → Break down topic into 2-4 subtopics with assigned output filenames.
-- Delegate → Spawn 2-4 researchers in parallel (one response, multiple calls) with exact paths and manifest requirement.
+- Analyze → Break down topic into 2-5 subtopics with assigned output filenames.
+- Delegate → Spawn 2-5 researchers in parallel (one response, multiple calls) with exact paths and manifest requirement.
 - Verify → `Glob` the notes directory and confirm every researcher's claimed path is present before proceeding.
 - Synthesize → Spawn report-writer, require manifest.
 - Verify → `Glob` the reports directory and confirm the report path is present.

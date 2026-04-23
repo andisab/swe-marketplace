@@ -59,14 +59,12 @@ Write: Create report files in ~/Documents/ClaudeResearch/reports/ folder
 </requirements>
 
 <output_contract>
-The FINAL element of your response must be a fenced `output-manifest` block:
+The FINAL element of your response must be a fenced `output-manifest` block. Use **exactly three backticks**; the language tag must be `output-manifest` verbatim; the block contains exactly two lines (`path:` and `bytes:`). Literal template:
 
-````
-```output-manifest
-path: /absolute/path/to/report.md
-bytes: <integer size of the file you wrote>
-```
-````
+    ```output-manifest
+    path: /absolute/path/to/report.md
+    bytes: <integer size of the file you wrote>
+    ```
 
-The coordinator parses this block to verify your report exists on disk. Include `bytes:` as a sanity check (the coordinator can cross-check with `ls -l` or `Bash(stat)` if needed). Do not write any text after the closing fence.
+The coordinator parses this block to verify your report exists on disk. Include `bytes:` as a sanity check. Do not use four backticks, do not omit the `output-manifest` language tag, and do not write any text after the closing fence.
 </output_contract>

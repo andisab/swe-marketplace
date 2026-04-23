@@ -8,7 +8,7 @@ The Research Team plugin provides a coordinated multi-agent system designed to c
 
 ## Features
 
-- **Multi-Agent Orchestration**: Lead coordinator breaks topics into 2-4 subtopics and manages parallel research
+- **Multi-Agent Orchestration**: Lead coordinator breaks topics into 2-5 subtopics and manages parallel research
 - **Parallel Research Execution**: Multiple researchers investigate simultaneously for 4x speedup
 - **Web-First Research**: Mandatory WebSearch usage ensures current, factual information
 - **Professional Reports**: Synthesized findings with citations and proper formatting
@@ -38,7 +38,7 @@ Or from marketplace:
 
 Orchestrates the entire research workflow from the main thread so its `Task` calls are first-level (Claude Code does not support nested subagent spawning, which is why this was migrated from an agent to a skill in v1.2.0):
 - Analyzes the user's research request
-- Breaks the topic into 2-4 distinct subtopics with assigned output paths
+- Breaks the topic into 2-5 distinct subtopics with assigned output paths
 - Spawns `research-team:research-specialist` subagents in parallel
 - Verifies each note on disk via Glob; respawns any failed subtopic once
 - Spawns `research-team:research-report-writer` only after verification passes
@@ -165,7 +165,7 @@ All agents default to `sonnet` for high-quality output. This can be changed per-
 
 ### Research Depth
 
-- Number of subtopics: 2-4 (configured by lead coordinator based on topic complexity)
+- Number of subtopics: 2-5 (configured by lead coordinator based on topic complexity)
 - WebSearch queries per researcher: 3-7
 - Research note length: 3-4 paragraphs per researcher
 - Final report length: 500-800 words (adjustable in report-writer prompt)
@@ -330,6 +330,6 @@ For issues or questions:
 
 ## Version
 
-**Current Version**: 1.2.1
+**Current Version**: 1.2.2
 **Status**: Stable
 **Last Updated**: 2026-04-23

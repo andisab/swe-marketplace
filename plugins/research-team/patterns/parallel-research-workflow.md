@@ -13,7 +13,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 **Activities**:
 1. Parse user's research request
 2. Identify the core topic and scope
-3. Determine 2-4 distinct subtopics or angles
+3. Determine 2-5 distinct subtopics or angles
 4. Plan comprehensive coverage strategy
 
 **Example**:
@@ -29,7 +29,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 
 ### Phase 2: Parallel Research Execution
 
-**Responsible Agents**: 2-4 Research Specialists (spawned in parallel)
+**Responsible Agents**: 2-5 Research Specialists (spawned in parallel)
 
 **Activities** (per researcher):
 1. Receive specific subtopic assignment from coordinator
@@ -201,7 +201,7 @@ User Request
 - ✅ Saved to correct output location
 
 **Coordinator Level**:
-- ✅ Decomposed topic into 2-4 subtopics
+- ✅ Decomposed topic into 2-5 subtopics
 - ✅ Made subtopics distinct and non-overlapping
 - ✅ Spawned researchers in parallel
 - ✅ Waited for all researchers before synthesis

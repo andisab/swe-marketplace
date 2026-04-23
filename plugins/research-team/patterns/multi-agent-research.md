@@ -10,7 +10,7 @@ The multi-agent research pattern enables comprehensive investigation of complex 
 
 1. **Lead Research Coordinator** (Orchestrator)
    - Analyzes research requests
-   - Breaks topics into 2-4 distinct subtopics
+   - Breaks topics into 2-5 distinct subtopics
    - Spawns researcher subagents in parallel
    - Coordinates report synthesis
    - Tools: Task only
@@ -101,7 +101,7 @@ Each subagent operates with its own context window:
 ### Best Practices
 
 1. **Subtopic Decomposition**
-   - Break into 2-4 distinct angles (not more, not less)
+   - Break into 2-5 distinct angles (not more, not less)
    - Ensure subtopics don't overlap significantly
    - Make each subtopic specific and focused
    - Aim for comprehensive coverage of the main topic
@@ -144,7 +144,7 @@ Each subagent operates with its own context window:
 2. **Context Management**: Each agent has focused context, avoiding token limits
 3. **Specialization**: Each researcher focuses on one aspect deeply
 4. **Comprehensive Coverage**: Multiple perspectives ensure thorough investigation
-5. **Scalability**: Pattern works for 2-4 subtopics easily
+5. **Scalability**: Pattern works for 2-5 subtopics easily
 
 ## Limitations
 

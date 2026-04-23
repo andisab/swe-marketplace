@@ -65,4 +65,4 @@ Research neural architecture search for my Joplin notes
 - Research requests can be any length from one sentence to detailed briefs
 - More specific requests lead to more targeted research
 - Mentioning "Joplin" ensures markdown formatting
-- The coordinator adapts to request complexity (2-4 subtopics)
+- The coordinator adapts to request complexity (2-5 subtopics)
