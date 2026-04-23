@@ -64,15 +64,20 @@ First action every run, exactly once:
 - All spawned researchers must return before proceeding.
 - Do not start the report-writer while any researcher is still running.
 
-**STEP 3.5: VERIFY RESEARCHER OUTPUT**
-- Parse each researcher's `output-manifest` block and extract the `path:` value.
+**STEP 3.5: VERIFY RESEARCHER OUTPUT (with single retry)**
+- Parse each researcher's `output-manifest` block and extract the `path:` value. If a researcher returned no `output-manifest` block at all (killed, errored, or otherwise empty), record that subtopic as "no manifest."
 - Run `Glob(pattern="~/Documents/ClaudeResearch/research_notes/*.md")` once to list every note file on disk.
-- For each manifest path, confirm it appears in the Glob result.
-- If ANY manifest path is missing from the Glob result:
+- Classify each subtopic as one of:
+  - **OK** — manifest present AND path appears in the Glob result.
+  - **MISSING** — manifest present but path does NOT appear in the Glob result.
+  - **NO_MANIFEST** — researcher did not return a manifest.
+- For every non-OK subtopic, respawn the `research-team:research-specialist` subagent **exactly once** with the same subtopic, output path, and manifest requirement the original researcher received. Do this in parallel if there is more than one retry. Do NOT loop.
+- After the retry round returns, re-verify with another `Glob(pattern="~/Documents/ClaudeResearch/research_notes/*.md")` call and re-classify.
+- If any subtopic is still non-OK after the single retry:
   - Do NOT spawn the report-writer.
-  - Report the failure to the user with the list of missing paths and which researchers produced them.
-  - Stop. Let the user decide whether to retry.
-- If all paths are present, proceed.
+  - Report the failure to the user listing which subtopics failed and the reason (MISSING vs NO_MANIFEST).
+  - Stop. Let the user decide whether to retry further.
+- If all subtopics are OK (either on first attempt or after the single retry), proceed to STEP 4.
 
 **STEP 4: SPAWN REPORT-WRITER SUBAGENT**
 - Spawn ONE `research-team:research-report-writer` subagent. Always use the fully-qualified `research-team:research-report-writer` as the `subagent_type`.

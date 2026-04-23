@@ -29,23 +29,35 @@ Or from marketplace:
 
 ## Components
 
+### Skills
+
+#### coordinator
+**Role**: Main-thread orchestrator
+**Runs in**: Main agent context (not a subagent)
+**Tools**: Task, Bash(mkdir:*), Glob, Read
+
+Orchestrates the entire research workflow from the main thread so its `Task` calls are first-level (Claude Code does not support nested subagent spawning, which is why this was migrated from an agent to a skill in v1.2.0):
+- Analyzes the user's research request
+- Breaks the topic into 2-4 distinct subtopics with assigned output paths
+- Spawns `research-team:research-specialist` subagents in parallel
+- Verifies each note on disk via Glob; respawns any failed subtopic once
+- Spawns `research-team:research-report-writer` only after verification passes
+- Reports the verified report path
+
+**Trigger**: Activates only on explicit research-team invocation (e.g., "use research-team to research X", "research-team: research X"). Generic research prompts fall through to whatever other mechanism is in play.
+
+#### joplin-research
+Comprehensive markdown formatting guidelines for research artifacts:
+- Technical rundowns and surveys
+- Book and article summaries
+- Research notes
+- Optimized for Joplin note-taking app with custom CSS
+
+**Trigger**: Loaded by the report-writer when the user mentions "Joplin" in the original request.
+
 ### Agents
 
-#### 1. lead-research-coordinator
-**Role**: Orchestrator
-**Model**: Sonnet
-**Tools**: Task
-
-Coordinates the entire research workflow:
-- Analyzes user research requests
-- Breaks topics into 2-4 distinct subtopics
-- Spawns researcher subagents in parallel
-- Coordinates report synthesis
-- Provides completion notifications
-
-**Trigger**: Automatically activated for complex research requests
-
-#### 2. research-specialist
+#### 1. research-specialist
 **Role**: Information Gatherer
 **Model**: Sonnet
 **Tools**: WebSearch, Write
@@ -55,33 +67,23 @@ Conducts focused research on specific subtopics:
 - Extracts findings from authoritative sources
 - Saves concise summaries (3-4 paragraphs) to files
 - Includes URLs and citations
+- Ends every response with an `output-manifest` block (used by the coordinator for disk verification)
 
 **Output Location**: `~/Documents/ClaudeResearch/research_notes/`
 
-#### 3. research-report-writer
+#### 2. research-report-writer
 **Role**: Report Synthesizer
 **Model**: Sonnet
 **Tools**: Glob, Read, Write, Skill
 
 Creates comprehensive summary reports:
 - Reads all research notes from files
-- Synthesizes findings into coherent narrative
+- Synthesizes findings into a coherent narrative
 - Maintains citations from original research
-- Uses joplin-research skill when Joplin mentioned
-- Saves final reports (500-800 words)
+- Loads the joplin-research skill when the user mentioned "Joplin"
+- Saves final reports (500-800 words) in markdown (`.md`) by default
 
 **Output Location**: `~/Documents/ClaudeResearch/reports/`
-
-### Skills
-
-#### joplin-research
-Comprehensive markdown formatting guidelines for research artifacts:
-- Technical rundowns and surveys
-- Book and article summaries
-- Research notes
-- Optimized for Joplin note-taking app with custom CSS
-
-**Trigger**: Automatically activates when user mentions "Joplin"
 
 ### Patterns
 
@@ -119,8 +121,7 @@ industry players/investments, and challenges/timeline. Spawning researchers."
 [Report-writer reads all notes and creates synthesis]
 [Saves to ~/Documents/ClaudeResearch/reports/]
 
-"Research complete. Report saved to
-~/Documents/ClaudeResearch/reports/quantum_computing_summary_20251117.txt"
+"Research complete. Report: /Users/you/Documents/ClaudeResearch/reports/quantum_computing_summary_20260423.md"
 ```
 
 ### With Joplin Formatting
@@ -132,8 +133,7 @@ User: Research electric vehicles for my Joplin notes
 [Report-writer loads joplin-research skill]
 [Output format changes to markdown with proper formatting]
 
-"Research complete. Report saved to
-~/Documents/ClaudeResearch/reports/electric_vehicles_summary_20251117.md"
+"Research complete. Report: /Users/you/Documents/ClaudeResearch/reports/electric_vehicles_summary_20260423.md"
 ```
 
 ## File Structure
@@ -148,7 +148,7 @@ After running research, you'll find:
 │   ├── quantum_industry_investments.md
 │   └── quantum_challenges_timeline.md
 └── reports/                     # Final synthesized reports
-    └── quantum_computing_summary_20251117.txt
+    └── quantum_computing_summary_20260423.md
 ```
 
 ## Configuration
@@ -270,11 +270,11 @@ All agents default to `sonnet` for high-quality output. This can be changed per-
 
 ### Missing Joplin Formatting
 
-**Symptom**: Plain text instead of markdown
+**Symptom**: Report uses generic markdown instead of Joplin-specific formatting (no `>[toc]`, no CSS-aware headings, etc.)
 **Solution**:
-- Ensure user mentioned "Joplin" in original request
-- Verify joplin-research skill is installed
-- Check report-writer's skill activation logic
+- Ensure user mentioned "Joplin" in the original request
+- Verify the joplin-research skill is installed
+- Check the report-writer's skill activation logic
 
 ## Best Practices
 
@@ -330,6 +330,6 @@ For issues or questions:
 
 ## Version
 
-**Current Version**: 1.0.0
+**Current Version**: 1.2.1
 **Status**: Stable
-**Last Updated**: 2025-11-17
+**Last Updated**: 2026-04-23

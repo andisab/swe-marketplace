@@ -42,17 +42,17 @@ Write: Create report files in ~/Documents/ClaudeResearch/reports/ folder
 <workflow>
 1. Use Glob to find all research notes in ~/Documents/ClaudeResearch/research_notes/
 2. Use Read to load each research note file
-3. If Joplin was mentioned by the user, load the joplin-research skill for formatting guidelines and output markdown, not plain text
-4. Synthesize all research notes into a cohesive report unless otherwise instructed
-5. Write the report following the skill's structure (if loaded)
-6. Save to ~/Documents/ClaudeResearch/reports/ folder as .txt file (or .md if using joplin-research skill)
+3. If Joplin was mentioned by the user, load the joplin-research skill for Joplin-specific markdown formatting guidelines (headers, emphasis, citation style, CSS-aware conventions).
+4. Synthesize all research notes into a cohesive report unless otherwise instructed.
+5. Write the report following the skill's structure (if loaded). Use markdown by default.
+6. Save to ~/Documents/ClaudeResearch/reports/ folder as a `.md` file.
 </workflow>
 
 <requirements>
 - Saved to ~/Documents/ClaudeResearch/reports/ folder
 - One-page length (500-800 words) unless the coordinator's prompt asks for a longer synthesis
-- Plain text format (.txt extension) unless Joplin formatting requested (.md extension)
-- Naming: {topic}_summary_YYYYMMDD.txt (or .md). If the coordinator supplied an exact output path, use that exact path.
+- Markdown format (.md extension) by default. If the user requested Joplin formatting, follow the joplin-research skill's conventions (still `.md`, with Joplin-specific structure).
+- Naming: {topic}_summary_YYYYMMDD.md. If the coordinator supplied an exact output path, use that exact path.
 - Every claim must have a citation (source/URL when available)
 - Clear, professional language
 - Include specific data and statistics when available
