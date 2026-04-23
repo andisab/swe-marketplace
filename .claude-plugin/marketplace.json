@@ -116,8 +116,8 @@
     {
       "name": "research-team",
       "source": "./plugins/research-team",
-      "description": "Multi-agent research system for comprehensive topic investigation. Coordinates parallel research across multiple subtopics and synthesizes findings into professional reports. Includes specialized agents for orchestration, research, and report writing with Joplin integration.",
-      "version": "1.1.4",
+      "description": "Multi-agent research system for comprehensive topic investigation. The research-team:coordinator skill decomposes a topic into subtopics, spawns parallel research-specialist subagents, and delegates synthesis to a report-writer — all from the main agent thread so nested-spawn constraints don't apply. Includes Joplin integration.",
+      "version": "1.2.0",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -140,11 +140,11 @@
       "category": "research",
       "strict": false,
       "agents": [
-        "./agents/lead-research-coordinator.md",
         "./agents/research-specialist.md",
         "./agents/research-report-writer.md"
       ],
       "skills": [
+        "./skills/coordinator",
         "./skills/joplin-research"
       ]
     },
