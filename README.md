@@ -102,6 +102,28 @@ Manage plugins directly from Claude Code:
 After installation and restart, verify by running `/help` to see new commands and check `/agents` for new specialized agents.
 
 
+## Plugin Manifests
+
+Each plugin ships with two manifest files:
+
+- **`.claude-plugin/marketplace.json`** (repo root) — the catalog used by `/plugin marketplace add` and `/plugin install`. **Source of truth.**
+- **`plugins/<name>/.claude-plugin/plugin.json`** — per-plugin manifest used by SDK consumers that load plugins directly via `ClaudeAgentOptions.plugins=[{"type":"local","path":...}]` / `--plugin-dir`. Without it, those consumers silently fail to register skills, commands, and hooks.
+
+`plugin.json` is **generated** from the matching entry in `marketplace.json` (with `source`, `category`, and `strict` stripped — those are marketplace-only). Do not edit `plugin.json` by hand.
+
+```bash
+# Regenerate after editing marketplace.json
+python scripts/synthesize-plugin-manifests.py
+
+# Verify both files are in sync (CI runs this)
+python scripts/synthesize-plugin-manifests.py --check
+
+# Validate every manifest with the Claude CLI
+./scripts/validate-all.sh
+```
+
+The `validate-plugins` GitHub workflow runs the drift check on every PR. Run `validate-all.sh` locally before merging.
+
 ## Contributing
 
 I will continue incrementally building out more agents for agentic systems and adding them here to make your day a good day (no AK). If you are actively using one of these agents and are getting better results with changes or additions, contributions are also very welcome and appreciated. 🙏

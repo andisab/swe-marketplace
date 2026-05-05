@@ -1,0 +1,23 @@
+{
+  "name": "genai",
+  "description": "Generative AI development specialist focused on LangChain for building LLM applications, chains, and agents.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "genai",
+    "langchain",
+    "llm",
+    "ai-development",
+    "chains"
+  ],
+  "agents": [
+    "./agents/genai-langchain-expert.md"
+  ]
+}

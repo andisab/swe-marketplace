@@ -1,0 +1,31 @@
+{
+  "name": "frontend",
+  "description": "Frontend development specialists for React, Vue, Next.js, CSS, HTML, and UI/UX design. Comprehensive coverage of modern frontend technologies.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "frontend",
+    "react",
+    "vue",
+    "nextjs",
+    "css",
+    "html",
+    "ui",
+    "design"
+  ],
+  "agents": [
+    "./agents/fe-css-expert.md",
+    "./agents/fe-frontend-designer.md",
+    "./agents/fe-html-expert.md",
+    "./agents/fe-nextjs-expert.md",
+    "./agents/fe-react-expert.md",
+    "./agents/fe-vue-expert.md"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "databases",
+  "description": "Database experts for SQL, NoSQL, graph databases, and vector databases. Includes Postgres, MongoDB, Neo4j, Cassandra, MariaDB, and vector DB specialists.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "databases",
+    "sql",
+    "nosql",
+    "postgres",
+    "mongodb",
+    "neo4j",
+    "graph-db",
+    "vector-db",
+    "cassandra"
+  ],
+  "agents": [
+    "./agents/db-cassandra-expert.md",
+    "./agents/db-mariadb-expert.md",
+    "./agents/db-mongodb-expert.md",
+    "./agents/db-neo4j-expert.md",
+    "./agents/db-postgres-expert.md",
+    "./agents/db-sql-expert.md",
+    "./agents/db-vector-expert.md"
+  ]
+}

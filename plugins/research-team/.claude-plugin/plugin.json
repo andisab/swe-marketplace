@@ -1,0 +1,32 @@
+{
+  "name": "research-team",
+  "description": "Multi-agent research system for comprehensive topic investigation. The research-team:coordinator skill decomposes a topic into subtopics, spawns parallel research-specialist subagents, and delegates synthesis to a report-writer \u2014 all from the main agent thread so nested-spawn constraints don't apply. Includes Joplin integration.",
+  "version": "1.2.2",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "multi-agent",
+    "parallel-execution",
+    "web-search",
+    "report-writing",
+    "joplin",
+    "orchestration",
+    "synthesis",
+    "investigation"
+  ],
+  "agents": [
+    "./agents/research-specialist.md",
+    "./agents/research-report-writer.md"
+  ],
+  "skills": [
+    "./skills/coordinator",
+    "./skills/joplin-research"
+  ]
+}

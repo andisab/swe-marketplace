@@ -1,0 +1,37 @@
+{
+  "name": "context-engineering",
+  "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, MCP tools, MCP servers, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "context-engineering",
+    "agent-development",
+    "skill-creation",
+    "plugin-development",
+    "mcp",
+    "claude-sdk",
+    "automation",
+    "workflows",
+    "templates"
+  ],
+  "agents": [
+    "./agents/context-engineer.md"
+  ],
+  "skills": [
+    "./skills/agent-dev",
+    "./skills/skill-dev",
+    "./skills/plugin-dev",
+    "./skills/command-dev",
+    "./skills/hook-dev",
+    "./skills/mcp-tool-dev",
+    "./skills/mcp-server-dev"
+  ]
+}

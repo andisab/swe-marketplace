@@ -1,0 +1,39 @@
+{
+  "name": "dev",
+  "description": "Language-specific development experts covering 13 programming languages including Python, TypeScript, JavaScript, Go, Rust, C++, and more. Includes refactoring specialist.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "programming-languages",
+    "development",
+    "python",
+    "typescript",
+    "javascript",
+    "go",
+    "rust",
+    "cpp",
+    "refactoring"
+  ],
+  "agents": [
+    "./agents/dev-cpp-expert.md",
+    "./agents/dev-fastapi-architect.md",
+    "./agents/dev-go-expert.md",
+    "./agents/dev-javascript-expert.md",
+    "./agents/dev-kotlin-expert.md",
+    "./agents/dev-lua-expert.md",
+    "./agents/dev-nodejs-expert.md",
+    "./agents/dev-perl-expert.md",
+    "./agents/dev-php-expert.md",
+    "./agents/dev-python-expert.md",
+    "./agents/dev-refactor-agent.md",
+    "./agents/dev-rust-expert.md",
+    "./agents/dev-typescript-expert.md"
+  ]
+}

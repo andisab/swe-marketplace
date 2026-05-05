@@ -1,0 +1,25 @@
+{
+  "name": "product-management",
+  "description": "Product management specialists for PRD writing, content creation, and project planning. Tools for product managers and technical writers.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "product-management",
+    "prd",
+    "content-writing",
+    "planning",
+    "documentation"
+  ],
+  "agents": [
+    "./agents/pm-content-writer.md",
+    "./agents/pm-prd-writer.md",
+    "./agents/pm-project-planner.md"
+  ]
+}

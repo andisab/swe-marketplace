@@ -1,0 +1,26 @@
+{
+  "name": "machine-learning",
+  "description": "Machine learning framework specialists for PyTorch, TensorFlow, and scikit-learn. Expert guidance for ML model development and training.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "machine-learning",
+    "ml",
+    "pytorch",
+    "tensorflow",
+    "scikit-learn",
+    "deep-learning"
+  ],
+  "agents": [
+    "./agents/ml-pytorch-expert.md",
+    "./agents/ml-scikit-learn-expert.md",
+    "./agents/ml-tensorflow-expert.md"
+  ]
+}

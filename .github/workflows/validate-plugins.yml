@@ -1,0 +1,41 @@
+name: Validate plugin manifests
+
+on:
+  pull_request:
+    paths:
+      - ".claude-plugin/marketplace.json"
+      - "plugins/**"
+      - "scripts/synthesize-plugin-manifests.py"
+      - "scripts/validate-all.sh"
+      - ".github/workflows/validate-plugins.yml"
+  push:
+    branches: [main]
+
+jobs:
+  drift-check:
+    name: plugin.json sync with marketplace.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify generated plugin.json files are in sync
+        run: python scripts/synthesize-plugin-manifests.py --check
+
+  validate-manifests:
+    name: claude plugin validate
+    runs-on: ubuntu-latest
+    # The claude CLI is not preinstalled on GitHub runners. This job runs the
+    # validator when the CLI is available (e.g. on self-hosted runners) and
+    # skips cleanly otherwise; the drift-check above is the always-on guard.
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run validate-all.sh if claude CLI is available
+        run: |
+          if command -v claude >/dev/null 2>&1; then
+            ./scripts/validate-all.sh
+          else
+            echo "claude CLI not available on this runner; skipping."
+            echo "Run ./scripts/validate-all.sh locally before merging."
+          fi

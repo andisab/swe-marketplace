@@ -1,0 +1,24 @@
+{
+  "name": "arch",
+  "description": "Architecture and build orchestration agents for system design, multi-agent coordination, and context management.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "architecture",
+    "orchestration",
+    "system-design",
+    "coordination",
+    "planning"
+  ],
+  "agents": [
+    "./agents/arch-context-agent.md",
+    "./agents/build-orchestrator.md"
+  ]
+}

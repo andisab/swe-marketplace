@@ -1,0 +1,34 @@
+{
+  "name": "infrastructure",
+  "description": "Infrastructure and DevOps specialists for AWS, GCP, Kubernetes, Docker, Terraform, GitHub Actions, GitLab CI, and security auditing.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "devops",
+    "cloud",
+    "aws",
+    "gcp",
+    "kubernetes",
+    "docker",
+    "terraform",
+    "ci-cd",
+    "security"
+  ],
+  "agents": [
+    "./agents/infra-aws-architect.md",
+    "./agents/infra-docker-engineer.md",
+    "./agents/infra-gcp-architect.md",
+    "./agents/infra-github-actions-expert.md",
+    "./agents/infra-gitlab-ci-expert.md",
+    "./agents/infra-k8s-engineer.md",
+    "./agents/infra-security-auditor.md",
+    "./agents/infra-terraform-engineer.md"
+  ]
+}

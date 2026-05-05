@@ -1,0 +1,30 @@
+{
+  "name": "data",
+  "description": "Data science and data engineering agents for visualization (D3, Highcharts), notebooks (Jupyter, Google Colab), R, and Python data engineering.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "data-science",
+    "visualization",
+    "jupyter",
+    "notebooks",
+    "d3",
+    "r",
+    "data-engineering"
+  ],
+  "agents": [
+    "./agents/data-d3-expert.md",
+    "./agents/data-google-colab-expert.md",
+    "./agents/data-highcharts-expert.md",
+    "./agents/data-jupyter-expert.md",
+    "./agents/data-python-data-engineer.md",
+    "./agents/data-r-expert.md"
+  ]
+}
