@@ -54,7 +54,7 @@ description: >
   </commentary>
   </example>
 
-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(tree:*), Bash(ls:*), mcp__Conventions__search_conventions, mcp__Conventions__get_convention, mcp__Conventions__get_conventions_overview
+tools: Read, Write, Edit, MultiEdit, Grep, Glob, Skill, Bash(mkdir:*), Bash(tree:*), Bash(ls:*), mcp__Conventions__search_conventions, mcp__Conventions__get_convention, mcp__Conventions__get_conventions_overview
 model: sonnet
 color: "#b16286"
 ---
