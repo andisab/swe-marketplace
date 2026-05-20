@@ -69,7 +69,7 @@ Conducts focused research on specific subtopics:
 - Includes URLs and citations
 - Ends every response with an `output-manifest` block (used by the coordinator for disk verification)
 
-**Output Location**: `~/Documents/ClaudeResearch/research_notes/`
+**Output Location**: `~/Documents/Claude/Research/research_notes/`
 
 #### 2. research-report-writer
 **Role**: Report Synthesizer
@@ -83,7 +83,7 @@ Creates comprehensive summary reports:
 - Loads the joplin-research skill when the user mentioned "Joplin"
 - Saves final reports (500-800 words) in markdown (`.md`) by default
 
-**Output Location**: `~/Documents/ClaudeResearch/reports/`
+**Output Location**: `~/Documents/Claude/Research/reports/`
 
 ### Patterns
 
@@ -114,14 +114,14 @@ industry players/investments, and challenges/timeline. Spawning researchers."
 
 [Spawns 4 researcher subagents in parallel]
 [Each conducts 3-7 WebSearch queries on their subtopic]
-[Each saves findings to ~/Documents/ClaudeResearch/research_notes/]
+[Each saves findings to ~/Documents/Claude/Research/research_notes/]
 [All complete in 2-5 minutes]
 
 [Spawns report-writer subagent]
 [Report-writer reads all notes and creates synthesis]
-[Saves to ~/Documents/ClaudeResearch/reports/]
+[Saves to ~/Documents/Claude/Research/reports/]
 
-"Research complete. Report: /Users/you/Documents/ClaudeResearch/reports/quantum_computing_summary_20260423.md"
+"Research complete. Report: /Users/you/Documents/Claude/Research/reports/quantum_computing_summary_20260423.md"
 ```
 
 ### With Joplin Formatting
@@ -133,7 +133,7 @@ User: Research electric vehicles for my Joplin notes
 [Report-writer loads joplin-research skill]
 [Output format changes to markdown with proper formatting]
 
-"Research complete. Report: /Users/you/Documents/ClaudeResearch/reports/electric_vehicles_summary_20260423.md"
+"Research complete. Report: /Users/you/Documents/Claude/Research/reports/electric_vehicles_summary_20260423.md"
 ```
 
 ## File Structure
@@ -141,7 +141,7 @@ User: Research electric vehicles for my Joplin notes
 After running research, you'll find:
 
 ```
-~/Documents/ClaudeResearch/
+~/Documents/Claude/Research/
 ├── research_notes/              # Intermediate findings
 │   ├── quantum_hardware_qubits.md
 │   ├── quantum_algorithms_apps.md
@@ -155,7 +155,7 @@ After running research, you'll find:
 
 ### Output Directory
 
-Default: `~/Documents/ClaudeResearch/`
+Default: `~/Documents/Claude/Research/`
 
 To use a different location, the agents would need to be modified (advanced users only).
 
@@ -248,7 +248,7 @@ All agents default to `sonnet` for high-quality output. This can be changed per-
 
 **Symptom**: Report-writer can't find files
 **Solution**:
-- Ensure `~/Documents/ClaudeResearch/research_notes/` exists
+- Ensure `~/Documents/Claude/Research/research_notes/` exists
 - Check researchers actually saved files
 - Verify file permissions
 
@@ -283,7 +283,7 @@ All agents default to `sonnet` for high-quality output. This can be changed per-
 1. **Be Specific**: State research topic and desired depth clearly
 2. **Mention Joplin**: If you want markdown, say "Joplin" in request
 3. **Allow Time**: Expect 3-7 minutes for completion
-4. **Check Output**: Verify files in `~/Documents/ClaudeResearch/reports/`
+4. **Check Output**: Verify files in `~/Documents/Claude/Research/reports/`
 
 ### For Developers
 

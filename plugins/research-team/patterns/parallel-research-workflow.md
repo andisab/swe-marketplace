@@ -36,7 +36,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 2. Execute 3-7 WebSearch queries on the subtopic
 3. Identify 3-5 most authoritative sources
 4. Extract key findings from search results
-5. Save concise summary (3-4 paragraphs) to `~/Documents/ClaudeResearch/research_notes/{subtopic}.md`
+5. Save concise summary (3-4 paragraphs) to `~/Documents/Claude/Research/research_notes/{subtopic}.md`
 6. Report completion
 
 **Example** (Researcher 1: Hardware/Qubits):
@@ -46,7 +46,7 @@ The parallel research workflow orchestrates multiple research agents working sim
   - "quantum error correction latest advances"
   - "quantum computing hardware companies"
 - Top sources: IBM Research, Nature Physics, Google Quantum AI
-- Output: `~/Documents/ClaudeResearch/research_notes/quantum_hardware_qubits.md`
+- Output: `~/Documents/Claude/Research/research_notes/quantum_hardware_qubits.md`
 
 **Duration**: 2-5 minutes per researcher (all running simultaneously)
 
@@ -55,19 +55,19 @@ The parallel research workflow orchestrates multiple research agents working sim
 **Responsible Agent**: Research Report Writer
 
 **Activities**:
-1. Use Glob to find all files in `~/Documents/ClaudeResearch/research_notes/`
+1. Use Glob to find all files in `~/Documents/Claude/Research/research_notes/`
 2. Read each research note file
 3. Check if "Joplin" was mentioned in original request
 4. If Joplin mentioned: Load joplin-research skill, output markdown
 5. If plain text: Use standard report format
 6. Synthesize all findings into coherent narrative
 7. Maintain all citations and sources from research notes
-8. Save report to `~/Documents/ClaudeResearch/reports/{topic}_summary_YYYYMMDD.txt` (or .md)
+8. Save report to `~/Documents/Claude/Research/reports/{topic}_summary_YYYYMMDD.txt` (or .md)
 
 **Example**:
 - Input: 4 research notes from `research_notes/`
 - Processing: Combine findings, organize by theme
-- Output: `~/Documents/ClaudeResearch/reports/quantum_computing_summary_20251117.txt`
+- Output: `~/Documents/Claude/Research/reports/quantum_computing_summary_20251117.txt`
 
 **Duration**: 1-2 minutes
 
@@ -82,7 +82,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 
 **Example**:
 ```
-Research complete. Report saved to ~/Documents/ClaudeResearch/reports/quantum_computing_summary_20251117.txt
+Research complete. Report saved to ~/Documents/Claude/Research/reports/quantum_computing_summary_20251117.txt
 ```
 
 **Duration**: Immediate
@@ -92,7 +92,7 @@ Research complete. Report saved to ~/Documents/ClaudeResearch/reports/quantum_co
 ### Directory Layout
 
 ```
-~/Documents/ClaudeResearch/
+~/Documents/Claude/Research/
 ├── research_notes/           # Intermediate research findings
 │   ├── quantum_hardware_qubits.md
 │   ├── quantum_algorithms_apps.md
@@ -107,12 +107,12 @@ Research complete. Report saved to ~/Documents/ClaudeResearch/reports/quantum_co
 **Research Notes**:
 - Format: `{descriptive_subtopic_name}.md`
 - Example: `ev_battery_technology.md`
-- Location: `~/Documents/ClaudeResearch/research_notes/`
+- Location: `~/Documents/Claude/Research/research_notes/`
 
 **Final Reports**:
 - Format: `{main_topic}_summary_YYYYMMDD.txt` (or `.md` for Joplin)
 - Example: `quantum_computing_summary_20251117.txt`
-- Location: `~/Documents/ClaudeResearch/reports/`
+- Location: `~/Documents/Claude/Research/reports/`
 
 ## Data Flow
 
@@ -233,7 +233,7 @@ Summary: [2 sentences on conclusions]
 
 **Issue**: Researcher saves to wrong location
 - **Detection**: Report writer can't find notes
-- **Solution**: Verify file paths in agent prompts, ensure `~/Documents/ClaudeResearch/research_notes/` exists
+- **Solution**: Verify file paths in agent prompts, ensure `~/Documents/Claude/Research/research_notes/` exists
 
 **Issue**: Research notes too sparse
 - **Detection**: Report lacks depth or citations
@@ -291,7 +291,7 @@ Summary: [2 sentences on conclusions]
 1. **Be Specific**: Clearly state your research topic and scope
 2. **Mention Joplin**: If you want markdown formatting, say "Joplin"
 3. **Allow Time**: Expect 3-7 minutes for complete research cycle
-4. **Check Output**: Verify files at `~/Documents/ClaudeResearch/reports/`
+4. **Check Output**: Verify files at `~/Documents/Claude/Research/reports/`
 
 ### For Developers
 

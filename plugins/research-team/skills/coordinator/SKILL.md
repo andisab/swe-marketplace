@@ -37,7 +37,7 @@ Claude Code agents are always spawned as *sub*agents. An agent that itself needs
 ## Available tools in this workflow
 
 - **Task**: Spawn `research-team:research-specialist` and `research-team:research-report-writer` subagents. Primary tool. Always use the fully-qualified plugin-namespaced form for `subagent_type` — bare names fail to resolve across plugin boundaries.
-- **Bash(mkdir:*)**: Run exactly ONE command per session to ensure the working directories exist: `mkdir -p ~/Documents/ClaudeResearch/research_notes ~/Documents/ClaudeResearch/reports`. Idempotent. Do not issue any other Bash call — your scope only permits `mkdir`.
+- **Bash(mkdir:*)**: Run exactly ONE command per session to ensure the working directories exist: `mkdir -p ~/Documents/Claude/Research/research_notes ~/Documents/Claude/Research/reports`. Idempotent. Do not issue any other Bash call — your scope only permits `mkdir`.
 - **Glob**: Primary verification tool — confirm that researchers' claimed output paths and the report-writer's output actually exist on disk.
 - **Read**: Escape hatch only — for diagnosing a malformed output manifest. Do NOT read research notes and summarize them yourself; that violates the delegation rule.
 
@@ -45,7 +45,7 @@ Claude Code agents are always spawned as *sub*agents. An agent that itself needs
 
 **STEP 0: ENSURE WORKING DIRECTORIES**
 First action every run, exactly once:
-`Bash(mkdir -p ~/Documents/ClaudeResearch/research_notes ~/Documents/ClaudeResearch/reports)`
+`Bash(mkdir -p ~/Documents/Claude/Research/research_notes ~/Documents/Claude/Research/reports)`
 `mkdir -p` is idempotent — it silently no-ops when the directories already exist, so there is no separate "check" step.
 
 **STEP 1: ANALYZE THE USER REQUEST**
@@ -57,7 +57,7 @@ First action every run, exactly once:
 - Spawn 2-5 `research-team:research-specialist` subagents in parallel (single response, multiple tool calls — not sequential). Always use the fully-qualified `research-team:research-specialist` as the `subagent_type`.
 - Each researcher's prompt MUST include:
   - The specific subtopic and focus.
-  - The exact output path you assigned in STEP 1: `~/Documents/ClaudeResearch/research_notes/<NN>_<slug>.md`.
+  - The exact output path you assigned in STEP 1: `~/Documents/Claude/Research/research_notes/<NN>_<slug>.md`.
   - A requirement to end their response with a fenced `output-manifest` block (see `<output_manifest_contract>` below).
 
 **STEP 3: WAIT FOR ALL RESEARCHERS**
@@ -66,13 +66,13 @@ First action every run, exactly once:
 
 **STEP 3.5: VERIFY RESEARCHER OUTPUT (with single retry)**
 - Parse each researcher's `output-manifest` block and extract the `path:` value. If a researcher returned no `output-manifest` block at all (killed, errored, or otherwise empty), record that subtopic as "no manifest."
-- Run `Glob(pattern="~/Documents/ClaudeResearch/research_notes/*.md")` once to list every note file on disk.
+- Run `Glob(pattern="~/Documents/Claude/Research/research_notes/*.md")` once to list every note file on disk.
 - Classify each subtopic as one of:
   - **OK** — manifest present AND path appears in the Glob result.
   - **MISSING** — manifest present but path does NOT appear in the Glob result.
   - **NO_MANIFEST** — researcher did not return a manifest.
 - For every non-OK subtopic, respawn the `research-team:research-specialist` subagent **exactly once** with the same subtopic, output path, and manifest requirement the original researcher received. Do this in parallel if there is more than one retry. Do NOT loop.
-- After the retry round returns, re-verify with another `Glob(pattern="~/Documents/ClaudeResearch/research_notes/*.md")` call and re-classify.
+- After the retry round returns, re-verify with another `Glob(pattern="~/Documents/Claude/Research/research_notes/*.md")` call and re-classify.
 - If any subtopic is still non-OK after the single retry:
   - Do NOT spawn the report-writer.
   - Report the failure to the user listing which subtopics failed and the reason (MISSING vs NO_MANIFEST).
@@ -82,14 +82,14 @@ First action every run, exactly once:
 **STEP 4: SPAWN REPORT-WRITER SUBAGENT**
 - Spawn ONE `research-team:research-report-writer` subagent. Always use the fully-qualified `research-team:research-report-writer` as the `subagent_type`.
 - Include in the prompt:
-  - Instruction to read ALL research notes from `~/Documents/ClaudeResearch/research_notes/`.
-  - Instruction to save the final report to `~/Documents/ClaudeResearch/reports/`.
+  - Instruction to read ALL research notes from `~/Documents/Claude/Research/research_notes/`.
+  - Instruction to save the final report to `~/Documents/Claude/Research/reports/`.
   - If the user mentioned Joplin, tell the report-writer to load the `joplin-research` skill for formatting.
   - Requirement to end its response with a fenced `output-manifest` block.
 
 **STEP 5: VERIFY AND CONFIRM COMPLETION**
 - Parse the report-writer's `output-manifest`; extract the `path:` value.
-- Verify the report exists via `Glob(pattern="~/Documents/ClaudeResearch/reports/*")` and confirm the manifest path appears in the result.
+- Verify the report exists via `Glob(pattern="~/Documents/Claude/Research/reports/*")` and confirm the manifest path appears in the result.
 - Report the verified absolute path to the user. Do NOT interpolate a filename from topic and date — use the exact path from the manifest.
 - If verification fails, report the failure and stop.
 
@@ -113,15 +113,15 @@ For researchers (`subagent_type: "research-team:research-specialist"` — always
 - **description**: Brief 3-5 word description of the subtopic
 - **prompt**: Must include:
   1. The specific research focus and subtopic scope.
-  2. The **exact output path** you assigned: `~/Documents/ClaudeResearch/research_notes/<NN>_<slug>.md`.
+  2. The **exact output path** you assigned: `~/Documents/Claude/Research/research_notes/<NN>_<slug>.md`.
   3. The minimum number of WebSearches required (typically 3-7).
   4. A requirement to end the response with an `output-manifest` block containing the saved path.
 
 For report-writer (`subagent_type: "research-team:research-report-writer"` — always the fully-qualified plugin-namespaced form):
 - **description**: "Synthesize research into final report"
 - **prompt**: Must include:
-  1. Instruction to Glob and Read all files in `~/Documents/ClaudeResearch/research_notes/`.
-  2. Target save path: `~/Documents/ClaudeResearch/reports/<topic-slug>_summary_YYYYMMDD.md`.
+  1. Instruction to Glob and Read all files in `~/Documents/Claude/Research/research_notes/`.
+  2. Target save path: `~/Documents/Claude/Research/reports/<topic-slug>_summary_YYYYMMDD.md`.
   3. If the user mentioned Joplin, instruction to load the `joplin-research` skill.
   4. Requirement to end the response with an `output-manifest` block (`path:` + `bytes:`).
 

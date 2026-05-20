@@ -71,9 +71,9 @@ The lead coordinator spawns all researchers **simultaneously**, not sequentially
 
 Agents communicate through files rather than direct message passing:
 
-1. **Research Phase**: Each researcher saves findings to `~/Documents/ClaudeResearch/research_notes/{subtopic}.md`
+1. **Research Phase**: Each researcher saves findings to `~/Documents/Claude/Research/research_notes/{subtopic}.md`
 2. **Synthesis Phase**: Report writer reads all files from `research_notes/` directory
-3. **Output Phase**: Final report saved to `~/Documents/ClaudeResearch/reports/{topic}_summary_YYYYMMDD.txt`
+3. **Output Phase**: Final report saved to `~/Documents/Claude/Research/reports/{topic}_summary_YYYYMMDD.txt`
 
 ### Context Isolation
 
@@ -130,13 +130,13 @@ Each subagent operates with its own context window:
 4. **Researcher 4**: Charging infrastructure and grid impact
 
 ### Research Notes Output
-- `~/Documents/ClaudeResearch/research_notes/ev_battery_technology.md`
-- `~/Documents/ClaudeResearch/research_notes/ev_market_trends.md`
-- `~/Documents/ClaudeResearch/research_notes/ev_manufacturers.md`
-- `~/Documents/ClaudeResearch/research_notes/ev_infrastructure.md`
+- `~/Documents/Claude/Research/research_notes/ev_battery_technology.md`
+- `~/Documents/Claude/Research/research_notes/ev_market_trends.md`
+- `~/Documents/Claude/Research/research_notes/ev_manufacturers.md`
+- `~/Documents/Claude/Research/research_notes/ev_infrastructure.md`
 
 ### Final Report
-- `~/Documents/ClaudeResearch/reports/electric_vehicles_summary_20251117.txt`
+- `~/Documents/Claude/Research/reports/electric_vehicles_summary_20251117.txt`
 
 ## Advantages
 
@@ -177,7 +177,7 @@ When user mentions "Joplin":
 - **Poor synthesis**: Research notes were too sparse or lacked citations
 
 ### Debugging Tips
-- Check `~/Documents/ClaudeResearch/research_notes/` for all expected files
+- Check `~/Documents/Claude/Research/research_notes/` for all expected files
 - Verify each researcher actually used WebSearch (check for URLs in notes)
 - Confirm report writer read all files (should mention number of sources)
 - Review lead agent's subtopic breakdown for clarity and coverage
