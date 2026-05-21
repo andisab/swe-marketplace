@@ -2,12 +2,7 @@ name: Validate plugin manifests
 
 on:
   pull_request:
-    paths:
-      - ".claude-plugin/marketplace.json"
-      - "plugins/**"
-      - "scripts/synthesize-plugin-manifests.py"
-      - "scripts/validate-all.sh"
-      - ".github/workflows/validate-plugins.yml"
+    branches: [main]
   push:
     branches: [main]
 

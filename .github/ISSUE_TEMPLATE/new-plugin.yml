@@ -1,0 +1,72 @@
+name: New plugin proposal
+description: Propose a new plugin for the marketplace
+title: "[New plugin]: "
+labels: ["new-plugin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This marketplace stays small and curated — the bar is *"I'm actually using this"*. Use this template to pitch a new plugin before opening a PR.
+
+  - type: input
+    id: name
+    attributes:
+      label: Proposed plugin name
+      placeholder: "kebab-case-name"
+    validations:
+      required: true
+
+  - type: textarea
+    id: oneliner
+    attributes:
+      label: One-line description
+      description: How would the entry read in `marketplace.json`?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: components
+    attributes:
+      label: Components included
+      multiple: true
+      options:
+        - Agents
+        - Skills
+        - Commands
+        - Hooks
+        - MCP servers
+    validations:
+      required: true
+
+  - type: textarea
+    id: gap
+    attributes:
+      label: What gap does this fill?
+      description: Why this plugin, and why here? Reference any existing plugins it overlaps with.
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: How are you using it today?
+      description: Real-world usage matters — what problems has it solved for you?
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: Source repo (if it lives elsewhere now)
+      placeholder: "https://github.com/you/your-plugin"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Readiness
+      options:
+        - label: Every agent file has YAML frontmatter
+        - label: `claude plugin validate` passes with zero warnings
+        - label: I'm prepared to open a PR with the regenerated `plugin.json`

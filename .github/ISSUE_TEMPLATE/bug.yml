@@ -1,0 +1,85 @@
+name: Bug report
+description: Something in a plugin or in the marketplace itself isn't working as expected
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please give enough detail that someone can reproduce it without follow-up questions.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: What's affected?
+      options:
+        - A specific plugin
+        - The marketplace catalog / install flow
+        - The manifest sync script
+        - CI / validation
+        - Docs (README, CONTRIBUTING)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin name and version
+      description: Skip if not plugin-specific. Find the version in `.claude-plugin/marketplace.json`.
+      placeholder: "context-engineering @ 1.0.0"
+    validations:
+      required: false
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`
+      placeholder: "claude-code 1.x.x"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 / Ubuntu 22.04 / Windows 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands or actions. Include `/plugin install ...` if relevant.
+      placeholder: |
+        1. /plugin marketplace add ...
+        2. /plugin install ...
+        3. Restart Claude Code
+        4. Run ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Paste error output verbatim where possible.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Sanity checks
+      options:
+        - label: I restarted Claude Code after installing or updating the plugin
+        - label: I ran `./scripts/validate-all.sh` and it passed (only required for manifest/CI bugs)
