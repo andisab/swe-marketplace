@@ -1,0 +1,31 @@
+{
+  "name": "knowledgeware",
+  "description": "Style-driven deliverable suite with a central brand registry. Five skills sharing one brandbook format: slideware (.pptx decks via pptxgenjs), slideware-revealjs (HTML decks via Reveal.js), study-guide (multi-page HTML knowledge bases), chartware (draw.io architecture diagrams), and brandware (brand/style registry manager with website derivation and logo-asset gathering). One visual identity, every medium; proprietary brandbooks stay in a private overlay.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "slides",
+    "pptx",
+    "reveal.js",
+    "knowledge-base",
+    "diagrams",
+    "drawio",
+    "brandbook",
+    "styles",
+    "design-tokens"
+  ],
+  "skills": [
+    "./skills/slideware",
+    "./skills/slideware-revealjs",
+    "./skills/study-guide",
+    "./skills/chartware",
+    "./skills/brandware"
+  ]
+}

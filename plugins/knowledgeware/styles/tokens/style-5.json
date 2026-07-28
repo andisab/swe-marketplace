@@ -1,0 +1,38 @@
+{
+  "name": "style-5",
+  "source": "/Users/andisblukis/.claude/skills/slideware/assets/styles/style-5.md",
+  "palette": {
+    "bg": "F9FAEF",
+    "bgDark": null,
+    "surface": "FFFFFF",
+    "surfaceAlt": "EEEFE3",
+    "ink": "1A1C16",
+    "inkBody": "44483D",
+    "inkMuted": "75796C",
+    "inkFaint": "C5C8BA",
+    "border": "C5C8BA",
+    "accent": "4C662B",
+    "accent2": "386663",
+    "success": "586249",
+    "warning": "D97706",
+    "error": "BA1A1A"
+  },
+  "type": {
+    "sans": "Inter",
+    "serif": "Georgia",
+    "mono": "JetBrains Mono",
+    "heroPt": 44,
+    "sectionPt": 32,
+    "titlePt": 28,
+    "bodyPt": 14,
+    "subBodyPt": 12,
+    "captionPt": 10,
+    "codePt": 12
+  },
+  "layout": {
+    "radiusIn": 0.125,
+    "radiusPx": 12,
+    "shadowOpacity": 0.12,
+    "marginIn": 0.5
+  }
+}

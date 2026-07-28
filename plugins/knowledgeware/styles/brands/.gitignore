@@ -1,0 +1,5 @@
+# Brandbooks, token caches, and brand assets are proprietary/brand-specific content.
+# They are copied in from a private source repo (see README.md) and never committed here.
+*
+!README.md
+!.gitignore

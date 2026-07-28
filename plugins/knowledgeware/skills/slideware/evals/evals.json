@@ -1,0 +1,56 @@
+{
+  "skill_name": "slideware",
+  "evals": [
+    {
+      "id": 0,
+      "name": "default-brandbook-from-outline",
+      "prompt": "Build me a 6-slide deck introducing our team's new code-review automation policy to engineering. Slides: (1) title, (2) why the policy exists — three reasons, (3) what changes in PR flow, (4) tooling we'll roll out — three tools in a card row, (5) what we're measuring — three KPI callouts, (6) timeline and Q&A. Save it to ./code-review-policy.pptx. Don't ask me which brandbook — pick a sensible default.",
+      "expected_output": "6-slide pptx at ./code-review-policy.pptx with default (AAB) brandbook, every slide has a visual element, varied layouts, no placeholder text.",
+      "assertions": [
+        { "text": "code-review-policy.pptx exists and is a valid pptx" },
+        { "text": "Deck contains exactly 6 slides" },
+        { "text": "Slide text covers all 6 outline sections (policy/reasons, PR flow, tooling, KPIs/metrics, timeline)" },
+        { "text": "Every slide has at least one non-text element (shape, image, or chart)" },
+        { "text": "Layouts are varied — at least 3 distinct slide layouts used across the deck" },
+        { "text": "No leftover placeholder text (lorem, xxxx, TODO)" },
+        { "text": "A brandbook was chosen and applied (consistent palette across slides)" }
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "named-brandbook-anthropic",
+      "prompt": "Use the Anthropic brandbook to create an 8-slide pitch deck for a hypothetical research product called 'Hindsight' — an AI-powered post-mortem tool for engineering teams. Outline: title, problem (no visibility into past incidents), solution overview, three product capabilities (in a card row), demo screenshot placeholder, customer logos placeholder, pricing tiers (table), closing CTA. Output to ./hindsight-pitch.pptx. After building, render preview images and tell me what issues you spotted.",
+      "expected_output": "8-slide pptx at ./hindsight-pitch.pptx using Anthropic palette (cream bg, clay accent), pricing table, preview images rendered, notes.md with spotted issues.",
+      "assertions": [
+        { "text": "hindsight-pitch.pptx exists and is a valid pptx" },
+        { "text": "Deck contains exactly 8 slides" },
+        { "text": "Anthropic cream background (#FAF9F5) appears on majority of slides" },
+        { "text": "Anthropic clay accent (#D97757) appears at least once" },
+        { "text": "At least one slide contains a pptx table (pricing tiers)" },
+        { "text": "Visual review performed: preview PNGs exist OR notes.md describes inspection" },
+        { "text": "notes.md exists and lists at least 2 specific issues" },
+        { "text": "Title slide mentions 'Hindsight' product name" },
+        { "text": "No leftover placeholder text" }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "sample-deck-style-mimicry",
+      "prompt": "Here's a sample deck from a colleague: /Users/andisblukis/Documents/CCW/module-2.6-eval-driven-dev.pptx. Build me a new 5-slide deck on 'Observability for Agent Systems' that matches this sample's visual style (palette, typography, layout patterns), but with completely different content. Save to ./observability-deck.pptx.",
+      "expected_output": "5-slide pptx at ./observability-deck.pptx on observability topic with no copied content, style echoing the sample's navy+teal palette and 3-column card layouts.",
+      "assertions": [
+        { "text": "observability-deck.pptx exists and is a valid pptx" },
+        { "text": "Deck contains exactly 5 slides" },
+        { "text": "Slide text covers observability topic (mentions observability/agents/monitoring/traces)" },
+        { "text": "Slide text does NOT duplicate sample content (no 'pass@k', 'eval-first', 'grader', 'swiss cheese')" },
+        { "text": "Style observations recorded in notes.md" },
+        { "text": "Style matches sample (navy/teal palette OR otherwise mirrors sample colors)" },
+        { "text": "At least one slide uses card-row layout echoing sample" },
+        { "text": "No leftover placeholder text" }
+      ],
+      "files": ["/Users/andisblukis/Documents/CCW/module-2.6-eval-driven-dev.pptx"]
+    }
+  ]
+}

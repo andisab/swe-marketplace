@@ -1,0 +1,38 @@
+{
+  "name": "anthropic",
+  "source": "/Users/andisblukis/.claude/skills/slideware/assets/brandbooks/anthropic.md",
+  "palette": {
+    "bg": "FAF9F5",
+    "bgDark": null,
+    "surface": "FFFFFF",
+    "surfaceAlt": "F0EEE6",
+    "ink": "141413",
+    "inkBody": null,
+    "inkMuted": "5E5D59",
+    "inkFaint": null,
+    "border": "E0E0E0",
+    "accent": "D97757",
+    "accent2": "C6613F",
+    "success": "16A34A",
+    "warning": "D97706",
+    "error": "DC2626"
+  },
+  "type": {
+    "sans": "Anthropic Sans",
+    "serif": "Anthropic Serif",
+    "mono": "JetBrains Mono",
+    "heroPt": 44,
+    "sectionPt": 32,
+    "titlePt": 28,
+    "bodyPt": 14,
+    "subBodyPt": 12,
+    "captionPt": 10,
+    "codePt": 12
+  },
+  "layout": {
+    "radiusIn": 0.063,
+    "radiusPx": 6,
+    "shadowOpacity": 0.12,
+    "marginIn": 0.5
+  }
+}

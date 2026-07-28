@@ -1,0 +1,71 @@
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="680" math="0" shadow="0">
+  <!-- Page sizing: pageWidth=(actors*300)+100, pageHeight=(messages*80)+200. This template: 3 actors, 6 messages. -->
+  <!-- 4-actor layout: actor boxes x=30,330,630,930 (w=140); lifelines x=100,400,700,1000; pageWidth>=1150 -->
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="2" value="Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E1F5;strokeColor=#7EA6E0;strokeWidth=1;fontColor=#4D4D4D;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;" vertex="1" parent="1">
+      <mxGeometry x="30" y="40" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="3" value="Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E1F5;strokeColor=#7EA6E0;strokeWidth=1;fontColor=#4D4D4D;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;" vertex="1" parent="1">
+      <mxGeometry x="330" y="40" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="4" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E1F5;strokeColor=#7EA6E0;strokeWidth=1;fontColor=#4D4D4D;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;" vertex="1" parent="1">
+      <mxGeometry x="630" y="40" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="5" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#A2A2A2;strokeWidth=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="100" y="90" as="sourcePoint"/>
+        <mxPoint x="100" y="690" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="6" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#A2A2A2;strokeWidth=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="400" y="90" as="sourcePoint"/>
+        <mxPoint x="400" y="690" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="7" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#A2A2A2;strokeWidth=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="700" y="90" as="sourcePoint"/>
+        <mxPoint x="700" y="690" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="8" value="" style="whiteSpace=wrap;html=1;fillColor=#D4E1F5;strokeColor=#7EA6E0;" vertex="1" parent="1">
+      <mxGeometry x="390" y="140" width="20" height="290" as="geometry"/>
+    </mxCell>
+    <mxCell id="9" value="" style="whiteSpace=wrap;html=1;fillColor=#D4E1F5;strokeColor=#7EA6E0;" vertex="1" parent="1">
+      <mxGeometry x="690" y="240" width="20" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="10" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#A2A2A2;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="220" width="440" height="170" as="geometry"/>
+    </mxCell>
+    <mxCell id="11" value="alt" style="text;html=1;align=left;verticalAlign=top;spacingLeft=4;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;fontColor=#4D4D4D;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="320" y="220" width="60" height="24" as="geometry"/>
+    </mxCell>
+    <mxCell id="12" value="request(data)" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeColor=#0B4D6A;strokeWidth=2;html=1;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;fontColor=#4D4D4D;align=center;verticalAlign=bottom;labelBackgroundColor=none;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="100" y="150" as="sourcePoint"/>
+        <mxPoint x="390" y="150" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="13" value="query()" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;endFill=1;strokeColor=#0B4D6A;strokeWidth=2;html=1;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;fontColor=#4D4D4D;align=center;verticalAlign=bottom;labelBackgroundColor=none;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="410" y="250" as="sourcePoint"/>
+        <mxPoint x="690" y="250" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="14" value="result" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;endFill=0;dashed=1;strokeColor=#A2A2A2;strokeWidth=1;html=1;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;fontColor=#4D4D4D;align=center;verticalAlign=bottom;labelBackgroundColor=none;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="690" y="360" as="sourcePoint"/>
+        <mxPoint x="410" y="360" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="15" value="response" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;endFill=0;dashed=1;strokeColor=#A2A2A2;strokeWidth=1;html=1;fontFamily=Quicksand;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand;fontColor=#4D4D4D;align=center;verticalAlign=bottom;labelBackgroundColor=none;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="390" y="460" as="sourcePoint"/>
+        <mxPoint x="100" y="460" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+  </root>
+</mxGraphModel>

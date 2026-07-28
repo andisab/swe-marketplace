@@ -1,0 +1,38 @@
+{
+  "name": "aab",
+  "source": "/Users/andisblukis/.claude/skills/slideware/assets/brandbooks/aab.md",
+  "palette": {
+    "bg": "F1F1F1",
+    "bgDark": null,
+    "surface": "FFFFFF",
+    "surfaceAlt": "FAFAFA",
+    "ink": "121212",
+    "inkBody": "4D4D4D",
+    "inkMuted": "808080",
+    "inkFaint": "A89984",
+    "border": "E0E0E0",
+    "accent": "A9C4EB",
+    "accent2": null,
+    "success": "16A34A",
+    "warning": "D97706",
+    "error": "DC2626"
+  },
+  "type": {
+    "sans": "Inter",
+    "serif": "Bitter",
+    "mono": "Fira Code",
+    "heroPt": 44,
+    "sectionPt": 32,
+    "titlePt": 28,
+    "bodyPt": 14,
+    "subBodyPt": 12,
+    "captionPt": 10,
+    "codePt": 12
+  },
+  "layout": {
+    "radiusIn": 0.063,
+    "radiusPx": 6,
+    "shadowOpacity": 0.12,
+    "marginIn": 0.5
+  }
+}

@@ -1,6 +1,6 @@
 # SWE Marketplace
 
-> A curated [Claude Code](https://claude.com/claude-code) plugin marketplace for practical, everyday usage in software engineering — 12 plugins, 53 specialist agents, 10 skills, 3 commands. A few opinionated choices that set it apart from larger awesome-style lists:
+> A curated [Claude Code](https://claude.com/claude-code) plugin marketplace for practical, everyday usage in software engineering — 13 plugins, 53 specialist agents, 15 skills, 3 commands. A few opinionated choices that set it apart from larger awesome-style lists:
 
 - **Curated, not exhaustive.** Every plugin and agent is one I actually use. No vendored grab-bags, no auto-generated stubs of skills the model already has. 
 - **SDK-loadable.** Every plugin ships both the catalog entry *and* a per-plugin `plugin.json`, so consumers using the Claude Agent SDK (`ClaudeAgentOptions.plugins=[{"type":"local","path":...}]` or `--plugin-dir`) can load them directly. Many marketplaces only ship the catalog and silently fail to register skills/commands/hooks when loaded that way.
@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Validate plugin manifests](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml)
-[![Plugins](https://img.shields.io/badge/plugins-12-blue.svg)](./.claude-plugin/marketplace.json)
+[![Plugins](https://img.shields.io/badge/plugins-13-blue.svg)](./.claude-plugin/marketplace.json)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-8A2BE2.svg)](https://docs.claude.com/en/docs/claude-code/plugins)
 
 ## Quick start
@@ -47,6 +47,12 @@ A `coordinator` skill decomposes a topic into subtopics, spawns parallel `resear
 
 - **Agents:** `research-specialist`, `research-report-writer`
 - **Skills:** `coordinator`, `joplin-research`
+
+### `knowledgeware` — Style-driven deliverable suite *(v1.0.0)*
+
+Five skills that share one brandbook format and a central style registry: `slideware` (PowerPoint via pptxgenjs), `slideware-revealjs` (HTML decks via Reveal.js), `study-guide` (multi-page HTML knowledge bases), `chartware` (draw.io architecture diagrams), and `brandware` (registry manager — import, website derivation, logo-asset gathering, chart-styling guidelines). Ships 5 generic styles; brand-specific brandbooks live in a private overlay (`styles/brands/`, gitignored) so proprietary identities never enter the public repo.
+
+- **Skills:** `slideware`, `slideware-revealjs`, `study-guide`, `chartware`, `brandware`
 
 ### `dev` — 13 language experts *(v1.0.0)*
 
