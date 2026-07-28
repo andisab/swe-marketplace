@@ -15,14 +15,16 @@ One registry, many consumers. Brandbooks live here once; slideware decks, study-
 styles/                    # the registry (plugin root)
 ├── *.md                   # 5 default generic styles (style-1..style-5) — marketplace-safe
 ├── tokens/                # derived JSON token caches for defaults
-└── brands/                # brandbooks — brand-specific / proprietary (NOT in the plugin repo)
+└── brands/                # brandbooks — brand-specific / proprietary (NOT in the plugin repo,
+    │                      #   except the checked-in acmecorp example)
     ├── <name>.md          # canonical brandbook — THE source of truth per brand
     ├── tokens/<name>.json # derived token cache (regenerable; never hand-edit)
-    └── assets/            # brand assets: <name>-logo.png, <name>-wordmark.svg, ...
+    └── <name>/assets/     # per-brand assets: logo-light.svg, wordmark.png, ... (never mixed across brands)
 scripts/                   # shared tooling (plugin root)
 ├── load-style.js          # style/brandbook → tokens (with cache)
 ├── list-styles.js         # discover what's installed
 ├── derive-style.js        # live website → brandbook .md (heuristic)
+├── install-fonts.sh       # install a brand's Google Fonts locally (see §Fonts)
 └── fetch-resource.sh      # Google Drive URL → local file
 skills/brandware/references/
 ├── brandbook-spec.md      # the .md format every style and brandbook follows
@@ -48,8 +50,8 @@ Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brand
 
 | Consumer | What it consumes | Mapping |
 |---|---|---|
-| **slideware** | tokens JSON natively (`scripts/load-style.js` understands the registry) | built-in |
-| **slideware-revealjs** | YAML-frontmatter `style.md` via its own converter (`skills/slideware-revealjs/scripts/load-style.js`) | built-in |
+| **slideware** (pptx format) | tokens JSON natively (`scripts/load-style.js` understands the registry) | built-in |
+| **slideware** (html format) | YAML-frontmatter `style.md` via its converter (`skills/slideware/html/scripts/load-style.js`) | built-in |
 | **study-guide** | palette + type → template CSS variables + Mermaid themeVariables | consumer-mappings §study-guide |
 | **chartware** | palette + diagram strokes + type → mxGraph style strings | consumer-mappings §chartware |
 | **data charts** (any medium) | palette → categorical/sequential chart colors | references/chart-styling.md |
@@ -74,19 +76,36 @@ Derivation is a **heuristic, not an authority** — it scrapes HTML + linked CSS
 
 ### Gather brand assets (logos and similar)
 
-When adding or enriching a brand, collect its visual assets into `styles/brands/assets/`, named `<brand>-<what>.<ext>` (e.g., `provectus-logo.svg`, `aab-wordmark.png`, `nyt-favicon.png`):
+When adding or enriching a brand, collect its visual assets into the brand's own folder `styles/brands/<brand>/assets/`, named by role (e.g., `provectus/assets/logo-light.svg`, `aab/assets/wordmark.png`, `nyt/assets/favicon.png`) — one folder per brand so assets from different brands never mix:
 
 1. **Source order**: user-provided file → the brand's official press/media kit page → the live site (og:image, header logo `<img>`/inline SVG, `apple-touch-icon`, favicon).
-2. **Prefer SVG** (scales to any medium); PNG at ≥512px width otherwise. Keep a dark-background variant too when the brand publishes one (`<brand>-logo-dark.svg`).
+2. **Prefer SVG** (scales to any medium); PNG at ≥512px width otherwise. Keep a dark-background variant too when the brand publishes one (`logo-dark.svg`).
 3. **Record what you gathered** in the brandbook under an `## Assets` section: filename, source URL, retrieval date, and any usage constraint noted by the brand.
 4. **Respect provenance**: assets fetched from a brand's site are for that brand's own deliverables (a Provectus deck uses the Provectus logo). Never place one brand's assets in another brand's output.
 
 Consumers embed assets by absolute path resolved from the registry (slideware `addImage`, study-guide `<img>`, chartware only when the user explicitly asks for a logo in a diagram).
 
+### Fonts
+
+Brandbooks **name** fonts (in the `## Typography` CSS variables); the registry stores **no font binaries** — prefer families available on [Google Fonts](https://fonts.google.com) so they're installable and linkable everywhere. Per medium:
+
+- **pptx (slideware)**: fonts must be installed on the authoring machine or PowerPoint/LibreOffice silently substitutes — run the installer below before building/previewing a deck.
+- **HTML (slideware html format, study-guide)**: loads fonts via a Google Fonts `<link>`; viewers need nothing installed.
+- **chartware**: embeds a `fontSource` Google Fonts URL in the mxGraph style; draw.io loads it.
+
+Install a brand's fonts locally (macOS `~/Library/Fonts`, Linux `~/.local/share/fonts`):
+
+```bash
+bash scripts/install-fonts.sh <brand|style|font name>   # e.g. provectus, style-1, "Lora"
+bash scripts/install-fonts.sh --check provectus          # report without installing
+```
+
+The installer resolves a registry name to its sans/serif/mono families, skips system/web-safe fonts and anything already installed, fetches TTFs from Google Fonts, and names files `GF-<Family>-<n>.ttf` so re-runs overwrite instead of duplicating. Non–Google-Fonts families (proprietary faces) are reported for manual installation — note where to obtain them in the brandbook's `## Typography` or `## Assets` section.
+
 ### Audit
 
-On request ("audit the brandbooks"), check each brand for: token cache staleness (`.md` newer than `.json`), spec drift (missing role tables per brandbook-spec), dead asset references in `## Assets` sections, and orphaned assets with no owning brandbook. Report; fix only what the user approves.
+On request ("audit the brandbooks"), check each brand for: token cache staleness (`.md` newer than `.json`), spec drift (missing role tables per brandbook-spec), dead asset references in `## Assets` sections, orphaned `<name>/assets/` folders with no owning brandbook, and fonts not installed locally (`install-fonts.sh --check <name>`). Report; fix only what the user approves.
 
 ## Registered brands
 
-Run `node scripts/list-styles.js --brands` for the live list. Brands are installed by copying from the private source repo (ABDotfiles `llm/claude_code/brands/` → `styles/brands/` via its `sync-brands.sh`).
+Run `node scripts/list-styles.js --brands` for the live list. **acmecorp** is a checked-in fictional example demonstrating the brand-folder layout (brandbook + tokens + `acmecorp/assets/`); real brands are installed by copying from the private source repo (ABDotfiles `llm/claude_code/brands/` → `styles/brands/` via its `sync-brands.sh`).

@@ -1,0 +1,58 @@
+{
+  "skill_name": "slideware (html format)",
+  "evals": [
+    {
+      "id": 0,
+      "name": "default-style-from-outline",
+      "prompt": "Build me a 6-slide HTML presentation introducing our team's new code-review automation policy to engineering. Slides: (1) title, (2) why the policy exists — three reasons, (3) what changes in PR flow, (4) tooling we'll roll out — three tools in a card row, (5) what we're measuring — three KPI callouts, (6) timeline and Q&A. Save it to ./code-review-policy.html. Don't ask me which style — pick a sensible default.",
+      "expected_output": "6-slide HTML deck at ./code-review-policy.html using style-1 (Executive Steel), varied layouts, theme CSS inlined, Google Fonts link present, Reveal.js CDN loaded, no reference to ./style.md.",
+      "assertions": [
+        { "text": "code-review-policy.html exists and is a valid HTML file" },
+        { "text": "Document contains exactly 6 <section class=\"layout-*\"> elements" },
+        { "text": "Slide content covers all 6 outline sections (policy/reasons, PR flow, tooling, KPIs/metrics, timeline)" },
+        { "text": "At least 3 distinct layout archetypes used across the deck (e.g. title, card-row, bigNumber)" },
+        { "text": "No leftover placeholder text (lorem, xxxx, TODO, 'Deck title goes here')" },
+        { "text": "A style was chosen and applied — consistent palette via CSS variables across slides" },
+        { "text": "<style> block present and scoped under .reveal" },
+        { "text": "Google Fonts <link> with display=swap present" },
+        { "text": "Reveal.js CDN <script> tag present, pinned to a specific version (not @latest)" },
+        { "text": "Output HTML does NOT reference ./style.md (grep for 'style.md' returns 0 matches)" }
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "named-style-editorial-light",
+      "prompt": "Use the editorial-light style to create an 8-slide HTML pitch deck for a hypothetical research product called 'Hindsight' — an AI-powered post-mortem tool for engineering teams. Outline: title, problem (no visibility into past incidents), solution overview, three product capabilities (in a card row), demo screenshot placeholder, customer logos placeholder, pricing tiers (in a card row with 3 tiers), closing CTA. Output to ./hindsight-pitch.html. After building, run polish-deck.py and report what it flagged.",
+      "expected_output": "8-slide HTML deck at ./hindsight-pitch.html using editorial-light palette, two card-row slides, polish-deck.py output captured.",
+      "assertions": [
+        { "text": "hindsight-pitch.html exists and is a valid HTML file" },
+        { "text": "Document contains exactly 8 <section class=\"layout-*\"> elements" },
+        { "text": "CSS variable --color-bg has the editorial-light style's bg hex value" },
+        { "text": "CSS variable --color-accent has the editorial-light style's accent hex value" },
+        { "text": "At least one slide uses layout-card-row with 2-4 cards" },
+        { "text": "polish-deck.py was run against the output and its result is reported" },
+        { "text": "Title slide mentions 'Hindsight' product name" },
+        { "text": "No leftover placeholder text" },
+        { "text": "Output HTML does NOT reference ./style.md or any external .css file (only Reveal CDN + Google Fonts allowed)" }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "style-mimicry-from-website",
+      "prompt": "I like the visual style of https://stripe.com — derive a brandbook from it and use it to build me a 5-slide HTML deck on 'Observability for Agent Systems'. Save to ./observability-deck.html. Tell me about any heuristics the derivation may have gotten wrong.",
+      "expected_output": "5-slide HTML deck at ./observability-deck.html, brandbook derived from stripe.com via load-style.js (or equivalent), notes documenting derivation caveats.",
+      "assertions": [
+        { "text": "observability-deck.html exists and is a valid HTML file" },
+        { "text": "Document contains exactly 5 <section class=\"layout-*\"> elements" },
+        { "text": "Slide text covers observability topic (mentions observability/agents/monitoring/traces)" },
+        { "text": "A derived style.md was created (either via load-style.js or hand-authored from inspected CSS)" },
+        { "text": "Derivation caveats are documented in a notes.md or in chat (palette/font heuristics may be off)" },
+        { "text": "Layouts are varied — at least 3 distinct layout archetypes" },
+        { "text": "Output HTML does NOT reference ./style.md" }
+      ],
+      "files": []
+    }
+  ]
+}

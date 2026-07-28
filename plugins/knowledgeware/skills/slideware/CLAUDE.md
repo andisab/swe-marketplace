@@ -4,9 +4,12 @@ This file describes how the `slideware` skill works and the ways a user can prom
 
 ## What the skill does
 
-Generates real PowerPoint `.pptx` files programmatically with **pptxgenjs** (Node.js), React-rendered icons via **react-icons + sharp**, and a layered visual-design system driven by **styles** (generic) or **brandbooks** (brand-specific). The two terms are interchangeable — both are `.md` files following the same spec.
+Generates slide decks in **two output formats**, chosen per request (the skill asks if the request doesn't make it clear):
 
-Output opens cleanly in PowerPoint, Keynote, and Google Slides.
+- **pptx** (`pptx/`): real PowerPoint `.pptx` files via **pptxgenjs** (Node.js) with React-rendered icons via **react-icons + sharp**. Opens cleanly in PowerPoint, Keynote, and Google Slides.
+- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** — run in any browser, host statically, share by link.
+
+Both are driven by the same layered visual-design system of **styles** (generic) or **brandbooks** (brand-specific) from the plugin's shared registry. The two terms are interchangeable — both are `.md` files following the same spec, and one brandbook renders in either format (and in study-guide sites and chartware diagrams).
 
 The skill is opinionated about visual quality (no plain-bullets-on-white) and ships with:
 
@@ -89,7 +92,7 @@ Brand-specific styles (Anthropic, Apple, Figma, Linear, Provectus, etc.) live at
 
 ## Six ways to prompt the skill
 
-The skill auto-activates on words like "deck", "slides", "presentation", "pitch", "pptx", or when a `.pptx` appears as input or output. Beyond that, the user controls *how* the deck is styled by what they hand the skill.
+The skill auto-activates on words like "deck", "slides", "presentation", "pitch", "pptx", "reveal", "HTML deck", or when a `.pptx` (or slide-deck `.html`) appears as input or output. Format cues ("PowerPoint" vs "share a link"/"host it") route to pptx or html; when ambiguous, the skill asks. Beyond that, the user controls *how* the deck is styled by what they hand the skill.
 
 ### 1. Bundled style or brandbook by name
 
@@ -205,30 +208,35 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 
 | Path | Purpose |
 |---|---|
-| `SKILL.md` | The instructions the AI follows when the skill activates |
-| `references/workflow.md` | Step-by-step build path (fast + full) |
-| `references/layout-patterns.md` | 12 layout archetypes with ASCII sketches |
-| `references/visual-principles.md` | Design principles (hierarchy, color, type, spacing) |
-| `references/pptxgenjs.md` | API patterns + gotchas |
+| `SKILL.md` | Activation + format choice + shared style resolution |
+| `pptx/FORMAT.md` / `html/FORMAT.md` | Per-format mechanics the AI follows after choosing |
+| `pptx/references/workflow.md` | pptx build path (fast + full) |
+| `pptx/references/layout-patterns.md` | 12 pptx layout archetypes with ASCII sketches |
+| `pptx/references/visual-principles.md` | Design principles (hierarchy, color, type, spacing) |
+| `pptx/references/pptxgenjs.md` | API patterns + gotchas |
+| `html/references/{workflow,layout-patterns,reveal}.md` | HTML build path, 8 archetypes, Reveal.js conventions |
 | `../brandware/references/brandbook-spec.md` | What makes a style/brandbook parseable (same spec for both) |
-| `references/canonical-samples.md` | How to use the 3 reference samples |
+| `pptx/references/canonical-samples.md` | How to use the 3 reference samples |
 | `<plugin>/styles/style-{1..5}.md` | 5 default generic styles (marketplace-safe) |
 | `<plugin>/styles/tokens/*.json` | Pre-built tokens for default styles (skip-parse) |
 | `<plugin>/styles/brands/*.md` | Brandbooks (host-installed via brandware, kept out of the public repo) |
 | `<plugin>/styles/brands/tokens/*.json` | Pre-built tokens for brandbooks (skip-parse) |
 | `<plugin>/styles/brands/assets/` | Brand assets — logos, wordmarks (gathered by brandware) |
-| `assets/samples/<bb>/` | Canonical sample decks (build script + rendered PNGs) |
-| `assets/templates/starter-deck.js` | Skeletal scaffold with checklist + pitfalls inline |
+| `pptx/assets/samples/<bb>/` | Canonical sample decks (build script + rendered PNGs) |
+| `pptx/assets/templates/starter-deck.js` | pptx scaffold with checklist + pitfalls inline |
+| `html/assets/templates/{build-deck,slides}.js` | HTML renderer + slide-descriptor scaffold |
+| `html/scripts/load-style.js` | Registry/brandbook → YAML-frontmatter style.md converter |
 | `<plugin>/scripts/list-styles.js` | List discovered styles + brandbooks |
 | `<plugin>/scripts/load-style.js` | Style/brandbook → tokens parser |
 | `<plugin>/scripts/derive-style.js` | URL → brandbook via HTML/CSS scraping |
 | `<plugin>/scripts/fetch-resource.sh` | Google Drive URL → local file |
-| `scripts/polish-deck.py` | Pre-render heuristic checks |
-| `scripts/render-slides.sh` | LibreOffice headless → per-slide PNGs |
-| `scripts/text-fit.js` | Text-capacity check for a given box + font |
+| `pptx/scripts/polish-deck.py` | pptx pre-render heuristic checks |
+| `pptx/scripts/render-slides.sh` | LibreOffice headless → per-slide PNGs |
+| `pptx/scripts/text-fit.js` | Text-capacity check for a given box + font |
+| `html/scripts/{polish-deck.py,render-slides.sh}` | HTML checks + headless-Chromium renders |
 
 ## When *not* to use this skill
 
 - The user needs a deck right now and quality doesn't matter — use python-pptx or hand-roll. The skill's full path takes 15-30 min for a polished deck.
-- The output isn't a `.pptx` — Google Slides API decks, Keynote-native, or PDF-first outputs need different tools.
+- The output isn't a `.pptx` or an HTML deck — Google Slides API decks, Keynote-native, or PDF-first outputs need different tools.
 - The user wants slide-by-slide hand-editing in PowerPoint — the skill builds programmatically; if you want a designer's interactive workflow, this isn't it.

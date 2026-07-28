@@ -6,11 +6,7 @@ For **data charts** (bar/line/pie/scatter/KPI tiles) in any medium, see `chart-s
 
 ## slideware
 
-Native. The shared `scripts/load-style.js` (plugin root) resolves registry brands directly (brand shadows default on name collision). Nothing to map by hand.
-
-## slideware-revealjs
-
-Native. Its own `scripts/load-style.js` resolves the same registry and converts any prose brandbook into the YAML-frontmatter `style.md` its renderer reads (CSS variables + Google Fonts link). Nothing to map by hand.
+Native, both formats. The pptx format uses the shared `scripts/load-style.js` (plugin root) → tokens JSON; the html format uses its own converter (`skills/slideware/html/scripts/load-style.js`) → YAML-frontmatter `style.md` (CSS variables + Google Fonts link). Both resolve the registry directly (brand shadows default on name collision). Nothing to map by hand.
 
 ## study-guide
 

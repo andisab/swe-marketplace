@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 96" width="420" height="96">
+  <!-- AcmeCorp example mark: abstract "A" chevron in a rounded square + wordmark -->
+  <rect x="8" y="8" width="80" height="80" rx="18" fill="#0E6B5C"/>
+  <path d="M28 70 L48 26 L68 70 H57 L48 48 L39 70 Z" fill="#FAFAF7"/>
+  <text x="108" y="62" font-family="Inter, system-ui, sans-serif" font-size="40" font-weight="600" fill="#16211E">AcmeCorp</text>
+</svg>

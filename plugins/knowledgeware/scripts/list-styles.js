@@ -20,7 +20,7 @@ const path = require("path");
 
 const STYLES_DIR = path.join(__dirname, "..", "styles");
 const BRANDS_DIR = path.join(STYLES_DIR, "brands");
-const SAMPLES_DIR = path.join(__dirname, "..", "skills", "slideware", "assets", "samples");
+const SAMPLES_DIR = path.join(__dirname, "..", "skills", "slideware", "pptx", "assets", "samples");
 
 function listBundled() {
   const found = [];

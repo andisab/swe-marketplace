@@ -1,0 +1,38 @@
+{
+  "name": "acmecorp",
+  "source": "/Users/andisblukis/Projects/ab-github/swe-marketplace/plugins/knowledgeware/styles/brands/acmecorp.md",
+  "palette": {
+    "bg": "FAFAF7",
+    "bgDark": "132420",
+    "surface": "FFFFFF",
+    "surfaceAlt": "F1F0EA",
+    "ink": "16211E",
+    "inkBody": "242E2A",
+    "inkMuted": "5B655F",
+    "inkFaint": null,
+    "border": "E3E1D8",
+    "accent": "0E6B5C",
+    "accent2": "B4552D",
+    "success": "2E7D43",
+    "warning": "C28712",
+    "error": "C6423B"
+  },
+  "type": {
+    "sans": "Inter",
+    "serif": "Lora",
+    "mono": "JetBrains Mono",
+    "heroPt": 40,
+    "sectionPt": 30,
+    "titlePt": 26,
+    "bodyPt": 14,
+    "subBodyPt": 12,
+    "captionPt": 10,
+    "codePt": 12
+  },
+  "layout": {
+    "radiusIn": 0.083,
+    "radiusPx": 8,
+    "shadowOpacity": 0.12,
+    "marginIn": 0.5
+  }
+}

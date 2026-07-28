@@ -1,5 +1,12 @@
 # Brandbooks, token caches, and brand assets are proprietary/brand-specific content.
 # They are copied in from a private source repo (see README.md) and never committed here.
+# Exception: acmecorp — a fictional checked-in example demonstrating the layout.
 *
 !README.md
 !.gitignore
+!acmecorp.md
+!acmecorp/
+!acmecorp/**
+!tokens/
+tokens/*
+!tokens/acmecorp.json

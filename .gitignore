@@ -84,13 +84,19 @@ plugins/uploads/
 plugins/temp/
 .plugin-cache/
 
-# knowledgeware: brandbooks are proprietary/brand-specific — only generic styles ship.
-# plugins/knowledgeware/styles/brands/.gitignore enforces this at the directory level;
-# these rules are a repo-level backstop.
+# knowledgeware: brandbooks are proprietary/brand-specific — only generic styles and
+# the fictional acmecorp example ship. plugins/knowledgeware/styles/brands/.gitignore
+# enforces this at the directory level; these rules are a repo-level backstop.
 plugins/knowledgeware/styles/brands/*
 !plugins/knowledgeware/styles/brands/README.md
 !plugins/knowledgeware/styles/brands/.gitignore
+!plugins/knowledgeware/styles/brands/acmecorp.md
+!plugins/knowledgeware/styles/brands/acmecorp/
+!plugins/knowledgeware/styles/brands/acmecorp/**
+!plugins/knowledgeware/styles/brands/tokens/
+plugins/knowledgeware/styles/brands/tokens/*
+!plugins/knowledgeware/styles/brands/tokens/acmecorp.json
 
 # knowledgeware samples: never track node_modules — directory OR symlink
 # (a global `node_modules/` rule matches only directories, not symlinks)
-plugins/knowledgeware/skills/slideware/assets/samples/*/node_modules
+plugins/knowledgeware/skills/slideware/pptx/assets/samples/*/node_modules
