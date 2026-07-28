@@ -35,10 +35,13 @@ node build-deck.js .
 # 5. Polish check
 python ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/polish-deck.py ./index.html
 
-# 6. Render to PNGs
-bash ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/render-slides.sh ./index.html ./preview/
+# 6. Visual review — prefer a browser MCP over the Puppeteer script (see FORMAT.md §Visual review):
+#    a) Claude in Chrome or Playwright MCP: open the deck (file:// or `python3 -m http.server`),
+#       screenshot each slide, advance with ArrowRight.
+#    b) No browser MCP available (headless/CI):
+#       bash ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/render-slides.sh ./index.html ./preview/
 
-# 7. Inspect every PNG at full size. Find ≥1 issue per slide.
+# 7. Inspect every slide capture at full size. Find ≥1 issue per slide.
 
 # 8. Iterate: edit slides.js or style.md, rebuild, re-render, re-inspect.
 #    Stop when an inspection finds zero meaningful issues — typically 2-3 cycles.

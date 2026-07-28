@@ -233,7 +233,7 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 | `pptx/scripts/polish-deck.py` | pptx pre-render heuristic checks |
 | `pptx/scripts/render-slides.sh` | LibreOffice headless → per-slide PNGs |
 | `pptx/scripts/text-fit.js` | Text-capacity check for a given box + font |
-| `html/scripts/{polish-deck.py,render-slides.sh}` | HTML checks + headless-Chromium renders |
+| `html/scripts/{polish-deck.py,render-slides.sh}` | HTML checks + headless-Chromium render fallback (visual review prefers Claude in Chrome / Playwright MCP) |
 
 ## When *not* to use this skill
 

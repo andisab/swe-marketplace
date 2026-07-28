@@ -48,9 +48,19 @@ The renderer converts `style.md` frontmatter to CSS variables:
 | Path | When | Cycle |
 |---|---|---|
 | **Fast** | 1-3 slides, throwaway, prototype | scaffold → author → build → ship |
-| **Full** | ≥4 slides, anything shipped | + render → inspect every PNG at full size → find ≥1 issue → iterate 2-3× |
+| **Full** | ≥4 slides, anything shipped | + inspect every slide visually → find ≥1 issue → iterate 2-3× |
 
 See [workflow.md](references/workflow.md) for both. Don't pay the full-path tax on a throwaway deck.
+
+## Visual review (tool preference order)
+
+Inspect the deck in a real browser via an MCP whenever one is available — an interactive session sees fonts loading, transitions, and fragment states that static captures can't:
+
+1. **Claude in Chrome** (`mcp__claude-in-chrome__*`) — open the deck in a new tab and screenshot each slide (navigate with arrow-key presses via the `computer` tool). If the extension can't open `file://` URLs, serve the deck first: `python3 -m http.server 8010 -d <deck-dir>` → `http://localhost:8010/`.
+2. **Playwright MCP** (`mcp__playwright__*`) — `browser_navigate` to the deck (file:// or localhost), `browser_take_screenshot` per slide, advancing with `browser_press_key` ArrowRight.
+3. **Fallback (no browser MCP — headless/CI):** `bash ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/render-slides.sh ./index.html ./preview/` — Puppeteer per-slide PNGs (or a bare `chrome --headless` single-slide capture if Puppeteer isn't installed). Then read every PNG at full size.
+
+Whichever tool captures the slides, the review bar is the same: inspect **every** slide, find ≥1 issue, fix, re-render, repeat 2-3 cycles.
 
 ## Pitfalls (single canonical home — read once, refer back)
 
@@ -79,7 +89,7 @@ For sharing via link: drop the directory on any static host (GitHub Pages, Netli
 
 When the user provides a sample HTML deck or screenshots:
 
-- For an HTML deck: open in browser, inspect computed styles via DevTools, extract palette/type/layout tokens, encode as `style.md`. Use `node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js <path-to-css> -o ./style.md` if there's a standalone CSS file.
+- For an HTML deck: open it via Claude in Chrome or Playwright MCP (preferred — screenshot slides and read computed styles with the page/JS tools; fall back to manual DevTools), extract palette/type/layout tokens, encode as `style.md`. Use `node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js <path-to-css> -o ./style.md` if there's a standalone CSS file.
 - For screenshots: read 3-4 representative slide images. Derive palette, type pairing, layout patterns, motif, density. Apply to the new deck. **Don't copy content.**
 
 **Mimicry overrides anti-monotony.** If the sample has a distinctive non-standard layout, faithfully echoing *that* layout matters more than picking from the canonical 8 archetypes.

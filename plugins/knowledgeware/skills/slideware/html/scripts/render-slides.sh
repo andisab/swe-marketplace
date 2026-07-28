@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # render-slides.sh — capture per-slide PNGs from a Reveal.js deck using headless Chromium.
+# NOTE: this is the FALLBACK path. Prefer inspecting via Claude in Chrome or Playwright MCP
+# when available (see FORMAT.md §Visual review) — use this script when no browser MCP is up.
 #
 # Usage:
 #   render-slides.sh <path-to-index.html> [output-dir] [slide-count]
