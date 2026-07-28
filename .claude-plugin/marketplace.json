@@ -67,7 +67,7 @@
         "planning"
       ],
       "category": "architecture",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/arch-context-agent.md",
         "./agents/build-orchestrator.md"
@@ -99,7 +99,7 @@
         "templates"
       ],
       "category": "development",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/context-engineer.md"
       ],
@@ -138,7 +138,7 @@
         "investigation"
       ],
       "category": "research",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/research-specialist.md",
         "./agents/research-report-writer.md"
@@ -173,7 +173,7 @@
         "design-tokens"
       ],
       "category": "content",
-      "strict": false,
+      "strict": true,
       "skills": [
         "./skills/slideware",
         "./skills/study-guide",
@@ -204,7 +204,7 @@
         "data-engineering"
       ],
       "category": "data-science",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/data-d3-expert.md",
         "./agents/data-google-colab-expert.md",
@@ -239,7 +239,7 @@
         "cassandra"
       ],
       "category": "databases",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/db-cassandra-expert.md",
         "./agents/db-mariadb-expert.md",
@@ -275,7 +275,7 @@
         "refactoring"
       ],
       "category": "development",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/dev-cpp-expert.md",
         "./agents/dev-fastapi-architect.md",
@@ -316,7 +316,7 @@
         "design"
       ],
       "category": "frontend",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/fe-css-expert.md",
         "./agents/fe-frontend-designer.md",
@@ -347,7 +347,7 @@
         "chains"
       ],
       "category": "ai",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/genai-langchain-expert.md"
       ]
@@ -377,7 +377,7 @@
         "security"
       ],
       "category": "infrastructure",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/infra-aws-architect.md",
         "./agents/infra-docker-engineer.md",
@@ -411,7 +411,7 @@
         "deep-learning"
       ],
       "category": "machine-learning",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/ml-pytorch-expert.md",
         "./agents/ml-scikit-learn-expert.md",
@@ -439,7 +439,7 @@
         "documentation"
       ],
       "category": "product",
-      "strict": false,
+      "strict": true,
       "agents": [
         "./agents/pm-content-writer.md",
         "./agents/pm-prd-writer.md",
