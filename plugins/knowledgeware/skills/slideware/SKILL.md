@@ -39,7 +39,7 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
    Run `node $PLUGIN/scripts/list-styles.js` for the current list (`--default` / `--brands` / `--names` / `--json`).
 3. **Website URL** — `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load. Heuristic; verify against the live site.
 4. **Google Drive URL** — `bash $PLUGIN/scripts/fetch-resource.sh <url> <dest>`.
-5. **No style given** — pick `style-1` (Editorial Light) and tell the user. Don't fall back to brandbooks unless the user names one.
+5. **No style given** — if `$PLUGIN/styles/brands/DEFAULT` exists (a one-line file naming a registry entry), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
 
 **Staging differs per format** (each guide shows the exact command):
 - pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (pre-built caches in `$PLUGIN/styles/tokens/` and `$PLUGIN/styles/brands/tokens/`).

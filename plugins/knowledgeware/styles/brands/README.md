@@ -6,6 +6,7 @@ Layout (one brand = one `.md` + one tokens cache + one asset folder):
 
 ```
 brands/
+├── DEFAULT                # optional one-line marker: registry name consumers use when no style is named
 ├── <name>.md              # canonical brandbook (spec: skills/brandware/references/brandbook-spec.md)
 ├── tokens/<name>.json     # derived token cache (regenerable via scripts/load-style.js)
 └── <name>/assets/         # per-brand assets: logo-light.svg, logo-dark.svg, wordmark.png, ...

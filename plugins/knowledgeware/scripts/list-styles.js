@@ -21,6 +21,13 @@ const path = require("path");
 const STYLES_DIR = path.join(__dirname, "..", "styles");
 const BRANDS_DIR = path.join(STYLES_DIR, "brands");
 const SAMPLES_DIR = path.join(__dirname, "..", "skills", "slideware", "pptx", "assets", "samples");
+const DEFAULT_MARKER = path.join(BRANDS_DIR, "DEFAULT");
+
+// styles/brands/DEFAULT — optional one-line marker naming the identity consumers
+// use when the user names no style. Returns null when unset.
+function defaultBrand() {
+  try { return fs.readFileSync(DEFAULT_MARKER, "utf8").trim() || null; } catch { return null; }
+}
 
 function listBundled() {
   const found = [];
@@ -51,6 +58,7 @@ function describe(srcPath) {
 }
 
 function inventory() {
+  const def = defaultBrand();
   return listBundled().map(b => {
     const tokensDir = b.kind === "brand"
       ? path.join(BRANDS_DIR, "tokens")
@@ -61,6 +69,7 @@ function inventory() {
       description: describe(b.source),
       hasTokens: fs.existsSync(path.join(tokensDir, `${b.name}.json`)),
       hasSample: fs.existsSync(path.join(SAMPLES_DIR, b.name)),
+      isDefault: b.name === def,
     };
   });
 }
@@ -92,7 +101,7 @@ function main() {
     if (items.length === 0) return;
     console.log(`── ${label} ──`);
     items.forEach(b => {
-      const tags = [b.hasTokens ? "cached" : "", b.hasSample ? "sample" : ""].filter(Boolean).join(", ");
+      const tags = [b.isDefault ? "DEFAULT" : "", b.hasTokens ? "cached" : "", b.hasSample ? "sample" : ""].filter(Boolean).join(", ");
       const tagStr = tags ? ` [${tags}]` : "";
       const desc = b.description ? "  " + b.description : "";
       console.log(`  ${b.name.padEnd(nameW)}${tagStr}${desc}`);
@@ -101,7 +110,11 @@ function main() {
   }
   printGroup("default styles (styles/)", defaults);
   printGroup("brandbooks (styles/brands/ — brand registry)", brands);
-  console.log(`${inv.length} total. Add a default style → styles/<name>.md. Add a brandbook → styles/brands/<name>.md (see the brandware skill).`);
+  const def = defaultBrand();
+  if (def && !inv.some(b => b.name === def)) {
+    console.log(`WARNING: styles/brands/DEFAULT names "${def}", which is not in the registry.\n`);
+  }
+  console.log(`${inv.length} total. Add a default style → styles/<name>.md. Add a brandbook → styles/brands/<name>.md (see the brandware skill). Set a default brand → echo <name> > styles/brands/DEFAULT.`);
 }
 
 if (require.main === module) main();

@@ -17,6 +17,7 @@ styles/                    # the registry (plugin root)
 ├── tokens/                # derived JSON token caches for defaults
 └── brands/                # brandbooks — brand-specific / proprietary (NOT in the plugin repo,
     │                      #   except the checked-in acmecorp example)
+    ├── DEFAULT            # optional one-line marker: the registry name to use when no style is named
     ├── <name>.md          # canonical brandbook — THE source of truth per brand
     ├── tokens/<name>.json # derived token cache (regenerable; never hand-edit)
     └── <name>/assets/     # per-brand assets: logo-light.svg, wordmark.png, ... (never mixed across brands)
@@ -40,6 +41,8 @@ skills/brandware/references/
 4. **Brand shadows default.** On a name collision, `styles/brands/<name>.md` wins over `styles/<name>.md`.
 
 ## Resolution contract (for consumer skills)
+
+0. **No name given?** Check `styles/brands/DEFAULT` — a one-line file containing a registry name. If it exists and resolves (steps 1–2 below), use that identity and tell the user; if it's absent or names a missing entry, use the consumer's bundled defaults.
 
 Given a brand/style name:
 1. Check `styles/brands/<name>.md` (plugin root).
@@ -65,6 +68,14 @@ Filesystem-driven — no code edits:
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it in, then normalize toward the spec if role tables are missing.
 - **From Google Drive**: `bash scripts/fetch-resource.sh <share-url> styles/brands/<name>.md` (file must be "Anyone with the link").
 - **Pre-cache tokens** (optional but recommended): `node scripts/load-style.js <name> -o styles/brands/tokens/<name>.json`.
+
+### Set a default brand
+
+```bash
+echo <name> > styles/brands/DEFAULT   # e.g. echo acmecorp > styles/brands/DEFAULT
+```
+
+Every consumer skill then uses that identity whenever the user doesn't name a style (resolution contract step 0). Remove the file to return to each consumer's bundled defaults. The marker is user-local (gitignored, like the brands around it) and is wiped by plugin updates — keep it in your private brand source alongside the brandbooks.
 
 ### Derive from a live website
 
