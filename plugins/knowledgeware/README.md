@@ -81,3 +81,13 @@ run after `claude plugin update knowledgeware` restores everything. See `styles/
 
 - **Node.js** — registry scripts, slideware's pptx build (pptxgenjs fetched at build time), and the bundled draw.io MCP server (`@drawio/mcp`, fetched via npx on first chartware use)
 - **Google Fonts access** — font installation (pptx) and font loading (HTML outputs); everything degrades gracefully offline
+
+### Optional tooling
+
+Everything below enhances a workflow but is never required — skills detect what's missing, deliver what they can, and point here.
+
+| Tool | Used by | Without it | Install |
+|---|---|---|---|
+| **LibreOffice** | slideware pptx slide previews | deck still builds; no preview PNGs | `brew install --cask libreoffice` (macOS) · `sudo apt-get install -y libreoffice` (Debian/Ubuntu) |
+| **poppler** (`pdftoppm`) | slideware pptx slide previews | same as above | `brew install poppler` · `sudo apt-get install -y poppler-utils` |
+| **Playwright MCP** | chartware & slideware visual verification loops | diagrams/decks still produced; no automated screenshot review | `claude plugin install playwright@claude-plugins-official` |

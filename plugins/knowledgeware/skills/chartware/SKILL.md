@@ -130,6 +130,8 @@ Call `drawio:open_drawio_xml` with the complete XML string. Set `dark` to `"fals
 
 After rendering, use Playwright to inspect the result and iterate. Max **3 rounds**.
 
+If no Playwright browser tools are available (`tool_search` finds none), skip this loop: deliver the diagram anyway, tell the user it wasn't visually verified, and point them to the plugin README's "Optional tooling" section for the Playwright plugin install command.
+
 ```
 Round N:
   1. mcp__playwright__browser_take_screenshot → inspect visually

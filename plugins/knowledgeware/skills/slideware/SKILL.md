@@ -47,6 +47,8 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 
 **Fonts**: brandbooks name fonts; nothing embeds them. For pptx authoring/preview the fonts must be installed locally — `bash $PLUGIN/scripts/install-fonts.sh <brand|style|font name>` fetches them from Google Fonts (see brandware). HTML decks load Google Fonts via `<link>`, so viewers need nothing.
 
+**Missing tooling**: pptx previews need LibreOffice + poppler (`render-slides.sh` errors with install hints when they're absent) and visual review needs Playwright browser tools. When any of these are missing, still build and deliver the deck, say which check was skipped, and point the user to the plugin README's "Optional tooling" section for install commands.
+
 ## Anti-monotony rule (shared)
 
 The point is **content-shape variety**, not visual-archetype rigidity. A deck that walks one consistent story can reuse a layout deliberately; a survey of unrelated topics should vary archetypes slide to slide. The failure mode is reaching for the same layout because the template defaulted to it. If you reuse an archetype twice without articulating why, swap one out. Archetype catalogs: [pptx/references/layout-patterns.md](pptx/references/layout-patterns.md) (12) · [html/references/layout-patterns.md](html/references/layout-patterns.md) (8).
