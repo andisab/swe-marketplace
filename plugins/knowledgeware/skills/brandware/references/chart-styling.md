@@ -1,6 +1,6 @@
 # Chart Styling from a Brandbook
 
-How to color and typeset **data charts** — bar, line, area, pie/donut, scatter, heatmap, KPI/stat tiles — so they read as the brand's document in any medium (slideware decks, study-guide pages, standalone SVG/HTML). This complements `consumer-mappings.md` (§chartware covers *diagrams*; this file covers *data*).
+How to color and typeset **data charts** — bar, line, area, pie/donut, scatter, heatmap, KPI/stat tiles — so they read as the brand's document in any medium (slideware decks, knowledgebase pages, standalone SVG/HTML). This complements `consumer-mappings.md` (§chartware covers *diagrams*; this file covers *data*).
 
 Same governing principle as diagrams: **neutral ink carries the chart; accents encode data.** A branded chart is recognizable by its canvas, type, and one accent — not by every series screaming a logo color.
 
@@ -48,7 +48,7 @@ When charting on `bgDark` (or a dark brand like style-3/linear): raise gridline 
 ## Per-medium notes
 
 - **slideware**: build charts as native pptxgenjs shapes/charts or pre-rendered SVG→PNG; colors are 6-char hex WITHOUT `#`. The deck's style tokens are already loaded — reuse them, don't re-derive.
-- **study-guide**: inline SVG or CSS-driven bars inherit the page's `:root` variables — reference `var(--accent)`, `var(--border)`, `var(--muted)` so charts flip correctly with light/dark theme. Mermaid is for diagrams, not data charts.
+- **knowledgebase**: inline SVG or CSS-driven bars inherit the page's `:root` variables — reference `var(--accent)`, `var(--border)`, `var(--muted)` so charts flip correctly with light/dark theme. Mermaid is for diagrams, not data charts.
 - **chartware**: draw.io is a diagramming surface; use it for data charts only when the user explicitly asks — then apply this palette logic to the mxGraph `fillColor`/`strokeColor` values.
 
 ## Squint test

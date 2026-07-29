@@ -1,6 +1,6 @@
 # Knowledgeware Formatting Reference
 
-The complete HTML idiom for study-guide sites. The template at `templates/page-template.html` supplies the CSS/JS chrome; this file defines how to fill it.
+The complete HTML idiom for knowledgebase sites. The template at `templates/page-template.html` supplies the CSS/JS chrome; this file defines how to fill it.
 
 ## Template placeholders
 

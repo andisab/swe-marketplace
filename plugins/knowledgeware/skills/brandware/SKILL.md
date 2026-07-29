@@ -1,11 +1,11 @@
 ---
 name: brandware
-description: Central brand and style registry manager for the knowledgeware plugin (formerly "steez"). Houses the canonical brandbook .md files, derived token JSONs, and brand assets (logos, wordmarks) that the slideware, study-guide, and chartware skills resolve named brands/styles from. Load this skill when (a) a consumer skill needs to resolve a brand/style referenced by name (e.g., "use the Provectus brand", "in the AAB style"), (b) the user asks to add, import, derive, edit, or audit a brandbook, (c) the user wants to derive a style from a live website or import one from a file/Google Drive, (d) the user wants brand assets like logos gathered for a brand, or (e) the user says "brandware" or "steez". Do NOT trigger on generic mentions of branding, marketing, or visual design that aren't about applying or managing a stored visual identity.
+description: Central brand and style registry manager for the knowledgeware plugin (formerly "steez"). Houses the canonical brandbook .md files, derived token JSONs, and brand assets (logos, wordmarks) that the slideware, knowledgebase, and chartware skills resolve named brands/styles from. Load this skill when (a) a consumer skill needs to resolve a brand/style referenced by name (e.g., "use the Provectus brand", "in the AAB style"), (b) the user asks to add, import, derive, edit, or audit a brandbook, (c) the user wants to derive a style from a live website or import one from a file/Google Drive, (d) the user wants brand assets like logos gathered for a brand, or (e) the user says "brandware" or "steez". Do NOT trigger on generic mentions of branding, marketing, or visual design that aren't about applying or managing a stored visual identity.
 ---
 
 # brandware — Brand & Style Registry
 
-One registry, many consumers. Brandbooks live here once; slideware decks, study-guide sites, and chartware diagrams all render from the same visual identity.
+One registry, many consumers. Brandbooks live here once; slideware decks, knowledgebase sites, and chartware diagrams all render from the same visual identity.
 
 **Plugin root**: `${CLAUDE_PLUGIN_ROOT}` — two directories above this skill's folder (`../../` from here). All paths below are relative to it.
 
@@ -36,7 +36,7 @@ skills/brandware/references/
 
 1. **The `.md` is canonical.** Tokens JSON is a derived cache (regenerate with `node scripts/load-style.js <name> -o styles/brands/tokens/<name>.json`). If they disagree, the `.md` wins; consumers auto-invalidate stale caches by mtime.
 2. **Brands are private; styles are public.** The 5 default styles ship with the plugin. Brandbooks under `styles/brands/` are proprietary/brand-specific content, kept out of the plugin repository (`.gitignore`d) and copied in from a private source repo. Never commit a brandbook to the plugin repo.
-3. **Graceful degradation.** Consumers must work when no brand is installed: slideware falls back to its five default styles, study-guide to its default palette, chartware to its default catalog. Brands add named identities; they are never a hard dependency.
+3. **Graceful degradation.** Consumers must work when no brand is installed: slideware falls back to its five default styles, knowledgebase to its default palette, chartware to its default catalog. Brands add named identities; they are never a hard dependency.
 4. **Brand shadows default.** On a name collision, `styles/brands/<name>.md` wins over `styles/<name>.md`.
 
 ## Resolution contract (for consumer skills)
@@ -52,7 +52,7 @@ Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brand
 |---|---|---|
 | **slideware** (pptx format) | tokens JSON natively (`scripts/load-style.js` understands the registry) | built-in |
 | **slideware** (html format) | YAML-frontmatter `style.md` via its converter (`skills/slideware/html/scripts/load-style.js`) | built-in |
-| **study-guide** | palette + type → template CSS variables + Mermaid themeVariables | consumer-mappings §study-guide |
+| **knowledgebase** | palette + type → template CSS variables + Mermaid themeVariables | consumer-mappings §knowledgebase |
 | **chartware** | palette + diagram strokes + type → mxGraph style strings | consumer-mappings §chartware |
 | **data charts** (any medium) | palette → categorical/sequential chart colors | references/chart-styling.md |
 
@@ -83,14 +83,14 @@ When adding or enriching a brand, collect its visual assets into the brand's own
 3. **Record what you gathered** in the brandbook under an `## Assets` section: filename, source URL, retrieval date, and any usage constraint noted by the brand.
 4. **Respect provenance**: assets fetched from a brand's site are for that brand's own deliverables (a Provectus deck uses the Provectus logo). Never place one brand's assets in another brand's output.
 
-Consumers embed assets by absolute path resolved from the registry (slideware `addImage`, study-guide `<img>`, chartware only when the user explicitly asks for a logo in a diagram).
+Consumers embed assets by absolute path resolved from the registry (slideware `addImage`, knowledgebase `<img>`, chartware only when the user explicitly asks for a logo in a diagram).
 
 ### Fonts
 
 Brandbooks **name** fonts (in the `## Typography` CSS variables); the registry stores **no font binaries** — prefer families available on [Google Fonts](https://fonts.google.com) so they're installable and linkable everywhere. Per medium:
 
 - **pptx (slideware)**: fonts must be installed on the authoring machine or PowerPoint/LibreOffice silently substitutes — run the installer below before building/previewing a deck.
-- **HTML (slideware html format, study-guide)**: loads fonts via a Google Fonts `<link>`; viewers need nothing installed.
+- **HTML (slideware html format, knowledgebase)**: loads fonts via a Google Fonts `<link>`; viewers need nothing installed.
 - **chartware**: embeds a `fontSource` Google Fonts URL in the mxGraph style; draw.io loads it.
 
 Install a brand's fonts locally (macOS `~/Library/Fonts`, Linux `~/.local/share/fonts`):

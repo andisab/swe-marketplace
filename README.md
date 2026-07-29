@@ -50,9 +50,9 @@ A `coordinator` skill decomposes a topic into subtopics, spawns parallel `resear
 
 ### `knowledgeware` — Style-driven deliverable suite *(v1.1.1)*
 
-Four skills that share one brandbook format and a central style registry: `slideware` (two output formats — PowerPoint via pptxgenjs or single-file HTML via Reveal.js; asks which when the request doesn't say), `study-guide` (multi-page HTML knowledge bases), `chartware` (draw.io architecture diagrams), and `brandware` (registry manager — import, website derivation, per-brand logo-asset folders, local Google Fonts installation, chart-styling guidelines). Ships 5 generic styles plus a fictional `acmecorp` example brand showing the brand-folder layout; real brandbooks live in a private overlay (`styles/brands/`, gitignored) so proprietary identities never enter the public repo.
+Four skills that share one brandbook format and a central style registry: `slideware` (two output formats — PowerPoint via pptxgenjs or single-file HTML via Reveal.js; asks which when the request doesn't say), `knowledgebase` (multi-page HTML knowledge bases), `chartware` (draw.io architecture diagrams), and `brandware` (registry manager — import, website derivation, per-brand logo-asset folders, local Google Fonts installation, chart-styling guidelines). Ships 5 generic styles plus a fictional `acmecorp` example brand showing the brand-folder layout; real brandbooks live in a private overlay (`styles/brands/`, gitignored) so proprietary identities never enter the public repo.
 
-- **Skills:** `slideware`, `study-guide`, `chartware`, `brandware`
+- **Skills:** `slideware`, `knowledgebase`, `chartware`, `brandware`
 
 ### `dev` — 13 language experts *(v1.0.0)*
 

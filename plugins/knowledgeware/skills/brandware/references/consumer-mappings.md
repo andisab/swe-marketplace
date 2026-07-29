@@ -8,7 +8,7 @@ For **data charts** (bar/line/pie/scatter/KPI tiles) in any medium, see `chart-s
 
 Native, both formats. The pptx format uses the shared `scripts/load-style.js` (plugin root) → tokens JSON; the html format uses its own converter (`skills/slideware/html/scripts/load-style.js`) → YAML-frontmatter `style.md` (CSS variables + Google Fonts link). Both resolve the registry directly (brand shadows default on name collision). Nothing to map by hand.
 
-## study-guide
+## knowledgebase
 
 The page template is fully CSS-custom-property-driven; retheming = replacing the `:root` blocks and font stack.
 

@@ -12,4 +12,4 @@ brands/
                            #   (one folder per brand — assets from different brands never mix)
 ```
 
-Real brands are installed by copying from a private source repo into this directory. To add, import, derive, or audit a brandbook — gather logos, or install a brand's Google Fonts locally (`scripts/install-fonts.sh`) — use the **brandware** skill. The plugin works fully without any brands installed: slideware falls back to the 5 generic styles, study-guide to its default palette, chartware to its default catalog.
+Real brands are installed by copying from a private source repo into this directory. To add, import, derive, or audit a brandbook — gather logos, or install a brand's Google Fonts locally (`scripts/install-fonts.sh`) — use the **brandware** skill. The plugin works fully without any brands installed: slideware falls back to the 5 generic styles, knowledgebase to its default palette, chartware to its default catalog.

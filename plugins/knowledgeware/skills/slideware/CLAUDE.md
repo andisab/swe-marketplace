@@ -9,12 +9,12 @@ Generates slide decks in **two output formats**, chosen per request (the skill a
 - **pptx** (`pptx/`): real PowerPoint `.pptx` files via **pptxgenjs** (Node.js) with React-rendered icons via **react-icons + sharp**. Opens cleanly in PowerPoint, Keynote, and Google Slides.
 - **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** — run in any browser, host statically, share by link.
 
-Both are driven by the same layered visual-design system of **styles** (generic) or **brandbooks** (brand-specific) from the plugin's shared registry. The two terms are interchangeable — both are `.md` files following the same spec, and one brandbook renders in either format (and in study-guide sites and chartware diagrams).
+Both are driven by the same layered visual-design system of **styles** (generic) or **brandbooks** (brand-specific) from the plugin's shared registry. The two terms are interchangeable — both are `.md` files following the same spec, and one brandbook renders in either format (and in knowledgebase sites and chartware diagrams).
 
 The skill is opinionated about visual quality (no plain-bullets-on-white) and ships with:
 
 - **5 default styles** at the plugin's `styles/` folder (style-1 through style-5) — generic, no brand references, marketplace-safe. See the **Default styles at a glance** section below for visual personalities.
-- **A brand registry at `styles/brands/`** (plugin root) where brand-specific brandbooks + logo assets live — managed by the sibling **brandware** skill, kept out of the public plugin repo, and shared with the study-guide and chartware skills.
+- **A brand registry at `styles/brands/`** (plugin root) where brand-specific brandbooks + logo assets live — managed by the sibling **brandware** skill, kept out of the public plugin repo, and shared with the knowledgebase and chartware skills.
 - **Cached design tokens** next to every style and brandbook — `styles/tokens/*.json` and `styles/brands/tokens/*.json`. The loader uses these instead of parsing when fresh.
 - **Filesystem-driven discovery** — adding a style or brandbook is a single `.md` drop, no code edits. Run `node <plugin>/scripts/list-styles.js` to see the current set (use `--default` / `--brands` to filter).
 - **`polish-deck.py`** — XML-level pre-render checker (text overflow, vertical imbalance, off-grid alignment, edge encroachment, invalid-dimension shapes that break PowerPoint).
