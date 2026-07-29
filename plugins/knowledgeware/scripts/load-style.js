@@ -4,25 +4,41 @@
 //   node load-style.js <name|path>           # prints JSON to stdout
 //   node load-style.js <name|path> -o out.json
 //
-// Bundled styles are discovered at runtime from two locations (plugin root = ../ from here):
-//   - styles/*.md         → 5 default generic styles (style-1 through style-5), marketplace-safe
-//   - styles/brands/*.md  → brandbooks (brand-specific / proprietary; copied in from a private
-//                           repo and NOT checked into the plugin repository)
+// Bundled styles are discovered at runtime from three locations (plugin root = ../ from here):
+//   - styles/*.md              → 5 default generic styles (style-1 through style-5), marketplace-safe
+//   - styles/brands/*.md       → brandbooks (brand-specific / proprietary; copied in from a private
+//                                repo and NOT checked into the plugin repository)
+//   - $KNOWLEDGEWARE_BRANDS_DIR/*.md → user-owned brandbook directory, anywhere on disk.
+//                                Survives plugin updates. Same layout as styles/brands/.
 //
 // "Style" and "brandbook" are interchangeable terms; both describe the same .md spec.
-// Brands shadow defaults on name collision.
+// On name collision: user brands shadow plugin brands shadow defaults.
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 const STYLES_DIR = path.join(__dirname, "..", "styles");
 const BRANDS_DIR = path.join(STYLES_DIR, "brands");
 
+// User-owned registry from $KNOWLEDGEWARE_BRANDS_DIR (with ~ expansion), or null.
+function resolveUserBrandsDir() {
+  let d = process.env.KNOWLEDGEWARE_BRANDS_DIR;
+  if (!d || !d.trim()) return null;
+  d = d.trim();
+  if (d === "~") d = os.homedir();
+  else if (d.startsWith("~/")) d = path.join(os.homedir(), d.slice(2));
+  return path.resolve(d);
+}
+const USER_BRANDS_DIR = resolveUserBrandsDir();
+
 // Discover bundled styles from default + brand directories. Brand shadows default
 // if names collide. tokens/ subdirectories are excluded — they hold cached JSON.
 function listBundled() {
   const found = new Map();  // name → { name, source, kind }
-  for (const [dir, kind] of [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]]) {
+  const dirs = [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]];
+  if (USER_BRANDS_DIR) dirs.push([USER_BRANDS_DIR, "brand"]);
+  for (const [dir, kind] of dirs) {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {
       if (!f.endsWith(".md") || /^readme\.md$/i.test(f)) continue;
@@ -50,9 +66,8 @@ function resolveSource(input) {
 function tryPrebuiltTokens(input) {
   const hit = findBundled(input);
   if (!hit) return null;
-  const tokensDir = hit.kind === "brand"
-    ? path.join(BRANDS_DIR, "tokens")
-    : path.join(STYLES_DIR, "tokens");
+  // Cache lives in tokens/ next to the source .md, whichever registry it came from
+  const tokensDir = path.join(path.dirname(hit.source), "tokens");
   const cachePath = path.join(tokensDir, `${input}.json`);
   const srcPath = hit.source;
   if (!fs.existsSync(cachePath) || !fs.existsSync(srcPath)) return null;

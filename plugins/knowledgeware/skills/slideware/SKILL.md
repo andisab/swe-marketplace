@@ -1,6 +1,6 @@
 ---
 name: slideware
-description: "Create visually rich, style-driven slide decks in two output formats: PowerPoint (.pptx via pptxgenjs + React icons) and HTML (single-file Reveal.js deck). Use any time the user asks for a slide deck, presentation, pitch deck, training module, keynote, .pptx file, HTML/web presentation, Reveal.js deck, browser slides, or slides to share via link — or wants slides generated from a brief/outline, references a 'style' or 'brandbook' (a .md/.css visual identity), a 'sample deck' to mimic, or asks to update/iterate on an existing deck (rebuild approach). Trigger on words like 'deck', 'slides', 'presentation', 'pptx', 'pitch', 'keynote', 'reveal', 'HTML deck', 'web presentation', or whenever a .pptx (or slide-deck .html) appears as input or output. Styles resolve from the knowledgeware plugin's shared registry — 5 generic defaults plus styles/brands/ brandbooks managed by the brandware skill — so decks share one visual identity with knowledgebase sites and chartware diagrams. If the output format (PowerPoint vs HTML) is not stated and cannot be inferred from context, ASK the user before building."
+description: "Create visually rich, style-driven slide decks in two output formats: PowerPoint (.pptx via pptxgenjs + React icons) and HTML (single-file Reveal.js deck). Use any time the user asks for a slide deck, presentation, pitch deck, training module, keynote, .pptx file, HTML/web presentation, Reveal.js deck, browser slides, or slides to share via link — or wants slides generated from a brief/outline, references a 'style' or 'brandbook' (a .md/.css visual identity), a 'sample deck' to mimic, or asks to update/iterate on an existing deck (rebuild approach). Trigger on words like 'deck', 'slides', 'presentation', 'pptx', 'pitch', 'keynote', 'reveal', 'HTML deck', 'web presentation', or whenever a .pptx (or slide-deck .html) appears as input or output. Styles resolve from the knowledgeware plugin's shared registry — 5 generic defaults plus brandbooks (in styles/brands/ or the user's KNOWLEDGEWARE_BRANDS_DIR) managed by the brandware skill — so decks share one visual identity with knowledgebase sites and chartware diagrams. If the output format (PowerPoint vs HTML) is not stated and cannot be inferred from context, ASK the user before building."
 license: MIT
 ---
 
@@ -32,17 +32,18 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 "Style" and "brandbook" mean the same thing — .md files describing a visual identity (palette + type + layout). Path convention: `$PLUGIN` = the knowledgeware plugin root, two directories above this skill (`../../`).
 
 1. **Explicit local path** — read directly.
-2. **Bundled name** — discovered at runtime from the plugin registry (shadow order: default &lt; brand):
+2. **Bundled name** — discovered at runtime from the registry (shadow order: default &lt; plugin brand &lt; user brand):
    - `$PLUGIN/styles/*.md` — 5 default generic styles (`style-1` through `style-5`)
    - `$PLUGIN/styles/brands/*.md` — brandbooks (managed by the **brandware** skill)
+   - `$KNOWLEDGEWARE_BRANDS_DIR/*.md` — the user's own brands directory, if that env var is set (survives plugin updates)
 
    Run `node $PLUGIN/scripts/list-styles.js` for the current list (`--default` / `--brands` / `--names` / `--json`).
 3. **Website URL** — `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load. Heuristic; verify against the live site.
 4. **Google Drive URL** — `bash $PLUGIN/scripts/fetch-resource.sh <url> <dest>`.
-5. **No style given** — if `$PLUGIN/styles/brands/DEFAULT` exists (a one-line file naming a registry entry), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
+5. **No style given** — if a `DEFAULT` marker exists (a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `$PLUGIN/styles/brands/DEFAULT`), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
 
 **Staging differs per format** (each guide shows the exact command):
-- pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (pre-built caches in `$PLUGIN/styles/tokens/` and `$PLUGIN/styles/brands/tokens/`).
+- pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (pre-built caches in `tokens/` next to each registry's brandbooks).
 - html consumes a **YAML-frontmatter `style.md`** — `node $PLUGIN/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md` (converts any registry brandbook or CSS file).
 
 **Fonts**: brandbooks name fonts; nothing embeds them. For pptx authoring/preview the fonts must be installed locally — `bash $PLUGIN/scripts/install-fonts.sh <brand|style|font name>` fetches them from Google Fonts (see brandware). HTML decks load Google Fonts via `<link>`, so viewers need nothing.

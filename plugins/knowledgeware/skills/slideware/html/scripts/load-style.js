@@ -17,16 +17,31 @@
 //   node load-style.js ./bundled.md            # prints to stdout
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 const STYLES_DIR = path.join(__dirname, "..", "..", "..", "..", "styles");   // plugin root registry
 const BRANDS_DIR = path.join(STYLES_DIR, "brands");
 
+// User-owned registry from $KNOWLEDGEWARE_BRANDS_DIR (with ~ expansion), or null.
+function resolveUserBrandsDir() {
+  let d = process.env.KNOWLEDGEWARE_BRANDS_DIR;
+  if (!d || !d.trim()) return null;
+  d = d.trim();
+  if (d === "~") d = os.homedir();
+  else if (d.startsWith("~/")) d = path.join(os.homedir(), d.slice(2));
+  return path.resolve(d);
+}
+const USER_BRANDS_DIR = resolveUserBrandsDir();
+
 // ── Discovery ────────────────────────────────────────────────────────────
-// Discover bundled styles from the plugin registry. Brand shadows default on name collision.
+// Discover bundled styles from the plugin registry plus the optional user brands
+// directory. On name collision: user brands shadow plugin brands shadow defaults.
 function listBundled() {
   const found = new Map();
-  for (const [dir, kind] of [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]]) {
+  const dirs = [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]];
+  if (USER_BRANDS_DIR) dirs.push([USER_BRANDS_DIR, "brand"]);
+  for (const [dir, kind] of dirs) {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {
       if (!f.endsWith(".md") || /^readme\.md$/i.test(f)) continue;

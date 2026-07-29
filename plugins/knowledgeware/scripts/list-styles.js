@@ -10,35 +10,57 @@
 //
 // Adding a style:     drop styles/<name>.md          (becomes a "default" style — generic, marketplace-safe)
 // Adding a brandbook: drop styles/brands/<name>.md   (brand-specific / proprietary — kept out of the plugin repo)
+//                     or <$KNOWLEDGEWARE_BRANDS_DIR>/<name>.md — a user-owned directory anywhere
+//                     on disk that survives plugin updates (same layout; shadows plugin entries)
 //
 // Tokens caches live next to the source:
 //   styles/tokens/<name>.json
 //   styles/brands/tokens/<name>.json
+//   <$KNOWLEDGEWARE_BRANDS_DIR>/tokens/<name>.json
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 const STYLES_DIR = path.join(__dirname, "..", "styles");
 const BRANDS_DIR = path.join(STYLES_DIR, "brands");
 const SAMPLES_DIR = path.join(__dirname, "..", "skills", "slideware", "pptx", "assets", "samples");
-const DEFAULT_MARKER = path.join(BRANDS_DIR, "DEFAULT");
 
-// styles/brands/DEFAULT — optional one-line marker naming the identity consumers
-// use when the user names no style. Returns null when unset.
+// User-owned registry from $KNOWLEDGEWARE_BRANDS_DIR (with ~ expansion), or null.
+function resolveUserBrandsDir() {
+  let d = process.env.KNOWLEDGEWARE_BRANDS_DIR;
+  if (!d || !d.trim()) return null;
+  d = d.trim();
+  if (d === "~") d = os.homedir();
+  else if (d.startsWith("~/")) d = path.join(os.homedir(), d.slice(2));
+  return path.resolve(d);
+}
+const USER_BRANDS_DIR = resolveUserBrandsDir();
+
+// DEFAULT — optional one-line marker naming the identity consumers use when the
+// user names no style. The user directory's marker wins over the plugin's.
 function defaultBrand() {
-  try { return fs.readFileSync(DEFAULT_MARKER, "utf8").trim() || null; } catch { return null; }
+  const markers = [];
+  if (USER_BRANDS_DIR) markers.push(path.join(USER_BRANDS_DIR, "DEFAULT"));
+  markers.push(path.join(BRANDS_DIR, "DEFAULT"));
+  for (const m of markers) {
+    try { const v = fs.readFileSync(m, "utf8").trim(); if (v) return v; } catch {}
+  }
+  return null;
 }
 
 function listBundled() {
-  const found = [];
-  for (const [dir, kind] of [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]]) {
+  const found = new Map();  // name → entry; later dirs shadow earlier on collision
+  const dirs = [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]];
+  if (USER_BRANDS_DIR) dirs.push([USER_BRANDS_DIR, "brand"]);
+  for (const [dir, kind] of dirs) {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir).sort()) {
       if (!f.endsWith(".md") || /^readme\.md$/i.test(f)) continue;
-      found.push({ name: f.replace(/\.md$/, ""), source: path.join(dir, f), kind });
+      found.set(f.replace(/\.md$/, ""), { name: f.replace(/\.md$/, ""), source: path.join(dir, f), kind });
     }
   }
-  return found;
+  return [...found.values()];
 }
 
 function describe(srcPath) {
@@ -60,9 +82,7 @@ function describe(srcPath) {
 function inventory() {
   const def = defaultBrand();
   return listBundled().map(b => {
-    const tokensDir = b.kind === "brand"
-      ? path.join(BRANDS_DIR, "tokens")
-      : path.join(STYLES_DIR, "tokens");
+    const tokensDir = path.join(path.dirname(b.source), "tokens");
     return {
       name: b.name,
       kind: b.kind,
@@ -109,12 +129,16 @@ function main() {
     console.log("");
   }
   printGroup("default styles (styles/)", defaults);
-  printGroup("brandbooks (styles/brands/ — brand registry)", brands);
+  const brandsLabel = USER_BRANDS_DIR
+    ? `brandbooks (styles/brands/ + ${USER_BRANDS_DIR})`
+    : "brandbooks (styles/brands/ — brand registry)";
+  printGroup(brandsLabel, brands);
   const def = defaultBrand();
   if (def && !inv.some(b => b.name === def)) {
-    console.log(`WARNING: styles/brands/DEFAULT names "${def}", which is not in the registry.\n`);
+    console.log(`WARNING: the DEFAULT marker names "${def}", which is not in the registry.\n`);
   }
-  console.log(`${inv.length} total. Add a default style → styles/<name>.md. Add a brandbook → styles/brands/<name>.md (see the brandware skill). Set a default brand → echo <name> > styles/brands/DEFAULT.`);
+  const brandsHome = USER_BRANDS_DIR || "styles/brands";
+  console.log(`${inv.length} total. Add a default style → styles/<name>.md. Add a brandbook → ${brandsHome}/<name>.md (see the brandware skill). Set a default brand → echo <name> > ${brandsHome}/DEFAULT.`);
 }
 
 if (require.main === module) main();

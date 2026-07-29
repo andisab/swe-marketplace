@@ -21,6 +21,10 @@ styles/                    # the registry (plugin root)
     ├── <name>.md          # canonical brandbook — THE source of truth per brand
     ├── tokens/<name>.json # derived token cache (regenerable; never hand-edit)
     └── <name>/assets/     # per-brand assets: logo-light.svg, wordmark.png, ... (never mixed across brands)
+$KNOWLEDGEWARE_BRANDS_DIR/ # OPTIONAL user-owned brands directory — same layout as styles/brands/
+    │                      #   (DEFAULT marker, <name>.md, tokens/, <name>/assets/). Lives anywhere
+    │                      #   the user chooses, so it SURVIVES plugin updates. Entries here shadow
+    │                      #   plugin entries on name collision; its DEFAULT marker wins too.
 scripts/                   # shared tooling (plugin root)
 ├── load-style.js          # style/brandbook → tokens (with cache)
 ├── list-styles.js         # discover what's installed
@@ -38,16 +42,20 @@ skills/brandware/references/
 1. **The `.md` is canonical.** Tokens JSON is a derived cache (regenerate with `node scripts/load-style.js <name> -o styles/brands/tokens/<name>.json`). If they disagree, the `.md` wins; consumers auto-invalidate stale caches by mtime.
 2. **Brands are private; styles are public.** The 5 default styles ship with the plugin. Brandbooks under `styles/brands/` are proprietary/brand-specific content, kept out of the plugin repository (`.gitignore`d) and copied in from a private source repo. Never commit a brandbook to the plugin repo.
 3. **Graceful degradation.** Consumers must work when no brand is installed: slideware falls back to its five default styles, knowledgebase to its default palette, chartware to its default catalog. Brands add named identities; they are never a hard dependency.
-4. **Brand shadows default.** On a name collision, `styles/brands/<name>.md` wins over `styles/<name>.md`.
+4. **Brand shadows default.** On a name collision: `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` wins over `styles/brands/<name>.md`, which wins over `styles/<name>.md`.
+5. **Prefer the user directory when it exists.** Anything inside the plugin install (`styles/brands/`) is wiped by plugin updates. When `KNOWLEDGEWARE_BRANDS_DIR` is set, write new brandbooks, token caches, assets, and the DEFAULT marker there. When it isn't set and the user imports a brand, warn them it won't survive updates and suggest setting the env var (in `~/.claude/settings.json` under `"env"`, so it's present in every session).
 
 ## Resolution contract (for consumer skills)
 
-0. **No name given?** Check `styles/brands/DEFAULT` — a one-line file containing a registry name. If it exists and resolves (steps 1–2 below), use that identity and tell the user; if it's absent or names a missing entry, use the consumer's bundled defaults.
+0. **No name given?** Check the `DEFAULT` marker — a one-line file containing a registry name. `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins if the env var is set; otherwise `styles/brands/DEFAULT`. If it exists and resolves (steps 1–3 below), use that identity and tell the user; if it's absent or names a missing entry, use the consumer's bundled defaults.
 
 Given a brand/style name:
-1. Check `styles/brands/<name>.md` (plugin root).
-2. Check `styles/<name>.md` (the 5 defaults).
-3. Fall back to the consumer's bundled defaults, and say so.
+1. Check `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` (if the env var is set).
+2. Check `styles/brands/<name>.md` (plugin root).
+3. Check `styles/<name>.md` (the 5 defaults).
+4. Fall back to the consumer's bundled defaults, and say so.
+
+The registry scripts (`load-style.js`, `list-styles.js`, and slideware html's converter) implement this order natively — pass a name and they search all three locations.
 
 Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brands` / `--names` / `--json`). Consumers read the brandbook `.md` (or the token cache when fresh) and map it onto their medium per `references/consumer-mappings.md`:
 
@@ -63,31 +71,31 @@ Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brand
 
 ### Add / import a brandbook
 
-Filesystem-driven — no code edits:
-- **From scratch or by hand**: write `styles/brands/<name>.md` following `references/brandbook-spec.md`.
+Filesystem-driven — no code edits. **Destination**: `$KNOWLEDGEWARE_BRANDS_DIR/` when the env var is set (survives plugin updates — preferred), else `styles/brands/` (warn: wiped on update). `<dest>` below means that directory:
+- **From scratch or by hand**: write `<dest>/<name>.md` following `references/brandbook-spec.md`.
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it in, then normalize toward the spec if role tables are missing.
-- **From Google Drive**: `bash scripts/fetch-resource.sh <share-url> styles/brands/<name>.md` (file must be "Anyone with the link").
-- **Pre-cache tokens** (optional but recommended): `node scripts/load-style.js <name> -o styles/brands/tokens/<name>.json`.
+- **From Google Drive**: `bash scripts/fetch-resource.sh <share-url> <dest>/<name>.md` (file must be "Anyone with the link").
+- **Pre-cache tokens** (optional but recommended): `node scripts/load-style.js <name> -o <dest>/tokens/<name>.json`.
 
 ### Set a default brand
 
 ```bash
-echo <name> > styles/brands/DEFAULT   # e.g. echo acmecorp > styles/brands/DEFAULT
+echo <name> > <dest>/DEFAULT   # e.g. echo acmecorp > ~/my-brands/DEFAULT
 ```
 
-Every consumer skill then uses that identity whenever the user doesn't name a style (resolution contract step 0). Remove the file to return to each consumer's bundled defaults. The marker is user-local (gitignored, like the brands around it) and is wiped by plugin updates — keep it in your private brand source alongside the brandbooks.
+Every consumer skill then uses that identity whenever the user doesn't name a style (resolution contract step 0). Remove the file to return to each consumer's bundled defaults. In `$KNOWLEDGEWARE_BRANDS_DIR` the marker persists across plugin updates (and wins over the plugin's marker); in `styles/brands/` it is user-local (gitignored) and wiped by updates — keep a copy in your private brand source alongside the brandbooks.
 
 ### Derive from a live website
 
 ```bash
-node scripts/derive-style.js <url> -o styles/brands/<name>.md
+node scripts/derive-style.js <url> -o <dest>/<name>.md   # <dest> per §Add / import
 ```
 
 Derivation is a **heuristic, not an authority** — it scrapes HTML + linked CSS and frequency-analyzes color/font usage. Always review by hand against the live site before trusting: check the accent isn't a footer link color, the canvas isn't a cookie-banner gray, and the font is the real display face (JS-injected styles may be invisible to the scraper).
 
 ### Gather brand assets (logos and similar)
 
-When adding or enriching a brand, collect its visual assets into the brand's own folder `styles/brands/<brand>/assets/`, named by role (e.g., `provectus/assets/logo-light.svg`, `aab/assets/wordmark.png`, `nyt/assets/favicon.png`) — one folder per brand so assets from different brands never mix:
+When adding or enriching a brand, collect its visual assets into the brand's own folder `<dest>/<brand>/assets/` (`<dest>` per §Add / import), named by role (e.g., `provectus/assets/logo-light.svg`, `aab/assets/wordmark.png`, `nyt/assets/favicon.png`) — one folder per brand so assets from different brands never mix:
 
 1. **Source order**: user-provided file → the brand's official press/media kit page → the live site (og:image, header logo `<img>`/inline SVG, `apple-touch-icon`, favicon).
 2. **Prefer SVG** (scales to any medium); PNG at ≥512px width otherwise. Keep a dark-background variant too when the brand publishes one (`logo-dark.svg`).
@@ -119,4 +127,4 @@ On request ("audit the brandbooks"), check each brand for: token cache staleness
 
 ## Registered brands
 
-Run `node scripts/list-styles.js --brands` for the live list. **acmecorp** is a checked-in fictional example demonstrating the brand-folder layout (brandbook + tokens + `acmecorp/assets/`); real brands are installed by copying from the private source repo (ABDotfiles `llm/claude_code/brands/` → `styles/brands/` via its `sync-brands.sh`).
+Run `node scripts/list-styles.js --brands` for the live list. **acmecorp** is a checked-in fictional example demonstrating the brand-folder layout (brandbook + tokens + `acmecorp/assets/`); real brands are installed either by pointing `KNOWLEDGEWARE_BRANDS_DIR` at a user-owned brands directory (preferred — survives updates) or by copying into `styles/brands/` from a private source repo (e.g., ABDotfiles `llm/claude_code/brands/` via its `sync-brands.sh`).

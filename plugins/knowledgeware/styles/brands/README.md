@@ -13,4 +13,9 @@ brands/
                            #   (one folder per brand — assets from different brands never mix)
 ```
 
-Real brands are installed by copying from a private source repo into this directory. To add, import, derive, or audit a brandbook — gather logos, or install a brand's Google Fonts locally (`scripts/install-fonts.sh`) — use the **brandware** skill. The plugin works fully without any brands installed: slideware falls back to the 5 generic styles, knowledgebase to its default palette, chartware to its default catalog.
+Real brands are installed in one of two ways:
+
+1. **Preferred — your own directory**: set `KNOWLEDGEWARE_BRANDS_DIR` (in `~/.claude/settings.json` under `"env"`) to a directory anywhere on disk with this same layout. It survives plugin updates, its entries shadow this directory on name collision, and its `DEFAULT` marker wins. See the plugin README, *Bring your own brands directory*.
+2. **Copy into this directory** from a private source repo. Note this directory is replaced on every plugin update — re-copy afterwards.
+
+To add, import, derive, or audit a brandbook — gather logos, or install a brand's Google Fonts locally (`scripts/install-fonts.sh`) — use the **brandware** skill. The plugin works fully without any brands installed: slideware falls back to the 5 generic styles, knowledgebase to its default palette, chartware to its default catalog.
