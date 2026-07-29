@@ -1,7 +1,7 @@
 {
   "name": "knowledgeware",
   "description": "Style-driven deliverable suite with a central brand registry. Four skills sharing one brandbook format: slideware (two output formats \u2014 .pptx via pptxgenjs, or single-file HTML via Reveal.js; asks which when unclear), knowledgebase (multi-page HTML knowledge bases; explicit invocation only \u2014 formerly study-guide), chartware (draw.io architecture diagrams), and brandware (brand/style registry manager \u2014 website derivation, logo-asset gathering, local Google Fonts installation). Ships 5 generic styles plus a fictional 'acmecorp' example brand; proprietary brandbooks stay in a private gitignored overlay. One visual identity, every medium.",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",
@@ -26,5 +26,14 @@
     "./skills/knowledgebase",
     "./skills/chartware",
     "./skills/brandware"
-  ]
+  ],
+  "mcpServers": {
+    "drawio": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@drawio/mcp"
+      ]
+    }
+  }
 }

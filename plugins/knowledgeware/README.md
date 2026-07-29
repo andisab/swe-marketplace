@@ -79,6 +79,5 @@ run after `claude plugin update knowledgeware` restores everything. See `styles/
 
 ## Requirements
 
-- **Node.js** — registry scripts and slideware's pptx build (pptxgenjs fetched at build time)
-- **draw.io MCP** — chartware only
+- **Node.js** — registry scripts, slideware's pptx build (pptxgenjs fetched at build time), and the bundled draw.io MCP server (`@drawio/mcp`, fetched via npx on first chartware use)
 - **Google Fonts access** — font installation (pptx) and font loading (HTML outputs); everything degrades gracefully offline
