@@ -54,6 +54,10 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 
 The point is **content-shape variety**, not visual-archetype rigidity. A deck that walks one consistent story can reuse a layout deliberately; a survey of unrelated topics should vary archetypes slide to slide. The failure mode is reaching for the same layout because the template defaulted to it. If you reuse an archetype twice without articulating why, swap one out. Archetype catalogs: [pptx/references/layout-patterns.md](pptx/references/layout-patterns.md) (12) · [html/references/layout-patterns.md](html/references/layout-patterns.md) (8).
 
+## Citations are clickable (shared)
+
+When a slide cites a source that has a URL — footnote lines, resources/further-reading slides, figure or data attributions, quote sources — make it a **live hyperlink**, not plain text. HTML format: a real `<a href="…" target="_blank" rel="noopener">` styled in the deck's muted caption treatment. pptx format: pptxgenjs `hyperlink` on the text run — `{ text: "AWS Bedrock pricing", options: { hyperlink: { url: "https://…" }, color: <inkMuted>, fontSize: 10 } }` (set the color explicitly or PowerPoint paints it default-blue). Link text is the human-readable source name, never a raw URL dumped on the slide. A citation the audience can't click is a citation they'll never check.
+
 ## Sample mimicry (shared principle: style only, never content)
 
 When the user provides a sample deck, derive palette, type pairing, layout patterns, motif, and density — then author **new** content in that visual language. **Mimicry overrides anti-monotony**: if the sample has a distinctive non-standard layout, echoing it matters more than the canonical archetypes. Extraction mechanics are per-format (pptx: render + markitdown; html: DevTools/CSS) — see the format guides.

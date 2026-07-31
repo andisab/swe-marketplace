@@ -1,7 +1,7 @@
 {
   "name": "knowledgeware",
   "description": "Style-driven deliverable suite with a central brand registry. Four skills sharing one brandbook format: slideware (two output formats — .pptx via pptxgenjs, or single-file HTML via Reveal.js; asks which when unclear), knowledgebase (multi-page HTML knowledge bases; explicit invocation only — formerly study-guide), chartware (diagrams and data charts in three media: Mermaid, hand-authored SVG, and draw.io), and brandware (brand/style registry manager — website derivation, logo-asset gathering, local Google Fonts installation). Ships 5 generic styles plus a fictional 'acmecorp' example brand; proprietary brandbooks stay in a user-owned directory (KNOWLEDGEWARE_BRANDS_DIR, survives plugin updates) or a private gitignored overlay. One visual identity, every medium.",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

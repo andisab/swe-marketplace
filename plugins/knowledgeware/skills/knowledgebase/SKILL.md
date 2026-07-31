@@ -17,6 +17,7 @@ Write as a **seasoned senior solutions architect / staff engineer** producing a 
 - **Runbook-first openings.** Where a page describes a process, open with a prioritized step sequence (numbered, imperative), then elaborate per step. Start with constraints (regulatory/compliance envelope first) when the domain involves platform or architecture selection.
 - Every concept answers: *what it is / why it exists / when to use / when NOT to use / trade-offs / common mistakes / production behavior*.
 - **Honest uncertainty wins.** Anything not confirmed against a primary source is marked `(unverified)`. An honest gap plus a verification plan beats a confident wrong number. Never invent figures.
+- **Citations are clickable.** Whenever a source has a URL, cite it as a live link (`<a href="…" target="_blank" rel="noopener">`) — in refs callouts, footnotes, inline source mentions, and the maintenance page's volatility/fact-checking tables alike. A bare domain name or plain-text title the reader must google is a broken citation.
 
 ## Process pipeline
 
@@ -37,7 +38,7 @@ Use `templates/page-template.html` (this skill's directory). It provides: Anthro
 Run the verification suite in `references/build-process.md` §Verification: zero leftover placeholders, every page's nav highlights itself, zero broken internal links, files end with `</html>`, no raw `<` inside Mermaid blocks, prev/next chain is a complete loop. A page is not done until it passes.
 
 ### 5. Design for decay
-Volatile facts (prices, quotas, GA statuses, availability) rot. Every volatile table carries a `Last verified` stamp; the site gets a **maintenance page** with a master volatility table (what / where it appears / authoritative source / change frequency / check cadence), known upcoming changes, a changelog, and a re-verification runbook. Treat >90-day-old stamps as stale.
+Volatile facts (prices, quotas, GA statuses, availability) rot. Every volatile table carries a `Last verified` stamp; the site gets a **maintenance page** with a master volatility table (what / where it appears / authoritative source **as a clickable link** / change frequency / check cadence), known upcoming changes, a changelog, and a re-verification runbook. Treat >90-day-old stamps as stale. Every source named on the maintenance page links directly to the page a maintainer would open to re-verify — the runbook should be executable by clicking down the table.
 
 ## Brand override (brandware)
 

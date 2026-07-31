@@ -50,6 +50,8 @@ Stable conceptual tables (pattern selectors, checklists) are not stamped.
 <div class="callout refs"><span class="lab">References</span><ul><li><a href="…">…</a></li></ul></div>
 ```
 
+**Citations are clickable — everywhere.** Any source with a URL is a live `<a href="…" target="_blank" rel="noopener">` link: refs callouts, footnotes, inline "per the docs" mentions, figure/table source captions, and the maintenance page's volatility and changelog tables. Link text = the human-readable source name ("AWS Bedrock pricing", not the raw URL); never a plain-text title or bare domain the reader has to search for.
+
 **Comparison cards** — for side-by-side prose comparisons:
 ```html
 <div class="grid2"><div class="card"><h4>Option A</h4><p>…</p></div><div class="card">…</div></div>

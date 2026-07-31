@@ -69,7 +69,7 @@ for f in *.html; do echo "$f => $(grep -o 'class=\"pagenav\">.*' $f | grep -o 'h
 
 ## Maintenance page (required for any site with volatile facts)
 
-Sections: the volatility problem (brief) · the Last-verified convention (>90 days = stale, re-verify before external use) · **master volatility table** (data class | where it appears | authoritative source URL/console | change frequency | check cadence | method) · known upcoming changes with dates · change-detection strategies (RSS/release-note subscriptions; a monthly verification-sweep prompt for a Claude session; pre-deliverable checklist scoped to what the deliverable touches) · the update runbook (update research/ first, then page tables, bump stamps, log in changelog) · changelog table.
+Sections: the volatility problem (brief) · the Last-verified convention (>90 days = stale, re-verify before external use) · **master volatility table** (data class | where it appears | authoritative source URL/console **as a clickable `<a>` link** | change frequency | check cadence | method) · known upcoming changes with dates · change-detection strategies (RSS/release-note subscriptions; a monthly verification-sweep prompt for a Claude session; pre-deliverable checklist scoped to what the deliverable touches) · the update runbook (update research/ first, then page tables, bump stamps, log in changelog) · changelog table. Every source cited anywhere on this page is a live link — the re-verification runbook should be executable by clicking down the volatility table.
 
 ## Rendering chartware posters without a draw.io MCP
 
