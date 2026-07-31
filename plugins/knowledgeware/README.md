@@ -8,7 +8,7 @@
 |---|---|---|
 | **slideware** | Slide decks in two formats: PowerPoint (`.pptx` via pptxgenjs) or single-file HTML (Reveal.js) | "Make me a pitch deck for X" — it asks pptx vs HTML when unclear |
 | **knowledgebase** | Multi-page, offline-capable HTML knowledge bases: field guides, handbooks, runbooks, study guides | Explicit invocation only: "use the knowledgebase skill to build a field guide on X" or `/knowledgebase` |
-| **chartware** | Enterprise-grade architecture diagrams via the draw.io MCP | "Draw a reference architecture for X" |
+| **chartware** | Diagrams & data charts in three media — Mermaid (text-first), hand-authored SVG (bar/line/donut/scatter/KPI/diagram templates), and draw.io via MCP (editable artifacts) | "Draw a reference architecture for X", "make an SVG chart of quarterly revenue" |
 | **brandware** | The registry manager: import/derive brandbooks, gather logos, install fonts, set defaults | "Derive a brandbook from example.com", "add a brand", "audit the brandbooks" |
 
 Skills activate on matching requests (see each `SKILL.md` description for exact triggers). Name a style or brand in any request — "in the acmecorp brand", "style-3" — and the deliverable renders in that identity.

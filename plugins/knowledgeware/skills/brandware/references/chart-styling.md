@@ -49,7 +49,7 @@ When charting on `bgDark` (or a dark brand like style-3/linear): raise gridline 
 
 - **slideware**: build charts as native pptxgenjs shapes/charts or pre-rendered SVG→PNG; colors are 6-char hex WITHOUT `#`. The deck's style tokens are already loaded — reuse them, don't re-derive.
 - **knowledgebase**: inline SVG or CSS-driven bars inherit the page's `:root` variables — reference `var(--accent)`, `var(--border)`, `var(--muted)` so charts flip correctly with light/dark theme. Mermaid is for diagrams, not data charts.
-- **chartware**: draw.io is a diagramming surface; use it for data charts only when the user explicitly asks — then apply this palette logic to the mxGraph `fillColor`/`strokeColor` values.
+- **chartware**: hand-authored SVG is chartware's default medium for data charts (`skills/chartware/references/svg-charts.md` + `templates/svg/`) — its templates already wire this palette logic through CSS custom properties. draw.io remains a diagramming surface; use it for data charts only when the user explicitly asks — then apply this palette logic to the mxGraph `fillColor`/`strokeColor` values.
 
 ## Squint test
 

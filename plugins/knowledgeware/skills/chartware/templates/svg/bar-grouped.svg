@@ -1,0 +1,86 @@
+<!-- chartware SVG template: grouped vertical bar chart
+     viewBox 720x400 · plot translate(48,32) · innerW 640 · innerH 350
+     Band math: step = innerW/n = 160 · barW = step*0.8 = 128 · grouped: subW 59, inner gap 10
+     yPx(v) = innerH * (1 - v/niceMax) = 350 - 0.14v   (niceMax 2500, ticks step 500)
+     Adapt: swap data/labels, recompute y/heights, keep class system + token block.
+     IMPORTANT when inlining >1 chart per page: keep class prefix cw-bar shared (identical rules),
+     but rename any id="" you add (gradients/clips) with a per-chart slug. -->
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg"
+     class="cw-bar" role="img" aria-labelledby="cwbar-t cwbar-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwbar-t">Quarterly revenue by year ($K)</title>
+  <desc id="cwbar-d">Grouped bar chart. 2026 revenue rose from $1,200K in Q1 to $2,100K in Q4,
+    ahead of 2025 in every quarter; 2025 ranged from $900K to $1,750K.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-bar { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; }
+    @media (prefers-color-scheme: dark) {
+      .cw-bar { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent) */
+    .cw-bar { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); }
+    .cw-bar .grid  { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-bar .zero  { stroke:var(--cw-axis); stroke-width:1; }
+    .cw-bar .tick  { fill:var(--cw-muted); font-size:11px; }
+    .cw-bar .cat   { fill:var(--cw-muted); font-size:11px; }
+    .cw-bar .lgd   { fill:var(--cw-ink); font-size:11px; }
+    .cw-bar .s1    { fill:var(--cw-c1); }
+    .cw-bar .s2    { fill:var(--cw-c2); }
+    .cw-bar .bar   { transition:opacity .15s; }
+    .cw-bar:hover .bar { opacity:.45; }
+    .cw-bar .bar:hover { opacity:1; }
+  </style>
+
+  <!-- legend (always present for >=2 series; text wears ink, swatch carries color) -->
+  <g>
+    <rect x="524" y="10" width="12" height="12" rx="2" class="s1"/>
+    <text x="542" y="16" dy="0.32em" class="lgd">2026</text>
+    <rect x="594" y="10" width="12" height="12" rx="2" class="s2"/>
+    <text x="612" y="16" dy="0.32em" class="lgd">2025</text>
+  </g>
+
+  <g transform="translate(48,32)">
+    <!-- gridlines: horizontal only, drawn before marks; zero baseline darker, drawn last -->
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="280" x2="640" y2="280"/>
+      <line class="grid" x1="0" y1="210" x2="640" y2="210"/>
+      <line class="grid" x1="0" y1="140" x2="640" y2="140"/>
+      <line class="grid" x1="0" y1="70"  x2="640" y2="70"/>
+      <line class="grid" x1="0" y1="0"   x2="640" y2="0"/>
+      <line class="zero" x1="0" y1="350" x2="640" y2="350"/>
+    </g>
+    <!-- y tick labels: anchor end, x=-8, centered on gridline via dy -->
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="350" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="280" dy="0.32em">500</text>
+      <text class="tick" x="-8" y="210" dy="0.32em">1,000</text>
+      <text class="tick" x="-8" y="140" dy="0.32em">1,500</text>
+      <text class="tick" x="-8" y="70"  dy="0.32em">2,000</text>
+      <text class="tick" x="-8" y="0"   dy="0.32em">2,500</text>
+    </g>
+    <!-- bars: rounded on TOP only via path (rect rx rounds all 4). r = min(4, w/2, h).
+         <title> children give free native hover tooltips. -->
+    <g>
+      <path class="bar s1" d="M16,350 L16,186 A4,4 0 0 1 20,182 L71,182 A4,4 0 0 1 75,186 L75,350 Z"><title>Q1 2026 — $1,200K</title></path>
+      <path class="bar s2" d="M85,350 L85,228 A4,4 0 0 1 89,224 L140,224 A4,4 0 0 1 144,228 L144,350 Z"><title>Q1 2025 — $900K</title></path>
+      <path class="bar s1" d="M176,350 L176,95 A4,4 0 0 1 180,91 L231,91 A4,4 0 0 1 235,95 L235,350 Z"><title>Q2 2026 — $1,850K</title></path>
+      <path class="bar s2" d="M245,350 L245,193 A4,4 0 0 1 249,189 L300,189 A4,4 0 0 1 304,193 L304,350 Z"><title>Q2 2025 — $1,150K</title></path>
+      <path class="bar s1" d="M336,350 L336,155.2 A4,4 0 0 1 340,151.2 L391,151.2 A4,4 0 0 1 395,155.2 L395,350 Z"><title>Q3 2026 — $1,420K</title></path>
+      <path class="bar s2" d="M405,350 L405,130 A4,4 0 0 1 409,126 L460,126 A4,4 0 0 1 464,130 L464,350 Z"><title>Q3 2025 — $1,600K</title></path>
+      <path class="bar s1" d="M496,350 L496,60 A4,4 0 0 1 500,56 L551,56 A4,4 0 0 1 555,60 L555,350 Z"><title>Q4 2026 — $2,100K</title></path>
+      <path class="bar s2" d="M565,350 L565,109 A4,4 0 0 1 569,105 L620,105 A4,4 0 0 1 624,109 L624,350 Z"><title>Q4 2025 — $1,750K</title></path>
+    </g>
+    <!-- x category labels at band centers -->
+    <g text-anchor="middle">
+      <text class="cat" x="80"  y="358" dy="0.71em">Q1</text>
+      <text class="cat" x="240" y="358" dy="0.71em">Q2</text>
+      <text class="cat" x="400" y="358" dy="0.71em">Q3</text>
+      <text class="cat" x="560" y="358" dy="0.71em">Q4</text>
+    </g>
+  </g>
+</svg>

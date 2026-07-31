@@ -1,0 +1,65 @@
+<!-- chartware SVG template: KPI / stat tile with sparkline
+     viewBox 260x140 · one <svg> per tile (a row of tiles = repeated SVGs, independently
+     responsive). RENAME id="cwkpi-fade" per tile or the gradients cross-wire.
+     Layout: label y=26 (11px UPPERCASE) · value y=60 (30px, tabular-nums) · delta chip
+     right of value · sparkline y 92–126 full-width minus padding.
+     Sparkline rules: no axes/grid/labels; inset y-range so peaks aren't clipped;
+     mark the LAST point only; 3:1–5:1 aspect. Tiles compared side-by-side MUST share
+     a spark y-domain or the comparison lies.
+     Delta color is semantic and PER-METRIC: "churn down" is good — the sign does not
+     pick the color, the metric's meaning does. -->
+<svg viewBox="0 0 260 140" width="260" height="140" xmlns="http://www.w3.org/2000/svg"
+     class="cw-kpi" role="img" aria-labelledby="cwkpi-t cwkpi-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:260px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwkpi-t">Revenue: $184.2K, up 12.4%</title>
+  <desc id="cwkpi-d">KPI tile. Monthly revenue is $184.2K, up 12.4% versus last month,
+    with a rising 10-week trend.</desc>
+  <style>
+    .cw-kpi { --_ink:#111827; --_muted:#6B7280; --_panel:#F8F9FB; --_border:#E5E7EB; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_pos:#3FA37A; --_neg:#D64550; }
+    @media (prefers-color-scheme: dark) {
+      .cw-kpi { --_ink:#E6E9EF; --_muted:#9CA3AF; --_panel:#141922; --_border:#2A2F3A; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_pos:#5FCB9C; --_neg:#F07682; }
+    }
+    .cw-kpi { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-panel:var(--panel,var(--_panel)); --cw-border:var(--border,var(--_border));
+              --cw-c1:var(--accent,var(--_c1)); --cw-pos:var(--_pos); --cw-neg:var(--_neg); }
+    .cw-kpi .tile  { fill:var(--cw-panel); stroke:var(--cw-border); stroke-width:1; }
+    .cw-kpi .label { fill:var(--cw-muted); font-size:11px; letter-spacing:.06em; }
+    .cw-kpi .value { fill:var(--cw-ink); font-size:30px; font-weight:600;
+                     font-variant-numeric:tabular-nums; }
+    .cw-kpi .delta { fill:var(--cw-pos); font-size:12px; font-weight:600;
+                     font-variant-numeric:tabular-nums; }
+    .cw-kpi .chip  { fill:var(--cw-pos); fill-opacity:.12; }
+    .cw-kpi .tri   { fill:var(--cw-pos); }
+    .cw-kpi .spark { stroke:var(--cw-c1); }
+    .cw-kpi .dot   { fill:var(--cw-c1); }
+  </style>
+  <defs>
+    <linearGradient id="cwkpi-fade" gradientUnits="userSpaceOnUse" x1="0" y1="92" x2="0" y2="130">
+      <stop offset="0" stop-color="#4969E1" style="stop-color:var(--cw-c1,#4969E1)" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#4969E1" style="stop-color:var(--cw-c1,#4969E1)" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect class="tile" x="0.5" y="0.5" width="259" height="139" rx="10"/>
+  <text class="label" x="16" y="26">REVENUE</text>
+  <text class="value" x="16" y="62">$184.2K</text>
+
+  <!-- delta chip: triangle drawn as a path (glyph availability varies), not ▲ -->
+  <g>
+    <rect class="chip" x="150" y="42" width="66" height="20" rx="4"/>
+    <path class="tri" d="M158,54 L163,46 L168,54 Z"/>
+    <text class="delta" x="173" y="52" dy="0.32em">+12.4%</text>
+  </g>
+
+  <!-- sparkline: 10 points, x = 16 + 228*i/9, y inset 94–126 within the 92–130 band -->
+  <path fill="url(#cwkpi-fade)" stroke="none"
+        d="M16,123.9 L41.33,119.6 L66.67,121.8 L92,115.4 L117.33,111.1 L142.67,113.3
+           L168,105.8 L193.33,100.5 L218.67,102.6 L244,94.1 L244,130 L16,130 Z"/>
+  <polyline class="spark" fill="none" stroke-width="1.5"
+            stroke-linejoin="round" stroke-linecap="round"
+            points="16,123.9 41.33,119.6 66.67,121.8 92,115.4 117.33,111.1 142.67,113.3 168,105.8 193.33,100.5 218.67,102.6 244,94.1"/>
+  <circle class="dot" cx="244" cy="94.1" r="2.5"/>
+</svg>

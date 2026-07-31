@@ -1,0 +1,77 @@
+<!-- chartware SVG template: horizontal ranking bars
+     Use when labels are long or n > 8. SORT DESCENDING (unless a natural order exists).
+     viewBox 480x300 · plot translate(120,20) · innerW 320 · innerH 216
+     rowH 36 · barH = 0.62*rowH ≈ 22 · bar y_i = 36i+7 · width = innerW * v/100
+     Right end rounded only: r = min(4, barH/2, width). Value labels outside bar end.
+     Left margin (120) derived from longest category label: est ≈ chars * fontSize * 0.58 + 16. -->
+<svg viewBox="0 0 480 300" width="480" height="300" xmlns="http://www.w3.org/2000/svg"
+     class="cw-hbar" role="img" aria-labelledby="cwhbar-t cwhbar-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwhbar-t">Traffic share by channel (%)</title>
+  <desc id="cwhbar-d">Horizontal bar ranking. Search leads at 92%, followed by Direct 78%,
+    Referral 61%, Social 47%, Email 33%, Other 21%.</desc>
+  <style>
+    .cw-hbar { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_bg:#FFFFFF; --_c1:#4969E1; }
+    @media (prefers-color-scheme: dark) {
+      .cw-hbar { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_bg:#0B0E14; --_c1:#7B96F0; }
+    }
+    .cw-hbar { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+               --cw-grid:var(--border,var(--_grid)); --cw-bg:var(--bg,var(--_bg));
+               --cw-c1:var(--accent,var(--_c1)); }
+    .cw-hbar .grid { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-hbar .tick { fill:var(--cw-muted); font-size:11px; }
+    .cw-hbar .cat  { fill:var(--cw-ink); font-size:12px; }
+    .cw-hbar .val  { fill:var(--cw-ink); font-size:11px; font-variant-numeric:tabular-nums; }
+    .cw-hbar .s1   { fill:var(--cw-c1); }
+    .cw-hbar .bar  { transition:opacity .15s; }
+    .cw-hbar:hover .bar { opacity:.45; }
+    .cw-hbar .bar:hover { opacity:1; }
+  </style>
+
+  <g transform="translate(120,20)">
+    <!-- vertical gridlines (horizontal-bar charts grid on the value axis) -->
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0"   y1="0" x2="0"   y2="216"/>
+      <line class="grid" x1="80"  y1="0" x2="80"  y2="216"/>
+      <line class="grid" x1="160" y1="0" x2="160" y2="216"/>
+      <line class="grid" x1="240" y1="0" x2="240" y2="216"/>
+      <line class="grid" x1="320" y1="0" x2="320" y2="216"/>
+    </g>
+    <!-- bars, sorted descending; rounded right end only -->
+    <g>
+      <path class="bar s1" d="M0,7 L290.4,7 A4,4 0 0 1 294.4,11 L294.4,25 A4,4 0 0 1 290.4,29 L0,29 Z"><title>Search — 92%</title></path>
+      <path class="bar s1" d="M0,43 L245.6,43 A4,4 0 0 1 249.6,47 L249.6,61 A4,4 0 0 1 245.6,65 L0,65 Z"><title>Direct — 78%</title></path>
+      <path class="bar s1" d="M0,79 L191.2,79 A4,4 0 0 1 195.2,83 L195.2,97 A4,4 0 0 1 191.2,101 L0,101 Z"><title>Referral — 61%</title></path>
+      <path class="bar s1" d="M0,115 L146.4,115 A4,4 0 0 1 150.4,119 L150.4,133 A4,4 0 0 1 146.4,137 L0,137 Z"><title>Social — 47%</title></path>
+      <path class="bar s1" d="M0,151 L101.6,151 A4,4 0 0 1 105.6,155 L105.6,169 A4,4 0 0 1 101.6,173 L0,173 Z"><title>Email — 33%</title></path>
+      <path class="bar s1" d="M0,187 L63.2,187 A4,4 0 0 1 67.2,191 L67.2,205 A4,4 0 0 1 63.2,209 L0,209 Z"><title>Other — 21%</title></path>
+    </g>
+    <!-- category labels: right-aligned into the left margin, vertically centered on the bar -->
+    <g text-anchor="end">
+      <text class="cat" x="-8" y="18"  dy="0.32em">Search</text>
+      <text class="cat" x="-8" y="54"  dy="0.32em">Direct</text>
+      <text class="cat" x="-8" y="90"  dy="0.32em">Referral</text>
+      <text class="cat" x="-8" y="126" dy="0.32em">Social</text>
+      <text class="cat" x="-8" y="162" dy="0.32em">Email</text>
+      <text class="cat" x="-8" y="198" dy="0.32em">Other</text>
+    </g>
+    <!-- value labels just past each bar end (switch to inside-end when bar > 85% of innerW) -->
+    <g text-anchor="start">
+      <text class="val" x="300.4" y="18"  dy="0.32em">92%</text>
+      <text class="val" x="255.6" y="54"  dy="0.32em">78%</text>
+      <text class="val" x="201.2" y="90"  dy="0.32em">61%</text>
+      <text class="val" x="156.4" y="126" dy="0.32em">47%</text>
+      <text class="val" x="111.6" y="162" dy="0.32em">33%</text>
+      <text class="val" x="73.2"  y="198" dy="0.32em">21%</text>
+    </g>
+    <!-- value-axis tick labels -->
+    <g text-anchor="middle">
+      <text class="tick" x="0"   y="224" dy="0.71em">0</text>
+      <text class="tick" x="80"  y="224" dy="0.71em">25</text>
+      <text class="tick" x="160" y="224" dy="0.71em">50</text>
+      <text class="tick" x="240" y="224" dy="0.71em">75</text>
+      <text class="tick" x="320" y="224" dy="0.71em">100</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,71 @@
+<!-- chartware SVG template: donut with center KPI + legend
+     Technique: stroke-dasharray on circles (no arc-path math needed).
+     r chosen so circumference C = 2πr = 400 exactly → 1% of the ring = 4 units.
+     Segment i: stroke-dasharray="{len-2} {402-len}" stroke-dashoffset="-{cum+1}"
+       (the ±2/±1 carve a 2-unit gap between segments; both numbers must sum to C).
+     rotate(-90) starts the first segment at 12 o'clock, clockwise.
+     Ring outer edge = r + strokeWidth/2 = 63.66+12 = 75.66 — size the layout to THAT.
+     Max 5 segments + "Other" (muted), sorted descending.
+     Edge cases: a 100% segment renders NOTHING as an arc — use a plain circle;
+     same at exactly 0% (omit it). -->
+<svg viewBox="0 0 320 200" width="320" height="200" xmlns="http://www.w3.org/2000/svg"
+     class="cw-donut" role="img" aria-labelledby="cwdonut-t cwdonut-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:320px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwdonut-t">Cloud spend by provider</title>
+  <desc id="cwdonut-d">Donut chart. Of $2.4M total cloud spend: AWS 45%, Azure 25%,
+    GCP 18%, other providers 12%.</desc>
+  <style>
+    .cw-donut { --_ink:#111827; --_muted:#6B7280; --_bg:#FFFFFF;
+                --_c1:#4969E1; --_c2:#E8833A; --_c3:#3FA37A; --_c6:#8A97AD; }
+    @media (prefers-color-scheme: dark) {
+      .cw-donut { --_ink:#E6E9EF; --_muted:#9CA3AF; --_bg:#0B0E14;
+                  --_c1:#7B96F0; --_c2:#FFA45C; --_c3:#5FCB9C; --_c6:#6B7686; }
+    }
+    .cw-donut { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+                --cw-bg:var(--bg,var(--_bg));
+                --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2);
+                --cw-c3:var(--_c3); --cw-c6:var(--_c6); }
+    .cw-donut .seg  { fill:none; stroke-width:24; }
+    .cw-donut .g1   { stroke:var(--cw-c1); }
+    .cw-donut .g2   { stroke:var(--cw-c2); }
+    .cw-donut .g3   { stroke:var(--cw-c3); }
+    .cw-donut .g6   { stroke:var(--cw-c6); }
+    .cw-donut .f1   { fill:var(--cw-c1); }
+    .cw-donut .f2   { fill:var(--cw-c2); }
+    .cw-donut .f3   { fill:var(--cw-c3); }
+    .cw-donut .f6   { fill:var(--cw-c6); }
+    .cw-donut .big  { fill:var(--cw-ink); font-size:30px; font-weight:600;
+                      font-variant-numeric:tabular-nums; }
+    .cw-donut .cap  { fill:var(--cw-muted); font-size:11px; }
+    .cw-donut .lgd  { fill:var(--cw-ink); font-size:12px; }
+    .cw-donut .lgdv { fill:var(--cw-muted); font-size:12px; font-variant-numeric:tabular-nums; }
+  </style>
+
+  <!-- ring: C=400, so dash numbers are percent × 4 -->
+  <g transform="rotate(-90 100 100)">
+    <circle class="seg g1" cx="100" cy="100" r="63.66" stroke-dasharray="178 222" stroke-dashoffset="-1"><title>AWS — 45%</title></circle>
+    <circle class="seg g2" cx="100" cy="100" r="63.66" stroke-dasharray="98 302"  stroke-dashoffset="-181"><title>Azure — 25%</title></circle>
+    <circle class="seg g3" cx="100" cy="100" r="63.66" stroke-dasharray="70 330"  stroke-dashoffset="-281"><title>GCP — 18%</title></circle>
+    <circle class="seg g6" cx="100" cy="100" r="63.66" stroke-dasharray="46 354"  stroke-dashoffset="-353"><title>Other — 12%</title></circle>
+  </g>
+  <!-- center KPI -->
+  <text class="big" x="100" y="98"  text-anchor="middle">$2.4M</text>
+  <text class="cap" x="100" y="120" text-anchor="middle">total spend</text>
+
+  <!-- legend: swatch carries color, text wears ink -->
+  <g>
+    <rect class="f1" x="212" y="42"  width="12" height="12" rx="2"/>
+    <text class="lgd" x="232" y="48"  dy="0.32em">AWS</text>
+    <text class="lgdv" x="304" y="48"  dy="0.32em" text-anchor="end">45%</text>
+    <rect class="f2" x="212" y="70"  width="12" height="12" rx="2"/>
+    <text class="lgd" x="232" y="76"  dy="0.32em">Azure</text>
+    <text class="lgdv" x="304" y="76"  dy="0.32em" text-anchor="end">25%</text>
+    <rect class="f3" x="212" y="98"  width="12" height="12" rx="2"/>
+    <text class="lgd" x="232" y="104" dy="0.32em">GCP</text>
+    <text class="lgdv" x="304" y="104" dy="0.32em" text-anchor="end">18%</text>
+    <rect class="f6" x="212" y="126" width="12" height="12" rx="2"/>
+    <text class="lgd" x="232" y="132" dy="0.32em">Other</text>
+    <text class="lgdv" x="304" y="132" dy="0.32em" text-anchor="end">12%</text>
+  </g>
+</svg>

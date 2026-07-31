@@ -1,0 +1,104 @@
+<!-- chartware SVG template: smooth line + area fill, with muted comparison series
+     viewBox 720x400 · plot translate(48,32) · innerW 640 · innerH 350
+     Point scale (NOT band scale): x_i = innerW * i/(n-1); 7 points → step 106.67
+     yPx(v) = 350 * (1 - v/1000) = 350 - 0.35v · ticks step 200 (1-2-5-10 rule)
+     Smoothing: flat-tangent cubic — C x1+dx/2,y1  x2-dx/2,y2  x2,y2 — cannot overshoot in y.
+     Only smooth continuous data; keep comparison/prior series as a dashed straight polyline
+     (dash pattern doubles as a non-color encoding). fill="none" on every line is mandatory.
+     Area gradient MUST be gradientUnits="userSpaceOnUse" pinned to the plot rect —
+     the default objectBoundingBox breaks on flat series and desyncs multiple areas.
+     RENAME id="cwline-fade" with a per-chart slug if the page holds several charts. -->
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg"
+     class="cw-line" role="img" aria-labelledby="cwline-t cwline-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwline-t">Monthly active users, 2026 vs 2025 (thousands)</title>
+  <desc id="cwline-d">Line chart. 2026 MAU grew from 420K in January to 900K in July,
+    ahead of 2025 which grew from 380K to 640K over the same months.</desc>
+  <style>
+    .cw-line { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+               --_c1:#4969E1; --_c2:#8A97AD; }
+    @media (prefers-color-scheme: dark) {
+      .cw-line { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                 --_c1:#7B96F0; --_c2:#6B7686; }
+    }
+    .cw-line { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+               --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+               --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); }
+    .cw-line .grid { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-line .zero { stroke:var(--cw-axis); stroke-width:1; }
+    .cw-line .tick { fill:var(--cw-muted); font-size:11px; }
+    .cw-line .lbl  { fill:var(--cw-ink); font-size:11px; }
+    .cw-line .l1   { stroke:var(--cw-c1); }
+    .cw-line .l2   { stroke:var(--cw-c2); }
+    .cw-line .d1   { fill:var(--cw-c1); }
+    .cw-line .d2   { fill:var(--cw-c2); }
+  </style>
+  <defs>
+    <linearGradient id="cwline-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="350">
+      <stop offset="0" stop-color="#4969E1" style="stop-color:var(--cw-c1,#4969E1)" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#4969E1" style="stop-color:var(--cw-c1,#4969E1)" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- legend -->
+  <g>
+    <line class="l1" x1="508" y1="16" x2="524" y2="16" stroke-width="2.5"/>
+    <text class="lbl" x="530" y="16" dy="0.32em">2026</text>
+    <line class="l2" x1="578" y1="16" x2="594" y2="16" stroke-width="2" stroke-dasharray="6 3"/>
+    <text class="lbl" x="600" y="16" dy="0.32em">2025</text>
+  </g>
+
+  <g transform="translate(48,32)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="280" x2="640" y2="280"/>
+      <line class="grid" x1="0" y1="210" x2="640" y2="210"/>
+      <line class="grid" x1="0" y1="140" x2="640" y2="140"/>
+      <line class="grid" x1="0" y1="70"  x2="640" y2="70"/>
+      <line class="grid" x1="0" y1="0"   x2="640" y2="0"/>
+      <line class="zero" x1="0" y1="350" x2="640" y2="350"/>
+    </g>
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="350" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="280" dy="0.32em">200</text>
+      <text class="tick" x="-8" y="210" dy="0.32em">400</text>
+      <text class="tick" x="-8" y="140" dy="0.32em">600</text>
+      <text class="tick" x="-8" y="70"  dy="0.32em">800</text>
+      <text class="tick" x="-8" y="0"   dy="0.32em">1,000</text>
+    </g>
+
+    <!-- area first (under everything), then comparison line, then hero line on top -->
+    <path fill="url(#cwline-fade)" stroke="none"
+          d="M0,203 C53.33,203 53.33,154 106.67,154 C160,154 160,171.5 213.33,171.5
+             C266.67,171.5 266.67,108.5 320,108.5 C373.33,108.5 373.33,126 426.67,126
+             C480,126 480,66.5 533.33,66.5 C586.67,66.5 586.67,35 640,35
+             L640,350 L0,350 Z"/>
+    <polyline class="l2" fill="none" stroke-width="2" stroke-dasharray="6 3"
+              stroke-linejoin="round" stroke-linecap="round"
+              points="0,217 106.67,210 213.33,185.5 320,168 426.67,175 533.33,136.5 640,126"/>
+    <path class="l1" fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+          d="M0,203 C53.33,203 53.33,154 106.67,154 C160,154 160,171.5 213.33,171.5
+             C266.67,171.5 266.67,108.5 320,108.5 C373.33,108.5 373.33,126 426.67,126
+             C480,126 480,66.5 533.33,66.5 C586.67,66.5 586.67,35 640,35"/>
+    <!-- end-point markers + direct labels above the endpoints (right margin is too
+         narrow for side labels: estWidth(900K) ≈ 4*11*0.6 = 26px > 32-9px available) -->
+    <circle class="d1" cx="640" cy="35"  r="3.5"/>
+    <circle class="d2" cx="640" cy="126" r="3"/>
+    <text class="lbl" x="640" y="24"  text-anchor="end" font-weight="600"
+          paint-order="stroke fill" stroke-width="3" stroke-linejoin="round"
+          style="stroke:var(--cw-bg,#FFFFFF)">900K</text>
+    <text class="lbl" x="640" y="115" text-anchor="end"
+          paint-order="stroke fill" stroke-width="3" stroke-linejoin="round"
+          style="stroke:var(--cw-bg,#FFFFFF)">640K</text>
+
+    <g text-anchor="middle">
+      <text class="tick" x="0"      y="358" dy="0.71em">Jan</text>
+      <text class="tick" x="106.67" y="358" dy="0.71em">Feb</text>
+      <text class="tick" x="213.33" y="358" dy="0.71em">Mar</text>
+      <text class="tick" x="320"    y="358" dy="0.71em">Apr</text>
+      <text class="tick" x="426.67" y="358" dy="0.71em">May</text>
+      <text class="tick" x="533.33" y="358" dy="0.71em">Jun</text>
+      <text class="tick" x="640"    y="358" dy="0.71em">Jul</text>
+    </g>
+  </g>
+</svg>

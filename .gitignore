@@ -84,6 +84,9 @@ plugins/uploads/
 plugins/temp/
 .plugin-cache/
 
+# Claude Code machine-local project settings
+.claude/settings.local.json
+
 # knowledgeware: brandbooks are proprietary/brand-specific — only generic styles and
 # the fictional acmecorp example ship. plugins/knowledgeware/styles/brands/.gitignore
 # enforces this at the directory level; these rules are a repo-level backstop.

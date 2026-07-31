@@ -1,0 +1,87 @@
+<!-- chartware SVG template: scatter with trend line
+     viewBox 480x300 · plot translate(44,16) · innerW 420 · innerH 252
+     xPx(v) = 420*v/100 · yPx(v) = 252*(1 - v/80)
+     Scatter is the one chart type where a FULL grid (both axes) is correct.
+     Points: r 3.5 (2.5 when n>200), fill-opacity .65, 1px background-colored stroke —
+     the bg halo separates overlapping points better than opacity alone.
+     Encode magnitude by AREA if sizing bubbles: r = rMax * sqrt(v/vMax), never by radius.
+     Pad both domains ~5% so points don't sit on the frame.
+     Trend line: least squares — slope = Σ((x-x̄)(y-ȳ))/Σ((x-x̄)²), intercept = ȳ - slope·x̄,
+     drawn as a 2-point dashed line in the muted tone. -->
+<svg viewBox="0 0 480 300" width="480" height="300" xmlns="http://www.w3.org/2000/svg"
+     class="cw-scatter" role="img" aria-labelledby="cwsc-t cwsc-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwsc-t">Deploy frequency vs. change success rate</title>
+  <desc id="cwsc-d">Scatter plot of 12 teams. Teams deploying more often show higher
+    change success rates, rising from roughly 18% at 12 deploys/month to 75% at 94.</desc>
+  <style>
+    .cw-scatter { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+                  --_c1:#4969E1; }
+    @media (prefers-color-scheme: dark) {
+      .cw-scatter { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                    --_c1:#7B96F0; }
+    }
+    .cw-scatter { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+                  --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis);
+                  --cw-bg:var(--bg,var(--_bg)); --cw-c1:var(--accent,var(--_c1)); }
+    .cw-scatter .grid  { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-scatter .tick  { fill:var(--cw-muted); font-size:11px; }
+    .cw-scatter .axist { fill:var(--cw-muted); font-size:11px; }
+    .cw-scatter .pt    { fill:var(--cw-c1); fill-opacity:.65;
+                         stroke:var(--cw-bg); stroke-width:1; }
+    .cw-scatter .trend { stroke:var(--cw-muted); stroke-width:1.5; stroke-dasharray:5 4; }
+  </style>
+
+  <g transform="translate(44,16)">
+    <!-- full grid: both axes -->
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0"   y1="0" x2="0"   y2="252"/>
+      <line class="grid" x1="105" y1="0" x2="105" y2="252"/>
+      <line class="grid" x1="210" y1="0" x2="210" y2="252"/>
+      <line class="grid" x1="315" y1="0" x2="315" y2="252"/>
+      <line class="grid" x1="420" y1="0" x2="420" y2="252"/>
+      <line class="grid" x1="0" y1="0"   x2="420" y2="0"/>
+      <line class="grid" x1="0" y1="63"  x2="420" y2="63"/>
+      <line class="grid" x1="0" y1="126" x2="420" y2="126"/>
+      <line class="grid" x1="0" y1="189" x2="420" y2="189"/>
+      <line class="grid" x1="0" y1="252" x2="420" y2="252"/>
+    </g>
+    <!-- trend under points -->
+    <line class="trend" x1="21" y1="214.2" x2="411.6" y2="9.2"/>
+    <!-- points -->
+    <g>
+      <circle class="pt" cx="50.4"  cy="195.3" r="3.5"><title>Team A — 12 deploys, 18%</title></circle>
+      <circle class="pt" cx="84"    cy="170.1" r="3.5"><title>Team B — 20 deploys, 26%</title></circle>
+      <circle class="pt" cx="117.6" cy="182.7" r="3.5"><title>Team C — 28 deploys, 22%</title></circle>
+      <circle class="pt" cx="147"   cy="132.3" r="3.5"><title>Team D — 35 deploys, 38%</title></circle>
+      <circle class="pt" cx="176.4" cy="141.8" r="3.5"><title>Team E — 42 deploys, 35%</title></circle>
+      <circle class="pt" cx="210"   cy="100.8" r="3.5"><title>Team F — 50 deploys, 48%</title></circle>
+      <circle class="pt" cx="231"   cy="113.4" r="3.5"><title>Team G — 55 deploys, 44%</title></circle>
+      <circle class="pt" cx="264.6" cy="69.3"  r="3.5"><title>Team H — 63 deploys, 58%</title></circle>
+      <circle class="pt" cx="294"   cy="88.2"  r="3.5"><title>Team I — 70 deploys, 52%</title></circle>
+      <circle class="pt" cx="327.6" cy="44.1"  r="3.5"><title>Team J — 78 deploys, 66%</title></circle>
+      <circle class="pt" cx="357"   cy="56.7"  r="3.5"><title>Team K — 85 deploys, 62%</title></circle>
+      <circle class="pt" cx="394.8" cy="15.8"  r="3.5"><title>Team L — 94 deploys, 75%</title></circle>
+    </g>
+    <!-- axis labels -->
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="252" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="189" dy="0.32em">20</text>
+      <text class="tick" x="-8" y="126" dy="0.32em">40</text>
+      <text class="tick" x="-8" y="63"  dy="0.32em">60</text>
+      <text class="tick" x="-8" y="0"   dy="0.32em">80</text>
+    </g>
+    <g text-anchor="middle">
+      <text class="tick" x="0"   y="260" dy="0.71em">0</text>
+      <text class="tick" x="105" y="260" dy="0.71em">25</text>
+      <text class="tick" x="210" y="260" dy="0.71em">50</text>
+      <text class="tick" x="315" y="260" dy="0.71em">75</text>
+      <text class="tick" x="420" y="260" dy="0.71em">100</text>
+    </g>
+    <!-- axis titles -->
+    <text class="axist" x="210" y="281" text-anchor="middle">Deploys per month</text>
+    <text class="axist" x="-30" y="126" text-anchor="middle"
+          transform="rotate(-90 -30 126)">Success rate (%)</text>
+  </g>
+</svg>

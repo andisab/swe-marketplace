@@ -1,0 +1,113 @@
+<!-- chartware SVG template: node-and-arrow diagram (architecture / flow)
+     viewBox 900x416 — width ≈ typical rendered px width so font units ≈ px (legibility:
+     renderedFontPx = fontUnits × containerPx/viewBoxWidth; keep smallest label ≥ 11px).
+     Grid: coordinates on multiples of 4 · nodes 160–200 × 64 · column gutter 80 · row gutter 168.
+     Anchors: N/S/E/W midpoints of each rect; fan multiple exits at w·i/(n+1) — never stack.
+     Edges demonstrate: straight, dashed (async), flow-animated, and a Q-fillet elbow
+     (corner vertex as the Q control point; r = min(8, |dx|/2, |dy|/2)).
+     MARKERS DO NOT INHERIT from the edge that references them — currentColor / var() inside
+     a marker resolves against the marker's own ancestors, so one marker PER semantic color
+     (context-stroke is Safari-unsupported; use only as progressive enhancement).
+     refX 10.5 insets the tip so lines don't poke past arrowheads; butt caps on arrowed edges.
+     RENAME all id="" with a per-diagram slug when a page holds several diagrams. -->
+<svg viewBox="0 0 900 416" width="900" height="416" xmlns="http://www.w3.org/2000/svg"
+     class="cw-dg" role="img" aria-labelledby="cwdg-t cwdg-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:900px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwdg-t">Agent platform: request and data flow</title>
+  <desc id="cwdg-d">Architecture diagram. Requests enter the API gateway, flow to the agent
+    core which calls the tool runtime over MCP; the gateway publishes events to Kafka
+    asynchronously, and the agent core writes embeddings to the vector store and
+    artifacts to object storage.</desc>
+  <style>
+    .cw-dg { --_ink:#111827; --_muted:#6B7280; --_border:#CBD5E1; --_panel:#FFFFFF; --_bg:#FFFFFF;
+             --_edge:#94A3B8; --_c1:#4969E1; }
+    @media (prefers-color-scheme: dark) {
+      .cw-dg { --_ink:#E6E9EF; --_muted:#9CA3AF; --_border:#2B3A55; --_panel:#111A2E; --_bg:#0B1220;
+               --_edge:#7C8DB0; --_c1:#7B96F0; }
+    }
+    .cw-dg { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+             --cw-border:var(--border,var(--_border)); --cw-panel:var(--panel,var(--_panel));
+             --cw-bg:var(--bg,var(--_bg)); --cw-edge:var(--_edge); --cw-c1:var(--accent,var(--_c1)); }
+    /* nodes: surface fill + stroke carries identity; fill-opacity (NOT opacity) for tints
+       so the stroke stays crisp. Accent in at most 2 roles per the brand restraint rules. */
+    .cw-dg .node        { fill:var(--cw-panel); stroke:var(--cw-border); stroke-width:1.5; }
+    .cw-dg .node-accent { fill:var(--cw-c1); fill-opacity:.12; stroke:var(--cw-c1); stroke-width:1.5; }
+    .cw-dg .node-soft   { fill:var(--cw-muted); fill-opacity:.06; stroke:var(--cw-border); stroke-width:1.5; }
+    .cw-dg .group       { fill:var(--cw-muted); fill-opacity:.04; stroke:var(--cw-border);
+                          stroke-width:1; stroke-dasharray:6 4; }
+    .cw-dg .lbl   { fill:var(--cw-ink); font-size:13px; font-weight:500; text-anchor:middle; }
+    .cw-dg .sub   { fill:var(--cw-muted); font-size:11px; font-weight:400; }
+    .cw-dg .lane  { fill:var(--cw-muted); font-size:10px; letter-spacing:.08em; }
+    .cw-dg .edge  { fill:none; stroke:var(--cw-edge); stroke-width:1.75; stroke-linecap:butt; }
+    .cw-dg .edge-accent { stroke:var(--cw-c1); }
+    .cw-dg .edge-dashed { stroke-dasharray:6 5; }
+    .cw-dg .elbl  { fill:var(--cw-muted); font-size:11px;
+                    paint-order:stroke; stroke:var(--cw-bg); stroke-width:4; stroke-linejoin:round; }
+    /* flowing edge: keyframe offset MUST equal the dash period (8+6=14) for a seamless loop */
+    @media (prefers-reduced-motion: no-preference) {
+      .cw-dg .edge-flow { stroke-dasharray:8 6; animation:cwdg-flow 1.2s linear infinite; }
+      @keyframes cwdg-flow { to { stroke-dashoffset:-14; } }
+    }
+  </style>
+  <defs>
+    <!-- one marker per semantic edge color; refX 10.5 = tip inset -->
+    <marker id="cwdg-arrow" viewBox="0 0 10 10" refX="10.5" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#94A3B8" style="fill:var(--cw-edge,#94A3B8)"/>
+    </marker>
+    <marker id="cwdg-arrow-accent" viewBox="0 0 10 10" refX="10.5" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#4969E1" style="fill:var(--cw-c1,#4969E1)"/>
+    </marker>
+  </defs>
+
+  <!-- container group: dashed boundary, title inside top-left, 24+ padding to nodes -->
+  <rect class="group" x="76" y="56" width="768" height="120" rx="14"/>
+  <text class="lane" x="96" y="78">APPLICATION LAYER</text>
+  <!-- rotated lane label for the bottom row: rotate about its own anchor point -->
+  <text class="lane" x="36" y="352" transform="rotate(-90 36 352)" text-anchor="middle">DATA LAYER</text>
+
+  <!-- edges under nodes' labels but over the group fill; draw before labels -->
+  <path class="edge" d="M280,120 L380,120" marker-end="url(#cwdg-arrow)"/>
+  <path class="edge edge-accent edge-flow" d="M580,120 L660,120" marker-end="url(#cwdg-arrow-accent)"/>
+  <path class="edge edge-dashed" d="M190,152 L190,320" marker-end="url(#cwdg-arrow)"/>
+  <path class="edge" d="M447,152 L447,320" marker-end="url(#cwdg-arrow)"/>
+  <!-- Q-fillet elbow: corner vertex is the Q control point; right-angle route S→E→S -->
+  <path class="edge" d="M513,152 L513,228 Q513,236 521,236 L732,236 Q740,236 740,244 L740,320"
+        marker-end="url(#cwdg-arrow)"/>
+
+  <!-- edge labels: positioned text + paint-order halo in the BG token (never literal #fff),
+       offset ~10 units perpendicular from the line, on the long segment of elbows -->
+  <text class="elbl" x="330" y="110" text-anchor="middle">REST</text>
+  <text class="elbl" x="620" y="110" text-anchor="middle">MCP</text>
+  <text class="elbl" x="202" y="240" text-anchor="start">publish</text>
+  <text class="elbl" x="459" y="240" text-anchor="start">embeds</text>
+  <text class="elbl" x="626" y="226" text-anchor="middle">artifacts</text>
+
+  <!-- nodes: absolute coordinates, no transforms — moving a node is a one-number edit.
+       Text centering: y = cy + 0.35*fontSize; two lines start at cy − 1.25F/2 + 0.35F,
+       and every <tspan> repeats x= or the lines staircase. -->
+  <g>
+    <rect class="node" x="100" y="88" width="180" height="64" rx="8"/>
+    <text class="lbl" x="190" y="124.5">API Gateway</text>
+
+    <rect class="node-accent" x="380" y="88" width="200" height="64" rx="8"/>
+    <text class="lbl" x="480" y="116.5">Agent Core
+      <tspan class="sub" x="480" dy="1.25em">Claude API</tspan></text>
+
+    <rect class="node" x="660" y="88" width="160" height="64" rx="8"/>
+    <text class="lbl" x="740" y="124.5">Tool Runtime</text>
+
+    <rect class="node-soft" x="100" y="320" width="180" height="64" rx="8"/>
+    <text class="lbl" x="190" y="348.5">Kafka
+      <tspan class="sub" x="190" dy="1.25em">events.raw</tspan></text>
+
+    <rect class="node-soft" x="380" y="320" width="200" height="64" rx="8"/>
+    <text class="lbl" x="480" y="348.5">Vector Store
+      <tspan class="sub" x="480" dy="1.25em">pgvector</tspan></text>
+
+    <rect class="node-soft" x="660" y="320" width="160" height="64" rx="8"/>
+    <text class="lbl" x="740" y="356.5">Object Store</text>
+  </g>
+</svg>

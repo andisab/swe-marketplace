@@ -1,27 +1,81 @@
 ---
 name: chartware
-description: Generate enterprise-grade architecture diagrams using the draw.io MCP (drawio:open_drawio_xml) with a curated visual style system. Use this skill whenever the user asks to create architecture diagrams, reference architectures, system design diagrams, infrastructure diagrams, technology stack visualizations, or any technical diagram that should look professional and consistent. Also trigger when the user mentions "chartware", "pretty-arrows" (this skill's former name), "draw.io", "drawio", "mxGraph", or asks for diagrams in the style of their reference architecture. Covers agentic AI architectures, cloud architectures, data platform architectures, microservice diagrams, and layered system designs.
+description: Generate enterprise-grade diagrams and data charts in three media — Mermaid (text-first diagrams), hand-authored inline SVG (pixel-perfect charts and figures for HTML embedding), and draw.io via the drawio MCP (editable diagram artifacts) — with a curated visual style system wired to the plugin's brand registry. Use this skill whenever the user asks to create architecture diagrams, reference architectures, system design diagrams, infrastructure diagrams, flowcharts, sequence diagrams, org charts, technology stack visualizations, or any technical diagram that should look professional and consistent — and also for DATA charts (bar, line, area, donut, scatter, sparkline, KPI/stat tile, heatmap) drawn as SVG for web pages, docs, or standalone files. Also trigger when the user mentions "chartware", "pretty-arrows" (this skill's former name), "draw.io", "drawio", "mxGraph", "mermaid", "SVG chart", or asks for diagrams in the style of their reference architecture. The skill picks the medium by fit or honors the user's explicit choice.
 ---
 
-# draw.io Architecture Diagram Skill
+# chartware — Diagrams & Data Charts (Mermaid · SVG · draw.io)
 
-Generate professional, enterprise-grade architecture diagrams using the `drawio:open_drawio_xml` MCP tool with a consistent visual style system derived from a curated reference architecture.
+One skill, three media, one visual identity. Diagrams and charts resolve their colors from the same brand registry as slideware decks and knowledgebase sites.
 
-## When to Use
+## Choosing the medium
 
-- User requests any architecture or system design diagram
-- User asks for draw.io / mxGraph output
-- User wants a visual representation of a technology stack, data flow, or system topology
-- User says "diagram this", "draw this", "visualize this architecture"
+**An explicit user request always wins** ("as a mermaid diagram", "in draw.io", "as SVG"). Otherwise pick by fit — and say which medium you chose and why:
 
-## Before You Start
+| Medium | Choose when | Strengths | Limits |
+|---|---|---|---|
+| **Mermaid** | The diagram lives in markdown, a knowledgebase page, or an artifact; speed and text-maintainability matter more than exact layout | Renders natively in most targets; diffable; cheap to iterate | Auto-layout only — no pixel control; weak for data charts |
+| **SVG** | Data charts (default medium for them); polished figures embedded in HTML deliverables; standalone `.svg` files; print | Total control; themes with the page (light/dark); no dependencies | Hand-computed layout; not end-user editable |
+| **draw.io** | The user will open/edit/maintain the diagram; large layered reference architectures; a `.drawio` artifact is the deliverable | Real editor round-trip; the full curated style catalog | Needs the drawio MCP; heavier iteration loop |
 
-0. **Brand resolution (optional)**: if the user names a brand or style ("in the AAB style", "Provectus-branded"), resolve it from the registry — `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` first (if that env var is set — the user's own brands directory), then `styles/brands/<name>.md` (plugin root — two directories above this skill), falling through to `styles/<name>.md` for the generic defaults — and substitute its palette/typography into the style catalog per the **brandware skill's `references/consumer-mappings.md` §chartware**. The mapping is deliberately understated — surface fills with categorical strokes, brand accent in at most two roles, low-saturation tints; a branded diagram should read as the brand's document, not a poster of its colors. For data charts (bars, lines, KPIs) rather than diagrams, follow brandware's `references/chart-styling.md`. If the brand isn't installed, use the default catalog below and say so. When the user names no brand at all, check the `DEFAULT` marker (a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `styles/brands/DEFAULT`) and apply that identity if it resolves, telling the user; otherwise use the default catalog.
+Rules of thumb: flowchart in a README → Mermaid. Revenue chart in a report page → SVG. Enterprise reference architecture the client will maintain → draw.io. A diagram embedded in a knowledgebase/slideware deliverable → Mermaid if its auto-layout suffices, SVG when the layout must be exact.
+
+## Brand resolution (all media)
+
+If the user names a brand or style ("in the AAB style", "Provectus-branded"), resolve it from the registry — `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` first (if that env var is set — the user's own brands directory), then `styles/brands/<name>.md` (plugin root — two directories above this skill), falling through to `styles/<name>.md` for the generic defaults — and substitute its palette/typography per the **brandware skill's `references/consumer-mappings.md` §chartware**. The mapping is deliberately understated — surface fills with categorical strokes, brand accent in at most two roles, low-saturation tints; a branded diagram should read as the brand's document, not a poster of its colors. For data charts (bars, lines, KPIs) follow brandware's `references/chart-styling.md`. If the brand isn't installed, use the defaults below and say so. When the user names no brand at all, check the `DEFAULT` marker (a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `styles/brands/DEFAULT`) and apply that identity if it resolves, telling the user; otherwise use each medium's default styling.
+
+---
+
+## Medium 1: Mermaid
+
+For flowcharts, sequence diagrams, state machines, ER diagrams, gantt charts, and quick architecture sketches that live in text.
+
+**Embedding**: ` ```mermaid ` fences in markdown and artifact pages; `<pre class="mermaid">` blocks in HTML that loads mermaid (knowledgebase pages do). If a mermaid validation/render tool is available (`tool_search` for "mermaid"), validate the syntax before delivering; otherwise double-check quoting — labels with `()`, `/`, or `:` need `["..."]` quoting.
+
+**Branding**: apply the brandbook via an init block using the themeVariables mapping in brandware's `consumer-mappings.md` (§knowledgebase covers it): `primaryColor` = ~12% accent tint over bg · `primaryBorderColor` = accent · `primaryTextColor` = ink · `lineColor` = ink at ~70% (never the accent — edges recede) · `edgeLabelBackground` = bg · `fontFamily` = brand sans:
+
+```
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDF0FC","primaryBorderColor":"#4969E1","primaryTextColor":"#111827","lineColor":"#4B5563","edgeLabelBackground":"#FFFFFF","fontFamily":"Inter, sans-serif"}}}%%
+```
+
+**Discipline**: keep node labels short (wrap with `<br/>`); prefer `flowchart TD/LR` direction that matches reading order; subgraphs for layers/containers; don't fight the auto-layout — if you're adding invisible edges to force positions, switch to SVG or draw.io and say so.
+
+---
+
+## Medium 2: SVG (charts & figures)
+
+Hand-authored inline SVG — the default medium for **data charts**, and the right one for polished diagrams embedded in HTML.
+
+**Read `references/svg-charts.md` before drawing** — it holds the mechanics: pixel-space viewBox + margin convention, scale/tick math (1-2-5-10), per-chart-type geometry (rounded-top bar paths, flat-tangent curve smoothing, the C=400 donut trick), text rules (`dy="0.32em"`, width estimation, halos), the three-layer theming token block (page-token inheritance + dark mode), accessibility pattern, and the pitfall list.
+
+**Start from a template** in `templates/svg/` and adapt data, scales, and labels:
+
+| Request | Template |
+|---|---|
+| Vertical bars, grouped comparison | `bar-grouped.svg` |
+| Ranking, long labels, n > 8 | `bar-horizontal.svg` |
+| Trend over time, with comparison series | `line-area.svg` |
+| Parts of a whole, share breakdown | `donut.svg` |
+| Correlation, distribution | `scatter.svg` |
+| Headline metric + delta + trend | `kpi-tile.svg` |
+| Node-and-arrow diagram, flow, architecture | `diagram-flow.svg` |
+
+**Workflow**: pick template → substitute data and recompute coordinates (show your scale math in a comment) → apply brand tokens (chrome from the brandbook per `chart-styling.md`; series 1 = accent) → rename all `id=""` attributes with a per-chart slug → verify. To verify visually, write the SVG into a minimal HTML page and screenshot it with the Playwright browser tools (as in the draw.io loop below); check for label collisions, clipped text at the viewBox edges, and dark-mode legibility. If no browser tools are available, deliver anyway and say the visual check was skipped.
+
+**Delivery**: inline `<svg>` for HTML pages (inherits page theme via CSS custom properties); standalone `.svg` file needs the `xmlns` attribute and self-contained `<style>` (templates have both). For export to PNG/PPTX, bake literal hex — `var()` doesn't survive rasterizers.
+
+---
+
+## Medium 3: draw.io
+
+Editable, enterprise-grade diagrams via the `drawio:open_drawio_xml` MCP tool with the curated style catalog.
+
+### Before You Start
+
 1. **Read the style reference**: `view` the file at `references/styles.md` in this skill's directory. It contains every style string, color constant, and element template you need.
 2. **Load the draw.io MCP**: Call `tool_search` with query `"drawio"` to ensure the `open_drawio_xml` tool is available. The plugin bundles the official `@drawio/mcp` server, so the tool is present wherever the plugin is installed (npx fetches it on first use). If the tool truly can't be found, fall back to writing the `.drawio` XML to a file and tell the user to open it in draw.io.
 3. **Clarify scope** with the user if the request is ambiguous — ask whether they want a full layered reference architecture or a focused subsystem view.
 
-## Template Selection
+### Template Selection
 
 Consult `templates/` to start from a template instead of building from scratch:
 
@@ -34,9 +88,9 @@ Consult `templates/` to start from a template instead of building from scratch:
 
 Start by reading the appropriate template and adapting node labels, counts, and connections.
 
-## Diagram Composition Workflow
+### Diagram Composition Workflow
 
-### Step 1: Plan the Layout
+#### Step 1: Plan the Layout
 
 Architecture diagrams use a **layered vertical layout** with **lateral category sidebars**:
 
@@ -57,7 +111,7 @@ Use a grid of **multiples of 10px**. Standard spacings:
 - Container padding: 20-30px inside edges
 - Sidebar offset from main column: 60-80px
 
-#### Per-Type Layout Guidance
+##### Per-Type Layout Guidance
 
 - **Flow**: top-to-bottom or left-to-right; decision diamonds inline between process boxes; 160×50px process boxes, 160×90px diamonds; "Yes" exits bottom, "No" exits right. **Alignment is critical**: center all elements on the same x-axis (top-to-bottom flow) or y-axis (left-to-right flow) so connectors are perfectly vertical or horizontal. Use `exitX=0.5;exitY=1` + `entryX=0.5;entryY=0` for vertical connections, `exitX=1;exitY=0.5` + `entryX=0;entryY=0.5` for horizontal branches.
   - **Off-branch center invariant**: Any two nodes connected by a vertical edge must share the same horizontal center. Formula: `x + width/2` must be identical for both source and target. Off-branch shapes (error paths, reject paths) AND all their downstream nodes on the same column must use a consistent center. If a side node is `x=660 w=160` (center=740), every node below it on that branch must also be centered at 740 (e.g., END oval at `x=680 w=120`).
@@ -70,7 +124,7 @@ Use a grid of **multiples of 10px**. Standard spacings:
   - **Self-messages / internal processing**: To show an actor processing internally, place a short text annotation (`style="text;html=1;..."`) at the correct y position on the activation bar rather than drawing a self-loop arrow. Alternatively use a self-referencing edge with waypoints that jog right by 50px from the activation bar.
 - **Org chart**: top-down tree; 120×50px nodes; 60px vertical gap between rows; 40px horizontal gap between siblings; no arrowheads on edges.
 
-### Step 2: Choose Element Types
+#### Step 2: Choose Element Types
 
 Consult `references/styles.md` for the full catalog. Key element types:
 
@@ -93,7 +147,7 @@ Consult `references/styles.md` for the full catalog. Key element types:
 | `text_protocol` | Small annotation on arrows (e.g., "REST / JSON RPC", "MCP") |
 | `frame_label_left` | Rotated vertical text labeling a sidebar group |
 
-### Step 3: Build the XML
+#### Step 3: Build the XML
 
 Structure every diagram as:
 
@@ -122,11 +176,11 @@ Structure every diagram as:
 - Never use double hyphens (`--`) inside XML comments.
 - Set the page background to the diagram background color via the `<mxGraphModel>` attributes if needed.
 
-### Step 4: Render
+#### Step 4: Render
 
 Call `drawio:open_drawio_xml` with the complete XML string. Set `dark` to `"false"` (these styles are designed for light mode).
 
-### Step 5: Visual Verification Loop (Playwright)
+#### Step 5: Visual Verification Loop (Playwright)
 
 After rendering, use Playwright to inspect the result and iterate. Max **3 rounds**.
 
@@ -156,7 +210,7 @@ The draw.io editor will be the active tab after `drawio:open_drawio_xml` opens i
 
 **Patch strategy:** Edit only the affected cells — adjust `x`, `y`, `width`, `height`, or `style`. Do not regenerate the full XML unless the layout is fundamentally broken. Targeted edits are faster and less error-prone.
 
-## Style Quick Reference
+### Style Quick Reference
 
 These are the most-used style strings. See `references/styles.md` for the complete catalog.
 
@@ -164,7 +218,7 @@ These are the most-used style strings. See `references/styles.md` for the comple
 > Font is **Quicksand** via Google Fonts. Replace `FONT_SRC` with:
 > `https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DQuicksand`
 
-### Color Reference
+#### Color Reference
 
 ```
 Text:
@@ -192,7 +246,7 @@ Stroke:
   arrow navy       #0B4D6A  (static)
 ```
 
-### Core Style Strings
+#### Core Style Strings
 
 ```
 box_standard:
@@ -232,7 +286,7 @@ arrow_primary:
   vsdxID=54;edgeStyle=none;startArrow=block;endArrow=block;startSize=5;endSize=5;strokeColor=#0B4D6A;verticalAlign=middle;html=1;labelBackgroundColor=none;rounded=1;fontColor=#EEEEEE;fontFamily=Quicksand;fontSource=FONT_SRC;flowAnimation=1;strokeWidth=3;startFill=1;
 ```
 
-## Example: Minimal Two-Layer Diagram
+### Example: Minimal Two-Layer Diagram
 
 ```xml
 <mxGraphModel>
@@ -255,7 +309,7 @@ arrow_primary:
 </mxGraphModel>
 ```
 
-## Tips for High-Quality Output
+### Tips for High-Quality Output
 
 - **Width consistency**: Layer headers and containers at the same level should share the same width.
 - **Vertical rhythm**: Keep consistent spacing between layers. The eye reads top-to-bottom; maintain the layered gravity.
@@ -265,7 +319,7 @@ arrow_primary:
 - **Container nesting**: Max 2 levels deep. Beyond that, flatten and use visual grouping (background color + proximity) instead.
 - **LLM logos**: For foundational model provider logos, use a container with a note like "Cloud-Native LLM Providers" and list names as text. Don't attempt to embed external images unless the user provides URLs.
 
-## Diagram Types Supported
+### Diagram Types Supported
 
 1. **Full Reference Architecture** — Multi-layer enterprise view with sidebars (Security, Ops, Governance) and right-side integrations (Agents, Tools, Models)
 2. **Focused Subsystem** — Single-container deep dive (e.g., "Agentic Application" with internal layers)
