@@ -1,6 +1,6 @@
 ---
 name: brandware
-description: Central brand and style registry manager for the knowledgeware plugin (formerly "steez"). Houses the canonical brandbook .md files, derived token JSONs, and brand assets (logos, wordmarks) that the slideware, knowledgebase, and chartware skills resolve named brands/styles from. Load this skill when (a) a consumer skill needs to resolve a brand/style referenced by name (e.g., "use the Provectus brand", "in the AAB style"), (b) the user asks to add, import, derive, edit, or audit a brandbook, or to set or change the default brand/style, (c) the user wants to derive a style from a live website or import one from a file/Google Drive, (d) the user wants brand assets like logos gathered for a brand, or (e) the user says "brandware" or "steez". Do NOT trigger on generic mentions of branding, marketing, or visual design that aren't about applying or managing a stored visual identity.
+description: Central brand and style registry manager for the knowledgeware plugin (formerly "steez"). Houses the canonical brandbook .md files, derived token JSONs, and brand assets (logos, wordmarks) that the slideware, knowledgebase, and chartware skills resolve named brands/styles from. Load this skill when (a) a consumer skill needs to resolve a brand/style referenced by name (e.g., "use the AcmeCorp brand", "in the AAB style"), (b) the user asks to add, import, derive, edit, or audit a brandbook, or to set or change the default brand/style, (c) the user wants to derive a style from a live website or import one from a file/Google Drive, (d) the user wants brand assets like logos gathered for a brand, or (e) the user says "brandware" or "steez". Do NOT trigger on generic mentions of branding, marketing, or visual design that aren't about applying or managing a stored visual identity.
 ---
 
 # brandware — Brand & Style Registry
@@ -40,7 +40,7 @@ skills/brandware/references/
 ## Rules
 
 1. **The `.md` is canonical.** Tokens JSON is a derived cache (regenerate with `node scripts/load-style.js <name> -o styles/brands/tokens/<name>.json`). If they disagree, the `.md` wins; consumers auto-invalidate stale caches by mtime.
-2. **Brands are private; styles are public.** The 5 default styles ship with the plugin. Brandbooks under `styles/brands/` are proprietary/brand-specific content, kept out of the plugin repository (`.gitignore`d) and copied in from a private source repo. Never commit a brandbook to the plugin repo.
+2. **Brands are private; styles are public.** The 5 default styles ship with the plugin. Brandbooks under `styles/brands/` are proprietary/brand-specific content, kept out of the plugin repository (`.gitignore`d) and copied in from a private source repo. Never commit a brandbook to the plugin repo. *Documented exception*: slideware's canonical sample decks (`skills/slideware/pptx/assets/samples/`) include derived token JSONs and rendered previews of publicly-derived identities — they exist to demonstrate layout quality, are not registry entries, and are the only brand-derived content allowed in the repo.
 3. **Graceful degradation.** Consumers must work when no brand is installed: slideware falls back to its five default styles, knowledgebase to its default palette, chartware to its default catalog. Brands add named identities; they are never a hard dependency.
 4. **Brand shadows default.** On a name collision: `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` wins over `styles/brands/<name>.md`, which wins over `styles/<name>.md`.
 5. **Prefer the user directory when it exists.** Anything inside the plugin install (`styles/brands/`) is wiped by plugin updates. When `KNOWLEDGEWARE_BRANDS_DIR` is set, write new brandbooks, token caches, assets, and the DEFAULT marker there. When it isn't set and the user imports a brand, warn them it won't survive updates and suggest setting the env var (in `~/.claude/settings.json` under `"env"`, so it's present in every session).
@@ -75,7 +75,8 @@ Filesystem-driven — no code edits. **Destination**: `$KNOWLEDGEWARE_BRANDS_DIR
 - **From scratch or by hand**: write `<dest>/<name>.md` following `references/brandbook-spec.md`.
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it in, then normalize toward the spec if role tables are missing.
 - **From Google Drive**: `bash scripts/fetch-resource.sh <share-url> <dest>/<name>.md` (file must be "Anyone with the link").
-- **Pre-cache tokens** (optional but recommended): `node scripts/load-style.js <name> -o <dest>/tokens/<name>.json`.
+
+Token caches are internals — consumers derive and refresh them automatically (rule 1); never present cache commands to the user as a setup step.
 
 ### Set a default brand
 
@@ -95,12 +96,12 @@ Derivation is a **heuristic, not an authority** — it scrapes HTML + linked CSS
 
 ### Gather brand assets (logos and similar)
 
-When adding or enriching a brand, collect its visual assets into the brand's own folder `<dest>/<brand>/assets/` (`<dest>` per §Add / import), named by role (e.g., `provectus/assets/logo-light.svg`, `aab/assets/wordmark.png`, `nyt/assets/favicon.png`) — one folder per brand so assets from different brands never mix:
+When adding or enriching a brand, collect its visual assets into the brand's own folder `<dest>/<brand>/assets/` (`<dest>` per §Add / import), named by role (e.g., `acmecorp/assets/logo-light.svg`, `aab/assets/wordmark.png`, `nyt/assets/favicon.png`) — one folder per brand so assets from different brands never mix:
 
 1. **Source order**: user-provided file → the brand's official press/media kit page → the live site (og:image, header logo `<img>`/inline SVG, `apple-touch-icon`, favicon).
 2. **Prefer SVG** (scales to any medium); PNG at ≥512px width otherwise. Keep a dark-background variant too when the brand publishes one (`logo-dark.svg`).
 3. **Record what you gathered** in the brandbook under an `## Assets` section: filename, source URL, retrieval date, and any usage constraint noted by the brand.
-4. **Respect provenance**: assets fetched from a brand's site are for that brand's own deliverables (a Provectus deck uses the Provectus logo). Never place one brand's assets in another brand's output.
+4. **Respect provenance**: assets fetched from a brand's site are for that brand's own deliverables (an AcmeCorp deck uses the AcmeCorp logo). Never place one brand's assets in another brand's output.
 
 Consumers embed assets by absolute path resolved from the registry (slideware `addImage`, knowledgebase `<img>`, chartware only when the user explicitly asks for a logo in a diagram).
 
@@ -115,8 +116,8 @@ Brandbooks **name** fonts (in the `## Typography` CSS variables); the registry s
 Install a brand's fonts locally (macOS `~/Library/Fonts`, Linux `~/.local/share/fonts`):
 
 ```bash
-bash scripts/install-fonts.sh <brand|style|font name>   # e.g. provectus, style-1, "Lora"
-bash scripts/install-fonts.sh --check provectus          # report without installing
+bash scripts/install-fonts.sh <brand|style|font name>   # e.g. acmecorp, style-1, "Lora"
+bash scripts/install-fonts.sh --check acmecorp          # report without installing
 ```
 
 The installer resolves a registry name to its sans/serif/mono families, skips system/web-safe fonts and anything already installed, fetches TTFs from Google Fonts, and names files `GF-<Family>-<n>.ttf` so re-runs overwrite instead of duplicating. Non–Google-Fonts families (proprietary faces) are reported for manual installation — note where to obtain them in the brandbook's `## Typography` or `## Assets` section.

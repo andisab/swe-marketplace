@@ -1,4 +1,4 @@
-# Knowledgeware Build Process
+# Knowledgebase Skill — Build Process
 
 The parallel-build playbook for sites larger than ~4 pages, plus the verification suite every build must pass. Field-tested on a 20-page build (July 2026).
 
@@ -73,8 +73,4 @@ Sections: the volatility problem (brief) · the Last-verified convention (>90 da
 
 ## Rendering chartware posters without a draw.io MCP
 
-1. Author the mxGraph XML per the `chartware` skill (its style catalog + layout invariants).
-2. Wrap in a local HTML page: `<div class="mxgraph" data-mxgraph='{"nav":false,"resize":true,"toolbar":"","edit":null,"xml":"<ESCAPED XML>"}'></div><script src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>` (build the JSON with `json.dumps` + `html.escape`).
-3. Serve over localhost (`python3 -m http.server`) — Playwright blocks `file://`.
-4. Screenshot the `div.mxgraph` element at device scale; inspect; ≤3 patch rounds (typical fixes: `labelBackgroundColor=#FFFFFF` so branch labels lift off edges; box overlaps; center-alignment).
-5. Ship PNG + `.drawio.xml` source into `diagrams/`; kill the server.
+Follow the canonical headless-render workflow in the chartware skill: `skills/chartware/references/drawio-layout.md` §Rendering without the draw.io MCP. Ship the resulting PNG + `.drawio.xml` source into this site's `diagrams/` folder.

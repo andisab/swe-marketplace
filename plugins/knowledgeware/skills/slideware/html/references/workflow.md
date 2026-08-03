@@ -49,7 +49,7 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/polish-deck.py ./inde
 
 ## Choosing a style
 
-If the user names one (`style-2`, a brandbook like `provectus`, etc.), use it — names resolve from the plugin registry (`styles/` + `styles/brands/`).
+If the user names one (`style-2`, a brandbook like `acmecorp`, etc.), use it — names resolve from the plugin registry (`styles/` + `styles/brands/`).
 
 If they describe an aesthetic ("warm, editorial, serif headings") or point to a website, run:
 

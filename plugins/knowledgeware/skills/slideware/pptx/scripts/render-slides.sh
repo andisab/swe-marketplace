@@ -24,29 +24,23 @@ for candidate in soffice libreoffice "/Applications/LibreOffice.app/Contents/Mac
   fi
 done
 
+# Optional tooling: preview rendering is a QA enhancement, never a build requirement.
+# Missing tools → NOTE + exit 0 so callers deliver the deck and report the skipped check.
 if [ -z "$SOFFICE" ]; then
   cat >&2 <<EOF
-ERROR: LibreOffice is required to render slides to images.
-
-Install it:
-  brew install --cask libreoffice            # macOS
-  sudo apt-get install -y libreoffice        # Debian/Ubuntu
-  sudo dnf install -y libreoffice            # Fedora
-
-Then re-run this command.
+NOTE: LibreOffice not found — skipping preview render. The deck is still valid.
+To enable previews: brew install --cask libreoffice (macOS) ·
+sudo apt-get install -y libreoffice (Debian/Ubuntu) · sudo dnf install -y libreoffice (Fedora)
 EOF
-  exit 3
+  exit 0
 fi
 
 if ! command -v pdftoppm >/dev/null 2>&1; then
   cat >&2 <<EOF
-ERROR: pdftoppm is required (from poppler).
-
-Install it:
-  brew install poppler                       # macOS
-  sudo apt-get install -y poppler-utils      # Debian/Ubuntu
+NOTE: pdftoppm (poppler) not found — skipping preview render. The deck is still valid.
+To enable previews: brew install poppler (macOS) · sudo apt-get install -y poppler-utils (Debian/Ubuntu)
 EOF
-  exit 4
+  exit 0
 fi
 
 TMPDIR="$(mktemp -d -t pptx-render.XXXXXX)"

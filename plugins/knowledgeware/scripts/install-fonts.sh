@@ -4,7 +4,7 @@
 # rendering (HTML decks load fonts via <link> and don't need this).
 #
 # Usage:
-#   bash install-fonts.sh <brand-or-style-name>   # e.g. provectus — installs its sans/serif/mono
+#   bash install-fonts.sh <brand-or-style-name>   # e.g. acmecorp — installs its sans/serif/mono
 #   bash install-fonts.sh "Plus Jakarta Sans" "Lora"   # explicit family names
 #   bash install-fonts.sh --check <name>          # report only, install nothing
 #

@@ -1,40 +1,90 @@
 # knowledgeware
 
-**One visual identity, every medium.** Four skills that produce polished deliverables — slide decks, multi-page HTML knowledge bases, architecture diagrams — all rendering from a single shared brand/style registry. Define your visual identity once; every deck, site, and diagram matches.
+**One visual identity, every medium.** Slide decks, knowledge-base sites, and diagrams that all render from the same style — define your visual identity once and every deliverable matches.
 
-## The four skills
+**Works out of the box.** Five built-in styles, a fictional example brand, no setup. Your own brands are optional — add them when you're ready (see *Advanced* below).
 
-| Skill | What it makes | How to invoke |
+## What you get
+
+Four skills. Ask for the deliverable in plain language; the right skill activates.
+
+| Skill | What it gives you |
+|---|---|
+| **slideware** | Slide decks as real PowerPoint files or as self-contained HTML (Reveal.js) — your choice; it asks when unclear. Visually reviews its own output and fixes mistakes when preview tooling is available. |
+| **knowledgebase** | Multi-page, offline-capable HTML reference sites — field guides, handbooks, runbooks, study guides — written in a rigorous engineering voice, with a maintenance section designed so a scheduled agent task can periodically re-verify and update the content. Explicit invocation only ("use the knowledgebase skill…"). |
+| **chartware** | Diagrams and data charts in three media: Mermaid (quick, text-first), SVG (pixel-perfect charts and figures), or draw.io (editable artifacts — best for complicated DAGs and layered architectures). Follows your brand automatically. |
+| **brandware** | Teaches the other three what your colors, fonts, and logos are. Define a brand by hand, import one from a file — or point it at a website and let it derive the style from the live CSS and assets. |
+
+Name any style or brand in any request — "in the acmecorp brand", "style-3" — and the deliverable renders in that identity. A **brandbook** is just one `.md` file describing a visual identity; the built-in `acmecorp` example shows the format.
+
+## Try it
+
+Copy-paste and adapt:
+
+- *"Use slideware to create a Reveal.js presentation from this markdown document."*
+- *"Make me a pitch deck for our Q4 platform roadmap."* (it will ask: PowerPoint or HTML?)
+- *"Use chartware to create a draw.io DAG of the services in this repository."*
+- *"Make an SVG bar chart of quarterly revenue for this page."*
+- *"Use the knowledgebase skill to create a field guide on TensorFlow. I'd like it to cover…"*
+- *"Use chartware for all diagrams in the generated knowledgebase document."*
+- *"Use brandware to build a brand style from https://example.com and set it as the default."*
+
+After that last one, every deck, site, and diagram uses that identity until you say otherwise.
+
+## The five built-in styles
+
+Pick by name (`style-1` … `style-5`) or let the skill choose:
+
+| Style | Personality | Use for |
 |---|---|---|
-| **slideware** | Slide decks in two formats: PowerPoint (`.pptx` via pptxgenjs) or single-file HTML (Reveal.js) | "Make me a pitch deck for X" — it asks pptx vs HTML when unclear |
-| **knowledgebase** | Multi-page, offline-capable HTML knowledge bases: field guides, handbooks, runbooks, study guides | Explicit invocation only: "use the knowledgebase skill to build a field guide on X" or `/knowledgebase` |
-| **chartware** | Diagrams & data charts in three media — Mermaid (text-first), hand-authored SVG (bar/line/donut/scatter/KPI/diagram templates), and draw.io via MCP (editable artifacts) | "Draw a reference architecture for X", "make an SVG chart of quarterly revenue" |
-| **brandware** | The registry manager: import/derive brandbooks, gather logos, install fonts, set defaults | "Derive a brandbook from example.com", "add a brand", "audit the brandbooks" |
+| **style-1** — Editorial Light | Warm cream canvas, serif headings, coral accent — "a thoughtful long-form article" | Research write-ups, polished pitches with gravitas |
+| **style-2** — Minimal | Pure white, single sans, indigo accent under 5% of the page | Product announcements, design-led decks |
+| **style-3** — Dark Precision | Deep dark canvas, tight tracking, bright violet | Engineering reviews, premium SaaS material |
+| **style-4** — Warm Sage | Warm gray, outlined-not-filled containers, sage green | Technical write-ups that should feel hand-crafted |
+| **style-5** — Material Olive | Material Design 3 palette: olive/sage/teal on cream-green | Roadmaps, work wanting natural authority |
 
-Skills activate on matching requests (see each `SKILL.md` description for exact triggers). Name a style or brand in any request — "in the acmecorp brand", "style-3" — and the deliverable renders in that identity.
+## Requirements
 
-## How the registry works
+**Required:**
+- **Node.js** — slideware builds and the registry scripts; draw.io diagrams additionally use the bundled MCP server (fetched via npx on first use). Mermaid and SVG output need nothing.
+- **Python 3** — slideware's deck-QA scripts.
 
+**Optional — never blocking.** Skills detect what's missing, deliver anyway, and tell you which check was skipped:
+
+| Tool | Used for | Without it | Install |
+|---|---|---|---|
+| **LibreOffice** | pptx slide previews (visual QA) | deck still builds; no preview review | `brew install --cask libreoffice` · `sudo apt-get install -y libreoffice` |
+| **poppler** (`pdftoppm`) | pptx slide previews | same as above | `brew install poppler` · `sudo apt-get install -y poppler-utils` |
+| **Playwright MCP** (or Claude in Chrome) | chartware & slideware visual verification loops | output still produced; no automated screenshot review | `claude plugin install playwright@claude-plugins-official` |
+| **markitdown** | reading an existing `.pptx` (style mimicry, rebuilds) | can't extract text from existing decks | `pip install markitdown` |
+| **Google Fonts access** | brand font installation (pptx) and font loading (HTML) | system-font fallbacks | — |
+
+---
+
+*Everything below is advanced — you don't need it to use the plugin.*
+
+## Using your own brand
+
+The easy way is to just ask: *"add a brand for example.com"* — the brandware skill derives the style, gathers logos, records provenance, and stores it in the right place. Set it as your default with *"set example as the default brand"* (or `echo example > $BRANDS/DEFAULT`).
+
+Manual routes, if you prefer (`$BRANDS` = your brands directory, next section — or `<plugin-root>/styles/brands` without one):
+
+```bash
+# 1. Derive from a live website (heuristic — review the result by hand)
+node scripts/derive-style.js https://example.com -o $BRANDS/example.md
+
+# 2. Import an existing .md/.css brandbook (or fetch from Google Drive)
+cp ~/my-brandbook.md $BRANDS/example.md
+bash scripts/fetch-resource.sh <drive-share-url> $BRANDS/example.md
+
+# 3. Write one by hand: skills/brandware/references/brandbook-spec.md + the acmecorp example
 ```
-styles/                    # the registry (plugin root)
-├── style-1.md … style-5.md   # 5 generic styles, ship with the plugin
-├── tokens/                    # derived JSON caches for the styles
-└── brands/                    # brandbooks inside the plugin install (user-local, gitignored)
-$KNOWLEDGEWARE_BRANDS_DIR/     # YOUR brands directory — anywhere you like (see next section)
-├── DEFAULT                    # optional: one line naming your default identity
-├── <name>.md                  # canonical brandbook per brand
-├── tokens/<name>.json         # derived token cache (regenerable)
-└── <name>/assets/             # per-brand logos, wordmarks
-```
 
-- A **brandbook** is one `.md` file describing a visual identity — palette, typography, layout, components — following `skills/brandware/references/brandbook-spec.md`. The checked-in `acmecorp` brand is a complete fictional example.
-- **Resolution order**: named brand (your directory first, then `styles/brands/<name>.md`) → named generic style (`styles/<name>.md`) → the `DEFAULT` marker (when nothing is named; your directory's marker wins) → each skill's bundled fallback. Brands shadow generic styles on name collision.
-- Every consumer maps the same brandbook onto its medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a knowledge-base site, and a diagram built from the same brand look like one document family.
-- Inventory at any time: `node scripts/list-styles.js` (flags: `--brands`, `--names`, `--json`).
+Logos and wordmarks live in a per-brand folder: `$BRANDS/example/assets/`. Fonts install automatically when slideware builds a pptx; to install a brand's Google Fonts manually, `bash scripts/install-fonts.sh example`.
 
-## Bring your own brands directory
+## Your own brands directory (survives plugin updates)
 
-Since brands are proprietary or often personalized, knowledgeware ships only the five generic styles (plus the fictional `acmecorp` example) out of the box — but lets you both **a)** build and designate your own directory of brands and **b)** designate your default go-to brand or style, in one step. Point `KNOWLEDGEWARE_BRANDS_DIR` at any directory you own:
+Since brands are proprietary or personal, keep them in a directory **you** own, anywhere on disk, and point the plugin at it:
 
 ```jsonc
 // ~/.claude/settings.json — set it here (not just your shell profile),
@@ -46,79 +96,24 @@ Since brands are proprietary or often personalized, knowledgeware ships only the
 }
 ```
 
-The directory follows the same conventions as `styles/brands/`:
-
 ```
 ~/my-brands/
-├── DEFAULT                # optional: one line naming your go-to brand, e.g. "provectus"
+├── DEFAULT                # optional: one line naming your go-to brand, e.g. "acmecorp"
 ├── <name>.md              # a brandbook
-├── tokens/<name>.json     # derived cache (regenerable)
-└── <name>/assets/         # any gathered logos
+├── tokens/<name>.json     # derived cache (regenerated automatically)
+└── <name>/assets/         # logos, wordmarks
 ```
 
-Because it lives outside the plugin install, **everything in it survives plugin updates** — no re-syncing after `claude plugin update knowledgeware`. It's also a natural thing to make a private git repo. Entries here shadow same-named plugin entries, and its `DEFAULT` marker wins over the plugin's.
+Because it lives outside the plugin install, **everything in it survives plugin updates** — nothing to re-sync, ever. It's also a natural thing to make a private git repo. Entries here shadow same-named plugin entries, and its `DEFAULT` marker wins.
 
-Without the env var, everything below still works — brands just live in `styles/brands/` inside the plugin install and must be re-copied after each update (see *Surviving plugin updates*).
+Without the env var, brands go in `styles/brands/` inside the plugin install — which plugin updates replace. In that mode, keep originals elsewhere and re-copy after each update (`cp -Rp ~/my-brands/. <plugin-root>/styles/brands/`); see `styles/brands/README.md`.
 
-## Add a custom brand
+## How resolution works
 
-Three routes, all filesystem-driven — no code edits. `$BRANDS` below means your `KNOWLEDGEWARE_BRANDS_DIR` (or `<plugin-root>/styles/brands` without one):
-
-```bash
-cd <plugin-root>   # e.g. ~/.claude/plugins/cache/<marketplace>/knowledgeware/<version>
-
-# 1. Derive from a live website (heuristic — review the result by hand)
-node scripts/derive-style.js https://example.com -o $BRANDS/example.md
-
-# 2. Import an existing .md/.css brandbook (or fetch from Google Drive)
-cp ~/my-brandbook.md $BRANDS/example.md
-bash scripts/fetch-resource.sh <drive-share-url> $BRANDS/example.md
-
-# 3. Write one by hand, following the spec + the acmecorp example
-#    skills/brandware/references/brandbook-spec.md
+```
+$KNOWLEDGEWARE_BRANDS_DIR/     # your directory (highest precedence)
+styles/brands/                 # brandbooks inside the plugin install
+styles/                        # the 5 generic styles (lowest)
 ```
 
-Then (optional but recommended):
-
-```bash
-node scripts/load-style.js example -o $BRANDS/tokens/example.json  # pre-cache tokens
-bash scripts/install-fonts.sh example      # install its Google Fonts locally (needed for pptx)
-mkdir -p $BRANDS/example/assets            # drop logo-light.svg / logo-dark.svg here
-```
-
-Or just ask: *"add a brand for example.com"* — the brandware skill runs this workflow, gathers logos, and records provenance in the brandbook.
-
-## Set your brand as the default
-
-```bash
-echo example > $BRANDS/DEFAULT
-```
-
-From then on, every deck, knowledge base, and diagram uses that identity unless a request names a different one. Remove the file to return to the built-in defaults. `list-styles.js` shows the current default with a `DEFAULT` tag.
-
-## Surviving plugin updates
-
-If you set `KNOWLEDGEWARE_BRANDS_DIR` (see *Bring your own brands directory*), there's nothing to do — your brands live outside the plugin and updates can't touch them.
-
-Without it, `styles/brands/` lives inside the plugin install directory, and **plugin updates replace that directory** — your brandbooks, tokens, assets, and `DEFAULT` marker are wiped. Keep the originals in a private repo (brandbooks are usually proprietary and should not be committed to a public plugin fork) and re-copy them after each update. A sync script as simple as:
-
-```bash
-cp -Rp ~/my-brands/. <plugin-root>/styles/brands/
-```
-
-run after `claude plugin update knowledgeware` restores everything. See `styles/brands/README.md`.
-
-## Requirements
-
-- **Node.js** — registry scripts, slideware's pptx build (pptxgenjs fetched at build time), and the bundled draw.io MCP server (`@drawio/mcp`, fetched via npx on first chartware use)
-- **Google Fonts access** — font installation (pptx) and font loading (HTML outputs); everything degrades gracefully offline
-
-### Optional tooling
-
-Everything below enhances a workflow but is never required — skills detect what's missing, deliver what they can, and point here.
-
-| Tool | Used by | Without it | Install |
-|---|---|---|---|
-| **LibreOffice** | slideware pptx slide previews | deck still builds; no preview PNGs | `brew install --cask libreoffice` (macOS) · `sudo apt-get install -y libreoffice` (Debian/Ubuntu) |
-| **poppler** (`pdftoppm`) | slideware pptx slide previews | same as above | `brew install poppler` · `sudo apt-get install -y poppler-utils` |
-| **Playwright MCP** | chartware & slideware visual verification loops | diagrams/decks still produced; no automated screenshot review | `claude plugin install playwright@claude-plugins-official` |
+Named brand → named generic style → the `DEFAULT` marker (when nothing is named; your directory's marker wins) → each skill's bundled fallback. Same-named entries shadow in that order. Every consumer maps the same brandbook onto its medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a site, and a diagram from the same brand look like one document family. Inventory at any time: `node scripts/list-styles.js` (`--brands`, `--names`, `--json`).

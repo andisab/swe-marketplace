@@ -28,7 +28,7 @@ Format guide for `.pptx` output. Read [../SKILL.md](../SKILL.md) first for forma
 - **Multi-line text needs `breakLine: true`** on each segment.
 - **Unicode bullets in plain strings create DOUBLE bullets** — use `{ bullet: true }` in options.
 - **No gradient fills** — use a gradient image background instead.
-- **LibreOffice required** for preview rendering: `brew install --cask libreoffice`.
+- **LibreOffice is optional** — it powers preview rendering only. Without it, build and deliver the deck, say the visual check was skipped, and point the user to the plugin README's "Optional tooling" section.
 
 The pre-render alignment checklist lives in `assets/templates/starter-deck.js` as comments — read it there *while* writing slide code, not abstractly here.
 

@@ -57,7 +57,7 @@ See [workflow.md](references/workflow.md) for both. Don't pay the full-path tax 
 Inspect the deck in a real browser via an MCP whenever one is available — an interactive session sees fonts loading, transitions, and fragment states that static captures can't:
 
 1. **Claude in Chrome** (`mcp__claude-in-chrome__*`) — open the deck in a new tab and screenshot each slide (navigate with arrow-key presses via the `computer` tool). If the extension can't open `file://` URLs, serve the deck first: `python3 -m http.server 8010 -d <deck-dir>` → `http://localhost:8010/`.
-2. **Playwright MCP** (`mcp__playwright__*`) — `browser_navigate` to the deck (file:// or localhost), `browser_take_screenshot` per slide, advancing with `browser_press_key` ArrowRight.
+2. **Playwright MCP** (find its tools via `tool_search` for "playwright browser") — `browser_navigate` to the deck (file:// or localhost), `browser_take_screenshot` per slide, advancing with `browser_press_key` ArrowRight.
 3. **Fallback (no browser MCP — headless/CI):** `bash ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/render-slides.sh ./index.html ./preview/` — Puppeteer per-slide PNGs (or a bare `chrome --headless` single-slide capture if Puppeteer isn't installed). Then read every PNG at full size.
 
 Whichever tool captures the slides, the review bar is the same: inspect **every** slide, find ≥1 issue, fix, re-render, repeat 2-3 cycles.

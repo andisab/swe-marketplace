@@ -46,9 +46,9 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 - pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (pre-built caches in `tokens/` next to each registry's brandbooks).
 - html consumes a **YAML-frontmatter `style.md`** — `node $PLUGIN/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md` (converts any registry brandbook or CSS file).
 
-**Fonts**: brandbooks name fonts; nothing embeds them. For pptx authoring/preview the fonts must be installed locally — `bash $PLUGIN/scripts/install-fonts.sh <brand|style|font name>` fetches them from Google Fonts (see brandware). HTML decks load Google Fonts via `<link>`, so viewers need nothing.
+**Fonts (handle silently)**: brandbooks name fonts; nothing embeds them. When building **pptx**, after resolving the style run `bash $PLUGIN/scripts/install-fonts.sh --check <name>` and, if Google Fonts are missing, install them with the same script without asking — just mention it in one line. Non–Google-Fonts families can't be auto-installed: fall back per the brandbook and tell the user which face to install manually. HTML decks load Google Fonts via `<link>`, so viewers (and you) need nothing installed.
 
-**Missing tooling**: pptx previews need LibreOffice + poppler (`render-slides.sh` errors with install hints when they're absent) and visual review needs Playwright browser tools. When any of these are missing, still build and deliver the deck, say which check was skipped, and point the user to the plugin README's "Optional tooling" section for install commands.
+**Missing tooling**: pptx previews need LibreOffice + poppler (`render-slides.sh` prints a NOTE and exits cleanly when they're absent — no PNGs means the check was skipped) and visual review needs browser MCP tools (find them via `tool_search`). When any of these are missing, still build and deliver the deck, say which check was skipped, and point the user to the plugin README's "Optional tooling" section for install commands.
 
 ## Anti-monotony rule (shared)
 

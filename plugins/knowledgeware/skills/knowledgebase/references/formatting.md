@@ -1,4 +1,4 @@
-# Knowledgeware Formatting Reference
+# Knowledgebase Skill — Formatting Reference
 
 The complete HTML idiom for knowledgebase sites. The template at `templates/page-template.html` supplies the CSS/JS chrome; this file defines how to fill it.
 
@@ -80,7 +80,7 @@ flowchart TD
 ```
 Rules: ≤12 nodes; `TD` for decision trees, `LR` for pipelines; **no raw `<` `>` in labels** (breaks HTML parsing before Mermaid sees it — write "under 200K" or `&lt;`); `<br/>` allowed inside quoted labels for two-line nodes. Vendor `mermaid.min.js` into the site folder (`curl -sL -o mermaid.min.js https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js`).
 
-**Poster diagrams (chartware)** — for the site's 2–4 flagship diagrams. Author via the `chartware` skill conventions (Quicksand font, semantic colors: blue decisions `#D4E1F5`/`#7EA6E0`, green viable-outcome terminals `#97D077`, red governance/constraint notes `#FF0000`, navy edges `#0B4D6A`; orthogonal edges; center-alignment invariant; `labelBackgroundColor=#FFFFFF` on branch labels so they lift off the lines). Render to PNG (if no draw.io MCP: embed the XML in a local page with `https://viewer.diagrams.net/js/viewer-static.min.js` served over localhost, screenshot the `div.mxgraph` element with Playwright at device scale). Embed:
+**Poster diagrams (chartware)** — for the site's 2–4 flagship diagrams. Author and render via the `chartware` skill (style catalog: `skills/chartware/references/styles.md`; layout invariants and the no-MCP headless render workflow: `skills/chartware/references/drawio-layout.md`). Embed:
 ```html
 <p style="text-align:center"><img src="diagrams/name.png" alt="…" style="max-width:100%;height:auto;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px"></p>
 <p class="tag" style="text-align:center">Poster diagram &mdash; source: <code>diagrams/name.drawio.xml</code> (draw.io).</p>

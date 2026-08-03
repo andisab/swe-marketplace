@@ -1,7 +1,7 @@
-# draw.io Style Reference — NateraRefArch
+# draw.io Style Reference — Enterprise Architecture Catalog
 
-Extracted directly from `NateraRefArch.drawio.xml` (90 unique styles). All color values use
-the `light-dark(light_color, dark_color)` CSS function for reference purposes.
+Extracted from a production enterprise reference architecture (90 unique styles). All color
+values use the `light-dark(light_color, dark_color)` CSS function for reference purposes.
 
 > **IMPORTANT — Generated XML must use static hex, not `light-dark()`.**
 > The `light-dark()` function is not resolved by app.diagrams.net and causes invisible elements.
