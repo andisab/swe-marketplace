@@ -6,7 +6,7 @@
 //   - body { background / color / font-family } declarations
 //   - hex colors by frequency (excluding pure black/white as noise)
 //   - border-radius distribution
-// Writes a brandbook.md compatible with scripts/load-brandbook.js.
+// Writes a both-layer brandbook.md (frontmatter + prose) compatible with scripts/load-style.js.
 //
 // Usage:
 //   node derive-style.js https://example.com -o ./my-brand.md
@@ -235,6 +235,41 @@ function pickPalette(colorCounts, body) {
   return { bg, ink, muted, border, accent };
 }
 
+// Frontmatter precision layer (see brandware references/brandbook-spec.md).
+// Both layers are emitted together so machine loaders (frontmatter) and
+// heuristic/model readers (prose) never disagree about the same brand.
+function emitFrontmatter({ name, sourceUrl, palette, type, layout }) {
+  const hx = (v) => v ? `'#${String(v).replace(/^#/, "")}'` : "null";
+  return `---
+name: ${name}
+description: Auto-derived from ${sourceUrl}
+
+palette:
+  bg:         ${hx(palette.bg)}
+  surface:    ${hx(palette.bg)}
+  ink:        ${hx(palette.ink)}
+  inkMuted:   ${hx(palette.muted)}
+  border:     ${hx(palette.border)}
+  accent:     ${hx(palette.accent)}
+
+type:
+  sans:      '${type.sans}'${type.serif ? `\n  serif:     '${type.serif}'` : ""}
+  heroPt:    44
+  sectionPt: 32
+  titlePt:   28
+  bodyPt:    14
+  captionPt: 10
+
+layout:
+  radiusIn:      ${+(layout.radiusPx / 96).toFixed(3)}
+  radiusPx:      ${layout.radiusPx}
+  shadowOpacity: 0.12
+  marginIn:      0.5
+---
+
+`;
+}
+
 function emitMarkdown({ name, sourceUrl, palette, type, layout, notes }) {
   const slideAdaptation = `
 ## Slide adaptation (16:9)
@@ -248,7 +283,7 @@ function emitMarkdown({ name, sourceUrl, palette, type, layout, notes }) {
 | Caption | 10 |
 `;
 
-  return `# ${name} — Derived style
+  return emitFrontmatter({ name, sourceUrl, palette, type, layout }) + `# ${name} — Derived style
 
 > Auto-derived from \`${sourceUrl}\` on ${new Date().toISOString().slice(0, 10)}.
 > This is a heuristic starting point. Verify against the live site if precision matters.
@@ -378,7 +413,7 @@ async function main() {
     console.error(`  Palette: bg=#${palette.bg} ink=#${palette.ink} accent=#${palette.accent} muted=#${palette.muted} border=#${palette.border}`);
     console.error(`  Typography: sans="${sans}"${serif ? `, serif="${serif}"` : ""}`);
     console.error(`  Layout: radius=${radiusPx}px`);
-    console.error(`  Next: node ${path.dirname(__filename)}/load-brandbook.js ${outPath} -o brandbook-tokens.json`);
+    console.error(`  Next: node ${path.dirname(__filename)}/load-style.js ${outPath} -o brandbook-tokens.json`);
   } else {
     process.stdout.write(md);
   }

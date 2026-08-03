@@ -310,14 +310,52 @@ function serializeFrontmatter(tokens, description) {
 
 // Build the output .md text for inputs that lack frontmatter.
 // - For .md inputs: prepend frontmatter, keep original body
-// - For .css inputs: prepend frontmatter + emit a minimal body
+// - For .css inputs: prepend frontmatter + a substantive prose body — the prose
+//   layer is what the pptx heuristic loader and the model-read consumers
+//   (chartware, knowledgebase) work from, so a one-line body would half-break them.
 function buildOutputMd(srcPath, srcText) {
   const tokens = build(srcPath);
   const fm = serializeFrontmatter(tokens, `Auto-derived from ${path.basename(srcPath)}`);
   if (/\.css$/i.test(srcPath)) {
-    return `${fm}# ${tokens.name}\n\n> Auto-derived from \`${path.basename(srcPath)}\`. Verify palette/typography against the source.\n`;
+    return fm + prosifyTokens(tokens, path.basename(srcPath));
   }
   return fm + srcText;
+}
+
+// Render tokens as a prose body following the brandbook spec's required sections.
+function prosifyTokens(t, srcLabel) {
+  const { palette: P, type: T, layout: L } = t;
+  const row = (role, hex) => hex ? `| ${role} | \`#${String(hex).replace(/^#/, "")}\` |\n` : "";
+  return `# ${t.name} — Derived style
+
+> Auto-derived from \`${srcLabel}\`. Heuristic starting point — verify palette/typography against the source before trusting.
+
+## Palette
+
+| Role | Hex |
+|------|-----|
+${row("Background", P.bg)}${row("Background dark (hero)", P.bgDark)}${row("Surface", P.surface)}${row("Ink primary", P.ink)}${row("Ink muted", P.inkMuted)}${row("Border", P.border)}${row("Brand (primary accent)", P.accent)}${row("Accent 2", P.accent2)}
+## Typography
+
+\`\`\`css
+--font-sans: '${T.sans}', sans-serif;${T.serif ? `\n--font-serif: '${T.serif}', serif;` : ""}${T.mono ? `\n--font-mono: '${T.mono}', monospace;` : ""}
+\`\`\`
+
+## Slide adaptation (16:9)
+
+| Role | pt |
+|------|----|
+| Title slide H1 | ${T.heroPt} |
+| Section title | ${T.sectionPt} |
+| Slide title | ${T.titlePt} |
+| Body | ${T.bodyPt} |
+| Caption | ${T.captionPt} |
+
+## Layout
+
+- Radius: ${L.radiusPx}px
+- Shadows: opacity ${L.shadowOpacity} (verify against the source)
+`;
 }
 
 function main() {

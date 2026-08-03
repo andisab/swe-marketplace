@@ -76,6 +76,38 @@ function tryPrebuiltTokens(input) {
   return cachePath;
 }
 
+// Parse the optional YAML frontmatter precision layer (the fixed two-level schema
+// in brandware references/brandbook-spec.md). When present, its values win over
+// the prose heuristics per-field; prose fills anything the block omits. Minimal
+// parser on purpose — the schema is flat sections of `key: value` lines.
+function parseFrontmatter(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/);
+  if (!m) return null;
+  const unquote = (v) => {
+    v = v.replace(/\s+#.*$/, "").trim();          // strip trailing comments
+    if (v === "" || v === "null") return null;
+    const q = v.match(/^['"](.*)['"]$/);
+    if (q) return q[1];
+    const n = Number(v);
+    return Number.isNaN(n) ? v : n;
+  };
+  const out = {};
+  let section = null;
+  for (const raw of m[1].split("\n")) {
+    if (!raw.trim() || raw.trim().startsWith("#")) continue;
+    const kv = raw.match(/^(\s*)([A-Za-z][\w-]*):\s*(.*)$/);
+    if (!kv) continue;
+    const [, indent, key, valRaw] = kv;
+    if (indent === "") {
+      if (valRaw.trim() === "") { section = key; out[section] = {}; }
+      else { section = null; out[key] = unquote(valRaw); }
+    } else if (section) {
+      out[section][key] = unquote(valRaw);
+    }
+  }
+  return out;
+}
+
 // strip "#" prefix, lowercase, ensure 6 chars
 function hex6(c) {
   if (!c) return null;
@@ -214,7 +246,10 @@ function harvestSlideScale(text) {
 
 function build(srcPath) {
   const text = fs.readFileSync(srcPath, "utf8");
-  const name = path.basename(srcPath).replace(/\.(md|css)$/i, "");
+
+  const fm = parseFrontmatter(text) || {};
+  const fmP = fm.palette || {}, fmT = fm.type || {}, fmL = fm.layout || {};
+  const name = fm.name || path.basename(srcPath).replace(/\.(md|css)$/i, "");
 
   const tableRoles = harvestTableRoles(text);
   const cssVars = harvestCssVars(text);
@@ -231,34 +266,36 @@ function build(srcPath) {
     hex6(cssVars["blue-primary"]) ||
     null;
 
+  // Frontmatter wins per-field; prose heuristics fill what it omits.
   const palette = {
-    bg:        tableRoles.bg        || hex6(cssVars["bg"]) || "FFFFFF",
-    bgDark:    tableRoles.bgDark    || hex6(cssVars["bg-dark"]) || null,
-    surface:   tableRoles.surface   || hex6(cssVars["surface"]) || hex6(cssVars["bg-card"]) || "FFFFFF",
-    surfaceAlt:tableRoles.surfaceAlt|| hex6(cssVars["surface-alt"]) || hex6(cssVars["bg-quiet"]) || null,
-    ink:       tableRoles.ink       || hex6(cssVars["ink"]) || "121212",
-    inkBody:   tableRoles.inkBody   || hex6(cssVars["ink-body"]) || null,
-    inkMuted:  tableRoles.inkMuted  || hex6(cssVars["ink-muted"]) || "5A5A5A",
-    inkFaint:  tableRoles.inkFaint  || hex6(cssVars["ink-faint"]) || null,
-    border:    tableRoles.border    || hex6(cssVars["rule"]) || hex6(cssVars["border"]) || "E0E0E0",
-    accent:    tableRoles.accent    || accentFromCss || "5E6AD2",
-    accent2:   tableRoles.accent2   || null,
-    success:   tableRoles.success   || "16A34A",
-    warning:   tableRoles.warning   || "D97706",
-    error:     tableRoles.error     || "DC2626",
+    bg:        hex6(fmP.bg)        || tableRoles.bg        || hex6(cssVars["bg"]) || "FFFFFF",
+    bgDark:    hex6(fmP.bgDark)    || tableRoles.bgDark    || hex6(cssVars["bg-dark"]) || null,
+    surface:   hex6(fmP.surface)   || tableRoles.surface   || hex6(cssVars["surface"]) || hex6(cssVars["bg-card"]) || "FFFFFF",
+    surfaceAlt:hex6(fmP.surfaceAlt)|| tableRoles.surfaceAlt|| hex6(cssVars["surface-alt"]) || hex6(cssVars["bg-quiet"]) || null,
+    ink:       hex6(fmP.ink)       || tableRoles.ink       || hex6(cssVars["ink"]) || "121212",
+    inkBody:   hex6(fmP.inkBody)   || tableRoles.inkBody   || hex6(cssVars["ink-body"]) || null,
+    inkMuted:  hex6(fmP.inkMuted)  || tableRoles.inkMuted  || hex6(cssVars["ink-muted"]) || "5A5A5A",
+    inkFaint:  hex6(fmP.inkFaint)  || tableRoles.inkFaint  || hex6(cssVars["ink-faint"]) || null,
+    border:    hex6(fmP.border)    || tableRoles.border    || hex6(cssVars["rule"]) || hex6(cssVars["border"]) || "E0E0E0",
+    accent:    hex6(fmP.accent)    || tableRoles.accent    || accentFromCss || "5E6AD2",
+    accent2:   hex6(fmP.accent2)   || tableRoles.accent2   || null,
+    success:   hex6(fmP.success)   || tableRoles.success   || "16A34A",
+    warning:   hex6(fmP.warning)   || tableRoles.warning   || "D97706",
+    error:     hex6(fmP.error)     || tableRoles.error     || "DC2626",
   };
 
+  const num = (v) => (typeof v === "number" && !Number.isNaN(v) ? v : null);
   const type = {
-    sans:  fonts.sans  || "Inter",
-    serif: fonts.serif || "Georgia",
-    mono:  fonts.mono  || "JetBrains Mono",
-    heroPt:    scale.heroPt    || 44,
-    sectionPt: scale.sectionPt || 32,
-    titlePt:   scale.titlePt   || 28,
-    bodyPt:    scale.bodyPt    || 14,
-    subBodyPt: scale.subBodyPt || 12,
-    captionPt: scale.captionPt || 10,
-    codePt:    scale.codePt    || 12,
+    sans:  fmT.sans  || fonts.sans  || "Inter",
+    serif: fmT.serif || fonts.serif || "Georgia",
+    mono:  fmT.mono  || fonts.mono  || "JetBrains Mono",
+    heroPt:    num(fmT.heroPt)    ?? scale.heroPt    ?? 44,
+    sectionPt: num(fmT.sectionPt) ?? scale.sectionPt ?? 32,
+    titlePt:   num(fmT.titlePt)   ?? scale.titlePt   ?? 28,
+    bodyPt:    num(fmT.bodyPt)    ?? scale.bodyPt    ?? 14,
+    subBodyPt: num(fmT.subBodyPt) ?? scale.subBodyPt ?? 12,
+    captionPt: num(fmT.captionPt) ?? scale.captionPt ?? 10,
+    codePt:    num(fmT.codePt)    ?? scale.codePt    ?? 12,
   };
 
   // Parse a radius (px) and convert to inches for rectRadius
@@ -272,11 +309,12 @@ function build(srcPath) {
     }
   }
 
+  if (num(fmL.radiusPx) !== null) radiusPx = fmL.radiusPx;
   const layout = {
-    radiusIn: +(radiusPx / 96).toFixed(3),
+    radiusIn: num(fmL.radiusIn) ?? +(radiusPx / 96).toFixed(3),
     radiusPx,
-    shadowOpacity: 0.12,
-    marginIn: 0.5,
+    shadowOpacity: num(fmL.shadowOpacity) ?? 0.12,
+    marginIn: num(fmL.marginIn) ?? 0.5,
   };
 
   return { name, source: srcPath, palette, type, layout };
@@ -285,7 +323,7 @@ function build(srcPath) {
 function main() {
   const argv = process.argv.slice(2);
   if (argv.length === 0) {
-    console.error("Usage: node load-brandbook.js <name|path> [-o out.json]");
+    console.error("Usage: node load-style.js <name|path> [-o out.json]");
     console.error(`Bundled: ${listBundled().map(b => b.name).join(" ")}`);
     process.exit(1);
   }

@@ -32,14 +32,14 @@ scripts/                   # shared tooling (plugin root)
 ├── install-fonts.sh       # install a brand's Google Fonts locally (see §Fonts)
 └── fetch-resource.sh      # Google Drive URL → local file
 skills/brandware/references/
-├── brandbook-spec.md      # the .md format every style and brandbook follows
+├── brandbook-spec.md      # the .md format every style/brandbook follows (prose layer + optional frontmatter)
 ├── consumer-mappings.md   # how each consumer skill maps tokens onto its medium
 └── chart-styling.md       # how to style data charts (bar/line/pie/KPI) from a brandbook
 ```
 
 ## Rules
 
-1. **The `.md` is canonical.** Tokens JSON is a derived cache (regenerate with `node scripts/load-style.js <name> -o styles/brands/tokens/<name>.json`). If they disagree, the `.md` wins; consumers auto-invalidate stale caches by mtime.
+1. **The `.md` is canonical, and carries two layers** (see `references/brandbook-spec.md`): a required prose body (heuristically parsed; read directly by chartware/knowledgebase) and an optional YAML frontmatter block of exact tokens that wins over prose heuristics when present. Generators (derive-style.js, the html `.css` import) emit both layers together. Tokens JSON is a derived cache — auto-invalidated by mtime; if anything disagrees, the `.md` wins.
 2. **Brands are private; styles are public.** The 5 default styles ship with the plugin. Brandbooks under `styles/brands/` are proprietary/brand-specific content, kept out of the plugin repository (`.gitignore`d) and copied in from a private source repo. Never commit a brandbook to the plugin repo. *Documented exception*: slideware's canonical sample decks (`skills/slideware/pptx/assets/samples/`) include derived token JSONs and rendered previews of publicly-derived identities — they exist to demonstrate layout quality, are not registry entries, and are the only brand-derived content allowed in the repo.
 3. **Graceful degradation.** Consumers must work when no brand is installed: slideware falls back to its five default styles, knowledgebase to its default palette, chartware to its default catalog. Brands add named identities; they are never a hard dependency.
 4. **Brand shadows default.** On a name collision: `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` wins over `styles/brands/<name>.md`, which wins over `styles/<name>.md`.
@@ -124,7 +124,7 @@ The installer resolves a registry name to its sans/serif/mono families, skips sy
 
 ### Audit
 
-On request ("audit the brandbooks"), check each brand for: token cache staleness (`.md` newer than `.json`), spec drift (missing role tables per brandbook-spec), dead asset references in `## Assets` sections, orphaned `<name>/assets/` folders with no owning brandbook, and fonts not installed locally (`install-fonts.sh --check <name>`). Report; fix only what the user approves.
+On request ("audit the brandbooks"), check each brand for: token cache staleness (`.md` newer than `.json`), spec drift (missing role tables per brandbook-spec), **frontmatter↔prose disagreement** (when a brandbook has both layers, compare the frontmatter palette/type values against the prose tables — same fact stated twice must match; frontmatter wins at load time but a mismatch is an authoring bug to fix in whichever layer is wrong), dead asset references in `## Assets` sections, orphaned `<name>/assets/` folders with no owning brandbook, and fonts not installed locally (`install-fonts.sh --check <name>`). Report; fix only what the user approves.
 
 ## Registered brands
 

@@ -48,7 +48,7 @@ A `coordinator` skill decomposes a topic into subtopics, spawns parallel `resear
 - **Agents:** `research-specialist`, `research-report-writer`
 - **Skills:** `coordinator`, `joplin-research`
 
-### `knowledgeware` — Style-driven deliverable suite *(v1.6.5)*
+### `knowledgeware` — Style-driven deliverable suite *(v1.6.6)*
 
 Four skills that share one brandbook format and a central style registry: `slideware` (slide decks — PowerPoint via pptxgenjs or single-file HTML via Reveal.js; asks which when the request doesn't say), `knowledgebase` (multi-page HTML knowledge bases), `chartware` (diagrams and data charts in three media — Mermaid, hand-authored SVG, and draw.io), and `brandware` (registry manager — import, website derivation, per-brand logo-asset folders, local Google Fonts installation, chart-styling guidelines). Ships 5 generic styles plus a fictional `acmecorp` example brand; real brandbooks stay in a user-owned directory (`KNOWLEDGEWARE_BRANDS_DIR`, survives plugin updates) or a private gitignored overlay, so proprietary identities never enter the public repo.
 
