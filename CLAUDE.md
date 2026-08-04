@@ -4,7 +4,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 
 ## What this repo is
 
-Public Claude Code plugin marketplace. 12 plugins under `plugins/<name>/`, indexed by a single catalog at `.claude-plugin/marketplace.json`.
+Public Claude Code plugin marketplace. 13 plugins under `plugins/<name>/`, indexed by a single catalog at `.claude-plugin/marketplace.json`.
 
 ## Repo layout
 
@@ -87,6 +87,6 @@ Runs `claude plugin validate` on the catalog and every `plugins/<name>/`. Fails 
 
 ## Status
 
-- 12 plugins, all validating clean (no errors, no warnings) as of 2026-05-04.
+- 13 plugins, all validating clean (no errors, no warnings) as of 2026-08-04.
 - Catalog version `1.0.0`. Per-plugin versions in `marketplace.json`.
 - CI workflow `validate-plugins.yml` runs the drift check on PRs touching `marketplace.json`, `plugins/**`, or the scripts.

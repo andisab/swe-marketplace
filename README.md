@@ -6,7 +6,7 @@
 - **SDK-loadable.** Every plugin ships both the catalog entry *and* a per-plugin `plugin.json`, so consumers using the Claude Agent SDK (`ClaudeAgentOptions.plugins=[{"type":"local","path":...}]` or `--plugin-dir`) can load them directly. Many marketplaces only ship the catalog and silently fail to register skills/commands/hooks when loaded that way.
 - **CI-guarded drift.** A GitHub Action validates manifest sync on every PR.
 - **Zero-warning validation.** Every plugin passes `claude plugin validate` with no errors or warnings. 
-= **Most skills & plugins have been run through exhaustive evals.** I am an avid fan of skill-creator and have a custom-build eval harness for building and evaluating plugins. Many of the resources here are fruit borne from that work. 
+- **Most skills & plugins have been run through exhaustive evals.** I am an avid fan of skill-creator and have a custom-built eval harness for building and evaluating plugins. Many of the resources here are fruit borne from that work. 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Validate plugin manifests](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml)
@@ -22,11 +22,11 @@
 # Restart Claude Code, then verify with /help or /agents
 ```
 
-Browse the full catalog with `/plugin marketplace list`. Every plugin is `claude plugin validate`-clean and version-pinned in [`marketplace.json`](./.claude-plugin/marketplace.json).
+Browse the full catalog with `/plugin` (or `claude plugin marketplace list` from a shell). Every plugin is `claude plugin validate`-clean and version-pinned in [`marketplace.json`](./.claude-plugin/marketplace.json).
 
 ## What's inside
 
-### `adv` — Adversarial multi-model code review *(v0.2.0)*
+### [`adv`](./plugins/adv/) — Adversarial multi-model code review *(v0.2.0)*
 
 Cross-examines code changes using Claude, Codex CLI, and Gemini CLI together. One agent orchestrates 5 specialized reviewers; three commands let you talk to each model directly.
 
@@ -34,27 +34,27 @@ Cross-examines code changes using Claude, Codex CLI, and Gemini CLI together. On
 - **Skill:** `dispatch` *(shared multi-model CLI infrastructure)*
 - **Commands:** `/adv-codex`, `/adv-gemini`, `/adv-gemini-research`
 
-### `context-engineering` — The plugin you use to build other plugins *(v1.1.0)*
+### [`context-engineering`](./plugins/context-engineering/) — The plugin you use to build other plugins *(v1.1.0)*
 
 End-to-end toolkit for authoring Claude Code resources following Anthropic specs. Templates, examples, and discovery-optimized patterns for every component type.
 
 - **Agent:** `context-engineer`
 - **Skills:** `agent-dev`, `skill-dev`, `command-dev`, `hook-dev`, `plugin-dev`, `mcp-tool-dev`, `mcp-server-dev`
 
-### `research-team` — Multi-agent research orchestration *(v1.2.3)*
+### [`research-team`](./plugins/research-team/) — Multi-agent research orchestration *(v1.2.3)*
 
 A `coordinator` skill decomposes a topic into subtopics, spawns parallel `research-specialist` subagents, then hands off to a `research-report-writer` for synthesis. Joplin output supported.
 
 - **Agents:** `research-specialist`, `research-report-writer`
 - **Skills:** `coordinator`, `joplin-research`
 
-### `knowledgeware` — Style-driven deliverable suite *(v1.6.6)*
+### [`knowledgeware`](./plugins/knowledgeware/) — Style-driven deliverable suite *(v1.6.6)*
 
-Four skills that share one brandbook format and a central style registry: `slideware` (slide decks — PowerPoint via pptxgenjs or single-file HTML via Reveal.js; asks which when the request doesn't say), `knowledgebase` (multi-page HTML knowledge bases), `chartware` (diagrams and data charts in three media — Mermaid, hand-authored SVG, and draw.io), and `brandware` (registry manager — import, website derivation, per-brand logo-asset folders, local Google Fonts installation, chart-styling guidelines). Ships 5 generic styles plus a fictional `acmecorp` example brand; real brandbooks stay in a user-owned directory (`KNOWLEDGEWARE_BRANDS_DIR`, survives plugin updates) or a private gitignored overlay, so proprietary identities never enter the public repo.
+Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches — setup and examples in the [plugin README](./plugins/knowledgeware/README.md).
 
 - **Skills:** `slideware`, `knowledgebase`, `chartware`, `brandware`
 
-### `dev` — 13 language experts *(v1.0.0)*
+### [`dev`](./plugins/dev/) — 13 language experts *(v1.0.0)*
 
 | Agent | Focus |
 |---|---|
@@ -72,13 +72,13 @@ Four skills that share one brandbook format and a central style registry: `slide
 | `dev-perl-expert` | Perl |
 | `dev-refactor-agent` | Cross-language refactoring |
 
-### `frontend` — UI and design specialists *(v1.0.0)*
+### [`frontend`](./plugins/frontend/) — UI and design specialists *(v1.0.0)*
 
 - `fe-react-expert`, `fe-vue-expert`, `fe-nextjs-expert`
 - `fe-html-expert`, `fe-css-expert`
 - `fe-frontend-designer` *(design systems, UX)*
 
-### `infrastructure` — DevOps, cloud, and platform *(v1.0.0)*
+### [`infrastructure`](./plugins/infrastructure/) — DevOps, cloud, and platform *(v1.0.0)*
 
 - **Cloud:** `infra-aws-architect`, `infra-gcp-architect`
 - **Containers:** `infra-docker-engineer`, `infra-k8s-engineer`
@@ -86,29 +86,29 @@ Four skills that share one brandbook format and a central style registry: `slide
 - **CI/CD:** `infra-github-actions-expert`, `infra-gitlab-ci-expert`
 - **Security:** `infra-security-auditor`
 
-### `databases` — SQL, NoSQL, graph, and vector *(v1.0.0)*
+### [`databases`](./plugins/databases/) — SQL, NoSQL, graph, and vector *(v1.0.0)*
 
 `db-postgres-expert`, `db-mongodb-expert`, `db-neo4j-expert`, `db-cassandra-expert`, `db-mariadb-expert`, `db-sql-expert`, `db-vector-expert`
 
-### `data` — Data science and data engineering *(v1.0.0)*
+### [`data`](./plugins/data/) — Data science and data engineering *(v1.0.0)*
 
 - **Visualization:** `data-d3-expert`, `data-highcharts-expert`
 - **Notebooks:** `data-jupyter-expert`, `data-google-colab-expert`
 - **Languages:** `data-r-expert`, `data-python-data-engineer`
 
-### `machine-learning` — ML framework specialists *(v1.0.0)*
+### [`machine-learning`](./plugins/machine-learning/) — ML framework specialists *(v1.0.0)*
 
 `ml-pytorch-expert`, `ml-tensorflow-expert`, `ml-scikit-learn-expert`
 
-### `genai` — Generative AI development *(v1.0.0)*
+### [`genai`](./plugins/genai/) — Generative AI development *(v1.0.0)*
 
 `genai-langchain-expert` — chains, agents, retrieval workflows. More frameworks on the way.
 
-### `product-management` — PRDs, content, planning *(v1.0.0)*
+### [`product-management`](./plugins/product-management/) — PRDs, content, planning *(v1.0.0)*
 
 `pm-prd-writer`, `pm-content-writer`, `pm-project-planner`
 
-### `arch` — System and build orchestration *(v1.0.0)*
+### [`arch`](./plugins/arch/) — System and build orchestration *(v1.0.0)*
 
 `arch-context-agent` *(context management for large codebases)*, `build-orchestrator` *(multi-agent build coordination)*
 
@@ -129,7 +129,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full contribution workflow.
 
 ## Other marketplaces worth checking out
 
-| Repository | Stars | Description |
+| Repository | Stars (Aug 2026) | Description |
 |---|---|---|
 | [claudemarketplaces.com](https://claudemarketplaces.com/) | ⭐ 20 | Indexes marketplaces. Thank you, Mert! ([Substack](https://mertbuilds.substack.com/), [Github](https://github.com/mertbuilds)) |
 | [wshobson/agents](https://github.com/wshobson/agents) | ⭐ 21,030 | **Arguably the OG.** 185 agents, 16 orchestrators, 153 skills, 100 commands in 80 plugins. Thank you, Seth! |
