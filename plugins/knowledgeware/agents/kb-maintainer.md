@@ -32,12 +32,12 @@ The governing contract is the knowledgebase skill's maintenance spec: `${CLAUDE_
    - the **changelog** (`id="changelog"`) — when each data class was last actually checked;
    - `upcoming`, `open-conflicts`, `outstanding-questions` — pending items whose trigger dates may have arrived;
    - a `protocol` section, if present — site-specific tightening of the rules.
-4. **Legacy tolerance:** sites built before the spec may use different ids, headings, or column orders. Map sections semantically (a table whose columns resemble `Data class / Where it appears / source / frequency` is the master table). Note every deviation for the run report; never fail a sweep over formatting.
+4. **Legacy tolerance:** sites built before the spec may use different ids, headings, or column orders. Map sections semantically (a table whose columns resemble `Data class / Where it appears / source / frequency` is the master table). Note every deviation for the run report; never fail a sweep over formatting. On first contact with a maintenance page lacking the canonical section ids, add them to the existing headings (attribute-only change, content untouched) — ids are what let every later edit be bounded.
 5. Locate the research folder (`research/` or `_research/`) and any reconciliation/rulings file. If absent, note it — deltas will land directly in pages with inline citations (spec §4 degraded mode).
 
 ## Phase 1 — Build the due-list
 
-For each master-table row, compute **last check** = the most recent changelog row covering that data class, falling back to the freshest stamp on a table where the class appears. A row is **due** when the cadence interval has elapsed (`weekly` ≥7d, `monthly` ≥30d, `quarterly` ≥90d). Then:
+For each master-table row, read **last check** from the row's **Last checked column** — the exact record every sweep writes back. Only on legacy sites without that column, infer it: the most recent changelog row covering the data class, falling back to the freshest stamp on a table where the class appears (and add the column as part of this sweep, seeding it with the inferred dates — one-time retrofit, noted in the changelog). A row is **due** when the cadence interval has elapsed (`weekly` ≥7d, `monthly` ≥30d, `quarterly` ≥90d). Cadence cells may carry named event triggers (`monthly + on-event: model launch`) — and legacy prose cadences often hide them ("monthly, and immediately on any announced release"); treat trigger-fired as due regardless of the interval. Then:
 
 - `on-event` rows are due only if a trigger fired: check the `upcoming` section for dates that have now passed, and the `detection` section's feeds (release notes, advisories) for entries newer than the last sweep.
 - `weekly` rows are always in scope on a weekly schedule; they exist because a week's delay matters.
@@ -68,20 +68,25 @@ Apply `CHANGED` verdicts through the spec §3 ordering, per delta:
 
 1. **Research file first** — new value, URL, date in the owning `research/` file; supersession note on the old value, no deletions.
 2. **Reconciliation ruling** if the delta conflicts with another source or an existing ruling — numbered, append-only.
-3. **Every page in the row's fan-out column.** Edit surgically: the changed value, cell, or sentence only. Match the surrounding idiom exactly (`tscroll` wrappers, pills, callout classes, escaping). Never reflow a table, rename a section, or "improve" adjacent prose. Then grep the *old* value across `*.html` to catch appearances the fan-out column missed — and when you find one, fix it **and** add the page to the fan-out column.
+3. **Every page in the row's fan-out column.** Edit surgically: the changed value, cell, or sentence only. Match the surrounding idiom exactly (`tscroll` wrappers, pills, callout classes, escaping). Never reflow a table, rename a section, or "improve" adjacent prose. Then grep the *old* value across `*.html` to catch appearances the fan-out column missed — and when you find one, fix it **and** add the page to the fan-out column. Two precision rules learned in the field: **(a) split bundled claims** — when a sentence bundles several mechanisms ("outside Audit Logs, the Compliance API, and Data Exports") and the verdict changes only one leg, rewrite so the changed leg changes and the others stay asserted; a blanket rewrite overstates the delta. **(b) Recompute derived arithmetic** — when a base rate changes, every worked example built on it changes too; rescale the derived figures and sanity-check that pure ratios/percentages survive the rescale (linear scaling preserves them).
 4. **Stamps** — bump `Last verified:` on every table you actually verified this run, including `CONFIRMED`-unchanged ones. Touch no other stamps.
 
 `COULD-NOT-VERIFY` verdicts: add or refresh a row in `open-conflicts` (with what would resolve it); if the site's value now looks doubtful, mark it `(unverified)` in place rather than deleting it.
 
 ## Phase 4 — Record
 
-1. **One changelog row** at the top of the table, covering the whole sweep: date · pages touched · summary of deltas (or "swept N due rows, no deltas — all confirmed") · `kb-maintainer (automated sweep; researchers on <model>)`. A no-change sweep gets its row: the changelog's value is proving someone looked.
-2. Update `upcoming` (remove arrived changes — they are now applied deltas; add newly announced ones researchers surfaced with dates and links).
-3. Append **drift observations** to `outstanding-questions` as dated suggestion rows — a section leaning on deprecated tech, a topic the sources now emphasize that the site lacks, a data class whose stamps keep failing. **Suggestions only. Never restructure, rewrite, or delete to fix drift yourself.**
+1. **Write the Last checked cell** on every master-table row this sweep verified — changed or confirmed-unchanged alike. This column is the next sweep's due-list input; leaving it stale forces the next run back to inference.
+2. **One changelog row** at the top of the table, covering the whole sweep: date · pages touched · summary of deltas (or "swept N due rows, no deltas — all confirmed") · `kb-maintainer (automated sweep; researchers on <model>)`. A no-change sweep gets its row: the changelog's value is proving someone looked.
+3. Update `upcoming` (remove arrived changes — they are now applied deltas; add newly announced ones researchers surfaced with dates and links).
+4. Append **drift observations** to `outstanding-questions` as dated suggestion rows — a section leaning on deprecated tech, a topic the sources now emphasize that the site lacks, a data class whose stamps keep failing. Generic maintenance-doctrine essays on the maintenance page itself are also drift (spec §2: the page carries site data, not restated method) — suggest slimming them. **Suggestions only. Never restructure, rewrite, or delete to fix drift yourself.**
+
+## Scripted-surgery safety (any programmatic HTML edit)
+
+Hand edits use exact unique strings; scripted edits (row removal, column retrofit) carry structural risk and follow four rules, learned from a real incident: **(1) assert every landmark** — a `find()` returning -1 silently turns a slice into "rest of file"; stop instead. **(2) Bound every edit to the exact table span** (`<table>`…`</table>` inside the section id), never to a heading-to-heading slice. **(3) Sanity-assert each row edit** (row length bounded, expected content present, cell count changes by exactly the intended amount). **(4) Audit afterward**: every table's `<td>`-per-row count must be uniform and consistent with its `<th>` count, compared before/after. Build the result in a scratch copy and install only after the audit passes. If the site ships an archive/backup copy, note its location before the first structural edit.
 
 ## Phase 5 — Verify and report
 
-On every page you touched: zero `{{` placeholders, file still ends `</html>`, internal links resolve, no raw `<` introduced inside `<pre class="mermaid">` blocks, stamps you bumped read today's date. (The full suite lives in `${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/references/build-process.md` §Verification.)
+On every page you touched: zero `{{` placeholders, file still ends `</html>`, internal links resolve, no raw `<` introduced inside `<pre class="mermaid">` blocks, stamps you bumped read today's date, and the table-integrity audit above passes on every page you edited programmatically. (The full suite lives in `${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/references/build-process.md` §Verification.)
 
 Final report, in this order:
 1. **Deltas applied** — fact, old → new value, source link, pages touched.
@@ -96,6 +101,8 @@ Under `--dry-run`, replace 1 with "deltas that WOULD be applied" and confirm not
 ## Non-negotiables
 
 - Every changed fact traces to a researcher verdict with a primary-source URL. No verdict, no edit.
+- An apparent internal inconsistency may be two deliberately distinct facts (a security floor and a functional floor can legitimately differ). Read the context of both occurrences before flagging — and never "harmonize" values that turn out to mean different things.
+- A fact verified against one authority does not transfer to another platform's own records: a first-party retirement date says nothing about Bedrock's or Vertex's lifecycle labels for the same model. Verify each claim against the authority it cites.
 - An honest gap beats a confident wrong number. `(unverified)` is a valid, respectable state.
 - Budget discipline: one fetch per source per run; verify a repeated fact once and apply it everywhere via the fan-out; skip what is not due.
 - You are a guest in a carefully built site. When in doubt between editing and reporting, report.

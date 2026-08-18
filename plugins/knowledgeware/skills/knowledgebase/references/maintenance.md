@@ -6,7 +6,7 @@ The contract between a site's **builder** (this skill) and its **maintainer** (a
 
 **Per-table stamps.** Every volatile table carries `<p class="tag">Last verified: YYYY-MM-DD</p>` immediately after its `tscroll` wrapper. A stamp means: *these facts were checked against the authoritative source on that date.* It does not mean the page was edited, and it is never bumped as a side effect of touching the page — a date you did not earn destroys the only freshness signal the reader has. Stamps >90 days old are stale; re-verify before any external use.
 
-**Cadence enum.** Every tracked data class gets exactly one cadence value:
+**Cadence enum.** Every tracked data class gets one base cadence value:
 
 | Cadence | For | Examples |
 |---|---|---|
@@ -15,7 +15,11 @@ The contract between a site's **builder** (this skill) and its **maintainer** (a
 | `quarterly` | Slow-moving judgment material | Decision frameworks, architecture patterns, comparison verdicts |
 | `on-event` | Checked only when a trigger fires | Facts covered by a subscribed feed; things a customer contradicts |
 
-**Due computation.** A row is *due* when `(today − last check) ≥ cadence`. Last check = the date of the most recent changelog row whose scope covers the data class, falling back to the freshest stamp on a table where the class appears. This is what makes scheduled maintenance non-wasteful: a weekly job touches only due rows, and a quarterly row gets looked at four times a year, not fifty-two.
+A row may append named event triggers to its base value — `monthly + on-event: model launch` — and is then due when *either* the interval elapses *or* the trigger is observed. Field lesson: prose cadences like "monthly, and immediately on any announced release" hide exactly these triggers; name them explicitly so an agent can watch for them.
+
+**Due computation.** A row is *due* when `(today − Last checked) ≥ cadence`, reading the master table's **Last checked column directly** — no inference. (Legacy sites without the column: fall back to the most recent changelog row covering the data class, then the freshest stamp on a table where the class appears — workable but imprecise, which is why the column exists.) This is what makes scheduled maintenance non-wasteful: a weekly job touches only due rows, and a quarterly row gets looked at four times a year, not fifty-two.
+
+**Future-dated facts are themselves volatile.** A calendared cliff ("standard rates begin 09-01", "retires 08-05") can execute early, slip, or be cancelled outright. Re-verify the source sentence on each sweep the row is due, not just the calendar.
 
 ## 2. Maintenance page — required sections, canonical ids
 
@@ -32,18 +36,21 @@ Every site with volatile facts ships a `maintenance.html` using these section id
 | `runbook` | The update runbook | The §3 ordering, written for this site's specifics |
 | `changelog` | Changelog | One row per sweep — see discipline below |
 
-Optional: `census` (stamp counts per page), `protocol` (site-specific overrides to the automated-maintainer rules in §5).
+Optional: `ledger` (per-page view: page · volatile classes carried · last touched by a sweep — the page-oriented complement to the master table, useful for spotting pages nobody has looked at), `census` (stamp counts per page), `protocol` (site-specific overrides to the automated-maintainer rules in §5).
+
+**Data-dense, not doctrine-dense.** The maintenance page carries the site's *data* — the tables above, the site-specific feeds worth subscribing to, this site's fan-out quirks — plus a brief statement of the stamp convention for offline readers. The generic method (cadence semantics, due computation, runbook ordering, changelog discipline) lives in this spec and the maintainer agent; do not restate it as multi-section essay prose on every site. A reader-facing sentence or two per convention is right; a page-length treatise on maintenance philosophy is generated bloat that itself goes stale.
 
 **Master volatility table — column contract.** Exactly these columns, in order:
 
-`Data class | Where it appears | Authoritative source | Change frequency | Cadence | Method`
+`Data class | Where it appears | Authoritative source | Change frequency | Cadence | Last checked | Method`
 
 - **Data class** — one named fact-family per row ("Claude Code version floor", "Bedrock model IDs"), not one row per page.
 - **Where it appears** — the *complete* fan-out: every page repeating the fact, as internal links. A partial list leaves the site asserting two incompatible things after an update.
 - **Authoritative source** — a clickable `<a>` to the exact page/console a maintainer opens to re-verify. A bare domain is a broken work order.
 - **Change frequency** — observed reality, prose ("~monthly, unannounced").
-- **Cadence** — one enum value from §1.
-- **Method** — concrete check steps: what to open, what to compare, what counts as a delta. Written so an agent can execute it without further context.
+- **Cadence** — one base enum value from §1, plus any named `on-event:` triggers.
+- **Last checked** — the date of the most recent sweep that actually verified this row (confirmed-unchanged counts; set at build time to the build date). Every sweep writes this cell for every row it checked. The due-list is computed from this column alone.
+- **Method** — concrete check steps: what to open, what to compare, what counts as a delta. Written so an agent can execute it without further context. Verify against the authority the claim cites: a fact confirmed on one platform's page (e.g., a first-party retirement date) says nothing about another platform's own lifecycle labels.
 
 ## 3. The update runbook (canonical ordering)
 
@@ -52,7 +59,7 @@ A delta arrives — from a sweep, an advisory, or a customer contradicting the g
 1. **Update the research file first.** New value, source URL, verification date land in `research/` (or `_research/`) in the file that owns the domain. Superseded values get a supersession note, not deletion — a removed fact leaves no trace of why it changed, and the same question gets researched again in six months.
 2. **Write a reconciliation ruling if there is a conflict** — needed exactly when: two sources now disagree; the delta contradicts an existing ruling; or the delta refutes a claim other material still asserts. Rulings are numbered append-only; never renumber existing ones.
 3. **Edit the pages — all of them — from the master table's fan-out column.** Work the full "Where it appears" list. This is where discipline pays: a version floor can live on sixteen pages, and a partial pass is worse than no pass.
-4. **Bump stamps only on tables you actually verified** — including tables you checked and confirmed *unchanged*. Tables you did not check keep their date, even on a page you edited.
+4. **Bump stamps only on tables you actually verified** — including tables you checked and confirmed *unchanged*. Tables you did not check keep their date, even on a page you edited. **Write the master table's Last checked cell** for every row the sweep verified, changed or not.
 5. **Add one changelog row per sweep** (not per page): `Date | Pages touched | What changed | By whom`. **No-change sweeps get a row too** ("swept N monthly rows, no deltas") — the changelog's value is negative information: it distinguishes a page that hasn't changed because nothing changed from a page nobody has looked at. Automated sweeps identify themselves: agent name + model. New rows at the top.
 
 If a changed fact's data class is missing from the master table, add a row — a fact volatile enough to have changed once is volatile enough to track.
@@ -77,8 +84,8 @@ What a scheduled agent (see the plugin's `kb-maintainer` agent) may and may not 
 
 Before declaring a site done, verify alongside the build-process suite:
 
-- [ ] `maintenance.html` exists with all eight canonical ids from §2
-- [ ] Master table uses the exact §2 columns; every Cadence cell is one §1 enum value
+- [ ] `maintenance.html` exists with all eight canonical ids from §2, and carries site data plus brief conventions — no restated generic doctrine
+- [ ] Master table uses the exact §2 columns; every Cadence cell is a §1 enum value (plus named `on-event:` triggers where they exist); every Last checked cell is seeded with the build date
 - [ ] Every "Where it appears" fan-out is complete (grep the fact across `*.html` to confirm)
 - [ ] Every authoritative source on the page is a clickable link — the runbook is executable by clicking down the table
 - [ ] Every volatile table site-wide has a stamp; stable conceptual tables have none
