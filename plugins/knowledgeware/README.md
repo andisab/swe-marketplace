@@ -11,7 +11,7 @@ Four skills. Ask for the deliverable in plain language; the right skill activate
 | Skill | What it gives you |
 |---|---|
 | **slideware** | Slide decks as real PowerPoint files or as self-contained HTML (Reveal.js) — your choice; it asks when unclear. Visually reviews its own output and fixes mistakes when preview tooling is available. |
-| **knowledgebase** | Multi-page, offline-capable HTML reference sites — field guides, handbooks, runbooks, study guides — written in a rigorous engineering voice, with a maintenance section designed so a scheduled agent task can periodically re-verify and update the content. Explicit invocation only ("use the knowledgebase skill…"). |
+| **knowledgebase** | Multi-page, offline-capable HTML reference sites — field guides, handbooks, runbooks, study guides — written in a rigorous engineering voice. Every site ships a maintenance page built to a machine-actionable contract, so the bundled maintainer (below) can keep it fresh unattended. Explicit invocation only ("use the knowledgebase skill…"). |
 | **chartware** | Diagrams and data charts in three media: Mermaid (quick, text-first), SVG (pixel-perfect charts and figures), or draw.io (editable artifacts — best for complicated DAGs and layered architectures). Follows your brand automatically. |
 | **brandware** | Teaches the other three what your colors, fonts, and logos are. Define a brand by hand, import one from a file — or point it at a website and let it derive the style from the live CSS and assets. |
 
@@ -30,6 +30,19 @@ Copy-paste and adapt:
 - *"Use brandware to build a brand style from https://example.com and set it as the default."*
 
 After that last one, every deck, site, and diagram uses that identity until you say otherwise.
+
+## Keeping knowledgebases fresh
+
+Volatile facts (prices, quotas, versions, GA statuses) rot. Generated sites carry a maintenance page whose master volatility table is an executable work order — and the plugin ships a maintainer that executes it:
+
+- **`kb-maintainer` agent** — reads the maintenance page, re-verifies only the facts whose check cadence has elapsed (nothing redundant), fans out research subagents against primary sources, applies confirmed changes surgically, bumps `Last verified` stamps it earned, writes the changelog row, and reports structural drift as suggestions without ever restructuring the site.
+- **`/knowledgeware:kb-maintain <site-dir> [--dry-run]`** — the scheduler entry point. Put it on a weekly cron:
+
+```bash
+claude -p "/knowledgeware:kb-maintain '/path/to/site'" --permission-mode acceptEdits --model opus
+```
+
+Start with `--dry-run` to see what a sweep would change before letting it write. The contract both sides follow lives at `skills/knowledgebase/references/maintenance.md`; sites built before the contract existed are handled tolerantly (sections are matched semantically, deviations reported).
 
 ## The five built-in styles
 

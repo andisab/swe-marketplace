@@ -69,7 +69,7 @@ for f in *.html; do echo "$f => $(grep -o 'class=\"pagenav\">.*' $f | grep -o 'h
 
 ## Maintenance page (required for any site with volatile facts)
 
-Sections: the volatility problem (brief) · the Last-verified convention (>90 days = stale, re-verify before external use) · **master volatility table** (data class | where it appears | authoritative source URL/console **as a clickable `<a>` link** | change frequency | check cadence | method) · known upcoming changes with dates · change-detection strategies (RSS/release-note subscriptions; a monthly verification-sweep prompt for a Claude session; pre-deliverable checklist scoped to what the deliverable touches) · the update runbook (update research/ first, then page tables, bump stamps, log in changelog) · changelog table. Every source cited anywhere on this page is a live link — the re-verification runbook should be executable by clicking down the volatility table.
+Build it to the full contract in `references/maintenance.md`: the eight canonical section ids, the master volatility table's exact column set (with complete page fan-outs and every source as a clickable `<a>` link), the cadence enum, the research-first update runbook, and a changelog seeded with the build row. That contract is what makes the site maintainable unattended by the plugin's `kb-maintainer` agent — verify the spec's §6 build-time checklist as part of this suite before declaring the site done.
 
 ## Rendering chartware posters without a draw.io MCP
 
