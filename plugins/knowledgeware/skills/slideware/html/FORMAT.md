@@ -79,6 +79,17 @@ Whichever tool captures the slides, the review bar is the same: inspect **every*
 
 Shared rule in [../SKILL.md](../SKILL.md). The 8 HTML archetypes live in [references/layout-patterns.md](references/layout-patterns.md).
 
+## Maintenance section (required for decks with volatile facts)
+
+An HTML deck is a hosted, long-lived artifact — it gets the knowledgebase skill's design-for-decay treatment scaled to a deck (full contract: `../../knowledgebase/references/maintenance.md`; apply it proportionally, not verbatim — a deck is not a site):
+
+- **Final slide: "Sources & verification"** (or a vertical appendix stack for large decks). Every cited source as a live `<a href="…" target="_blank" rel="noopener">` link in the deck's muted caption treatment, grouped by the slide it supports (use slide titles as group labels). A citation nobody can click is a citation nobody re-verifies.
+- **A `Last verified: YYYY-MM-DD` stamp** on that slide, plus a one-line staleness note ("facts older than 90 days: re-verify before presenting externally"). Per-slide stamps are allowed where one slide's facts churn much faster than the rest.
+- **For large or long-lived decks**, add a compact volatility list on the same slide: fact class · source link · how often it moves. This is the deck-scale master volatility table and is what lets the kb-maintainer agent (or a human sweep) route checks without reading every slide.
+- The maintenance slide follows the deck's visual style — it's a designed slide, not a plain-text dump; layout it like a `refs`/resources slide.
+
+When iterating on an existing deck, update this slide with what actually changed and bump only stamps whose facts were re-verified.
+
 ## Output convention
 
 Default `<cwd>/index.html` unless the user specifies. Print the absolute path after writing. Open it in a browser via `open ./index.html` (macOS), `xdg-open` (Linux), or `start` (Windows) — Reveal works over `file://` for local preview.

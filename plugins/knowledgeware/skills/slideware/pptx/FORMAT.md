@@ -45,6 +45,22 @@ See [workflow.md](references/workflow.md) for both. Don't pay the full-path tax 
 
 Shared rule in [../SKILL.md](../SKILL.md). The 12 pptx archetypes live in [references/layout-patterns.md](references/layout-patterns.md).
 
+## Speaking-notes provenance (required)
+
+Every content slide that states an external fact gets speaking notes ending with a provenance block, via `slide.addNotes(...)` (plain text — include full URLs so they're copyable/clickable from the notes pane):
+
+```js
+slide.addNotes(
+  "…any presenter notes for this slide…\n\n" +
+  "Sources:\n" +
+  "- Anthropic pricing: https://platform.claude.com/docs/en/about-claude/pricing\n" +
+  "- Bedrock pricing: https://aws.amazon.com/bedrock/pricing/\n" +
+  "Last verified: 2026-08-18"
+);
+```
+
+Rules: only sources relevant to **that slide's** content — this is what makes targeted re-verification cheap; full URLs, never bare domains; one `Last verified:` line per slide, dated when the facts were actually checked. Title, agenda, and divider slides skip the block. When rebuilding an existing deck (pptxgenjs is write-only), carry each slide's provenance block forward verbatim and bump a date only for facts re-verified in this pass.
+
 ## Output convention
 
 Default `<cwd>/deck.pptx` unless the user specifies. Print the absolute path after writing.

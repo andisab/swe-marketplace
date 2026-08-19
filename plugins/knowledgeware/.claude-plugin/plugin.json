@@ -1,7 +1,7 @@
 {
   "name": "knowledgeware",
   "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches.",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

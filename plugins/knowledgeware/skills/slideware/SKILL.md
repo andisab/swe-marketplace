@@ -58,6 +58,15 @@ The point is **content-shape variety**, not visual-archetype rigidity. A deck th
 
 When a slide cites a source that has a URL — footnote lines, resources/further-reading slides, figure or data attributions, quote sources — make it a **live hyperlink**, not plain text. HTML format: a real `<a href="…" target="_blank" rel="noopener">` styled in the deck's muted caption treatment. pptx format: pptxgenjs `hyperlink` on the text run — `{ text: "AWS Bedrock pricing", options: { hyperlink: { url: "https://…" }, color: <inkMuted>, fontSize: 10 } }` (set the color explicitly or PowerPoint paints it default-blue). Link text is the human-readable source name, never a raw URL dumped on the slide. A citation the audience can't click is a citation they'll never check.
 
+## Provenance for maintenance (shared)
+
+Decks decay like any deliverable: prices, versions, GA statuses, and quoted figures rot. Every deck that states external facts ships its provenance so a later maintenance pass (human or the kb-maintainer agent) can re-verify without archaeology:
+
+- **pptx**: each content slide's speaking notes end with a `Sources:` list (full URLs) and a `Last verified: YYYY-MM-DD` line — mechanics in [pptx/FORMAT.md](pptx/FORMAT.md) §Speaking-notes provenance.
+- **html**: the deck ends with a maintenance/sources slide following the knowledgebase skill's conventions scaled to a deck — mechanics in [html/FORMAT.md](html/FORMAT.md) §Maintenance section.
+
+The stamp means the same thing it means in a knowledgebase site: *these facts were checked against their sources on that date*. When iterating on an existing deck, bump a stamp only for facts you actually re-verified; treat stamps older than 90 days as stale before any external presentation.
+
 ## Sample mimicry (shared principle: style only, never content)
 
 When the user provides a sample deck, derive palette, type pairing, layout patterns, motif, and density — then author **new** content in that visual language. **Mimicry overrides anti-monotony**: if the sample has a distinctive non-standard layout, echoing it matters more than the canonical archetypes. Extraction mechanics are per-format (pptx: render + markitdown; html: DevTools/CSS) — see the format guides.
