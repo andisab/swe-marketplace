@@ -100,6 +100,9 @@ plugins/knowledgeware/styles/brands/*
 plugins/knowledgeware/styles/brands/tokens/*
 !plugins/knowledgeware/styles/brands/tokens/acmecorp.json
 
+# plugin eval runs write results beside the suite; keep them local
+plugins/*/evals/results/
+
 # knowledgeware samples: never track node_modules — directory OR symlink
 # (a global `node_modules/` rule matches only directories, not symlinks)
 plugins/knowledgeware/skills/slideware/pptx/assets/samples/*/node_modules

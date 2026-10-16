@@ -123,7 +123,10 @@ Two manifests ship together:
 python scripts/synthesize-plugin-manifests.py          # regenerate
 python scripts/synthesize-plugin-manifests.py --check  # drift check (CI runs this)
 ./scripts/validate-all.sh                              # full validation
+git config core.hooksPath scripts/git-hooks            # optional: run the drift check before each commit
 ```
+
+The pre-commit hook checks the staged files, not the working tree, so a commit with a stale `plugin.json` fails even when the tree is in sync. `git commit --no-verify` skips it for one commit.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full contribution workflow.
 

@@ -1,0 +1,29 @@
+#!/bin/sh
+# Stops a commit whose staged files leave a generated plugin.json out of sync
+# with marketplace.json, as CI would.
+#
+# Enable once per clone:  git config core.hooksPath scripts/git-hooks
+# Skip for one commit:    git commit --no-verify
+
+staged=$(mktemp -d) || exit 1
+trap 'rm -rf "$staged"' EXIT
+
+# Check what is being committed, not what is in the working tree.
+git checkout-index --all --prefix="$staged/" || exit 1
+
+status=0
+run_check() {
+    if ! output=$(python3 "$@" 2>&1); then
+        echo "$output"
+        status=1
+    fi
+}
+
+run_check "$staged/scripts/synthesize-plugin-manifests.py" --check
+
+if [ "$status" -ne 0 ]; then
+    echo
+    echo "pre-commit: generated files are out of sync with the staged changes."
+    echo "Run the command above, stage its output and commit again."
+fi
+exit "$status"
