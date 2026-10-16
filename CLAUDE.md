@@ -19,6 +19,7 @@ plugins/<name>/
 scripts/
   synthesize-plugin-manifests.py  # generator (writes; --check fails on drift)
   validate-all.sh                 # runs `claude plugin validate` on catalog + every plugin
+  git-hooks/pre-commit            # drift check on the staged files (enable: git config core.hooksPath scripts/git-hooks)
 .github/workflows/validate-plugins.yml  # CI drift guard
 ```
 
@@ -64,6 +65,8 @@ python scripts/synthesize-plugin-manifests.py --check
 
 Exits non-zero if any `plugin.json` is missing or drifted from `marketplace.json`. Pure Python — runs on any GitHub runner. Fix by running the generator without `--check`.
 
+`scripts/git-hooks/pre-commit` runs this check on a temp copy of the staged files, so a commit fails when its staged `plugin.json` is stale, even if the working tree is in sync. It's enabled per clone with `git config core.hooksPath scripts/git-hooks` (set in Andis's clone on 2026-10-16). Fix a failure by running the generator and staging the output. Don't bypass it with `--no-verify` unless Andis asks.
+
 ### Full validation (run locally before merging)
 
 ```bash
@@ -80,7 +83,7 @@ Runs `claude plugin validate` on the catalog and every `plugins/<name>/`. Fails 
 
 ## Gotchas
 
-- `adv` is the only plugin with `strict: true` in the catalog. That's a marketplace-only flag and is correctly absent from `plugin.json`.
+- Every catalog entry sets `strict: true`. That's a marketplace-only flag and is correctly absent from `plugin.json`.
 - `claude plugin validate <dir>` validates `<dir>/.claude-plugin/plugin.json`. Pointing it at the repo root validates the marketplace manifest instead.
 - Every agent file needs YAML frontmatter; otherwise the validator emits a per-agent warning. Existing agents already comply.
 - Restart Claude Code after installing or updating a plugin.
