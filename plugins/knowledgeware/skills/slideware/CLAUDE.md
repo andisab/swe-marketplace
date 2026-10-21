@@ -226,6 +226,7 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 | `pptx/assets/samples/<bb>/` | Canonical sample decks (build script + rendered PNGs) |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with checklist + pitfalls inline |
 | `html/assets/templates/{build-deck,slides}.js` | HTML renderer + slide-descriptor scaffold |
+| `html/assets/templates/presenter.js` | Reveal plugin inlined into every HTML deck: presenter view with resizable panes, pacing timer, notes drawer |
 | `html/scripts/load-style.js` | Registry/brandbook → YAML-frontmatter style.md converter |
 | `<plugin>/scripts/list-styles.js` | List discovered styles + brandbooks |
 | `<plugin>/scripts/load-style.js` | Style/brandbook → tokens parser |

@@ -7,7 +7,7 @@ Two paths — pick by deck stakes.
 ```bash
 mkdir my-deck && cd my-deck
 node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js style-1 -o ./style.md
-cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,slides.js,package.json} .
+cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
 npm install
 # Edit slides.js — replace placeholder content with yours
 node build-deck.js .
@@ -22,7 +22,7 @@ Ship after `polish-deck.py` (or a visual scan) reports clean. No iteration loop.
 # 1. Scaffold
 mkdir my-deck && cd my-deck
 node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js style-N -o ./style.md
-cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,slides.js,package.json} .
+cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
 npm install
 
 # 2. Plan layouts — pick from references/layout-patterns.md, vary across the deck

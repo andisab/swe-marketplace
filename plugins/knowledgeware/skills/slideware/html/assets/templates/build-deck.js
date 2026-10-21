@@ -6,12 +6,13 @@
 //
 // Writes:
 //   ./index.html    — single self-contained HTML file (Reveal core via CDN, fonts
-//                     via Google Fonts <link>, theme CSS INLINED, no other external refs)
+//                     via Google Fonts <link>, theme CSS and the presenter plugin
+//                     (./presenter.js) INLINED, no other external refs)
 //
 // Setup (one-time per deck dir):
 //   npm install js-yaml
 //   cp $PLUGIN/shared/styles/<name>.md ./style.md
-//   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,slides.js,package.json} .
+//   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
 //   node build-deck.js .
 //
 // ── PRE-BUILD ALIGNMENT CHECKLIST (run mentally per slide before building) ──
@@ -41,6 +42,10 @@ const REVEAL_CDN_BASE = `https://cdn.jsdelivr.net/npm/reveal.js@${REVEAL_VERSION
 
 const SLIDE_W_PX = 1280;
 const SLIDE_H_PX = 720;
+
+// Speaker-notes cue fields read by presenter.js (see references/reveal.md §Speaker notes).
+const CUE_KEYS = ["session", "module", "run"];
+const CUE_RUNS = ["default", "cut-first", "add-back", "backup"];
 
 // ── Brandbook tokens (from YAML frontmatter of ./style.md) ───────────
 function loadTokens(cwd) {
@@ -417,14 +422,79 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
+// Speaker notes → <aside class="notes" data-session/module/run>. Notes are plain text;
+// newlines are encoded so the page assembly's indentation can't leak into them.
+function notesHtml(slide) {
+  if (slide.notes == null && slide.cue == null) return "";
+  const cue = slide.cue || {};
+  if ("minutes" in cue) throw new Error("cue.minutes isn't supported: pacing comes from session lengths. Set `sessions` (or `minutes` for a deck without sessions) next to `slides` in slides.js.");
+  const unknown = Object.keys(cue).filter(k => !CUE_KEYS.includes(k));
+  if (unknown.length) throw new Error(`Unknown cue field(s): ${unknown.join(", ")}. Supported: ${CUE_KEYS.join(", ")}`);
+  if (cue.run != null && !CUE_RUNS.includes(cue.run)) throw new Error(`Unknown cue.run: "${cue.run}". Supported: ${CUE_RUNS.join(", ")}. To take a slide out of the deck, set hidden: true.`);
+  const attrs = CUE_KEYS.filter(k => cue[k] != null && cue[k] !== "").map(k => ` data-${k}="${esc(cue[k])}"`).join("");
+  return `<aside class="notes"${attrs}>${esc(slide.notes || "").replace(/\r?\n/g, "&#10;")}</aside>`;
+}
+
 function renderSlide(slide) {
   const fn = renderers[slide.layout];
   if (!fn) throw new Error(`Unknown layout: "${slide.layout}". Supported: ${Object.keys(renderers).join(", ")}`);
-  return fn(slide);
+  let html = fn(slide);
+  // Reveal removes hidden slides when the deck loads, so the presenter doesn't count them either.
+  if (slide.hidden) html = html.replace(/^(<section class="[^"]*")/, '$1 data-visibility="hidden"');
+  const notes = notesHtml(slide);
+  return notes ? html.replace(/<\/section>$/, `  ${notes}\n</section>`) : html;
+}
+
+// ── Deck spec and pacing ───────────────────────────────────────────
+// slides.js exports either an array of slides or { slides, sessions, minutes }:
+//   sessions  session label (cue.session) → length in minutes
+//   minutes   length of the slides that have no cue.session (a deck without sessions)
+// The presenter gives every in-run slide of a session an equal share of its length.
+function readDeck(spec) {
+  const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
+  if (!Array.isArray(deck.slides)) throw new Error("slides.js must export an array of slides, or { slides: [...], sessions: {...} }.");
+  const labels = new Set(deck.slides.map(s => (s.cue && s.cue.session) || ""));
+  const sessions = Object.assign(deck.minutes != null ? { "": deck.minutes } : {}, deck.sessions);
+  for (const [label, minutes] of Object.entries(sessions)) {
+    const name = label ? `sessions["${label}"]` : "minutes";
+    if (!labels.has(label)) throw new Error(label ? `${name}: no slide has cue.session "${label}"` : "minutes: every slide has a cue.session, so set sessions instead");
+    if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
+    sessions[label] = Number(minutes);
+  }
+  return { slides: deck.slides, sessions };
+}
+
+// Printed after every build, so whoever edits the deck (often Claude) sees the timing plan
+// and which slides are hidden without opening the presenter.
+function pacingSummary(slides, sessions) {
+  const groups = new Map();
+  for (const s of slides) {
+    const cue = s.cue || {}, label = cue.session || "";
+    if (!groups.has(label)) groups.set(label, { run: 0, extra: 0 });
+    if (s.hidden) continue;
+    if (cue.run === "add-back" || cue.run === "backup") groups.get(label).extra++;
+    else groups.get(label).run++;
+  }
+  const lines = [];
+  if (Object.keys(sessions).length || slides.some(s => s.cue)) {
+    lines.push("Pacing (each slide in the run gets an equal share of its session):");
+    for (const [label, g] of groups) {
+      const len = sessions[label];
+      const share = len && g.run ? `${minSec(len / g.run)} per slide` : "no length set, so no pace plan";
+      lines.push(`  ${label || "Deck"}: ${len ? `${len} min, ` : ""}${g.run} slide${g.run === 1 ? "" : "s"} in the run${g.extra ? `, ${g.extra} add-back/backup` : ""} → ${share}`);
+    }
+  }
+  const hidden = slides.flatMap((s, i) => (s.hidden ? [`#${i + 1} ${s.title || s.figure || s.layout}`] : []));
+  if (hidden.length) lines.push(`Hidden (not shown, not counted): ${hidden.join(" · ")}`);
+  return lines.join("\n");
+}
+function minSec(minutes) {
+  const s = Math.round(minutes * 60);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
 // ── HTML page assembly ─────────────────────────────────────────────
-function pageHtml({ title, fontsUrl, css, slidesHtml }) {
+function pageHtml({ title, fontsUrl, css, slidesHtml, presenterJs, sessions = {} }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -446,6 +516,7 @@ ${slidesHtml.split("\n").map(l => "      " + l).join("\n")}
     </div>
   </div>
   <script src="${REVEAL_CDN_BASE}/reveal.js"></script>
+  ${presenterJs ? `<script>\n${presenterJs.replace(/<\/script/gi, "<\\/script")}\n  </script>` : ""}
   <script>
     Reveal.initialize({
       width: ${SLIDE_W_PX},
@@ -454,7 +525,9 @@ ${slidesHtml.split("\n").map(l => "      " + l).join("\n")}
       controls: true,
       progress: true,
       slideNumber: 'c/t',
-      transition: 'fade',
+      transition: 'fade',${presenterJs ? `
+      plugins: [RevealPresenter],
+      presenter: { sessions: ${JSON.stringify(sessions).replace(/</g, "\\u003c")} },` : ""}
     });
   </script>
 </body>
@@ -473,23 +546,29 @@ function main() {
     process.exit(1);
   }
   delete require.cache[slidesPath];
-  const slides = require(slidesPath);
-  if (!Array.isArray(slides)) {
-    console.error("slides.js must export an array of slide descriptors.");
+  const { slides, sessions } = readDeck(require(slidesPath));
+
+  const presenterPath = path.join(__dirname, "presenter.js");
+  if (!fs.existsSync(presenterPath)) {
+    console.error(`presenter.js not found next to build-deck.js. Copy it from the templates:`);
+    console.error("  cp $PLUGIN/skills/slideware/html/assets/templates/presenter.js .");
     process.exit(1);
   }
+  const presenterJs = fs.readFileSync(presenterPath, "utf8");
 
   const fontsUrl = googleFontsUrl(tokens.type || {});
   const css = themeCss(tokens);
   const slidesHtml = slides.map(renderSlide).join("\n");
   const title = tokens.name ? `${tokens.name} deck` : "deck";
 
-  const html = pageHtml({ title, fontsUrl, css, slidesHtml });
+  const html = pageHtml({ title, fontsUrl, css, slidesHtml, presenterJs, sessions });
   const outPath = path.join(cwd, "index.html");
   fs.writeFileSync(outPath, html);
 
   console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${slides.length} slides, ${tokens.name || "unnamed style"})`);
+  const summary = pacingSummary(slides, sessions);
+  if (summary) console.log(summary);
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadTokens };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadTokens, readDeck, pacingSummary };

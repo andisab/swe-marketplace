@@ -53,6 +53,24 @@
         { "text": "Output HTML does NOT reference ./style.md" }
       ],
       "files": []
+    },
+    {
+      "id": 3,
+      "name": "workshop-deck-with-speaker-notes",
+      "prompt": "Build an 8-slide HTML deck for a two-session workshop on secrets management, 4 slides per session; each session runs 45 minutes. I'll present it from a second screen, so I need speaker notes on every slide and a pace plan. Mark one slide per session as cut-first if I'm running behind, and add a backup slide at the end for Q&A. I've decided to drop the second session's third slide for now, but keep it in the file, hidden, so I can bring it back. Save it to ./secrets-workshop.html and tell me the time per slide in each session.",
+      "expected_output": "9-slide HTML deck (8 + backup) at ./secrets-workshop.html with notes and cues on every slide, session lengths of 45 minutes each in Reveal's presenter config, one cut-first slide per session, a backup slide, the second session's third slide hidden, and a reply giving 11:15 per slide for session 1 and 15:00 for session 2.",
+      "assertions": [
+        { "text": "secrets-workshop.html exists and contains 9 <section class=\"layout-*\"> elements, exactly one with data-visibility=\"hidden\" (the second session's third slide)" },
+        { "text": "Every <section> contains an <aside class=\"notes\"> with non-empty text" },
+        { "text": "Every notes aside carries data-session with exactly two distinct values, split 4 and 5 (the backup slide belongs to the second session); no aside carries data-minutes" },
+        { "text": "Exactly two asides have data-run=\"cut-first\", one in each session, and the final slide's aside has data-run=\"backup\"" },
+        { "text": "Reveal.initialize registers plugins: [RevealPresenter] and presenter: { sessions } giving both session labels 45 minutes, and the HTML inlines the presenter plugin" },
+        { "text": "Reveal's own notes plugin (RevealNotes / plugin/notes) is NOT loaded" },
+        { "text": "The reply gives the time per slide from the build's pacing summary: 11:15 for session 1 (4 slides in the run) and 15:00 for session 2 (3 slides in the run, since the hidden slide and the backup don't count), and names the hidden slide" },
+        { "text": "The reply tells the user to press S for the presenter view" },
+        { "text": "polish-deck.py reports no [high] flags" }
+      ],
+      "files": []
     }
   ]
 }

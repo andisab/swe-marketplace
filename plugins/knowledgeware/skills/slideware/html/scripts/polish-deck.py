@@ -187,6 +187,8 @@ UNBREAKABLE_THRESHOLDS = {
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _HTML_ENTITY_RE = re.compile(r"&[a-z#0-9]+;")
+# Speaker notes never render on the slide, so their URLs and long tokens don't count.
+_NOTES_RE = re.compile(r'<aside class="notes"[^>]*>.*?</aside>', re.DOTALL)
 
 
 def strip_tags(html_fragment: str) -> str:
@@ -218,7 +220,7 @@ def check_unbreakable_tokens(html: str) -> list[tuple[str, str, str]]:
     for match in section_re.finditer(html):
         slide_index += 1
         layout = match.group(1)
-        body = match.group(2)
+        body = _NOTES_RE.sub("", match.group(2))
         thresholds = UNBREAKABLE_THRESHOLDS.get(layout)
         if not thresholds:
             continue
