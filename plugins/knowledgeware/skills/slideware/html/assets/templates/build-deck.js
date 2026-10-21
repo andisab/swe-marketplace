@@ -479,7 +479,7 @@ function renderSlide(slide, motion = false) {
 // slides.js exports either an array of slides or { slides, sessions, minutes, motion }:
 //   sessions  session label (cue.session) → length in minutes
 //   minutes   length of the slides that have no cue.session (a deck without sessions)
-//   motion    true gives every slide entrance motion; a slide's own `motion` overrides it
+//   motion    entrance motion on every slide (default true); a slide's own `motion` overrides it
 // The presenter gives every in-run slide of a session an equal share of its length.
 function readDeck(spec) {
   const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
@@ -493,7 +493,7 @@ function readDeck(spec) {
     if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
     sessions[label] = Number(minutes);
   }
-  return { slides: deck.slides, sessions, motion: !!deck.motion };
+  return { slides: deck.slides, sessions, motion: deck.motion !== false };
 }
 
 // ── Reveal, inlined ────────────────────────────────────────────────

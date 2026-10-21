@@ -149,7 +149,7 @@ Edit the deck directory's copy of `presenter.js` and rebuild: styles live in its
 
 Elements with `data-a` animate in each time their slide becomes current, staggered by the `--i` custom property (100ms, then 70ms per step). Kinds: `up`, `fade`, `left`, `right`, `pop`, `grow-x`, `grow-y`, `wipe`, and `draw` (SVG strokes; the shape needs `pathLength="1"`). Motion is off in print, for viewers who ask for reduced motion, and in the presenter view, which shows each slide fully in place.
 
-- **Whole deck:** `motion: true` next to `slides` in `slides.js` adds motion to every layout's blocks in reading order: kicker, heading, then each card, list item or column. The big number pops; quotes and images fade.
+- **Whole deck (on by default):** every layout's blocks animate in reading order: kicker, heading, then each card, list item or column. The big number pops; quotes and images fade. `motion: false` next to `slides` in `slides.js` turns it off for the deck.
 - **One slide:** `motion: true` or `false` on a descriptor overrides the deck setting.
 - **Hand-placed:** light-HTML body strings can carry their own attributes, such as `<span data-a="fade" style="--i: 4">…</span>`.
 

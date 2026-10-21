@@ -7,7 +7,7 @@ Deep-dive companion to `SKILL.md`: what the skill ships with, the five default s
 Generates slide decks in **two output formats**, chosen per request (the skill asks if the request doesn't make it clear):
 
 - **pptx** (`pptx/`): real PowerPoint `.pptx` files via **pptxgenjs** (Node.js) with React-rendered icons via **react-icons + sharp**. Opens cleanly in PowerPoint, Keynote, and Google Slides. Speaker notes open with a cue line holding each slide's planned time.
-- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** (inlined, so they run offline) — run in any browser, host statically, share by link. Ships a presenter view (previous / current / next slides, notes, live pacing) and opt-in entrance motion.
+- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** (inlined, so they run offline) — run in any browser, host statically, share by link. Ships a presenter view (previous / current / next slides, notes, live pacing) and entrance motion (on by default).
 
 Both formats share one set of speaker-note conventions (cues, session pacing, hidden slides) — see `SKILL.md` §Speaker notes, pacing and hidden slides.
 
