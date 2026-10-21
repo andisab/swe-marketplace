@@ -62,10 +62,22 @@ When a slide cites a source that has a URL — footnote lines, resources/further
 
 Decks decay like any deliverable: prices, versions, GA statuses, and quoted figures rot. Every deck that states external facts ships its provenance so a later maintenance pass (human or the kb-maintainer agent) can re-verify without archaeology:
 
-- **pptx**: each content slide's speaking notes end with a `Sources:` list (full URLs) and a `Last verified: YYYY-MM-DD` line — mechanics in [pptx/FORMAT.md](pptx/FORMAT.md) §Speaking-notes provenance.
+- **pptx**: each content slide's speaker notes end with a `Sources:` list (full URLs) and a `Last verified: YYYY-MM-DD` line — mechanics in [pptx/FORMAT.md](pptx/FORMAT.md) §Speaker notes.
 - **html**: the deck ends with a maintenance/sources slide following the knowledgebase skill's conventions scaled to a deck — mechanics in [html/FORMAT.md](html/FORMAT.md) §Maintenance section.
 
 The stamp means the same thing it means in a knowledgebase site: *these facts were checked against their sources on that date*. When iterating on an existing deck, bump a stamp only for facts you actually re-verified; treat stamps older than 90 days as stale before any external presentation.
+
+## Speaker notes, pacing and hidden slides (shared)
+
+Both formats carry the same presenter information, so a deck can move between them without losing it:
+
+- **Notes** are written for the ear, as plain text: blank lines split paragraphs, `- ` lines form a list, `**bold**` / `*italic*` mark emphasis, and `[pause]` marks a beat. Html renders the markup in its presenter view; pptx strips the emphasis markers, because PowerPoint shows notes as plain text.
+- **Cue** per slide: `session` (a label such as "Session 1"), `module` (a label), and `run`: `default`, `cut-first` (in the run, first to cut when behind), `add-back` (use if ahead) or `backup` (for questions).
+- **Pacing** comes from session lengths in minutes. Each in-run slide (`default` or `cut-first`, not hidden) gets an equal share of its session. Html shows a live pace line, with the length editable in the presenter; pptx writes each slide's planned window into a cue line at the top of its notes.
+- **Hidden slides** stay in the source but out of the show and out of the pacing.
+- **Every build prints a pacing summary**: each session's time per slide, then the hidden slides. For "hide slide 12", "session 2 is 75 minutes" or "which slides are hidden?", edit the deck source, rebuild, and quote that summary.
+
+Mechanics: [html/references/reveal.md](html/references/reveal.md) §Speaker notes (`notes`, `cue`, `hidden` slide fields; `sessions` / `minutes` in `slides.js`) · [pptx/FORMAT.md](pptx/FORMAT.md) §Speaker notes (`speakerNotes()`, `s.hidden`, `SESSIONS`).
 
 ## Sample mimicry (shared principle: style only, never content)
 

@@ -5,14 +5,15 @@
 //   ./slides.js     — array of slide descriptors — see slides.js for the schema
 //
 // Writes:
-//   ./index.html    — single self-contained HTML file (Reveal core via CDN, fonts
-//                     via Google Fonts <link>, theme CSS and the presenter plugin
-//                     (./presenter.js) INLINED, no other external refs)
+//   ./index.html    — single self-contained HTML file: Reveal (from node_modules), theme
+//                     CSS and the presenter plugin (./presenter.js) INLINED, so the deck
+//                     runs with no network. Only the fonts load from Google Fonts (<link>);
+//                     offline they fall back to system fonts.
 //
 // Setup (one-time per deck dir):
-//   npm install js-yaml
-//   cp $PLUGIN/shared/styles/<name>.md ./style.md
 //   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
+//   npm install                     # js-yaml and the pinned reveal.js
+//   cp $PLUGIN/shared/styles/<name>.md ./style.md
 //   node build-deck.js .
 //
 // ── PRE-BUILD ALIGNMENT CHECKLIST (run mentally per slide before building) ──
@@ -37,8 +38,7 @@ const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
-const REVEAL_VERSION = "5.0.5"; // pinned, see https://github.com/hakimel/reveal.js/releases
-const REVEAL_CDN_BASE = `https://cdn.jsdelivr.net/npm/reveal.js@${REVEAL_VERSION}/dist`;
+const REVEAL_VERSION = "5.0.5"; // pinned here and in package.json, see https://github.com/hakimel/reveal.js/releases
 
 const SLIDE_W_PX = 1280;
 const SLIDE_H_PX = 720;
@@ -339,77 +339,104 @@ function themeCss({ palette: P, type: T, layout: L }) {
   color: var(--color-ink-muted);
   text-align: center;
 }
+
+/* Entrance motion: [data-a] elements animate in each time their slide becomes current,
+   staggered by --i. Off in print, for reduced-motion viewers, and in the presenter view. */
+.reveal .slides section.present [data-a] { animation: .5s cubic-bezier(.4, 0, .2, 1) calc(100ms + var(--i, 0) * 70ms) both; }
+.reveal .slides section.present [data-a="up"]     { animation-name: a-up; }
+.reveal .slides section.present [data-a="fade"]   { animation-name: a-fade; animation-duration: .7s; }
+.reveal .slides section.present [data-a="left"]   { animation-name: a-left; }
+.reveal .slides section.present [data-a="right"]  { animation-name: a-right; }
+.reveal .slides section.present [data-a="pop"]    { animation-name: a-pop; animation-timing-function: cubic-bezier(.3, 1.4, .5, 1); }
+.reveal .slides section.present [data-a="grow-x"] { animation-name: a-grow-x; animation-duration: .8s; transform-origin: left center; }
+.reveal .slides section.present [data-a="grow-y"] { animation-name: a-grow-y; animation-duration: .8s; transform-origin: center bottom; }
+.reveal .slides section.present [data-a="wipe"]   { animation-name: a-wipe; animation-duration: .9s; }
+.reveal .slides section.present [data-a="draw"]   { animation-name: a-draw; animation-duration: 1.1s; }
+.reveal [data-a="draw"] { stroke-dasharray: 1; }   /* the SVG shape needs pathLength="1" */
+@keyframes a-up     { from { opacity: 0; transform: translateY(14px); } }
+@keyframes a-fade   { from { opacity: 0; } }
+@keyframes a-left   { from { opacity: 0; transform: translateX(-18px); } }
+@keyframes a-right  { from { opacity: 0; transform: translateX(18px); } }
+@keyframes a-pop    { from { opacity: 0; transform: scale(.82); } }
+@keyframes a-grow-x { from { transform: scaleX(0); } }
+@keyframes a-grow-y { from { transform: scaleY(0); } }
+@keyframes a-wipe   { from { clip-path: inset(0 100% 0 0); } }
+@keyframes a-draw   { from { stroke-dashoffset: 1; } }
+html.reveal-print .reveal [data-a] { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .reveal [data-a] { animation: none !important; } }
 `.trim();
 }
 
 // ── Slide HTML renderers (one per layout) ──────────────────────────
+// `a(i, kind)` adds entrance motion to a block (data-a, stagger position i) when the slide
+// has motion on, and nothing otherwise.
 const renderers = {
-  title(s) {
+  title(s, a) {
     return `<section class="layout-title">
-  <h1>${esc(s.title)}</h1>
-  ${s.subtitle ? `<p class="subtitle">${esc(s.subtitle)}</p>` : ""}
-  ${s.footer ? `<div class="footer">${esc(s.footer)}</div>` : ""}
+  <h1${a(0)}>${esc(s.title)}</h1>
+  ${s.subtitle ? `<p class="subtitle"${a(1)}>${esc(s.subtitle)}</p>` : ""}
+  ${s.footer ? `<div class="footer"${a(2, "fade")}>${esc(s.footer)}</div>` : ""}
 </section>`;
   },
-  section(s) {
+  section(s, a) {
     return `<section class="layout-section">
-  ${s.kicker ? `<div class="kicker">${esc(s.kicker)}</div>` : ""}
-  <h2>${esc(s.title)}</h2>
+  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
+  <h2${a(1)}>${esc(s.title)}</h2>
 </section>`;
   },
-  "two-column"(s) {
+  "two-column"(s, a) {
     return `<section class="layout-two-column">
-  ${s.kicker ? `<div class="kicker">${esc(s.kicker)}</div>` : ""}
-  <h3>${esc(s.title)}</h3>
+  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
+  <h3${a(1)}>${esc(s.title)}</h3>
   <div class="columns">
-    <div class="col-left">${s.left || ""}</div>
-    <div class="col-right">${s.right || ""}</div>
+    <div class="col-left"${a(2)}>${s.left || ""}</div>
+    <div class="col-right"${a(3)}>${s.right || ""}</div>
   </div>
 </section>`;
   },
-  "card-row"(s) {
-    const cards = (s.cards || []).map(c =>
-      `<div class="card"><h4>${esc(c.heading)}</h4><p>${c.body || ""}</p></div>`
+  "card-row"(s, a) {
+    const cards = (s.cards || []).map((c, i) =>
+      `<div class="card"${a(2 + i)}><h4>${esc(c.heading)}</h4><p>${c.body || ""}</p></div>`
     ).join("\n    ");
     return `<section class="layout-card-row" style="--card-count: ${s.cards.length};">
-  ${s.kicker ? `<div class="kicker">${esc(s.kicker)}</div>` : ""}
-  <h3>${esc(s.title)}</h3>
+  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
+  <h3${a(1)}>${esc(s.title)}</h3>
   <div class="cards">
     ${cards}
   </div>
 </section>`;
   },
-  bigNumber(s) {
+  bigNumber(s, a) {
     return `<section class="layout-bignumber">
-  ${s.kicker ? `<div class="kicker">${esc(s.kicker)}</div>` : ""}
-  <div class="figure-row">
+  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
+  <div class="figure-row"${a(1, "pop")}>
     <div class="figure">${esc(s.figure)}</div>
     ${s.unit ? `<div class="unit">${esc(s.unit)}</div>` : ""}
   </div>
-  ${s.label ? `<div class="label">${esc(s.label)}</div>` : ""}
-  ${s.context ? `<div class="context">${esc(s.context)}</div>` : ""}
+  ${s.label ? `<div class="label"${a(2)}>${esc(s.label)}</div>` : ""}
+  ${s.context ? `<div class="context"${a(3)}>${esc(s.context)}</div>` : ""}
 </section>`;
   },
-  quote(s) {
+  quote(s, a) {
     return `<section class="layout-quote">
-  <blockquote>${esc(s.quote)}</blockquote>
-  ${s.attribution ? `<div class="attribution">${esc(s.attribution)}</div>` : ""}
+  <blockquote${a(0, "fade")}>${esc(s.quote)}</blockquote>
+  ${s.attribution ? `<div class="attribution"${a(1)}>${esc(s.attribution)}</div>` : ""}
 </section>`;
   },
-  bullets(s) {
-    const items = (s.items || []).map(i => `<li>${i}</li>`).join("\n    ");
+  bullets(s, a) {
+    const items = (s.items || []).map((item, i) => `<li${a(2 + i)}>${item}</li>`).join("\n    ");
     return `<section class="layout-bullets">
-  ${s.kicker ? `<div class="kicker">${esc(s.kicker)}</div>` : ""}
-  <h3>${esc(s.title)}</h3>
+  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
+  <h3${a(1)}>${esc(s.title)}</h3>
   <ul>
     ${items}
   </ul>
 </section>`;
   },
-  "image-caption"(s) {
+  "image-caption"(s, a) {
     return `<section class="layout-image-caption">
-  <img src="${s.src}" alt="${esc(s.alt || "")}"/>
-  ${s.caption ? `<div class="caption">${esc(s.caption)}</div>` : ""}
+  <img src="${s.src}" alt="${esc(s.alt || "")}"${a(0, "fade")}/>
+  ${s.caption ? `<div class="caption"${a(1)}>${esc(s.caption)}</div>` : ""}
 </section>`;
   },
 };
@@ -435,10 +462,13 @@ function notesHtml(slide) {
   return `<aside class="notes"${attrs}>${esc(slide.notes || "").replace(/\r?\n/g, "&#10;")}</aside>`;
 }
 
-function renderSlide(slide) {
+// `motion` is the deck's default; a slide's own `motion` field overrides it.
+function renderSlide(slide, motion = false) {
   const fn = renderers[slide.layout];
   if (!fn) throw new Error(`Unknown layout: "${slide.layout}". Supported: ${Object.keys(renderers).join(", ")}`);
-  let html = fn(slide);
+  const moving = slide.motion != null ? !!slide.motion : motion;
+  const a = (i, kind = "up") => (moving ? ` data-a="${kind}" style="--i: ${i}"` : "");
+  let html = fn(slide, a);
   // Reveal removes hidden slides when the deck loads, so the presenter doesn't count them either.
   if (slide.hidden) html = html.replace(/^(<section class="[^"]*")/, '$1 data-visibility="hidden"');
   const notes = notesHtml(slide);
@@ -446,13 +476,15 @@ function renderSlide(slide) {
 }
 
 // ── Deck spec and pacing ───────────────────────────────────────────
-// slides.js exports either an array of slides or { slides, sessions, minutes }:
+// slides.js exports either an array of slides or { slides, sessions, minutes, motion }:
 //   sessions  session label (cue.session) → length in minutes
 //   minutes   length of the slides that have no cue.session (a deck without sessions)
+//   motion    true gives every slide entrance motion; a slide's own `motion` overrides it
 // The presenter gives every in-run slide of a session an equal share of its length.
 function readDeck(spec) {
   const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
   if (!Array.isArray(deck.slides)) throw new Error("slides.js must export an array of slides, or { slides: [...], sessions: {...} }.");
+  if (deck.motion != null && typeof deck.motion !== "boolean") throw new Error(`motion must be true or false, got "${deck.motion}"`);
   const labels = new Set(deck.slides.map(s => (s.cue && s.cue.session) || ""));
   const sessions = Object.assign(deck.minutes != null ? { "": deck.minutes } : {}, deck.sessions);
   for (const [label, minutes] of Object.entries(sessions)) {
@@ -461,8 +493,29 @@ function readDeck(spec) {
     if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
     sessions[label] = Number(minutes);
   }
-  return { slides: deck.slides, sessions };
+  return { slides: deck.slides, sessions, motion: !!deck.motion };
 }
+
+// ── Reveal, inlined ────────────────────────────────────────────────
+// Read from the deck dir's node_modules (npm install), so the page needs no CDN. The
+// installed version must match the pin, or a stale install would slip in unnoticed.
+function revealAssets(fromDir) {
+  for (let dir = fromDir; ; dir = path.dirname(dir)) {
+    const pkg = path.join(dir, "node_modules", "reveal.js");
+    if (fs.existsSync(path.join(pkg, "package.json"))) {
+      const version = JSON.parse(fs.readFileSync(path.join(pkg, "package.json"), "utf8")).version;
+      if (version !== REVEAL_VERSION) throw new Error(`reveal.js ${version} is installed, but this builder is pinned to ${REVEAL_VERSION}. Run: npm install reveal.js@${REVEAL_VERSION}`);
+      return {
+        css: fs.readFileSync(path.join(pkg, "dist", "reveal.css"), "utf8"),
+        js: fs.readFileSync(path.join(pkg, "dist", "reveal.js"), "utf8"),
+      };
+    }
+    if (path.dirname(dir) === dir) throw new Error(`reveal.js isn't installed. Run npm install in the deck dir (package.json pins reveal.js ${REVEAL_VERSION}).`);
+  }
+}
+// Keep inlined code from closing its own tag early.
+const inlineScript = (js) => js.replace(/<\/script/gi, "<\\/script");
+const inlineStyle = (css) => css.replace(/<\/style/gi, "<\\/style");
 
 // Printed after every build, so whoever edits the deck (often Claude) sees the timing plan
 // and which slides are hidden without opening the presenter.
@@ -494,7 +547,7 @@ function minSec(minutes) {
 }
 
 // ── HTML page assembly ─────────────────────────────────────────────
-function pageHtml({ title, fontsUrl, css, slidesHtml, presenterJs, sessions = {} }) {
+function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {} }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -504,7 +557,9 @@ function pageHtml({ title, fontsUrl, css, slidesHtml, presenterJs, sessions = {}
   ${fontsUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="${fontsUrl}" rel="stylesheet"/>` : ""}
-  <link rel="stylesheet" href="${REVEAL_CDN_BASE}/reveal.css"/>
+  <style>
+${inlineStyle(reveal.css)}
+  </style>
   <style>
 ${css}
   </style>
@@ -515,8 +570,10 @@ ${css}
 ${slidesHtml.split("\n").map(l => "      " + l).join("\n")}
     </div>
   </div>
-  <script src="${REVEAL_CDN_BASE}/reveal.js"></script>
-  ${presenterJs ? `<script>\n${presenterJs.replace(/<\/script/gi, "<\\/script")}\n  </script>` : ""}
+  <script>
+${inlineScript(reveal.js)}
+  </script>
+  ${presenterJs ? `<script>\n${inlineScript(presenterJs)}\n  </script>` : ""}
   <script>
     Reveal.initialize({
       width: ${SLIDE_W_PX},
@@ -546,7 +603,8 @@ function main() {
     process.exit(1);
   }
   delete require.cache[slidesPath];
-  const { slides, sessions } = readDeck(require(slidesPath));
+  const { slides, sessions, motion } = readDeck(require(slidesPath));
+  const reveal = revealAssets(__dirname);
 
   const presenterPath = path.join(__dirname, "presenter.js");
   if (!fs.existsSync(presenterPath)) {
@@ -558,10 +616,10 @@ function main() {
 
   const fontsUrl = googleFontsUrl(tokens.type || {});
   const css = themeCss(tokens);
-  const slidesHtml = slides.map(renderSlide).join("\n");
+  const slidesHtml = slides.map((s) => renderSlide(s, motion)).join("\n");
   const title = tokens.name ? `${tokens.name} deck` : "deck";
 
-  const html = pageHtml({ title, fontsUrl, css, slidesHtml, presenterJs, sessions });
+  const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions });
   const outPath = path.join(cwd, "index.html");
   fs.writeFileSync(outPath, html);
 

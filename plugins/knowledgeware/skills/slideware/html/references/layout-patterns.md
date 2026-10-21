@@ -183,7 +183,7 @@ Full-bleed image with caption below. Use for screenshots, charts, diagrams.
 
 ## Fields every layout accepts
 
-`notes` (speaker notes, plain text), `cue` (`{ session, module, run }`) and `hidden` work on any archetype. Notes and cues never render on the slide; the presenter view and the notes drawer read them. `hidden: true` leaves the slide out of the deck and out of the pace plan. Schema, keys and session lengths: [reveal.md §Speaker notes](reveal.md#speaker-notes).
+`notes` (speaker notes, plain text), `cue` (`{ session, module, run }`), `hidden` and `motion` (entrance animation on or off for this slide; see [reveal.md §Entrance motion](reveal.md#entrance-motion)) work on any archetype. Notes and cues never render on the slide; the presenter view and the notes drawer read them. `hidden: true` leaves the slide out of the deck and out of the pace plan. Schema, keys and session lengths: [reveal.md §Speaker notes](reveal.md#speaker-notes).
 
 ```js
 { layout: "bullets", title: "...", items: [...],

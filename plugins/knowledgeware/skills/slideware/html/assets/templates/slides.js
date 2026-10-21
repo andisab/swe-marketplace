@@ -20,6 +20,8 @@
 //    { minutes: 20, slides: [...] } or { sessions: { "Session 1": 90 }, slides: [...] }
 //    instead of the bare array. Press S in the deck to present, N for a rehearsal
 //    drawer. See references/reveal.md §Speaker notes.
+// 8. Entrance motion is opt-in: add `motion: true` next to `slides` (or on one slide).
+//    See references/reveal.md §Entrance motion.
 
 module.exports = [
   {

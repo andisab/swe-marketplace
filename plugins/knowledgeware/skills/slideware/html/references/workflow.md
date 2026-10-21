@@ -75,5 +75,5 @@ Slide content doesn't change — only the theme CSS and font loading do.
 - Layouts are varied per the anti-monotony rule (see SKILL.md).
 - Type hierarchy is visible at a glance: hero/title/body sizes feel distinct.
 - Palette is consistent — no rogue colors outside the brandbook.
-- Network tab on first load shows exactly: Google Fonts + Reveal CDN. Nothing else.
+- Network tab on first load shows exactly: Google Fonts. Nothing else (Reveal is inlined).
 - The output `index.html` opens cleanly when copied to a different directory (proves self-containment).

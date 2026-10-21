@@ -69,7 +69,8 @@ Whichever tool captures the slides, the review bar is the same: inspect **every*
 - **Theme CSS rules MUST be scoped under `.reveal`** — Reveal's reset is aggressive and unprefixed rules get clobbered.
 - **`display=swap` on the Google Fonts URL** is required — without it, you get FOIT (invisible text during load).
 - **Don't reference `./style.md` from the output HTML.** Output must stand alone. The build inlines theme CSS into a `<style>` block.
-- **CDN URL is pinned** (`reveal.js@5.0.5`). Bumping the version is a deliberate change — diff the output HTML after.
+- **Reveal is pinned and inlined** (`reveal.js` 5.0.5 in `package.json` and `REVEAL_VERSION` in `build-deck.js`). Run `npm install` in the deck dir before the first build; the build refuses a mismatched version. Decks then run offline; only fonts need a network. Bumping the version is a deliberate change to both pins — diff the output HTML after.
+- **Entrance motion is opt-in:** `motion: true` in `slides.js` (deck) or on a slide. See [references/reveal.md](references/reveal.md) §Entrance motion.
 - **Copy `presenter.js` along with `build-deck.js`.** The build inlines it (presenter view, notes drawer) and exits with an error if it's missing. Speaker notes go in each slide's `notes` and `cue` fields, never in the slide markup.
 - **Pacing and hidden slides live in `slides.js`.** Session lengths go in `sessions` (or `minutes` for a deck without sessions) next to `slides`; `hidden: true` takes a slide out of the deck and out of the time per slide. For "hide slide 12", "session 2 is 75 minutes" or "which slides are hidden?", edit `slides.js`, rebuild, and quote the pacing summary the build prints.
 - **Reveal initializes with `controls`, `progress`, `slideNumber`, and `transition: 'fade'`** by default. Override these only if you have a reason — match the medium (kiosk, walkthrough, recorded presentation).

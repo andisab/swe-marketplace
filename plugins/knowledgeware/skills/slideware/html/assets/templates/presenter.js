@@ -100,6 +100,7 @@ html.rp-presenter .rp-shell { position: fixed; inset: 0; z-index: 1; display: gr
 .rp-status { grid-area: 5 / 1 / 6 / -1; }
 .rp-shell[data-hide-prev] .rp-side-prev, .rp-shell[data-hide-prev] [data-split=prev],
 .rp-shell[data-hide-next] .rp-side-next, .rp-shell[data-hide-next] [data-split=next] { display: none; }
+html.rp-presenter .reveal [data-a] { animation: none !important; }   /* the presenter sees each slide fully in place */
 html.rp-presenter .reveal.rp-main { border-radius: 10px; box-shadow: 0 0 0 1px #E3E3DF, 0 2px 8px -2px rgba(26,26,24,.18); }
 /* Dark header bar, edge to edge, with a gutter under it. */
 .rp-top { display: flex; align-items: center; gap: 20px; align-self: start; height: ${TOP_H - GUTTER}px; min-width: 0;

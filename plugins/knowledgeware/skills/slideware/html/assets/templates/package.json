@@ -9,6 +9,7 @@
     "render": "bash scripts/render-slides.sh ./index.html ./preview/"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "reveal.js": "5.0.5"
   }
 }

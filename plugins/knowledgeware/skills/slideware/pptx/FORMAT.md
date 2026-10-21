@@ -45,21 +45,39 @@ See [workflow.md](references/workflow.md) for both. Don't pay the full-path tax 
 
 Shared rule in [../SKILL.md](../SKILL.md). The 12 pptx archetypes live in [references/layout-patterns.md](references/layout-patterns.md).
 
-## Speaking-notes provenance (required)
+## Speaker notes (required)
 
-Every content slide that states an external fact gets speaking notes ending with a provenance block, via `slide.addNotes(...)` (plain text — include full URLs so they're copyable/clickable from the notes pane):
+Speaker notes follow the shared conventions in [../SKILL.md](../SKILL.md) §Speaker notes, pacing and hidden slides. The starter template's `speakerNotes()` helper writes them; call it once for **every** slide, in order (empty text is fine), and leave `finishNotes()` just before `writeFile`:
 
 ```js
-slide.addNotes(
-  "…any presenter notes for this slide…\n\n" +
-  "Sources:\n" +
-  "- Anthropic pricing: https://platform.claude.com/docs/en/about-claude/pricing\n" +
-  "- Bedrock pricing: https://aws.amazon.com/bedrock/pricing/\n" +
-  "Last verified: 2026-08-18"
-);
+speakerNotes(s, {
+  text: "What to say over this slide.\n\n- Point one\n- Point two [pause]",
+  cue: { session: "Session 1", module: "Module 2", run: "cut-first" },
+  sources: ["Anthropic pricing: https://platform.claude.com/docs/en/about-claude/pricing",
+            "Bedrock pricing: https://aws.amazon.com/bedrock/pricing/"],
+  verified: "2026-08-18",
+});
+s.hidden = true;   // only for a slide kept in the file but left out of the show
 ```
 
-Rules: only sources relevant to **that slide's** content — this is what makes targeted re-verification cheap; full URLs, never bare domains; one `Last verified:` line per slide, dated when the facts were actually checked. Title, agenda, and divider slides skip the block. When rebuilding an existing deck (pptxgenjs is write-only), carry each slide's provenance block forward verbatim and bump a date only for facts re-verified in this pass.
+Each slide's notes come out in a fixed order: a cue line, the text, then the provenance block:
+
+```
+[Session 1 · Module 2 · Default run · cut first if behind · plan 22:30–33:45]
+
+What to say over this slide.
+…
+
+Sources:
+- Anthropic pricing: https://platform.claude.com/docs/en/about-claude/pricing
+Last verified: 2026-08-18
+```
+
+- **Pacing.** Set `SESSIONS` (minutes per `cue.session`; `""` for a deck without sessions) at the top of the build script. PowerPoint has no live pace line, so the cue line carries each in-run slide's planned window for the presenter to read against PowerPoint's timer. The build prints the same pacing summary as the html format; quote it when asked about timing or hidden slides.
+- **Plain text.** PowerPoint shows notes as plain text: the helper strips `**bold**` and `*italic*` markers, and keeps `- ` lists and `[pause]` as written.
+- **Hidden slides.** `s.hidden = true` uses PowerPoint's own hidden-slide flag: the slide stays in the file, PowerPoint skips it in the show, and pacing doesn't count it.
+
+**Provenance rules.** Every content slide that states an external fact gets `sources` and `verified`. Cite only sources relevant to **that slide's** content — that is what makes targeted re-verification cheap. Use full URLs, never bare domains, and date `verified` when the facts were actually checked. Title, agenda and divider slides skip the block. When rebuilding an existing deck (pptxgenjs is write-only), carry each slide's sources and date forward verbatim and bump a date only for facts re-verified in this pass.
 
 ## Output convention
 

@@ -77,6 +77,56 @@ const cx = (w) => +(((10 - w) / 2)).toFixed(3);
 // Center column of width w in a parent column starting at parentX with parentW
 const cxIn = (parentX, parentW, w) => +(parentX + (parentW - w) / 2).toFixed(3);
 
+// ── Speaker notes, cues and pacing (same conventions as the html format; see SKILL.md) ──
+// Call speakerNotes() once for EVERY slide, in order (empty text is fine): it records the
+// notes, and finishNotes() writes them just before saving, once the time per slide is known.
+//   speakerNotes(s, {
+//     text: "What to say…",                                                // plain text; **bold** / *italic* markers are stripped
+//     cue: { session: "Session 1", module: "Module 2", run: "cut-first" },  // run: default | cut-first | add-back | backup
+//     sources: ["Anthropic pricing: https://…"], verified: "2026-08-18",    // provenance, see FORMAT.md
+//   });
+//   s.hidden = true;   // hidden slide: skipped in the slideshow and not counted for pacing
+// Each in-run slide of a session gets an equal share of its length in SESSIONS. PowerPoint has
+// no live pace line, so the notes open with a cue line holding the slide's planned window,
+// e.g. "[Session 1 · Module 2 · Default run · plan 11:15–22:30]", to read against its timer.
+const SESSIONS = {};   // minutes per cue.session, e.g. { "Session 1": 90 }; "" for a deck without sessions
+const RUNS = { "default": "Default run", "cut-first": "Default run · cut first if behind", "add-back": "Add-back · use if ahead", "backup": "Backup slide" };
+const noteQueue = [];
+function speakerNotes(slide, notes) { noteQueue.push({ slide, ...notes }); }
+function finishNotes() {
+  const session = (n) => (n.cue && n.cue.session) || "";
+  const inRun = (n) => !n.slide.hidden && !["add-back", "backup"].includes(n.cue && n.cue.run);
+  const mmss = (min) => { const s = Math.round(min * 60); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+  for (const n of noteQueue) {
+    if (n.cue && n.cue.run && !RUNS[n.cue.run]) throw new Error(`Unknown cue.run "${n.cue.run}". Supported: ${Object.keys(RUNS).join(", ")}`);
+  }
+  for (const label of Object.keys(SESSIONS)) {
+    if (!noteQueue.some((n) => session(n) === label)) throw new Error(`SESSIONS["${label}"]: no slide has cue.session "${label}"`);
+  }
+  const count = {}, passed = {};
+  noteQueue.filter(inRun).forEach((n) => { count[session(n)] = (count[session(n)] || 0) + 1; });
+  for (const n of noteQueue) {
+    const label = session(n), each = SESSIONS[label] && count[label] ? SESSIONS[label] / count[label] : 0;
+    const cue = [label, n.cue && n.cue.module, n.cue && RUNS[n.cue.run]];
+    if (each && inRun(n)) { const k = (passed[label] = (passed[label] || 0) + 1); cue.push(`plan ${mmss((k - 1) * each)}–${mmss(k * each)}`); }
+    const text = (n.text || "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^*])\*(?!\s)(.+?)\*/g, "$1$2");
+    const provenance = n.sources && n.sources.length ? `Sources:\n${n.sources.map((x) => "- " + x).join("\n")}\nLast verified: ${n.verified}` : "";
+    const line = cue.filter(Boolean).join(" · ");
+    n.slide.addNotes([line && `[${line}]`, text.trim(), provenance].filter(Boolean).join("\n\n"));
+  }
+  // Pacing summary in the same shape as the html build's, for whoever edits the deck to quote.
+  const labels = [...new Set(noteQueue.map(session))];
+  if (Object.keys(SESSIONS).length || noteQueue.some((n) => n.cue)) {
+    console.log("Pacing (each slide in the run gets an equal share of its session):");
+    for (const label of labels) {
+      const len = SESSIONS[label], c = count[label] || 0;
+      console.log(`  ${label || "Deck"}: ${len ? `${len} min, ` : ""}${c} slide${c === 1 ? "" : "s"} in the run → ${len && c ? `${mmss(len / c)} per slide` : "no length set, so no pace plan"}`);
+    }
+  }
+  const hidden = noteQueue.flatMap((n, i) => (n.slide.hidden ? [`#${i + 1}`] : []));
+  if (hidden.length) console.log(`Hidden (not shown, not counted): ${hidden.join(" · ")}`);
+}
+
 // ── Build deck ────────────────────────────────────────────────────────────
 async function buildDeck() {
   const pres = new pptxgen();
@@ -99,6 +149,7 @@ async function buildDeck() {
       x: 0.5, y: 3.3, w: 9, h: 0.4,
       fontSize: 14, fontFace: T.sans, color: P.inkMuted, margin: 0, italic: true,
     });
+    speakerNotes(s, { text: "What the presenter says while this slide is up.", cue: { run: "default" } });
   }
 
   // Add more slides. Each should pick a distinct layout archetype.
@@ -106,6 +157,7 @@ async function buildDeck() {
   // ANTI-MONOTONY: no archetype appears more than once per deck.
 
   // ── Write ────────────────────────────────────────────────────────────────
+  finishNotes();
   const outDir = process.argv[2] || ".";
   const outFile = path.resolve(outDir, "deck.pptx");
   await pres.writeFile({ fileName: outFile });

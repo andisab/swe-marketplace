@@ -4,16 +4,9 @@ Reveal.js conventions used by `build-deck.js`, plus the gotchas to remember.
 
 ## Pinned version
 
-`REVEAL_VERSION = "5.0.5"` in `build-deck.js`. Bumping is a deliberate change — diff the output HTML after; new versions occasionally rename CSS classes or change initialization options.
+`REVEAL_VERSION = "5.0.5"` in `build-deck.js`, and `"reveal.js": "5.0.5"` in the template `package.json`. Bumping is a deliberate change to both — diff the output HTML after; new versions occasionally rename CSS classes or change initialization options.
 
-CDN URLs:
-
-```
-https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/reveal.css
-https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/reveal.js
-```
-
-Both are pinned. Don't use `@latest`.
+The build reads `dist/reveal.js` and `dist/reveal.css` from the deck dir's `node_modules` (`npm install`) and inlines them, so a deck runs with no network: from `file://`, on a laptop with no wifi, from any static host. It refuses to build if the installed version doesn't match `REVEAL_VERSION`. Only the Google Fonts `<link>` still needs a network; offline, text falls back to the system fonts the brandbook names. (The npm package's banner says 5.0.4; the code is the published 5.0.5, byte-identical to the CDN file.)
 
 ## Slide frame
 
@@ -151,6 +144,16 @@ Either window moves both. Sync uses BroadcastChannel plus `window.postMessage`, 
 ### Customizing
 
 Edit the deck directory's copy of `presenter.js` and rebuild: styles live in its `CSS` string, the presenter layout in `SHELL_HTML`, sidebar width limits in `SIDE`, the smallest slides row and notes pane in `ROW_MIN` and `NOTES_MIN`, the gap between panes in `GUTTER`. The plugin uses only Reveal's public API (`on`, `slide`, `getIndices`, `configure`, `addKeyBinding`, `getSlideBackground`), so Reveal upgrades within 5.x shouldn't break it. The previous and next copies have two limits: they always show the slide fully built, and scripts inside slides don't run in them.
+
+## Entrance motion
+
+Elements with `data-a` animate in each time their slide becomes current, staggered by the `--i` custom property (100ms, then 70ms per step). Kinds: `up`, `fade`, `left`, `right`, `pop`, `grow-x`, `grow-y`, `wipe`, and `draw` (SVG strokes; the shape needs `pathLength="1"`). Motion is off in print, for viewers who ask for reduced motion, and in the presenter view, which shows each slide fully in place.
+
+- **Whole deck:** `motion: true` next to `slides` in `slides.js` adds motion to every layout's blocks in reading order: kicker, heading, then each card, list item or column. The big number pops; quotes and images fade.
+- **One slide:** `motion: true` or `false` on a descriptor overrides the deck setting.
+- **Hand-placed:** light-HTML body strings can carry their own attributes, such as `<span data-a="fade" style="--i: 4">…</span>`.
+
+Motion is for arrival, not for steps: use fragments when the presenter should reveal a block on a keypress.
 
 ## Known quirks
 

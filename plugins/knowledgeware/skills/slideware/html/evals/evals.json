@@ -5,7 +5,7 @@
       "id": 0,
       "name": "default-style-from-outline",
       "prompt": "Build me a 6-slide HTML presentation introducing our team's new code-review automation policy to engineering. Slides: (1) title, (2) why the policy exists — three reasons, (3) what changes in PR flow, (4) tooling we'll roll out — three tools in a card row, (5) what we're measuring — three KPI callouts, (6) timeline and Q&A. Save it to ./code-review-policy.html. Don't ask me which style — pick a sensible default.",
-      "expected_output": "6-slide HTML deck at ./code-review-policy.html using style-1 (Executive Steel), varied layouts, theme CSS inlined, Google Fonts link present, Reveal.js CDN loaded, no reference to ./style.md.",
+      "expected_output": "6-slide HTML deck at ./code-review-policy.html using style-1 (Executive Steel), varied layouts, theme CSS inlined, Google Fonts link present, Reveal.js inlined, no reference to ./style.md.",
       "assertions": [
         { "text": "code-review-policy.html exists and is a valid HTML file" },
         { "text": "Document contains exactly 6 <section class=\"layout-*\"> elements" },
@@ -15,7 +15,7 @@
         { "text": "A style was chosen and applied — consistent palette via CSS variables across slides" },
         { "text": "<style> block present and scoped under .reveal" },
         { "text": "Google Fonts <link> with display=swap present" },
-        { "text": "Reveal.js CDN <script> tag present, pinned to a specific version (not @latest)" },
+        { "text": "Reveal.js 5.0.5 is inlined (no CDN <script> or <link>), so the deck runs offline" },
         { "text": "Output HTML does NOT reference ./style.md (grep for 'style.md' returns 0 matches)" }
       ],
       "files": []
@@ -34,7 +34,7 @@
         { "text": "polish-deck.py was run against the output and its result is reported" },
         { "text": "Title slide mentions 'Hindsight' product name" },
         { "text": "No leftover placeholder text" },
-        { "text": "Output HTML does NOT reference ./style.md or any external .css file (only Reveal CDN + Google Fonts allowed)" }
+        { "text": "Output HTML does NOT reference ./style.md or any external .css file (only Google Fonts allowed)" }
       ],
       "files": []
     },
