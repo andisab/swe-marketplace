@@ -1,7 +1,7 @@
 ---
 name: vue-expert
 description: Vue 3 expert specializing in Composition API, script setup syntax, TypeScript integration, and modern Vue ecosystem including Pinia, Vite, and Nuxt 3.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#42b883"
 tags:

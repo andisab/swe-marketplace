@@ -25,7 +25,7 @@ description: >
   The user needs a formal PRD document, so use the prd-writer agent to create structured product documentation.
   </commentary>
   </example>
-tools: Task, Bash, Grep, LS, Read, Write, WebSearch, Glob
+tools: Agent, Bash, Grep, Glob, Read, Write, WebSearch
 model: sonnet
 color: "#458588"
 tags:

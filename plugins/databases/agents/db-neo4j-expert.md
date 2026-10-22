@@ -1,7 +1,7 @@
 ---
 name: db-neo4j-expert
 description: Expert in Neo4j 5.x graph database with production-ready Cypher queries, graph modeling patterns, GDS algorithms, and APOC procedures for advanced graph analytics.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#8f3f71"
 tags:

@@ -99,7 +99,7 @@ You cannot modify code or execute arbitrary commands.
 
 ### Level 3: Read + Write (Moderate Risk)
 
-**Tools**: `Read`, `Write`, `Edit`, `MultiEdit`, `Grep`, `Glob`
+**Tools**: `Read`, `Write`, `Edit`, `Grep`, `Glob`
 
 **Use for**:
 - Code generators
@@ -112,7 +112,7 @@ You cannot modify code or execute arbitrary commands.
 ```yaml
 ---
 name: code-generator
-tools: Read, Write, Edit, MultiEdit, Grep, Glob
+tools: Read, Write, Edit, Grep, Glob
 ---
 
 You can read and modify files, but cannot execute bash commands.
@@ -250,7 +250,7 @@ tools: Read, Grep, Glob
 ---
 name: performance-optimizer
 description: Refactor code for better performance
-tools: Read, Edit, MultiEdit, Grep
+tools: Read, Edit, Grep
 ---
 
 # Deployment manager: Needs bash access
@@ -464,7 +464,7 @@ name: code-formatter
 description: >
   Automatically format code according to project style guide.
   Applies consistent naming, indentation, and organization.
-tools: Read, Edit, MultiEdit, Grep
+tools: Read, Edit, Grep
 model: sonnet
 ---
 
@@ -707,8 +707,8 @@ tools: Read
 |-------------------|------------------|-----------|
 | Code analysis | Read, Grep, Glob | No modification needed |
 | Security audit | Read, Grep, Glob | Audit must be non-invasive |
-| Code generation | Read, Write, Edit, MultiEdit | Creates new files |
-| Code refactoring | Read, Edit, MultiEdit, Grep | Modifies existing code |
+| Code generation | Read, Write, Edit | Creates new files |
+| Code refactoring | Read, Edit, Grep | Modifies existing code |
 | Test runner | Read, Bash(npm:*), Bash(pytest:*) | Runs tests only |
 | Deployment | Read, Bash(git:*), Bash(npm:*), Bash(ssh:*) | Deploys with specific commands |
 | Research | Read, WebFetch, WebSearch | External data gathering |

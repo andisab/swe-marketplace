@@ -1,7 +1,7 @@
 ---
 name: python-data-engineer
 description: Expert in Python data engineering, ETL pipelines, and production data systems. Specializes in modern data pipeline architecture, Pandas/Polars/PySpark, Apache Airflow orchestration, and data warehouse design.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: blue
 tags:

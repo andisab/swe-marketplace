@@ -1,7 +1,7 @@
 ---
 name: infra-docker-engineer
 description: Docker and Docker Compose specialist for containerization, multi-container applications, and local development environments. Expert in Dockerfile optimization, compose orchestration, and container best practices.
-tools: Read, Write, MultiEdit, Bash, Docker
+tools: Read, Write, Edit, Bash
 model: sonnet
 color: "#98971a"
 tags:

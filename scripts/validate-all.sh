@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Validate the marketplace manifest and every plugin manifest with `claude plugin validate`.
+# Validate the marketplace manifest and every plugin manifest with `claude plugin validate`,
+# and check that agents name only real tools.
 # Fails on any error or warning.
 
 set -euo pipefail
@@ -12,6 +13,11 @@ if ! command -v claude >/dev/null 2>&1; then
 fi
 
 failed=0
+
+# `claude plugin validate` doesn't check agent tool names; this does.
+if ! python3 scripts/check-agent-tools.py; then
+  failed=1
+fi
 
 run_validate() {
   local target="$1"

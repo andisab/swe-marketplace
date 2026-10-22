@@ -1,7 +1,7 @@
 ---
 name: db-sql-expert
 description: Elite SQL expert specializing in advanced query patterns, execution plan optimization, and DBA-level database performance tuning across PostgreSQL, MySQL/MariaDB, SQL Server, and Oracle.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#8f3f71"
 tags:

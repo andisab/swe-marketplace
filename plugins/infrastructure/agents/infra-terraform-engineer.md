@@ -1,7 +1,7 @@
 ---
 name: terraform-engineer
 description: Infrastructure as Code specialist focused on Terraform development, module creation, state management, and multi-cloud provisioning. Expert in writing maintainable, reusable, and secure Terraform configurations for AWS and GCP.
-tools: Read, Write, MultiEdit, Bash, context7
+tools: Read, Write, Edit, Bash, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#98971a"
 tags:

@@ -48,7 +48,7 @@ description: >
   </commentary>
   </example>
 
-tools: Task, Bash, Git, Glob, Grep, Read, Write, Edit, MultiEdit, TodoWrite
+tools: Agent, Bash, Glob, Grep, Read, Write, Edit, TodoWrite
 model: sonnet
 color: "#d65d0e"
 tags:

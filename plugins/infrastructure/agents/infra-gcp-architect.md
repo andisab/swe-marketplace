@@ -1,7 +1,7 @@
 ---
 name: gcp-cloud-architect
 description: GCP cloud architect specializing in designing and implementing scalable Google Cloud solutions. Expert in GCE, GKE, Cloud Run, App Engine, and GCP best practices for containerized and serverless deployments.
-tools: Read, Write, MultiEdit, Bash, Docker, context7
+tools: Read, Write, Edit, Bash, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#98971a"
 tags:

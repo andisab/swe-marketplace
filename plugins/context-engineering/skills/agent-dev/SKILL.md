@@ -163,13 +163,13 @@ Comma-separated list of allowed tools. Omit to inherit all tools from main conve
 tools: Read, Grep, Glob, Bash(git :*)
 
 # Code modification
-tools: Read, Write, Edit, MultiEdit, Grep, Glob
+tools: Read, Write, Edit, Grep, Glob
 
 # Research and planning
 tools: Read, Grep, Glob, WebFetch, WebSearch
 
 # Full-stack development
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, WebSearch
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 ```
 
 ### model
@@ -280,7 +280,7 @@ Define what the agent should NOT do:
 
 ### Development Agents
 **Characteristics**:
-- Full editing tools (Read, Write, Edit, MultiEdit)
+- Full editing tools (Read, Write, Edit)
 - Language/framework-specific expertise
 - Can run tests and builds
 

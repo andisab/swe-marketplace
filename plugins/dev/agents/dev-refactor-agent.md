@@ -33,7 +33,7 @@ description: >
   Code duplication and naming issues are core refactoring tasks for this agent.
   </commentary>
   </example>
-tools: Edit, MultiEdit, Write, NotebookEdit, Grep, LS, Read
+tools: Edit, Write, NotebookEdit, Grep, Glob, Read
 model: sonnet
 color: "#d65d0e"
 tags:

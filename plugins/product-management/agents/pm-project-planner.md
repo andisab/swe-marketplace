@@ -24,7 +24,7 @@ description: >
   The user needs development planning, so use the project-planner agent which will request the PRD.
   </commentary>
   </example>
-tools: Task, Bash, Edit, MultiEdit, Write, NotebookEdit, Grep, LS, Read, ExitPlanMode, TodoWrite, WebSearch
+tools: Agent, Bash, Edit, Write, NotebookEdit, Grep, Glob, Read, TodoWrite, WebSearch
 model: sonnet
 color: "#d65d0e"
 tags:

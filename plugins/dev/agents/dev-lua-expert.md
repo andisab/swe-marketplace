@@ -1,7 +1,7 @@
 ---
 name: lua-expert
 description: Write efficient and idiomatic Lua code, mastering the language features, patterns, and performance optimization. Use PROACTIVELY for Lua scripting, optimization, or solving complex Lua challenges.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#000080"
 tags:
