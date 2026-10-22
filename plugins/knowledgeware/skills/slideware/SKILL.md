@@ -60,7 +60,7 @@ When a slide cites a source that has a URL — footnote lines, resources/further
 
 ## Provenance for maintenance (shared)
 
-Decks decay like any deliverable: prices, versions, GA statuses, and quoted figures rot. Every deck that states external facts ships its provenance so a later maintenance pass (human or the kb-maintainer agent) can re-verify without archaeology:
+Decks decay like any deliverable: prices, versions, GA statuses, and quoted figures rot. Every deck that states external facts ships its provenance so a later maintenance pass can re-verify without archaeology. The knowledgeware `librarian` agent reads these records to report which decks are due and plan their re-verification:
 
 - **pptx**: each content slide's speaker notes end with a `Sources:` list (full URLs) and a `Last verified: YYYY-MM-DD` line — mechanics in [pptx/FORMAT.md](pptx/FORMAT.md) §Speaker notes.
 - **html**: the deck ends with a maintenance/sources slide following the knowledgebase skill's conventions scaled to a deck — mechanics in [html/FORMAT.md](html/FORMAT.md) §Maintenance section.

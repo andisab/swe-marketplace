@@ -31,18 +31,22 @@ Copy-paste and adapt:
 
 After that last one, every deck, site, and diagram uses that identity until you say otherwise.
 
-## Keeping knowledgebases fresh
+## Keeping sites and decks fresh: the librarian
 
-Volatile facts (prices, quotas, versions, GA statuses) rot. Generated sites carry a maintenance page whose master volatility table is an executable work order — and the plugin ships a maintainer that executes it:
+Volatile facts (prices, quotas, versions, GA statuses) rot. Generated sites carry a maintenance page whose master volatility table is an executable work order, and decks carry their sources and `Last verified` stamps. The **`librarian`** agent works across a whole library of them, with one command in three modes:
 
-- **`kb-maintainer` agent** — reads the maintenance page, re-verifies only the facts whose check cadence has elapsed (nothing redundant), fans out research subagents against primary sources, applies confirmed changes surgically, bumps `Last verified` stamps it earned, writes the changelog row, and reports structural drift as suggestions without ever restructuring the site.
-- **`/knowledgeware:kb-maintain <site-dir> [--dry-run]`** — the scheduler entry point. Put it on a weekly cron:
+- **`/knowledgeware:librarian status [library]`** — reads every site's maintenance page and every deck's stamps, and reports what's due, overdue and coming up, plus open conflicts. Writes nothing.
+- **`/knowledgeware:librarian plan [library]`** — writes `librarian-plan.md` at the library root: this week's sweeps, sources shared across items (verify once, apply everywhere), what's coming up, the backlog, and what needs a human. Each plan picks up where the last one left off.
+- **`/knowledgeware:librarian sweep <site-dir> [--dry-run]`** — maintains one site: re-verifies only the facts whose check cadence has elapsed, fans out research subagents against primary sources, applies confirmed changes surgically, bumps the `Last verified` stamps it earned, writes the changelog row, and reports structural drift as suggestions without ever restructuring the site.
+
+The library is the folder you pass, or `KNOWLEDGEWARE_LIBRARY`. Decks are reported and planned, not edited: re-verifying a deck means editing its source and rebuilding, which the slideware skill does. Put sweeps (and, if you like, a weekly plan) on a schedule:
 
 ```bash
-claude -p "/knowledgeware:kb-maintain '/path/to/site'" --permission-mode acceptEdits --model opus
+claude -p "/knowledgeware:librarian sweep '/path/to/site'" --permission-mode acceptEdits --model opus
+claude -p "/knowledgeware:librarian plan '/path/to/library'" --permission-mode acceptEdits --model opus
 ```
 
-Start with `--dry-run` to see what a sweep would change before letting it write. The contract both sides follow lives at `skills/knowledgebase/references/maintenance.md`; sites built before the contract existed are handled tolerantly (sections are matched semantically, deviations reported).
+Start with `--dry-run` to see what a sweep would change before letting it write. The contract sites follow lives at `skills/knowledgebase/references/maintenance.md`; sites built before the contract existed are handled tolerantly (sections are matched semantically, deviations reported). `/knowledgeware:kb-maintain` still works as a deprecated alias for `librarian sweep`, so existing scheduled jobs keep running.
 
 ## The five built-in styles
 

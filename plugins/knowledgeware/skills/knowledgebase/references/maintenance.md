@@ -1,6 +1,6 @@
 # Knowledgebase Skill — Maintenance Spec
 
-The contract between a site's **builder** (this skill) and its **maintainer** (a human on a sweep, or the `kb-maintainer` agent on a schedule). A site that follows this spec can be maintained by pointing the agent at its folder with zero extra briefing: the maintenance page IS the work order. Field-tested across two production field guides (July–August 2026).
+The contract between a site's **builder** (this skill) and its **maintainer** (a human on a sweep, or the `librarian` agent on a schedule). A site that follows this spec can be maintained by pointing the agent at its folder with zero extra briefing: the maintenance page IS the work order. Field-tested across two production field guides (July–August 2026).
 
 ## 1. Freshness model
 
@@ -72,7 +72,7 @@ If a changed fact's data class is missing from the master table, add a row — a
 
 ## 5. Automated maintainer protocol
 
-What a scheduled agent (see the plugin's `kb-maintainer` agent) may and may not do. A site's `protocol` section may tighten these; it may not loosen the forbidden list.
+What a scheduled agent (see the plugin's `librarian` agent, `sweep` mode) may and may not do. A site's `protocol` section may tighten these; it may not loosen the forbidden list.
 
 **Allowed:** verify due rows and apply confirmed deltas through the §3 ordering · bump earned stamps · write the changelog row · add rows to `upcoming`, `open-conflicts`, `outstanding-questions` · append dated drift observations to `outstanding-questions`.
 

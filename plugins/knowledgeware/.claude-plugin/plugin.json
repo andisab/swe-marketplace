@@ -1,6 +1,6 @@
 {
   "name": "knowledgeware",
-  "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches.",
+  "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches. A librarian agent keeps sites and decks current: what's due, update plans, and scheduled fact-check sweeps.",
   "version": "1.8.0",
   "author": {
     "name": "Andis A. Blukis",
@@ -19,12 +19,14 @@
     "drawio",
     "brandbook",
     "styles",
-    "design-tokens"
+    "design-tokens",
+    "maintenance"
   ],
   "agents": [
-    "./agents/kb-maintainer.md"
+    "./agents/librarian.md"
   ],
   "commands": [
+    "./commands/librarian.md",
     "./commands/kb-maintain.md"
   ],
   "skills": [

@@ -89,7 +89,7 @@ An HTML deck is a hosted, long-lived artifact — it gets the knowledgebase skil
 
 - **Final slide: "Sources & verification"** (or a vertical appendix stack for large decks). Every cited source as a live `<a href="…" target="_blank" rel="noopener">` link in the deck's muted caption treatment, grouped by the slide it supports (use slide titles as group labels). A citation nobody can click is a citation nobody re-verifies.
 - **A `Last verified: YYYY-MM-DD` stamp** on that slide, plus a one-line staleness note ("facts older than 90 days: re-verify before presenting externally"). Per-slide stamps are allowed where one slide's facts churn much faster than the rest.
-- **For large or long-lived decks**, add a compact volatility list on the same slide: fact class · source link · how often it moves. This is the deck-scale master volatility table and is what lets the kb-maintainer agent (or a human sweep) route checks without reading every slide.
+- **For large or long-lived decks**, add a compact volatility list on the same slide: fact class · source link · how often it moves. This is the deck-scale master volatility table and is what lets the librarian agent (or a human) plan checks without reading every slide.
 - The maintenance slide follows the deck's visual style — it's a designed slide, not a plain-text dump; layout it like a `refs`/resources slide.
 
 When iterating on an existing deck, update this slide with what actually changed and bump only stamps whose facts were re-verified.
