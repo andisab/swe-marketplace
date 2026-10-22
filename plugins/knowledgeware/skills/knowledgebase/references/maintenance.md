@@ -36,7 +36,7 @@ Every site with volatile facts ships a `maintenance.html` using these section id
 | `runbook` | The update runbook | The §3 ordering, written for this site's specifics |
 | `changelog` | Changelog | One row per sweep — see discipline below |
 
-Optional: `ledger` (per-page view: page · volatile classes carried · last touched by a sweep — the page-oriented complement to the master table, useful for spotting pages nobody has looked at), `census` (stamp counts per page), `protocol` (site-specific overrides to the automated-maintainer rules in §5).
+Optional: `ledger` (per-page view: page · volatile classes carried · last touched by a sweep — the page-oriented complement to the master table, useful for spotting pages nobody has looked at), `census` (stamp counts per page; count only stamp elements, `grep -c '<p class="tag">Last verified:'`, since a bare `Last verified:` grep also counts prose that explains the convention), `protocol` (site-specific overrides to the automated-maintainer rules in §5).
 
 **Data-dense, not doctrine-dense.** The maintenance page carries the site's *data* — the tables above, the site-specific feeds worth subscribing to, this site's fan-out quirks — plus a brief statement of the stamp convention for offline readers. The generic method (cadence semantics, due computation, runbook ordering, changelog discipline) lives in this spec and the maintainer agent; do not restate it as multi-section essay prose on every site. A reader-facing sentence or two per convention is right; a page-length treatise on maintenance philosophy is generated bloat that itself goes stale.
 
