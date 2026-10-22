@@ -17,6 +17,23 @@ Four skills. Ask for the deliverable in plain language; the right skill activate
 
 Name any style or brand in any request — "in the acmecorp brand", "style-3" — and the deliverable renders in that identity. A **brandbook** is just one `.md` file describing a visual identity; the built-in `acmecorp` example shows the format.
 
+## Install
+
+In Claude Code (v2.1.275 or later), one step:
+
+```
+/plugin install knowledgeware --marketplace andisab/swe-marketplace
+```
+
+Or add the marketplace once, then install by name:
+
+```
+/plugin marketplace add andisab/swe-marketplace
+/plugin install knowledgeware@swe-marketplace
+```
+
+In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **knowledgeware**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
+
 ## Try it
 
 Copy-paste and adapt:

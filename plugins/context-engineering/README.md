@@ -50,28 +50,22 @@ Documentation of proven architectural patterns:
 - **multi-agent-orchestration.md** - Coordinating multiple agents for complex workflows
 - **tool-restriction-patterns.md** - Security-focused tool access control
 
-## Installation
+## Install
 
-### Quick Install
+In Claude Code (v2.1.275 or later), one step:
 
-```bash
+```
+/plugin install context-engineering --marketplace andisab/swe-marketplace
+```
+
+Or add the marketplace once, then install by name:
+
+```
+/plugin marketplace add andisab/swe-marketplace
 /plugin install context-engineering@swe-marketplace
 ```
 
-### For Team Projects
-
-Add to `.claude/settings.json`:
-
-```json
-{
-  "plugins": {
-    "context-engineering": {
-      "source": "context-engineering@swe-marketplace",
-      "enabled": true
-    }
-  }
-}
-```
+In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **context-engineering**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
 
 ## Usage
 

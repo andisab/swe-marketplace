@@ -118,7 +118,7 @@ Open an issue using the bug template. Useful details:
 - `claude --version` output
 - Plugin name and version (from `marketplace.json`)
 - What you ran, what you expected, what happened
-- Whether you restarted Claude Code after install
+- Whether you ran `/reload-plugins` (or started a new session) after installing
 
 ## Questions?
 

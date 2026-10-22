@@ -49,7 +49,7 @@
     {
       "name": "arch",
       "source": "./plugins/arch",
-      "description": "Architecture and build orchestration agents for system design, multi-agent coordination, and context management.",
+      "description": "Repository housekeeping agents: keep the CLAUDE.md context files Claude Code relies on accurate as a codebase evolves, and manage Docker and Make workflows.",
       "version": "1.0.0",
       "author": {
         "name": "Andis A. Blukis",

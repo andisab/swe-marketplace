@@ -16,16 +16,22 @@ The Research Team plugin provides a coordinated multi-agent system designed to c
 - **Context Isolation**: Each researcher operates independently with focused context
 - **File-Based Coordination**: Researchers save findings, report-writer synthesizes
 
-## Installation
+## Install
 
-```bash
-/plugin install research-team
+In Claude Code (v2.1.275 or later), one step:
+
+```
+/plugin install research-team --marketplace andisab/swe-marketplace
 ```
 
-Or from marketplace:
-```bash
+Or add the marketplace once, then install by name:
+
+```
+/plugin marketplace add andisab/swe-marketplace
 /plugin install research-team@swe-marketplace
 ```
+
+In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **research-team**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
 
 ## Components
 
