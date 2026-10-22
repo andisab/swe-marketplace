@@ -9,6 +9,8 @@ One registry, many consumers. Brandbooks live here once; slideware decks, knowle
 
 **Plugin root**: `${CLAUDE_PLUGIN_ROOT}` — two directories above this skill's folder (`../../` from here). All paths below are relative to it.
 
+> **Needs the knowledgeware plugin.** The registry and its scripts live at the plugin root. If `../../scripts/list-styles.js` doesn't exist, the skill was installed on its own (for example from a skills directory): tell the user it needs the whole plugin, `/plugin install knowledgeware --marketplace andisab/swe-marketplace`, and stop.
+
 ## Layout
 
 ```

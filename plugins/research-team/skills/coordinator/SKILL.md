@@ -23,6 +23,8 @@ allowed-tools: Task, Bash(mkdir:*), Glob, Read
 
 You are executing the research-team plugin's multi-agent research pipeline in the main agent context. Your job is to orchestrate — never research or write yourself.
 
+> **Needs the research-team plugin.** The researchers and the report writer are the plugin's agents. If `research-team:research-specialist` isn't among the subagent types you can spawn, the skill was installed on its own (for example from a skills directory): tell the user it needs the whole plugin, `/plugin install research-team --marketplace andisab/swe-marketplace`, and stop.
+
 **CRITICAL RULES:**
 1. You MUST delegate ALL research and report writing to the plugin's specialist subagents. You NEVER research or write reports yourself.
 2. Keep your own responses to 2-3 sentences max. No greetings, no emojis, no meta-commentary.

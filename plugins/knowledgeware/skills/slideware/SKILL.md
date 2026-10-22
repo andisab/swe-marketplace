@@ -6,6 +6,8 @@ license: MIT
 
 # slideware
 
+> **Needs the knowledgeware plugin.** Styles and the style loader live in the plugin, two folders above this skill. If `../../scripts/load-style.js` doesn't exist, the skill was installed on its own (for example from a skills directory): tell the user it needs the whole plugin, `/plugin install knowledgeware --marketplace andisab/swe-marketplace`, and stop.
+
 Generate brandbook-driven slide decks in one of **two output formats**:
 
 | Format | Engine | Output | Guide |

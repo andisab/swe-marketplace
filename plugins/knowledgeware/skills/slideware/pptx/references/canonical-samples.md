@@ -1,25 +1,27 @@
 # Canonical sample decks
 
-Three reference decks ship with this skill. They demonstrate **what good looks like** across three distinct brandbook personalities. **Read the rendered PNGs first** before authoring — concrete examples are stronger than abstract rules.
+Three reference decks ship with this skill. They demonstrate **what good looks like** across three distinct visual personalities. **Read the rendered PNGs first** before authoring — concrete examples are stronger than abstract rules.
 
-| Sample | Brandbook | Personality | Use as reference for |
+The samples were built with brandbooks that don't ship publicly (the folder names are those brandbooks' names). Each has a close built-in style, so the patterns carry over directly:
+
+| Sample | Closest built-in style | Personality | Use as reference for |
 |---|---|---|---|
-| [`assets/samples/aab/`](../assets/samples/aab) | aab (default) | Warm-gray editorial, diagrammatic, outlined containers | Light, calm, technical decks — the default for unspecified requests |
-| [`assets/samples/anthropic/`](../assets/samples/anthropic) | anthropic | Cream canvas, serif body, single clay accent | Editorial, research, "publication-voice" content |
-| [`assets/samples/linear/`](../assets/samples/linear) | linear | Dark layered backgrounds, indigo accent, tight tracking | Dark-first product decks, engineering reviews, anything "precise SaaS" |
+| [`assets/samples/aab/`](../assets/samples/aab) | style-4 (Warm Sage) | Warm-gray editorial, diagrammatic, outlined containers | Light, calm, technical decks |
+| [`assets/samples/anthropic/`](../assets/samples/anthropic) | style-1 (Editorial Light, the default) | Cream canvas, serif body, single clay accent | Editorial, research, "publication-voice" content |
+| [`assets/samples/linear/`](../assets/samples/linear) | style-3 (Dark Precision) | Dark layered backgrounds, indigo accent, tight tracking | Dark-first product decks, engineering reviews, anything "precise SaaS" |
 
 ## How to use them
 
 ### Before authoring a new deck
 
-1. Identify the closest matching brandbook (or the explicit brandbook the user requested).
+1. Pick the sample whose personality is closest to the style or brandbook you're using.
 2. **Look at the PNGs** in `assets/samples/<bb>/preview/slide-*.png`. Each sample is 6 slides covering 6 distinct archetypes.
 3. Read the source `assets/samples/<bb>/build-deck.js` to see the *exact* pptxgenjs patterns that produce those visuals: chrome (kicker, page number), card layouts, accent placement, table styling.
 4. Borrow patterns. Adapt to the new content.
 
 ### What each sample covers
 
-**aab** (default — warm-gray editorial):
+**aab** (warm-gray editorial):
 1. Title hero with single light-blue accent bar
 2. Big stat in an outlined card (the AAB "diagrammatic" signature)
 3. Two-column tradeoff (red vs sage-green hairline borders)
@@ -58,7 +60,9 @@ Each sample is one of *infinitely many* good decks for that brandbook. The same 
 - The specific number of slides (your outline determines that)
 - The exact archetype mix (pick archetypes that fit *your* content)
 
-## Rebuilding the samples (e.g., if you update a brandbook)
+## Rebuilding the samples
+
+Rebuilding needs the sample's brandbook in your registry (see the brandware skill); with only the built-in styles, pass the closest style from the table above instead of `<bb>`.
 
 ```bash
 cd assets/samples/<bb>

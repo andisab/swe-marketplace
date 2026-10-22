@@ -131,10 +131,18 @@ function themeCss({ palette: P, type: T, layout: L }) {
 .reveal .slides {
   text-align: left;
 }
+/* Reveal shows the current slide with an inline display taken from its display
+   option, set to flex in Reveal.initialize so layouts can center vertically. */
 .reveal .slides section {
   padding: var(--margin);
   box-sizing: border-box;
   height: 100%;
+  flex-direction: column;
+}
+/* Bottom-left, clear of the navigation arrows in the bottom-right corner. */
+.reveal .slide-number {
+  right: auto;
+  left: 8px;
 }
 .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
   font-family: var(--font-serif);
@@ -579,6 +587,7 @@ ${inlineScript(reveal.js)}
       width: ${SLIDE_W_PX},
       height: ${SLIDE_H_PX},
       hash: true,
+      display: 'flex',
       controls: true,
       progress: true,
       slideNumber: 'c/t',
