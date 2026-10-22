@@ -40,7 +40,9 @@ class DeckChecker(HTMLParser):
         self.has_slides_div = False
         self.title = None
         self.in_title = False
+        self.reveal_inline_seen = False
         self.reveal_cdn_seen = False
+        self.in_script = False
         self.fonts_link_seen = False
         self.has_init_script = False
 
@@ -76,12 +78,15 @@ class DeckChecker(HTMLParser):
             src = a.get("src", "")
             if "cdn.jsdelivr.net/npm/reveal.js" in src:
                 self.reveal_cdn_seen = True
+            self.in_script = not src
 
     def handle_endtag(self, tag):
         if tag == "style":
             self.in_style = False
         elif tag == "title":
             self.in_title = False
+        elif tag == "script":
+            self.in_script = False
 
     def handle_data(self, data):
         if self.in_style:
@@ -90,6 +95,8 @@ class DeckChecker(HTMLParser):
             self.title = (self.title or "") + data
         elif "Reveal.initialize" in data:
             self.has_init_script = True
+        if self.in_script and "https://revealjs.com" in data:   # the banner of an inlined reveal.js
+            self.reveal_inline_seen = True
 
 
 def check(html_path: Path) -> list[tuple[str, str, str]]:
@@ -113,9 +120,12 @@ def check(html_path: Path) -> list[tuple[str, str, str]]:
         flags.append(("high", "no_slides_div",
             "Missing <div class='slides'> inside .reveal — slides won't render."))
 
-    if not checker.reveal_cdn_seen:
-        flags.append(("high", "no_reveal_cdn",
-            "No Reveal.js CDN link found — slides won't render."))
+    if not (checker.reveal_inline_seen or checker.reveal_cdn_seen):
+        flags.append(("high", "no_reveal",
+            "Reveal.js is neither inlined nor loaded from a CDN — slides won't render."))
+    elif not checker.reveal_inline_seen:
+        flags.append(("low", "reveal_from_cdn",
+            "Reveal.js loads from a CDN, so the deck needs a network connection. build-deck.js inlines it."))
 
     if not checker.has_init_script:
         flags.append(("high", "no_init",
@@ -187,6 +197,8 @@ UNBREAKABLE_THRESHOLDS = {
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _HTML_ENTITY_RE = re.compile(r"&[a-z#0-9]+;")
+# Speaker notes never render on the slide, so their URLs and long tokens don't count.
+_NOTES_RE = re.compile(r'<aside class="notes"[^>]*>.*?</aside>', re.DOTALL)
 
 
 def strip_tags(html_fragment: str) -> str:
@@ -218,7 +230,7 @@ def check_unbreakable_tokens(html: str) -> list[tuple[str, str, str]]:
     for match in section_re.finditer(html):
         slide_index += 1
         layout = match.group(1)
-        body = match.group(2)
+        body = _NOTES_RE.sub("", match.group(2))
         thresholds = UNBREAKABLE_THRESHOLDS.get(layout)
         if not thresholds:
             continue

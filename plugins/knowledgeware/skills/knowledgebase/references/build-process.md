@@ -54,9 +54,21 @@ for f in *.html; do
   [ "$ph" != "0" ] || [ "$e" != "1" ] && echo "$f BAD ph=$ph end=$e"
   [ "$act" != "$f" ] && echo "$f ACTIVE-MISMATCH:$act"
 done
-# broken internal links
-for g in *.html; do grep -o 'href="[a-z-]*\.html"' "$g" | sed 's/href="//;s/"//' | sort -u \
-  | while read t; do [ -f "$t" ] || echo "$g -> $t MISSING"; done; done | sort -u
+# broken internal links: page.html, page.html#id, #id, and other local files (diagrams/…).
+# Anchors must be real id attributes; ids the TOC script assigns at runtime don't count.
+# <script> blocks are skipped, so script-built markup can't false-flag.
+python3 -c "
+import re,glob,os
+pages={}
+for f in sorted(glob.glob('*.html')):
+    html=re.sub(r'<script\b.*?</script>','',open(f).read(),flags=re.S)
+    pages[f]=(html,set(re.findall(r'\bid=\"([^\"]+)\"',html)))
+for f,(html,_) in pages.items():
+    for href in sorted(set(re.findall(r'href=\"([^\"]+)\"',html))):
+        if re.match(r'[A-Za-z][A-Za-z0-9+.-]*:|//',href): continue   # external, mailto:, data:
+        target,_,anchor=href.partition('#'); target=target or f
+        if target not in pages and not os.path.exists(target): print(f,'->',href,'MISSING'); continue
+        if anchor and target in pages and anchor not in pages[target][1]: print(f,'->',href,'MISSING-ANCHOR')"
 # raw < inside mermaid blocks (breaks parsing)
 python3 -c "
 import re,glob
@@ -64,12 +76,12 @@ for f in sorted(glob.glob('*.html')):
     for m in re.findall(r'<pre class=\"mermaid\">(.*?)</pre>', open(f).read(), re.S):
         if '<' in m.replace('<br/>','').replace('<br>',''): print(f,'RAW-ANGLE')"
 # pagenav chain (eyeball: complete loop, no orphans)
-for f in *.html; do echo "$f => $(grep -o 'class=\"pagenav\">.*' $f | grep -o 'href=\"[a-z-]*\.html\"' | tr '\n' ' ')"; done
+for f in *.html; do echo "$f => $(grep -o 'class=\"pagenav\">.*' $f | grep -o 'href=\"[A-Za-z0-9._-]*\.html\"' | tr '\n' ' ')"; done
 ```
 
 ## Maintenance page (required for any site with volatile facts)
 
-Build it to the full contract in `references/maintenance.md`: the eight canonical section ids, the master volatility table's exact column set (with complete page fan-outs and every source as a clickable `<a>` link), the cadence enum, the research-first update runbook, and a changelog seeded with the build row. That contract is what makes the site maintainable unattended by the plugin's `kb-maintainer` agent — verify the spec's §6 build-time checklist as part of this suite before declaring the site done.
+Build it to the full contract in `references/maintenance.md`: the eight canonical section ids, the master volatility table's exact column set (with complete page fan-outs and every source as a clickable `<a>` link), the cadence enum, the research-first update runbook, and a changelog seeded with the build row. That contract is what makes the site maintainable unattended by the plugin's `librarian` agent — verify the spec's §6 build-time checklist as part of this suite before declaring the site done.
 
 ## Rendering chartware posters without a draw.io MCP
 

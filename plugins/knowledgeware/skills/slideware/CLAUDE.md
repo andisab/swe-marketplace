@@ -6,8 +6,10 @@ Deep-dive companion to `SKILL.md`: what the skill ships with, the five default s
 
 Generates slide decks in **two output formats**, chosen per request (the skill asks if the request doesn't make it clear):
 
-- **pptx** (`pptx/`): real PowerPoint `.pptx` files via **pptxgenjs** (Node.js) with React-rendered icons via **react-icons + sharp**. Opens cleanly in PowerPoint, Keynote, and Google Slides.
-- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** — run in any browser, host statically, share by link.
+- **pptx** (`pptx/`): real PowerPoint `.pptx` files via **pptxgenjs** (Node.js) with React-rendered icons via **react-icons + sharp**. Opens cleanly in PowerPoint, Keynote, and Google Slides. Speaker notes open with a cue line holding each slide's planned time.
+- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** (inlined, so they run offline) — run in any browser, host statically, share by link. Ships a presenter view (previous / current / next slides, notes, live pacing) and entrance motion (on by default).
+
+Both formats share one set of speaker-note conventions (cues, session pacing, hidden slides) — see `SKILL.md` §Speaker notes, pacing and hidden slides.
 
 Both are driven by the same layered visual-design system of **styles** (generic) or **brandbooks** (brand-specific) from the plugin's shared registry. The two terms are interchangeable — both are `.md` files following the same spec, and one brandbook renders in either format (and in knowledgebase sites and chartware diagrams).
 
@@ -226,6 +228,7 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 | `pptx/assets/samples/<bb>/` | Canonical sample decks (build script + rendered PNGs) |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with checklist + pitfalls inline |
 | `html/assets/templates/{build-deck,slides}.js` | HTML renderer + slide-descriptor scaffold |
+| `html/assets/templates/presenter.js` | Reveal plugin inlined into every HTML deck: presenter view with resizable panes, pacing timer, notes drawer |
 | `html/scripts/load-style.js` | Registry/brandbook → YAML-frontmatter style.md converter |
 | `<plugin>/scripts/list-styles.js` | List discovered styles + brandbooks |
 | `<plugin>/scripts/load-style.js` | Style/brandbook → tokens parser |

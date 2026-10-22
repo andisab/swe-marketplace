@@ -10,6 +10,7 @@ Format guide for HTML output. Read [../SKILL.md](../SKILL.md) first for format c
 | 8 layout archetypes | [references/layout-patterns.md](references/layout-patterns.md) |
 | Visual principles (hierarchy, color, type, spacing) | [references/visual-principles.md](references/visual-principles.md) |
 | Reveal.js API + theme conventions | [references/reveal.md](references/reveal.md) |
+| Speaker notes, pacing, hidden slides, presenter view | [references/reveal.md](references/reveal.md) §Speaker notes |
 | Brandbook → CSS-variable mapping | [references/brandbook-spec.md](references/brandbook-spec.md) |
 
 **Recommended order**: layout-patterns → visual-principles → reveal (when you hit a specific API question).
@@ -68,7 +69,10 @@ Whichever tool captures the slides, the review bar is the same: inspect **every*
 - **Theme CSS rules MUST be scoped under `.reveal`** — Reveal's reset is aggressive and unprefixed rules get clobbered.
 - **`display=swap` on the Google Fonts URL** is required — without it, you get FOIT (invisible text during load).
 - **Don't reference `./style.md` from the output HTML.** Output must stand alone. The build inlines theme CSS into a `<style>` block.
-- **CDN URL is pinned** (`reveal.js@5.0.5`). Bumping the version is a deliberate change — diff the output HTML after.
+- **Reveal is pinned and inlined** (`reveal.js` 5.0.5 in `package.json` and `REVEAL_VERSION` in `build-deck.js`). Run `npm install` in the deck dir before the first build; the build refuses a mismatched version. Decks then run offline; only fonts need a network. Bumping the version is a deliberate change to both pins — diff the output HTML after.
+- **Entrance motion is on by default.** Turn it off with `motion: false` in `slides.js` (deck) or on a slide. See [references/reveal.md](references/reveal.md) §Entrance motion.
+- **Copy `presenter.js` along with `build-deck.js`.** The build inlines it (presenter view, notes drawer) and exits with an error if it's missing. Speaker notes go in each slide's `notes` and `cue` fields, never in the slide markup.
+- **Pacing and hidden slides live in `slides.js`.** Session lengths go in `sessions` (or `minutes` for a deck without sessions) next to `slides`; `hidden: true` takes a slide out of the deck and out of the time per slide. For "hide slide 12", "session 2 is 75 minutes" or "which slides are hidden?", edit `slides.js`, rebuild, and quote the pacing summary the build prints.
 - **Reveal initializes with `controls`, `progress`, `slideNumber`, and `transition: 'fade'`** by default. Override these only if you have a reason — match the medium (kiosk, walkthrough, recorded presentation).
 - **Image references in slides** are relative paths the deck dir; if you ship a `.skill` or move the deck, images break unless you base64-inline them or fetch from an absolute URL.
 - **Markdown-style content in body strings** is NOT processed — slides take light HTML (`<strong>`, `<em>`, `<code>`, `<br>`, `<a>`). Don't author `<h1>`/`<h2>` tags; layouts emit their own heading hierarchy.
@@ -85,7 +89,7 @@ An HTML deck is a hosted, long-lived artifact — it gets the knowledgebase skil
 
 - **Final slide: "Sources & verification"** (or a vertical appendix stack for large decks). Every cited source as a live `<a href="…" target="_blank" rel="noopener">` link in the deck's muted caption treatment, grouped by the slide it supports (use slide titles as group labels). A citation nobody can click is a citation nobody re-verifies.
 - **A `Last verified: YYYY-MM-DD` stamp** on that slide, plus a one-line staleness note ("facts older than 90 days: re-verify before presenting externally"). Per-slide stamps are allowed where one slide's facts churn much faster than the rest.
-- **For large or long-lived decks**, add a compact volatility list on the same slide: fact class · source link · how often it moves. This is the deck-scale master volatility table and is what lets the kb-maintainer agent (or a human sweep) route checks without reading every slide.
+- **For large or long-lived decks**, add a compact volatility list on the same slide: fact class · source link · how often it moves. This is the deck-scale master volatility table and is what lets the librarian agent (or a human) plan checks without reading every slide.
 - The maintenance slide follows the deck's visual style — it's a designed slide, not a plain-text dump; layout it like a `refs`/resources slide.
 
 When iterating on an existing deck, update this slide with what actually changed and bump only stamps whose facts were re-verified.

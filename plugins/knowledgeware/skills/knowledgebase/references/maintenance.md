@@ -1,6 +1,6 @@
 # Knowledgebase Skill — Maintenance Spec
 
-The contract between a site's **builder** (this skill) and its **maintainer** (a human on a sweep, or the `kb-maintainer` agent on a schedule). A site that follows this spec can be maintained by pointing the agent at its folder with zero extra briefing: the maintenance page IS the work order. Field-tested across two production field guides (July–August 2026).
+The contract between a site's **builder** (this skill) and its **maintainer** (a human on a sweep, or the `librarian` agent on a schedule). A site that follows this spec can be maintained by pointing the agent at its folder with zero extra briefing: the maintenance page IS the work order. Field-tested across two production field guides (July–August 2026).
 
 ## 1. Freshness model
 
@@ -36,7 +36,7 @@ Every site with volatile facts ships a `maintenance.html` using these section id
 | `runbook` | The update runbook | The §3 ordering, written for this site's specifics |
 | `changelog` | Changelog | One row per sweep — see discipline below |
 
-Optional: `ledger` (per-page view: page · volatile classes carried · last touched by a sweep — the page-oriented complement to the master table, useful for spotting pages nobody has looked at), `census` (stamp counts per page), `protocol` (site-specific overrides to the automated-maintainer rules in §5).
+Optional: `ledger` (per-page view: page · volatile classes carried · last touched by a sweep — the page-oriented complement to the master table, useful for spotting pages nobody has looked at), `census` (stamp counts per page; count only stamp elements, `grep -c '<p class="tag">Last verified:'`, since a bare `Last verified:` grep also counts prose that explains the convention), `protocol` (site-specific overrides to the automated-maintainer rules in §5).
 
 **Data-dense, not doctrine-dense.** The maintenance page carries the site's *data* — the tables above, the site-specific feeds worth subscribing to, this site's fan-out quirks — plus a brief statement of the stamp convention for offline readers. The generic method (cadence semantics, due computation, runbook ordering, changelog discipline) lives in this spec and the maintainer agent; do not restate it as multi-section essay prose on every site. A reader-facing sentence or two per convention is right; a page-length treatise on maintenance philosophy is generated bloat that itself goes stale.
 
@@ -72,7 +72,7 @@ If a changed fact's data class is missing from the master table, add a row — a
 
 ## 5. Automated maintainer protocol
 
-What a scheduled agent (see the plugin's `kb-maintainer` agent) may and may not do. A site's `protocol` section may tighten these; it may not loosen the forbidden list.
+What a scheduled agent (see the plugin's `librarian` agent, `sweep` mode) may and may not do. A site's `protocol` section may tighten these; it may not loosen the forbidden list.
 
 **Allowed:** verify due rows and apply confirmed deltas through the §3 ordering · bump earned stamps · write the changelog row · add rows to `upcoming`, `open-conflicts`, `outstanding-questions` · append dated drift observations to `outstanding-questions`.
 

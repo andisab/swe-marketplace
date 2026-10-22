@@ -49,7 +49,7 @@
     {
       "name": "arch",
       "source": "./plugins/arch",
-      "description": "Architecture and build orchestration agents for system design, multi-agent coordination, and context management.",
+      "description": "Repository housekeeping agents: keep the CLAUDE.md context files Claude Code relies on accurate as a codebase evolves, and manage Docker and Make workflows.",
       "version": "1.0.0",
       "author": {
         "name": "Andis A. Blukis",
@@ -151,8 +151,8 @@
     {
       "name": "knowledgeware",
       "source": "./plugins/knowledgeware",
-      "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches.",
-      "version": "1.7.2",
+      "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches. A librarian agent keeps sites and decks current: what's due, update plans, and scheduled fact-check sweeps.",
+      "version": "1.8.0",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -170,14 +170,16 @@
         "drawio",
         "brandbook",
         "styles",
-        "design-tokens"
+        "design-tokens",
+        "maintenance"
       ],
       "category": "content",
       "strict": true,
       "agents": [
-        "./agents/kb-maintainer.md"
+        "./agents/librarian.md"
       ],
       "commands": [
+        "./commands/librarian.md",
         "./commands/kb-maintain.md"
       ],
       "skills": [

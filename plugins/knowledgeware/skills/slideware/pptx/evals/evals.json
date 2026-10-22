@@ -51,6 +51,23 @@
         { "text": "No leftover placeholder text" }
       ],
       "files": ["/Users/andisblukis/Documents/CCW/module-2.6-eval-driven-dev.pptx"]
+    },
+    {
+      "id": 3,
+      "name": "workshop-deck-with-speaker-notes",
+      "prompt": "Build a 6-slide pptx for a 30-minute talk on prompt caching. I'll present from PowerPoint's presenter view, so every slide needs speaker notes with a pacing plan. Slide 4 is extra detail I'll only use if I'm ahead, and slide 5 should stay in the file but hidden for now. The pricing slide needs its sources. Save it to ./caching-talk.pptx and tell me the time per slide.",
+      "expected_output": "6-slide pptx at ./caching-talk.pptx where every slide's notes open with a cue line, slide 4 is an add-back, slide 5 is hidden with PowerPoint's show=\"0\" flag, the pricing slide's notes end with Sources and Last verified, and the reply gives 7:30 per slide (4 slides in the run).",
+      "assertions": [
+        { "text": "caching-talk.pptx exists, is a valid pptx and contains 6 slides" },
+        { "text": "Every slide has speaker notes whose first line is a bracketed cue line" },
+        { "text": "The cue lines of the 4 in-run slides carry consecutive plan windows of 7:30 each, from 0:00 to 30:00; slides 4 and 5 carry no plan window" },
+        { "text": "Slide 4's cue line says 'Add-back · use if ahead'" },
+        { "text": "Slide 5 is hidden: its <p:sld> element in ppt/slides/slide5.xml has show=\"0\"" },
+        { "text": "The pricing slide's notes end with a 'Sources:' list of full URLs and a 'Last verified: YYYY-MM-DD' line" },
+        { "text": "No speaker notes contain literal ** or *emphasis* markers" },
+        { "text": "The reply gives the time per slide from the build's pacing summary (7:30) and names the hidden slide" }
+      ],
+      "files": []
     }
   ]
 }

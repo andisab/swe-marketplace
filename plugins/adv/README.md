@@ -27,11 +27,22 @@ Adversarial code review plugin that orchestrates Claude, Codex CLI, and Gemini C
 bash plugins/adv/skills/dispatch/scripts/dispatch.sh --check-deps
 ```
 
-## Installation
+## Install
+
+In Claude Code (v2.1.275 or later), one step:
 
 ```
-/plugin install /path/to/plugins/adv
+/plugin install adv --marketplace andisab/swe-marketplace
 ```
+
+Or add the marketplace once, then install by name:
+
+```
+/plugin marketplace add andisab/swe-marketplace
+/plugin install adv@swe-marketplace
+```
+
+In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **adv**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
 
 ## Recommended Permissions
 

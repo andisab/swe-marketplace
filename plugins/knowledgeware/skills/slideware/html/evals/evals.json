@@ -5,7 +5,7 @@
       "id": 0,
       "name": "default-style-from-outline",
       "prompt": "Build me a 6-slide HTML presentation introducing our team's new code-review automation policy to engineering. Slides: (1) title, (2) why the policy exists — three reasons, (3) what changes in PR flow, (4) tooling we'll roll out — three tools in a card row, (5) what we're measuring — three KPI callouts, (6) timeline and Q&A. Save it to ./code-review-policy.html. Don't ask me which style — pick a sensible default.",
-      "expected_output": "6-slide HTML deck at ./code-review-policy.html using style-1 (Executive Steel), varied layouts, theme CSS inlined, Google Fonts link present, Reveal.js CDN loaded, no reference to ./style.md.",
+      "expected_output": "6-slide HTML deck at ./code-review-policy.html using style-1 (Executive Steel), varied layouts, theme CSS inlined, Google Fonts link present, Reveal.js inlined, no reference to ./style.md.",
       "assertions": [
         { "text": "code-review-policy.html exists and is a valid HTML file" },
         { "text": "Document contains exactly 6 <section class=\"layout-*\"> elements" },
@@ -15,7 +15,7 @@
         { "text": "A style was chosen and applied — consistent palette via CSS variables across slides" },
         { "text": "<style> block present and scoped under .reveal" },
         { "text": "Google Fonts <link> with display=swap present" },
-        { "text": "Reveal.js CDN <script> tag present, pinned to a specific version (not @latest)" },
+        { "text": "Reveal.js 5.0.5 is inlined (no CDN <script> or <link>), so the deck runs offline" },
         { "text": "Output HTML does NOT reference ./style.md (grep for 'style.md' returns 0 matches)" }
       ],
       "files": []
@@ -34,7 +34,7 @@
         { "text": "polish-deck.py was run against the output and its result is reported" },
         { "text": "Title slide mentions 'Hindsight' product name" },
         { "text": "No leftover placeholder text" },
-        { "text": "Output HTML does NOT reference ./style.md or any external .css file (only Reveal CDN + Google Fonts allowed)" }
+        { "text": "Output HTML does NOT reference ./style.md or any external .css file (only Google Fonts allowed)" }
       ],
       "files": []
     },
@@ -51,6 +51,24 @@
         { "text": "Derivation caveats are documented in a notes.md or in chat (palette/font heuristics may be off)" },
         { "text": "Layouts are varied — at least 3 distinct layout archetypes" },
         { "text": "Output HTML does NOT reference ./style.md" }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "workshop-deck-with-speaker-notes",
+      "prompt": "Build an 8-slide HTML deck for a two-session workshop on secrets management, 4 slides per session; each session runs 45 minutes. I'll present it from a second screen, so I need speaker notes on every slide and a pace plan. Mark one slide per session as cut-first if I'm running behind, and add a backup slide at the end for Q&A. I've decided to drop the second session's third slide for now, but keep it in the file, hidden, so I can bring it back. Save it to ./secrets-workshop.html and tell me the time per slide in each session.",
+      "expected_output": "9-slide HTML deck (8 + backup) at ./secrets-workshop.html with notes and cues on every slide, session lengths of 45 minutes each in Reveal's presenter config, one cut-first slide per session, a backup slide, the second session's third slide hidden, and a reply giving 11:15 per slide for session 1 and 15:00 for session 2.",
+      "assertions": [
+        { "text": "secrets-workshop.html exists and contains 9 <section class=\"layout-*\"> elements, exactly one with data-visibility=\"hidden\" (the second session's third slide)" },
+        { "text": "Every <section> contains an <aside class=\"notes\"> with non-empty text" },
+        { "text": "Every notes aside carries data-session with exactly two distinct values, split 4 and 5 (the backup slide belongs to the second session); no aside carries data-minutes" },
+        { "text": "Exactly two asides have data-run=\"cut-first\", one in each session, and the final slide's aside has data-run=\"backup\"" },
+        { "text": "Reveal.initialize registers plugins: [RevealPresenter] and presenter: { sessions } giving both session labels 45 minutes, and the HTML inlines the presenter plugin" },
+        { "text": "Reveal's own notes plugin (RevealNotes / plugin/notes) is NOT loaded" },
+        { "text": "The reply gives the time per slide from the build's pacing summary: 11:15 for session 1 (4 slides in the run) and 15:00 for session 2 (3 slides in the run, since the hidden slide and the backup don't count), and names the hidden slide" },
+        { "text": "The reply tells the user to press S for the presenter view" },
+        { "text": "polish-deck.py reports no [high] flags" }
       ],
       "files": []
     }

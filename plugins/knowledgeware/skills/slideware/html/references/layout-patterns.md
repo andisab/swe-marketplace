@@ -181,6 +181,16 @@ Full-bleed image with caption below. Use for screenshots, charts, diagrams.
 
 **Image path is relative to the deck dir.** For shareable output, either base64-inline the image (manual step), point at an absolute URL, or accept that the image must travel alongside `index.html`.
 
+## Fields every layout accepts
+
+`notes` (speaker notes, plain text), `cue` (`{ session, module, run }`), `hidden` and `motion` (entrance animation on or off for this slide; see [reveal.md §Entrance motion](reveal.md#entrance-motion)) work on any archetype. Notes and cues never render on the slide; the presenter view and the notes drawer read them. `hidden: true` leaves the slide out of the deck and out of the pace plan. Schema, keys and session lengths: [reveal.md §Speaker notes](reveal.md#speaker-notes).
+
+```js
+{ layout: "bullets", title: "...", items: [...],
+  notes: "What to say.\n\n- Point one\n- Point two",
+  cue: { session: "Session 1", module: "Module 2", run: "cut-first" } }
+```
+
 ## Adding new archetypes
 
 A new layout is two changes:

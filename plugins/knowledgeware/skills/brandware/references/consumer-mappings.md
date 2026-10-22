@@ -10,7 +10,7 @@ Native, both formats. The pptx format uses the shared `scripts/load-style.js` (p
 
 ## knowledgebase
 
-The page template is fully CSS-custom-property-driven; retheming = replacing the `:root` blocks and font stack.
+The page template is fully CSS-custom-property-driven, fonts included; retheming = replacing the `:root` blocks (plus the Mermaid init below).
 
 | Template variable | Brandbook token | Notes |
 |---|---|---|
@@ -23,7 +23,9 @@ The page template is fully CSS-custom-property-driven; retheming = replacing the
 | `--tip` / `--warn` | `palette.success` / `palette.warning` (bg = 10–12% tint over `--bg`) | |
 | `--arch` | `palette.accent2` if set, else a desaturated accent | |
 | `--link` | `--accent-dark` | |
-| body font | `type.sans` (web-safe stack fallback) | headings keep serif if brandbook has one (`type.serif`) |
+| `--font-body` | `type.sans` (web-safe stack fallback) | body text and nav |
+| `--font-heading` | the brandbook's headline face: `type.serif` when headlines are serif, else `type.sans` | `h1`, `h2`, nav brand. Read the brandbook's prose: some reserve the serif for other roles (e.g. metrics only), and then headings take the sans |
+| `--font-mono` | `type.mono` (web-safe stack fallback) | `code`, `.kbd` |
 
 Dark mode: if the brandbook has no dark palette (`bgDark` null), derive conservatively (invert neutrals, keep accent hue, drop saturation ~15%) or keep the template's default dark block — say which you did.
 
