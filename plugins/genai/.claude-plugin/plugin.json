@@ -1,7 +1,7 @@
 {
   "name": "genai",
   "description": "Generative AI development specialist focused on LangChain for building LLM applications, chains, and agents.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

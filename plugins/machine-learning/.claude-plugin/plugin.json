@@ -1,7 +1,7 @@
 {
   "name": "machine-learning",
   "description": "Machine learning framework specialists for PyTorch, TensorFlow, and scikit-learn. Expert guidance for ML model development and training.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

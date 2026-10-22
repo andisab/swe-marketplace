@@ -336,6 +336,5 @@ For issues or questions:
 
 ## Version
 
-**Current Version**: 1.2.2
+**Current Version**: 1.2.4 (history in the [marketplace changelog](../../CHANGELOG.md))
 **Status**: Stable
-**Last Updated**: 2026-04-23

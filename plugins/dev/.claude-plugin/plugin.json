@@ -1,7 +1,7 @@
 {
   "name": "dev",
   "description": "Language-specific development experts covering 13 programming languages including Python, TypeScript, JavaScript, Go, Rust, C++, and more. Includes refactoring specialist.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

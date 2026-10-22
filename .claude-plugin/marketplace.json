@@ -6,8 +6,8 @@
     "url": "https://github.com/andisab"
   },
   "metadata": {
-    "description": "Production-ready Claude Code context engineering toolkit with agents, skills, templates, and patterns for building AI workflows",
-    "version": "1.0.0"
+    "description": "A curated Claude Code plugin marketplace for everyday software engineering: slide decks, knowledge bases and diagrams, cross-model code review, multi-agent research, plugin authoring, and specialist agents.",
+    "version": "1.1.0"
   },
   "plugins": [
     {
@@ -50,7 +50,7 @@
       "name": "arch",
       "source": "./plugins/arch",
       "description": "Repository housekeeping agents: keep the CLAUDE.md context files Claude Code relies on accurate as a codebase evolves, and manage Docker and Make workflows.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -77,7 +77,7 @@
       "name": "context-engineering",
       "source": "./plugins/context-engineering",
       "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, MCP tools, MCP servers, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -117,7 +117,7 @@
       "name": "research-team",
       "source": "./plugins/research-team",
       "description": "Multi-agent research system for comprehensive topic investigation. The research-team:coordinator skill decomposes a topic into subtopics, spawns parallel research-specialist subagents, and delegates synthesis to a report-writer — all from the main agent thread so nested-spawn constraints don't apply. Includes Joplin integration.",
-      "version": "1.2.3",
+      "version": "1.2.4",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -152,7 +152,7 @@
       "name": "knowledgeware",
       "source": "./plugins/knowledgeware",
       "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches. A librarian agent keeps sites and decks current: what's due, update plans, and scheduled fact-check sweeps.",
-      "version": "1.8.0",
+      "version": "1.8.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -202,7 +202,7 @@
       "name": "data",
       "source": "./plugins/data",
       "description": "Data science and data engineering agents for visualization (D3, Highcharts), notebooks (Jupyter, Google Colab), R, and Python data engineering.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -235,7 +235,7 @@
       "name": "databases",
       "source": "./plugins/databases",
       "description": "Database experts for SQL, NoSQL, graph databases, and vector databases. Includes Postgres, MongoDB, Neo4j, Cassandra, MariaDB, and vector DB specialists.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -271,7 +271,7 @@
       "name": "dev",
       "source": "./plugins/dev",
       "description": "Language-specific development experts covering 13 programming languages including Python, TypeScript, JavaScript, Go, Rust, C++, and more. Includes refactoring specialist.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -313,7 +313,7 @@
       "name": "frontend",
       "source": "./plugins/frontend",
       "description": "Frontend development specialists for React, Vue, Next.js, CSS, HTML, and UI/UX design. Comprehensive coverage of modern frontend technologies.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -347,7 +347,7 @@
       "name": "genai",
       "source": "./plugins/genai",
       "description": "Generative AI development specialist focused on LangChain for building LLM applications, chains, and agents.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -373,7 +373,7 @@
       "name": "infrastructure",
       "source": "./plugins/infrastructure",
       "description": "Infrastructure and DevOps specialists for AWS, GCP, Kubernetes, Docker, Terraform, GitHub Actions, GitLab CI, and security auditing.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -410,7 +410,7 @@
       "name": "machine-learning",
       "source": "./plugins/machine-learning",
       "description": "Machine learning framework specialists for PyTorch, TensorFlow, and scikit-learn. Expert guidance for ML model development and training.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -439,7 +439,7 @@
       "name": "product-management",
       "source": "./plugins/product-management",
       "description": "Product management specialists for PRD writing, content creation, and project planning. Tools for product managers and technical writers.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",

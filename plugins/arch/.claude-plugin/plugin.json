@@ -1,7 +1,7 @@
 {
   "name": "arch",
   "description": "Repository housekeeping agents: keep the CLAUDE.md context files Claude Code relies on accurate as a codebase evolves, and manage Docker and Make workflows.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

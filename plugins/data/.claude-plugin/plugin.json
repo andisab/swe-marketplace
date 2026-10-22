@@ -1,7 +1,7 @@
 {
   "name": "data",
   "description": "Data science and data engineering agents for visualization (D3, Highcharts), notebooks (Jupyter, Google Colab), R, and Python data engineering.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

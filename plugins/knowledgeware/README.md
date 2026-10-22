@@ -11,11 +11,24 @@ Four skills. Ask for the deliverable in plain language; the right skill activate
 | Skill | What it gives you |
 |---|---|
 | **slideware** | Slide decks as real PowerPoint files or as self-contained HTML (Reveal.js) — your choice; it asks when unclear. Visually reviews its own output and fixes mistakes when preview tooling is available. |
-| **knowledgebase** | Multi-page, offline-capable HTML reference sites — field guides, handbooks, runbooks, study guides — written in a rigorous engineering voice. Every site ships a maintenance page built to a machine-actionable contract, so the bundled maintainer (below) can keep it fresh unattended. Explicit invocation only ("use the knowledgebase skill…"). |
+| **knowledgebase** | Multi-page, offline-capable HTML reference sites — field guides, handbooks, runbooks, study guides — written in a rigorous engineering voice. Every site ships a maintenance page built to a machine-actionable contract, so the librarian agent (below) can keep it fresh unattended. Explicit invocation only ("use the knowledgebase skill…"). |
 | **chartware** | Diagrams and data charts in three media: Mermaid (quick, text-first), SVG (pixel-perfect charts and figures), or draw.io (editable artifacts — best for complicated DAGs and layered architectures). Follows your brand automatically. |
 | **brandware** | Teaches the other three what your colors, fonts, and logos are. Define a brand by hand, import one from a file — or point it at a website and let it derive the style from the live CSS and assets. |
 
 Name any style or brand in any request — "in the acmecorp brand", "style-3" — and the deliverable renders in that identity. A **brandbook** is just one `.md` file describing a visual identity; the built-in `acmecorp` example shows the format.
+
+<table>
+<tr>
+<td width="33%"><a href="../../docs/images/decks.jpg"><img src="../../docs/images/decks.jpg" alt="Four slides from the sample PowerPoint decks: a statistics slide, a dark three-card slide, a dark metrics table and a five-step process flow"></a></td>
+<td width="33%"><a href="../../docs/images/presenter.jpg"><img src="../../docs/images/presenter.jpg" alt="Presenter view of an HTML deck: previous, current and next slides across the top, formatted speaker notes below, and a session timer in the header"></a></td>
+<td width="33%"><a href="../../docs/images/knowledgebase.jpg"><img src="../../docs/images/knowledgebase.jpg" alt="A knowledge-base page with sidebar navigation, an on-page table of contents, a table with a Last verified stamp, and a Mermaid decision diagram"></a></td>
+</tr>
+<tr>
+<td><b>PowerPoint decks</b> (slideware)</td>
+<td><b>HTML decks with a presenter view</b> (slideware)</td>
+<td><b>Knowledge-base sites</b> (knowledgebase)</td>
+</tr>
+</table>
 
 ## Install
 

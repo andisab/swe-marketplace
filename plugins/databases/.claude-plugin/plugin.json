@@ -1,7 +1,7 @@
 {
   "name": "databases",
   "description": "Database experts for SQL, NoSQL, graph databases, and vector databases. Includes Postgres, MongoDB, Neo4j, Cassandra, MariaDB, and vector DB specialists.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

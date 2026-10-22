@@ -94,7 +94,8 @@ An agent's `tools:` list may name only real Claude Code tools. `claude plugin va
 
 ## Pull request checklist
 
-- [ ] `marketplace.json` updated (if you touched anything in `plugins/`)
+- [ ] `marketplace.json` updated (if you touched anything in `plugins/`), with the plugin's version bumped: Claude Code only updates installed plugins when the version changes
+- [ ] A line under the unreleased section of [`CHANGELOG.md`](./CHANGELOG.md)
 - [ ] `python scripts/synthesize-plugin-manifests.py --check` passes (no drift)
 - [ ] `./scripts/validate-all.sh` passes (zero errors, zero warnings)
 - [ ] Every new agent file has YAML frontmatter

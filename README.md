@@ -4,14 +4,14 @@
 
 - **Curated, not exhaustive.** Every plugin and agent is one I actually use. No vendored grab-bags, no auto-generated stubs of skills the model already has.
 - **SDK-loadable.** Every plugin ships both the catalog entry *and* a per-plugin `plugin.json`, so consumers using the Claude Agent SDK (`ClaudeAgentOptions.plugins=[{"type":"local","path":...}]` or `--plugin-dir`) can load them directly. Many marketplaces only ship the catalog and silently fail to register skills/commands/hooks when loaded that way.
-- **CI-guarded drift.** A GitHub Action validates manifest sync on every PR.
-- **Zero-warning validation.** Every plugin passes `claude plugin validate` with no errors or warnings, including the plugin-directory checks (README install line, icon).
+- **Zero-warning validation, enforced in CI.** Every pull request and push to `main` runs `claude plugin validate` on the catalog and every plugin (no errors, no warnings, including the plugin-directory checks for README install lines and icons), checks that the generated manifests match the catalog, and rejects agents that name tools Claude Code doesn't have.
 - **Most skills & plugins have been run through exhaustive evals.** I am an avid fan of skill-creator and have a custom-built eval harness for building and evaluating plugins. Many of the resources here are fruit borne from that work.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Validate plugin manifests](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml)
 [![Plugins](https://img.shields.io/badge/plugins-13-blue.svg)](./.claude-plugin/marketplace.json)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-8A2BE2.svg)](https://code.claude.com/docs/en/plugins)
+[![Skills Directory: Grade A](https://www.skillsdirectory.com/api/skills/andisab-slideware/badge)](https://www.skillsdirectory.com/authors/andisab)
 
 ## Quick start
 
@@ -19,7 +19,36 @@
 /plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-Run it in Claude Code (v2.1.275 or later); swap in any plugin name from the [catalog](#catalog). The plugin is active as soon as it installs; in a session that was already running, run `/reload-plugins` if prompted. For Claude Desktop, older Claude Code versions, teams and claude.ai, see [Install](#install).
+Run it in Claude Code (v2.1.275 or later); swap in any plugin name from the table below. The plugin is active as soon as it installs; in a session that was already running, run `/reload-plugins` if prompted. For Claude Desktop, older Claude Code versions, teams and claude.ai, see [Install](#install).
+
+## Start here
+
+| You want to… | Install | Then ask Claude |
+|---|---|---|
+| Make slide decks, knowledge-base sites or diagrams in one consistent style | [`knowledgeware`](./plugins/knowledgeware/) | *"Make a 6-slide HTML deck on our Q3 results in style-3"* |
+| Get a second and third opinion on code changes | [`adv`](./plugins/adv/) | *"Run an adversarial review of my uncommitted changes"* |
+| Research a topic with parallel agents and get one written report | [`research-team`](./plugins/research-team/) | *"Use research-team to research vector database pricing"* |
+| Build your own agents, skills, hooks, plugins or MCP servers | [`context-engineering`](./plugins/context-engineering/) | *"Help me create a skill that drafts our release notes"* |
+| Bring in a specialist for a language, framework, cloud or database | [`dev`](./plugins/dev/), [`frontend`](./plugins/frontend/), [`infrastructure`](./plugins/infrastructure/), [`databases`](./plugins/databases/), [`data`](./plugins/data/), [`machine-learning`](./plugins/machine-learning/), [`genai`](./plugins/genai/) | *"Have the Terraform engineer review this module"* |
+| Write PRDs and project plans | [`product-management`](./plugins/product-management/) | *"Draft a PRD for single sign-on"* |
+| Keep CLAUDE.md files accurate as the code changes | [`arch`](./plugins/arch/) | *"Update CLAUDE.md for the changes on this branch"* |
+
+The full list of skills, commands and agents is in the [catalog](#catalog).
+
+## What knowledgeware makes
+
+<table>
+<tr>
+<td width="33%"><a href="docs/images/decks.jpg"><img src="docs/images/decks.jpg" alt="Four slides from the sample PowerPoint decks: a statistics slide, a dark three-card slide, a dark metrics table and a five-step process flow"></a></td>
+<td width="33%"><a href="docs/images/presenter.jpg"><img src="docs/images/presenter.jpg" alt="Presenter view of an HTML deck: previous, current and next slides across the top, formatted speaker notes below, and a session timer in the header"></a></td>
+<td width="33%"><a href="docs/images/knowledgebase.jpg"><img src="docs/images/knowledgebase.jpg" alt="A knowledge-base page with sidebar navigation, an on-page table of contents, a table with a Last verified stamp, and a Mermaid decision diagram"></a></td>
+</tr>
+<tr>
+<td><b>PowerPoint decks</b> in a built-in style or your own brand.</td>
+<td><b>HTML decks</b> that run offline, with a presenter view: notes, pacing timer, previous and next slides.</td>
+<td><b>Knowledge-base sites</b> with navigation, diagrams and dated verification stamps.</td>
+</tr>
+</table>
 
 ## Install
 
@@ -130,20 +159,20 @@ Most plugins are prompts and need nothing else. These need tools on your machine
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
 | [`adv`](./plugins/adv/) | 0.2.0 | Adversarial multi-model code review: Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
-| [`context-engineering`](./plugins/context-engineering/) | 1.1.0 | The plugin you use to build other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
-| [`research-team`](./plugins/research-team/) | 1.2.3 | Multi-agent web research: parallel researchers per subtopic, then one synthesized report (Joplin output optional). | 2 agents · 2 skills |
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.8.0 | Brand-consistent deliverables: slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, from one style registry. A librarian keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
-| [`dev`](./plugins/dev/) | 1.0.0 | Language specialists for 12 languages, plus cross-language refactoring. | 13 agents |
-| [`frontend`](./plugins/frontend/) | 1.0.0 | React, Vue, Next.js, HTML and CSS specialists, plus a mockup-to-spec designer. | 6 agents |
-| [`infrastructure`](./plugins/infrastructure/) | 1.0.0 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
-| [`databases`](./plugins/databases/) | 1.0.0 | SQL, NoSQL, graph and vector databases. | 7 agents |
-| [`data`](./plugins/data/) | 1.0.0 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, Python data engineering. | 6 agents |
-| [`machine-learning`](./plugins/machine-learning/) | 1.0.0 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
-| [`genai`](./plugins/genai/) | 1.0.0 | LangChain and LangGraph applications. More frameworks on the way. | 1 agent |
-| [`product-management`](./plugins/product-management/) | 1.0.0 | PRDs, project plans, and clear writing. | 3 agents |
-| [`arch`](./plugins/arch/) | 1.0.0 | Repository housekeeping: CLAUDE.md context files, and Docker and Make workflows. | 2 agents |
+| [`context-engineering`](./plugins/context-engineering/) | 1.1.1 | The plugin you use to build other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
+| [`research-team`](./plugins/research-team/) | 1.2.4 | Multi-agent web research: parallel researchers per subtopic, then one synthesized report (Joplin output optional). | 2 agents · 2 skills |
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.8.1 | Brand-consistent deliverables: slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, from one style registry. A librarian keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`dev`](./plugins/dev/) | 1.0.1 | Language specialists for 12 languages, plus cross-language refactoring. | 13 agents |
+| [`frontend`](./plugins/frontend/) | 1.0.1 | React, Vue, Next.js, HTML and CSS specialists, plus a mockup-to-spec designer. | 6 agents |
+| [`infrastructure`](./plugins/infrastructure/) | 1.0.1 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
+| [`databases`](./plugins/databases/) | 1.0.1 | SQL, NoSQL, graph and vector databases. | 7 agents |
+| [`data`](./plugins/data/) | 1.0.1 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, Python data engineering. | 6 agents |
+| [`machine-learning`](./plugins/machine-learning/) | 1.0.1 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
+| [`genai`](./plugins/genai/) | 1.0.1 | LangChain and LangGraph applications. More frameworks on the way. | 1 agent |
+| [`product-management`](./plugins/product-management/) | 1.0.1 | PRDs, project plans, and clear writing. | 3 agents |
+| [`arch`](./plugins/arch/) | 1.0.1 | Repository housekeeping: CLAUDE.md context files, and Docker and Make workflows. | 2 agents |
 
-Each plugin's README lists its components and install line. Versions are pinned in [`marketplace.json`](./.claude-plugin/marketplace.json).
+Each plugin's README lists its components and install line. Versions are pinned in [`marketplace.json`](./.claude-plugin/marketplace.json), and the [changelog](./CHANGELOG.md) says what changed in each. To hear about updates, watch this repo's releases (**Watch → Custom → Releases**).
 
 ### Skills
 
@@ -252,7 +281,8 @@ Two manifests ship together:
 ```bash
 python scripts/synthesize-plugin-manifests.py          # regenerate
 python scripts/synthesize-plugin-manifests.py --check  # drift check (CI runs this)
-./scripts/validate-all.sh                              # full validation
+python scripts/check-agent-tools.py                    # agent tool names (CI runs this)
+./scripts/validate-all.sh                              # full validation (CI runs this)
 git config core.hooksPath scripts/git-hooks            # optional: run the drift check before each commit
 ```
 
