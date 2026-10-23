@@ -50,6 +50,11 @@ if ! node plugins/knowledgeware/tests/registry-test.js; then
   failed=1
 fi
 
+# chartware's SVG geometry lint: templates pass, a broken diagram trips every rule
+if ! bash plugins/knowledgeware/tests/svg-lint-test.sh; then
+  failed=1
+fi
+
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue
   run_validate "$dir" "$(basename "$dir")"

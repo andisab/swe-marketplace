@@ -26,6 +26,8 @@ jobs:
           node-version: "22"
       - name: Test knowledgeware's style registry
         run: node plugins/knowledgeware/tests/registry-test.js
+      - name: Test chartware's SVG lint
+        run: bash plugins/knowledgeware/tests/svg-lint-test.sh
 
   validate-manifests:
     name: claude plugin validate

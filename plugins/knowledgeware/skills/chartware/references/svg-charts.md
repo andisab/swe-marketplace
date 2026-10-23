@@ -170,6 +170,8 @@ Use `fill-opacity` for tints, **not** `opacity` (which washes out the stroke too
 
 **Edge routing**: attach at N/S/E/W midpoints of the rect (top-to-bottom flows connect S→N, left-to-right E→W); fan *n* exits from one side at `w·i/(n+1)`, never stacked. Straight where possible. Orthogonal elbows: route through the row/column gutters, corner radius `r = min(8, |dx|/2, |dy|/2)`, rounded with the **corner vertex as a `Q` control point** (`L x,(ym−r) Q x,ym (x±r),ym` — no arc sweep-flag reasoning needed). Smooth curves between nodes: cubic with control offset `k = clamp(0.45×|axis distance|, 40, 160)` along the departure axis (`C (x1+k),y1 (x2−k),y2 x2,y2` for E→W). Keep edges ≥8 units clear of node boxes; ≤2 crossings per diagram.
 
+**Checking the geometry**: `scripts/svg-lint.py` enforces the routing rules above (diagonal segments, stacked edges, shared attach points, transit through nodes, clearance, crossings, clipping, label placement, font floor, ids, markers, selector namespacing) and reports the node/edge/accent counts against the budget in SKILL.md. Run it before the screenshot loop.
+
 **Edge labels**: positioned `<text>` + the paint-order halo (`paint-order:stroke; stroke:var(--cw-bg); stroke-width:4` — the halo is the *background token*, never literal white), offset ~10 units perpendicular from the line, on the long segment of an elbow. `<textPath>` only for organic curves (it flips on right-to-left segments).
 
 **Flow animation** (the draw.io `flowAnimation=1` equivalent) — the keyframe offset **must equal the dash period** (8+6=14) or the loop jumps; gate on `no-preference` so static is the default:

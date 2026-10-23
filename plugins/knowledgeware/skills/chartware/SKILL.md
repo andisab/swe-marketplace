@@ -59,7 +59,20 @@ Hand-authored inline SVG — the default medium for **data charts**, and the rig
 | Headline metric + delta + trend | `kpi-tile.svg` |
 | Node-and-arrow diagram, flow, architecture | `diagram-flow.svg` |
 
-**Workflow**: pick template → substitute data and recompute coordinates (show your scale math in a comment) → apply brand tokens (chrome from the brandbook per `chart-styling.md`; series 1 = accent) → rename all `id=""` attributes with a per-chart slug → verify. To verify visually, write the SVG into a minimal HTML page and screenshot it with the Playwright browser tools (as in the draw.io loop below); check for label collisions, clipped text at the viewBox edges, and dark-mode legibility. If no browser tools are available, deliver anyway and say the visual check was skipped.
+**Complexity budget (diagrams)**: before drawing, state the type, the node count and what you'll leave out. One diagram holds at most **9 nodes, 12 edges, 2 accent roles and 2 edge crossings**; a sequence diagram at most 5 lifelines, a swimlane diagram at most 5 lanes. Over budget means the subject needs an overview diagram plus one detail diagram per subsystem, not a bigger canvas. Deleting is the first move: a node that doesn't change what the reader decides goes.
+
+**Workflow**: pick template → substitute data and recompute coordinates (show your scale math in a comment) → apply brand tokens (chrome from the brandbook per `chart-styling.md`; series 1 = accent) → rename all `id=""` attributes with a per-chart slug → **lint** → verify visually.
+
+The lint is `python3 scripts/svg-lint.py <file.svg>` (this skill's `scripts/` folder; no dependencies). It checks what a screenshot shows late or not at all: diagonal edge segments, two edges on the same attach point or on top of each other, an edge running through a node or closer than 8 units to one, more than 2 crossings, an edge label sitting on its line, a node label off its node's centre or wider than the node, anything outside the viewBox or inside the 16-unit padding, fonts under 10, `<tspan>` without `x`, missing markers, duplicate ids, `<style>` selectors not namespaced under the root class, the root's `role`/`<title>`/`<desc>`/`aria-labelledby` wiring, and the complexity budget. It exits 1 on errors; fix those, read the warnings, and only then screenshot. The template idiom is what it reads: class names containing `node`, `edge`, `elbl`, `lbl` and `group`, so keep them.
+
+To verify visually, write the SVG into a minimal HTML page and screenshot it with the Playwright browser tools (as in the draw.io loop below); check for label collisions, clipped text at the viewBox edges, and dark-mode legibility. If no browser tools are available, deliver after a clean lint and say the visual check was skipped.
+
+**Before delivering, check:**
+- The lint reports 0 errors, and every warning left is one you can defend.
+- One reading order (top-to-bottom or left-to-right), and the main path reads first.
+- Every node has a label a stranger can read without the legend; every edge that isn't the obvious flow has one too.
+- Accent appears in at most two roles, and the diagram still reads in grayscale (dash, weight and labels carry the second channel).
+- Light and dark both legible; nothing inside the 16-unit padding; the `<desc>` states the takeaway.
 
 **Delivery**: inline `<svg>` for HTML pages (inherits page theme via CSS custom properties); standalone `.svg` file needs the `xmlns` attribute and self-contained `<style>` (templates have both). For export to PNG/PPTX, bake literal hex — `var()` doesn't survive rasterizers.
 
