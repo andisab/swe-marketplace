@@ -1,6 +1,6 @@
 ---
 name: style-1
-description: Publication voice: warm cream canvas, serif display headings over a humanist sans body, one warm coral accent used sparingly.
+description: "Publication voice: warm cream canvas, serif display headings over a humanist sans body, one warm coral accent used sparingly."
 
 palette:
   bg:         '#FAF8F2'

@@ -1,6 +1,6 @@
 ---
 name: style-5
-description: A Material Design 3 palette on a pale cream-green canvas: olive primary, sage secondary, teal tertiary, soft shadows on rounded cards.
+description: "A Material Design 3 palette on a pale cream-green canvas: olive primary, sage secondary, teal tertiary, soft shadows on rounded cards."
 
 palette:
   bg:         '#F9FAEF'

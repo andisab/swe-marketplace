@@ -1,6 +1,6 @@
 ---
 name: style-3
-description: Dark-first canvas, bright violet accent, tight-tracked sans, and elevation by brightness instead of shadow.
+description: "Dark-first canvas, bright violet accent, tight-tracked sans, and elevation by brightness instead of shadow."
 
 palette:
   bg:         '#0B0B12'
@@ -41,7 +41,7 @@ type:
   subBodyPt:      12
   captionPt:      10
   codePt:         12
-  headingTracking:-0.02
+  headingTracking: -0.02
 
 layout:
   radiusPx:       6

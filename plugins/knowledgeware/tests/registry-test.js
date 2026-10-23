@@ -116,6 +116,20 @@ fs.writeFileSync(path.join(brands, "proseco", "brand.md"), "# ProseCo\n\n> test\
 const prose = node([path.join(PLUGIN, "skills", "slideware", "html", "scripts", "load-style.js"), "proseco"]);
 assert(/^---\nname: proseco\n/.test(prose) && !prose.includes("paletteDark")); ok("html converter generates frontmatter for a prose-only folder entry");
 
+// every shipped brand.md must be strict YAML in its frontmatter: js-yaml in the html deck builder
+// rejects an unquoted "key: value: more" line that the lenient loader accepts
+for (const dir of fs.readdirSync(path.join(PLUGIN, "styles"))) {
+  const f = path.join(PLUGIN, "styles", dir, "brand.md");
+  if (!fs.existsSync(f)) continue;
+  const fm = (fs.readFileSync(f, "utf8").match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+  for (const line of fm.split("\n")) {
+    const m = line.match(/^\s*[\w-]+:\s*(.*)$/);
+    if (m && m[1] && !/^['"]/.test(m[1]) && /:\s/.test(m[1])) throw new Error(`${f}: unquoted colon in frontmatter value: ${line}`);
+    if (/^\s*[\w-]+:\S/.test(line)) throw new Error(`${f}: no space after the colon: ${line}`);
+  }
+}
+ok("the shipped styles' frontmatter is strict YAML (no unquoted colons)");
+
 // list-styles.js
 const inv = JSON.parse(node([path.join(PLUGIN, "scripts", "list-styles.js"), "--json"], project));
 const fc = inv.find(e => e.name === "folderco");

@@ -1,6 +1,6 @@
 ---
 name: style-4
-description: Warm-gray canvas, serif headings over a sans body, a calm sage accent, and outlined rather than filled containers.
+description: "Warm-gray canvas, serif headings over a sans body, a calm sage accent, and outlined rather than filled containers."
 
 palette:
   bg:         '#F2EDE3'

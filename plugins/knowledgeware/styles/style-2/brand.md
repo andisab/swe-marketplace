@@ -1,6 +1,6 @@
 ---
 name: style-2
-description: Pure white canvas, one geometric sans, one bright indigo accent under five percent of the page, and whitespace doing the rest.
+description: "Pure white canvas, one geometric sans, one bright indigo accent under five percent of the page, and whitespace doing the rest."
 
 palette:
   bg:         '#FFFFFF'
