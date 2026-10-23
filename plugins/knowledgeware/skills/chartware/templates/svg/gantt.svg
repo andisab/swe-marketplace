@@ -1,0 +1,82 @@
+<!-- chartware SVG template: Gantt (plan on a time axis)
+     viewBox 720x400 · plot translate(136,48) · innerW 560 · 12 weeks · xPx(week) = 46.67*week
+     rowH 26 · barH 14 · bars rounded rx 7 · phase header rows carry only a label.
+     Status by class: done = muted fill · active = accent fill · planned = outlined (fill-opacity .12) ·
+     milestone = a diamond at its date. A dashed "today" line crosses the plot at week 6.4.
+     Left margin (136) from the longest task label (est ≈ chars × 12 × 0.58 + 24).
+     Adapt: swap phases/tasks, recompute x from the week numbers, keep the token block; rename ids per chart. -->
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg"
+     class="cw-gt" role="img" aria-labelledby="cwgt-t cwgt-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwgt-t">Platform rollout plan, weeks 1 to 12</title>
+  <desc id="cwgt-d">Gantt chart of three phases. Discovery (interviews, requirements) is done; Build (API, web app, data migration) is under way at week 6; Launch (load test, pilot) follows, with go-live as a milestone at week 11.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-gt { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; }
+    @media (prefers-color-scheme: dark) {
+      .cw-gt { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent/--error) */
+    .cw-gt { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); }
+    .cw-gt .grid  { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-gt .tick  { fill:var(--cw-muted); font-size:11px; }
+    .cw-gt .phase { fill:var(--cw-ink); font-size:11px; font-weight:600; letter-spacing:.06em; }
+    .cw-gt .task  { fill:var(--cw-ink); font-size:12px; }
+    .cw-gt .bar   { stroke:none; }
+    .cw-gt .done    { fill:var(--cw-c2); }
+    .cw-gt .active  { fill:var(--cw-c1); }
+    .cw-gt .planned { fill:var(--cw-c1); fill-opacity:.12; stroke:var(--cw-c1); stroke-width:1.25; }
+    .cw-gt .ms    { fill:var(--cw-ink); }
+    .cw-gt .today { stroke:var(--cw-neg); stroke-width:1.25; stroke-dasharray:4 3; }
+    .cw-gt .tlbl  { fill:var(--cw-neg); font-size:10px; font-weight:600; letter-spacing:.06em; }
+  </style>
+  <g transform="translate(136,48)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0.0" y1="0" x2="0.0" y2="286"/>
+      <line class="grid" x1="93.3" y1="0" x2="93.3" y2="286"/>
+      <line class="grid" x1="186.7" y1="0" x2="186.7" y2="286"/>
+      <line class="grid" x1="280.0" y1="0" x2="280.0" y2="286"/>
+      <line class="grid" x1="373.3" y1="0" x2="373.3" y2="286"/>
+      <line class="grid" x1="466.7" y1="0" x2="466.7" y2="286"/>
+      <line class="grid" x1="560.0" y1="0" x2="560.0" y2="286"/>
+    </g>
+    <g text-anchor="middle">
+      <text class="tick" x="0.0" y="-10">W0</text>
+      <text class="tick" x="93.3" y="-10">W2</text>
+      <text class="tick" x="186.7" y="-10">W4</text>
+      <text class="tick" x="280.0" y="-10">W6</text>
+      <text class="tick" x="373.3" y="-10">W8</text>
+      <text class="tick" x="466.7" y="-10">W10</text>
+      <text class="tick" x="560.0" y="-10">W12</text>
+    </g>
+    <g>
+      <text class="phase" x="-128" y="13" dy="0.32em">DISCOVERY</text>
+      <text class="task" x="-10" y="39" dy="0.32em" text-anchor="end">Interviews</text>
+      <rect class="bar done" x="0.0" y="32" width="93.3" height="14" rx="7"><title>Interviews — weeks 0 to 2 (done)</title></rect>
+      <text class="task" x="-10" y="65" dy="0.32em" text-anchor="end">Requirements</text>
+      <rect class="bar done" x="46.7" y="58" width="116.7" height="14" rx="7"><title>Requirements — weeks 1 to 3.5 (done)</title></rect>
+      <text class="phase" x="-128" y="91" dy="0.32em">BUILD</text>
+      <text class="task" x="-10" y="117" dy="0.32em" text-anchor="end">API</text>
+      <rect class="bar active" x="140.0" y="110" width="186.7" height="14" rx="7"><title>API — weeks 3 to 7 (active)</title></rect>
+      <text class="task" x="-10" y="143" dy="0.32em" text-anchor="end">Web app</text>
+      <rect class="bar active" x="186.7" y="136" width="210.0" height="14" rx="7"><title>Web app — weeks 4 to 8.5 (active)</title></rect>
+      <text class="task" x="-10" y="169" dy="0.32em" text-anchor="end">Data migration</text>
+      <rect class="bar planned" x="233.3" y="162" width="140.0" height="14" rx="7"><title>Data migration — weeks 5 to 8 (planned)</title></rect>
+      <text class="phase" x="-128" y="195" dy="0.32em">LAUNCH</text>
+      <text class="task" x="-10" y="221" dy="0.32em" text-anchor="end">Load test</text>
+      <rect class="bar planned" x="373.3" y="214" width="70.0" height="14" rx="7"><title>Load test — weeks 8 to 9.5 (planned)</title></rect>
+      <text class="task" x="-10" y="247" dy="0.32em" text-anchor="end">Pilot</text>
+      <rect class="bar planned" x="443.3" y="240" width="70.0" height="14" rx="7"><title>Pilot — weeks 9.5 to 11 (planned)</title></rect>
+      <text class="task" x="-10" y="273" dy="0.32em" text-anchor="end">Go-live</text>
+      <path class="ms" d="M513.3,267 L519.3,273 L513.3,279 L507.3,273 Z"><title>Go-live — week 11</title></path>
+    </g>
+    <!-- today: a dashed line in the error token, labelled at the top -->
+    <line class="today" x1="298.7" y1="-4" x2="298.7" y2="286"/>
+    <text class="tlbl" x="304.7" y="-24">TODAY</text>
+  </g>
+</svg>

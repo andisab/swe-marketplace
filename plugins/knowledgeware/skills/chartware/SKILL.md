@@ -47,7 +47,7 @@ Hand-authored inline SVG — the default medium for **data charts**, and the rig
 
 **Read `references/svg-charts.md` before drawing** — it holds the mechanics: pixel-space viewBox + margin convention, scale/tick math (1-2-5-10), per-chart-type geometry (rounded-top bar paths, flat-tangent curve smoothing, the C=400 donut trick), text rules (`dy="0.32em"`, width estimation, halos), the three-layer theming token block (page-token inheritance + dark mode), accessibility pattern, and the pitfall list.
 
-**Start from a template** in `templates/svg/` and adapt data, scales, and labels:
+**Pick the size first** when the chart leaves the page: `references/svg-charts.md` §1 lists the presets (document, HTML slide 1280×720, PowerPoint 960×540, 4:3, social card, print) with each one's font floor, margins and export rule. **Start from a template** in `templates/svg/` and adapt data, scales, and labels:
 
 | Request | Template |
 |---|---|
@@ -61,7 +61,11 @@ Hand-authored inline SVG — the default medium for **data charts**, and the rig
 | Two dimensions × a magnitude (weekday × hour, team × month) | `heatmap.svg` |
 | Change between two periods for several categories | `slopegraph.svg` |
 | Before and after per item (two points, one gap) | `dumbbell.svg` |
+| Plan on a time axis: phases, tasks, a milestone, today | `gantt.svg` |
+| Flows between two sets of nodes (sources to outcomes) | `sankey.svg` |
 | Node-and-arrow diagram, flow, architecture | `diagram-flow.svg` |
+
+**Icons in diagrams** come from `templates/svg/icons.svg`, a sprite of 96 `currentColor` symbols (63 outline icons from Tabler Icons, 33 brand marks from Simple Icons; catalog and usage in `references/icons.md`). Copy the symbols a diagram uses into its own `<defs>` and place them with `<use href="#cwi-…">`, in the muted tone, one per node at most.
 
 **Complexity budget (diagrams)**: before drawing, state the type, the node count and what you'll leave out. One diagram holds at most **9 nodes, 12 edges, 2 accent roles and 2 edge crossings**; a sequence diagram at most 5 lifelines, a swimlane diagram at most 5 lanes. Over budget means the subject needs an overview diagram plus one detail diagram per subsystem, not a bigger canvas. Deleting is the first move: a node that doesn't change what the reader decides goes.
 

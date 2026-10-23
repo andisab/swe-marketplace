@@ -13,6 +13,7 @@ bad()  { echo "FAIL $1"; fail=$((fail+1)); }
 
 # 1. Every template is clean (no errors, no warnings)
 for f in "$CW"/templates/svg/*.svg; do
+  [[ "$(basename "$f")" == "icons.svg" ]] && continue   # the sprite is symbols only, not a chart
   out=$(python3 -I "$LINT" --quiet "$f" 2>&1) && rc=0 || rc=$?
   if [[ $rc -eq 0 ]] && ! grep -q "^warn" <<<"$out"; then ok "template $(basename "$f") is clean"; else bad "template $(basename "$f"): $out"; fi
 done

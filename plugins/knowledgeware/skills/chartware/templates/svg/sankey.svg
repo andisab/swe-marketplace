@@ -1,0 +1,71 @@
+<!-- chartware SVG template: Sankey (flows between two sets of nodes)
+     viewBox 720x400 · left node bars end at x=150, right node bars start at x=570, nodes 14 wide,
+     14 units of padding between nodes · node height = value × (innerH − padding)/total (2.94 per unit).
+     Every link is a ribbon: M x0,ya0 C mx,ya0 mx,yb0 x1,yb0  L x1,yb1  C mx,yb1 mx,ya1 x0,ya1 Z with mx the
+     midpoint — flat tangents at both ends, so ribbons leave and arrive horizontally. Within a node, ribbons
+     stack in the order of the opposite column so they don't cross inside the node.
+     Ribbons wear the accent at fill-opacity .35 (one colour) and the muted tone for the "lost" outcome;
+     nodes are solid bars in the ink/muted tone. Conservation is in the data: each row sums to its left
+     node and each column to its right node (asserted in the generator comment below).
+     Adapt: swap nodes and the link matrix, recompute y stacks, keep the token block; rename ids per chart. -->
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg"
+     class="cw-sk" role="img" aria-labelledby="cwsk-t cwsk-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwsk-t">Visitors by source and outcome (% of sessions)</title>
+  <desc id="cwsk-d">Sankey diagram. Organic brings 40% of sessions, paid 25%, referral 20% and direct 15%. Of all sessions 35% sign up, 45% browse and 20% bounce; organic converts best, with 18 of its 40 points signing up.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-sk { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; }
+    @media (prefers-color-scheme: dark) {
+      .cw-sk { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent/--error) */
+    .cw-sk { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); }
+    .cw-sk .node  { fill:var(--cw-muted); }
+    .cw-sk .node-out { fill:var(--cw-ink); }
+    .cw-sk .flow  { fill:var(--cw-c1); fill-opacity:.35; stroke:none; transition:fill-opacity .15s; }
+    .cw-sk .flow.lost { fill:var(--cw-c2); fill-opacity:.3; }
+    .cw-sk:hover .flow { fill-opacity:.15; }
+    .cw-sk .flow:hover { fill-opacity:.6; }
+    .cw-sk .lbl  { fill:var(--cw-ink); font-size:12px; }
+    .cw-sk .val  { fill:var(--cw-muted); font-size:11px; font-variant-numeric:tabular-nums; }
+  </style>
+  <g transform="translate(0,32)">
+    <!-- ribbons first, nodes over them -->
+    <g>
+      <path class="flow" d="M150,0.0 C360,0.0 360,0.0 570,0.0 L570,55.4 C360,55.4 360,52.9 150,52.9 Z"><title>Organic → Signed up: 18%</title></path>
+      <path class="flow" d="M150,52.9 C360,52.9 360,121.8 570,121.8 L570,174.2 C360,174.2 360,102.9 150,102.9 Z"><title>Organic → Browsed: 17%</title></path>
+      <path class="flow lost" d="M150,102.9 C360,102.9 360,274.4 570,274.4 L570,289.8 C360,289.8 360,117.6 150,117.6 Z"><title>Organic → Bounced: 5%</title></path>
+      <path class="flow" d="M150,131.6 C360,131.6 360,55.4 570,55.4 L570,80.1 C360,80.1 360,155.1 150,155.1 Z"><title>Paid → Signed up: 8%</title></path>
+      <path class="flow" d="M150,155.1 C360,155.1 360,174.2 570,174.2 L570,205.0 C360,205.0 360,184.5 150,184.5 Z"><title>Paid → Browsed: 10%</title></path>
+      <path class="flow lost" d="M150,184.5 C360,184.5 360,289.8 570,289.8 L570,311.4 C360,311.4 360,205.1 150,205.1 Z"><title>Paid → Bounced: 7%</title></path>
+      <path class="flow" d="M150,219.1 C360,219.1 360,80.1 570,80.1 L570,101.6 C360,101.6 360,239.7 150,239.7 Z"><title>Referral → Signed up: 7%</title></path>
+      <path class="flow" d="M150,239.7 C360,239.7 360,205.0 570,205.0 L570,235.8 C360,235.8 360,269.1 150,269.1 Z"><title>Referral → Browsed: 10%</title></path>
+      <path class="flow lost" d="M150,269.1 C360,269.1 360,311.4 570,311.4 L570,320.6 C360,320.6 360,277.9 150,277.9 Z"><title>Referral → Bounced: 3%</title></path>
+      <path class="flow" d="M150,291.9 C360,291.9 360,101.6 570,101.6 L570,107.8 C360,107.8 360,297.8 150,297.8 Z"><title>Direct → Signed up: 2%</title></path>
+      <path class="flow" d="M150,297.8 C360,297.8 360,235.8 570,235.8 L570,260.4 C360,260.4 360,321.3 150,321.3 Z"><title>Direct → Browsed: 8%</title></path>
+      <path class="flow lost" d="M150,321.3 C360,321.3 360,320.6 570,320.6 L570,336.0 C360,336.0 360,336.0 150,336.0 Z"><title>Direct → Bounced: 5%</title></path>
+    </g>
+    <g>
+      <rect class="node" x="136" y="0.0" width="14" height="117.6"/>
+      <text class="lbl" x="126" y="58.8" dy="0.32em" text-anchor="end">Organic <tspan class="val">40%</tspan></text>
+      <rect class="node" x="136" y="131.6" width="14" height="73.5"/>
+      <text class="lbl" x="126" y="168.3" dy="0.32em" text-anchor="end">Paid <tspan class="val">25%</tspan></text>
+      <rect class="node" x="136" y="219.1" width="14" height="58.8"/>
+      <text class="lbl" x="126" y="248.5" dy="0.32em" text-anchor="end">Referral <tspan class="val">20%</tspan></text>
+      <rect class="node" x="136" y="291.9" width="14" height="44.1"/>
+      <text class="lbl" x="126" y="313.9" dy="0.32em" text-anchor="end">Direct <tspan class="val">15%</tspan></text>
+      <rect class="node node-out" x="570" y="0.0" width="14" height="107.8"/>
+      <text class="lbl" x="594" y="53.9" dy="0.32em">Signed up <tspan class="val">35%</tspan></text>
+      <rect class="node node-out" x="570" y="121.8" width="14" height="138.6"/>
+      <text class="lbl" x="594" y="191.1" dy="0.32em">Browsed <tspan class="val">45%</tspan></text>
+      <rect class="node node-out" x="570" y="274.4" width="14" height="61.6"/>
+      <text class="lbl" x="594" y="305.2" dy="0.32em">Bounced <tspan class="val">20%</tspan></text>
+    </g>
+  </g>
+</svg>

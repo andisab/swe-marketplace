@@ -380,6 +380,11 @@ class Lint:
         for i, n in seen.items():
             if n > 1:
                 self.add("error", "ids", f"id '{i}' is used {n} times")
+        symbols = {el.get("id") for el in root.iter(NS + "symbol")} | {el.get("id") for el in root.iter() if el.get("id")}
+        for el in root.iter(NS + "use"):
+            href = el.get("href") or el.get("{http://www.w3.org/1999/xlink}href") or ""
+            if href.startswith("#") and href[1:] not in symbols:
+                self.add("error", "marker", f"<use href=\"{href}\"> names a symbol this file doesn't define; copy it into <defs> (see references/icons.md)")
         markers = {el.get("id") for el in root.iter(NS + "marker")}
         for el in root.iter():
             for attr in ("marker-end", "marker-start", "marker-mid"):
