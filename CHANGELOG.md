@@ -10,6 +10,7 @@ arch 1.0.1 · context-engineering 1.1.1 · data 1.0.1 · databases 1.0.1 · dev 
 
 - **Fixed:** 49 of 54 agents listed tools Claude Code doesn't have, so most of them had no Edit tool (only whole-file Write) and none could reach Context7. `MultiEdit` is now `Edit`; `Context7` is `mcp__context7__*` plus the plugin-installed form `mcp__plugin_context7_context7__*`; `LS`, `Find` and `FD` are `Glob`; `Docker` and `Git` are `Bash`; `Task` is `Agent`. `infrastructure:security-auditor` also gains `Read`.
 - **context-engineering:** the agent-dev and hook-dev skills and the tool-restriction patterns no longer teach `MultiEdit`, `TodoRead` or `NotebookRead`, so new agents don't inherit the problem.
+- **context-engineering:** the context-engineer agent and four skills couldn't reach conventions-mcp. They called `search_conventions` and `get_convention`, which conventions-mcp 1.1.1 renamed to `find_conventions` and `read_convention`, and they expected the server name `Conventions`, while conventions-mcp's README registers it as `conventions`. Both now match conventions-mcp 1.1.2, and the README gives the `claude mcp add` line.
 
 ### adv 0.2.1
 

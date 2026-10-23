@@ -107,7 +107,7 @@ Total: ~13,000 tokens
 
 ### For MCP Servers (like conventions-mcp)
 
-**search_conventions** (Level 1):
+**find_conventions** (Level 1):
 ```typescript
 // Return metadata + 250-char preview only
 {
@@ -125,7 +125,7 @@ Total: ~13,000 tokens
 }
 ```
 
-**get_convention** (Level 2+3):
+**read_convention** (Level 2+3):
 ```typescript
 // Return full content only when explicitly requested
 {
@@ -205,7 +205,7 @@ Help users understand the impact:
 ```
 Search results: 15 conventions found (25,000 tokens total)
 ⚠️ Loading all would use 12.5% of context window
-💡 Use get_convention to load individual conventions
+💡 Use read_convention to load individual conventions
 ```
 
 ### 3. Provide Clear Next Steps
@@ -213,7 +213,7 @@ Search results: 15 conventions found (25,000 tokens total)
 Guide users through disclosure levels:
 
 ```
-Level 1: "Found 10 matching agents. Use get_convention(path) to view details"
+Level 1: "Found 10 matching agents. Use read_convention(path) to view details"
 Level 2: "Agent overview loaded. See examples/ for implementation patterns"
 Level 3: "Loading examples/advanced-usage.md..."
 ```
@@ -254,7 +254,7 @@ Found 5 agents:
 5. vector-db-expert (2400 tokens) - Vector databases
 
 Total if loaded: 11,900 tokens (6% of context)
-💡 Use get_convention to load specific agents
+💡 Use read_convention to load specific agents
 ```
 
 **Level 2** (User selects postgres-expert):

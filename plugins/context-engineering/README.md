@@ -82,11 +82,13 @@ These documents in `patterns/` explain design choices the skills apply.
 
 The plugin itself needs nothing beyond Claude Code. To run the MCP servers you build from the templates, you need Python 3.11 or later for the Python template, or Node.js 18 or later for the TypeScript one.
 
-**Optional: conventions-mcp.** The agent and the `agent-dev` and `skill-dev` skills can search [conventions-mcp](https://www.npmjs.com/package/@ablukis/conventions-mcp), an MCP server I also maintain that serves agent definitions, workflows and coding conventions from community and private Git repositories. They use it to find a similar example before writing a new one. Register it under the name `Conventions`, because that's the name in the tool list the agent and skills use:
+**Optional: conventions-mcp.** The agent and the `agent-dev`, `skill-dev`, `mcp-tool-dev` and `mcp-server-dev` skills can search [conventions-mcp](https://www.npmjs.com/package/@ablukis/conventions-mcp), an MCP server I also maintain that serves agent definitions, workflows and coding conventions from community and private Git repositories. They use it to find a similar example before writing a new one. Register it under the name `conventions`, as its own README does, because the agent and skills call its tools by that name:
 
 ```bash
-claude mcp add --scope user Conventions -- npx -y @ablukis/conventions-mcp
+claude mcp add --scope user conventions -- npx -y @ablukis/conventions-mcp
 ```
+
+If you registered it earlier as `Conventions`, remove that entry with `claude mcp remove Conventions` and add it again with the command above.
 
 Without it, the agent and skills work from this plugin's templates and patterns.
 

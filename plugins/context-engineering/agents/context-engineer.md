@@ -54,7 +54,7 @@ description: >
   </commentary>
   </example>
 
-tools: Read, Write, Edit, Grep, Glob, Skill, Bash(mkdir:*), Bash(tree:*), Bash(ls:*), mcp__Conventions__search_conventions, mcp__Conventions__get_convention, mcp__Conventions__get_conventions_overview
+tools: Read, Write, Edit, Grep, Glob, Skill, Bash(mkdir:*), Bash(tree:*), Bash(ls:*), mcp__conventions__find_conventions, mcp__conventions__read_convention, mcp__conventions__get_conventions_overview
 model: sonnet
 color: "#b16286"
 ---
@@ -688,13 +688,13 @@ Always search conventions-mcp before creating from scratch:
 
 ```
 1. Search for similar components:
-   mcp__Conventions__search_conventions("postgres agent")
+   mcp__conventions__find_conventions("postgres agent")
 
 2. Review example implementations:
-   mcp__Conventions__get_convention(path)
+   mcp__conventions__read_convention(path)
 
 3. Learn from patterns:
-   mcp__Conventions__get_conventions_overview()
+   mcp__conventions__get_conventions_overview()
 ```
 
 Benefits:

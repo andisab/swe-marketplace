@@ -18,7 +18,7 @@ description: >
   - Creating full MCP servers with multiple tools (use mcp-server-dev)
   - General API development without MCP
   - Claude Code slash commands or hooks
-allowed-tools: Read, Write, Edit, Grep, Glob, mcp__Conventions__search_conventions, mcp__Conventions__get_convention
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__conventions__find_conventions, mcp__conventions__read_convention
 ---
 
 # MCP Tool Creation

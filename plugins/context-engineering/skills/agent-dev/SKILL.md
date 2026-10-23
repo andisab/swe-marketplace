@@ -6,7 +6,7 @@ description: >
   Automatically invoked when user requests "create an agent", "design a sub-agent", "make a specialist",
   or mentions agent development. Ensures agents follow Anthropic best practices with focused responsibilities,
   discovery-optimized descriptions, and proper tool restrictions.
-allowed-tools: Read, Write, Edit, Grep, Glob, mcp__Conventions__search_conventions, mcp__Conventions__get_convention
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__conventions__find_conventions, mcp__conventions__read_convention
 ---
 
 # Agent Dev Skill
