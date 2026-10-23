@@ -118,7 +118,7 @@ paletteDark:                          # optional — the same palette keys for a
 ---
 ```
 
-Two more optional keys live under `type:`: `headingTracking` and `labelTracking`, in em (e.g. `-0.02` for tight display headings, `0.12` for spaced capitals). Loaders pass `paletteDark`, the tracking values and the container keys through to the tokens untouched; the html converter writes `paletteDark` back into the frontmatter it generates. The five default styles under `styles/` show every optional key in use.
+A dark-first brandbook (its base palette is dark, like style-3) uses `paletteLight:` the same way, for viewers who prefer a light theme. Two more optional keys live under `type:`: `headingTracking` and `labelTracking`, in em (e.g. `-0.02` for tight display headings, `0.12` for spaced capitals). Loaders pass `paletteDark`, the tracking values and the container keys through to the tokens untouched; the html converter writes `paletteDark` back into the frontmatter it generates. The five default styles under `styles/` show every optional key in use.
 
 **Hex convention**: hex values are quoted **with** the `#` prefix (IDEs render inline color swatches). The pptx loader strips the `#` (pptxgenjs expects bare 6-char hex); the html renderer keeps it (CSS expects it). One brandbook works for both.
 

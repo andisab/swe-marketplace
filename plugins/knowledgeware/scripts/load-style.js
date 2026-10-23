@@ -302,6 +302,7 @@ function build(srcPath) {
     return Object.keys(out).length ? out : null;
   };
   const paletteDark = hexMap(fm.paletteDark);
+  const paletteLight = hexMap(fm.paletteLight);
   if (num(fmT.headingTracking) !== null) type.headingTracking = fmT.headingTracking;
   if (num(fmT.labelTracking) !== null) type.labelTracking = fmT.labelTracking;
   if (num(fmL.containerPx) !== null) layout.containerPx = fmL.containerPx;
@@ -309,6 +310,7 @@ function build(srcPath) {
 
   const tokens = { name, source: srcPath, palette, type, layout };
   if (paletteDark) tokens.paletteDark = paletteDark;
+  if (paletteLight) tokens.paletteLight = paletteLight;
   return tokens;
 }
 

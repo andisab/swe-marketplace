@@ -275,9 +275,10 @@ function serializeFrontmatter(tokens, description) {
     `  shadowOpacity: ${L.shadowOpacity}`,
     `  marginIn:      ${L.marginIn}`,
   );
-  if (tokens.paletteDark) {
-    lines.push("paletteDark:");
-    for (const [k, val] of Object.entries(tokens.paletteDark)) lines.push(`  ${(k + ":").padEnd(12)}${hx(val)}`);
+  for (const key of ["paletteDark", "paletteLight"]) {
+    if (!tokens[key]) continue;
+    lines.push(`${key}:`);
+    for (const [k, val] of Object.entries(tokens[key])) lines.push(`  ${(k + ":").padEnd(12)}${hx(val)}`);
   }
   lines.push("---", "");
   return lines.join("\n");

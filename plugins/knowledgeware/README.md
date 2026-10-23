@@ -131,7 +131,7 @@ Name a style (`style-1` to `style-5`) in any request, or let the skill choose. W
 | **style-4**, Warm Sage | Warm gray background, serif headings, outlined containers, a sage green accent | Technical write-ups and internal training |
 | **style-5**, Material Olive | Material Design 3 palette of olive, sage and teal on a pale cream-green background | Product roadmaps and sustainability decks |
 
-Each style is a folder under `styles/` with the brandbook (`brand.md`), a generic mark for light and dark backgrounds (`assets/mark.svg`, `assets/mark-dark.svg`), a stylesheet with the tokens as CSS variables and the style's motif classes (`css/<name>.css`), and a README. Four of the five carry a dark palette as well; style-3 is dark to begin with. The marks are original drawings, free to use, and a brand of your own replaces them.
+Each style is a folder under `styles/` with the brandbook (`brand.md`), a generic mark for light and dark backgrounds (`assets/mark.svg`, `assets/mark-dark.svg`), a stylesheet with the tokens as CSS variables and the style's motif classes (`css/<name>.css`), and a README. Each also carries its other theme: a dark palette for the four light styles, and a light palette for style-3, which is dark to begin with. The marks are original drawings, free to use, and a brand of your own replaces them.
 
 ## Using your own brand
 

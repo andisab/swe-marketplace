@@ -99,6 +99,8 @@ assert.strictEqual(tokens.name, "folderco"); ok("a folder entry is named after i
 assert.strictEqual(tokens.palette.accent, "AA0000");
 assert.strictEqual(tokens.paletteDark.bg, "101010"); ok("paletteDark passes through to the tokens");
 assert(fs.existsSync(path.join(brands, "folderco", "tokens.json"))); ok("the cache is written next to brand.md after a miss");
+const s3 = JSON.parse(node([path.join(PLUGIN, "scripts", "load-style.js"), "style-3"]));
+assert.strictEqual(s3.paletteLight.bg, "F7F7FA"); ok("a dark-first style passes paletteLight through");
 const second = node([path.join(PLUGIN, "scripts", "load-style.js"), "folderco", "-o", path.join(tmp, "out.json")], tmp);
 assert(fs.readFileSync(path.join(tmp, "out.json"), "utf8").includes('"folderco"')); ok("the second load reads the cache");
 const flat = JSON.parse(node([path.join(PLUGIN, "scripts", "load-style.js"), "flatco"]));

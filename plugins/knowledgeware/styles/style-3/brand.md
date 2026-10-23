@@ -16,6 +16,20 @@ palette:
   warning:    '#F59E0B'
   error:      '#F87171'
 
+paletteLight:
+  bg:         '#F7F7FA'
+  surface:    '#FFFFFF'
+  surfaceAlt: '#EEEEF3'
+  ink:        '#0B0B12'
+  inkBody:    '#2A2A35'
+  inkMuted:   '#6B6B7A'
+  inkFaint:   '#A0A0B0'
+  border:     '#DCDCE4'
+  accent:     '#5B58D6'
+  success:    '#16A34A'
+  warning:    '#D97706'
+  error:      '#DC2626'
+
 type:
   sans:           'Inter'
   serif:          'Inter'

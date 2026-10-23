@@ -19,7 +19,39 @@
   --font-mono: 'JetBrains Mono', Menlo, monospace;
   --radius: 6px;
   --shadow-opacity: 0;
-  color-scheme: dark;
+  color-scheme: dark light;
+}
+
+/* Light theme for a dark-first style: follows the system, or set data-theme="light" on <html>. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+  --bg: #F7F7FA;
+  --surface: #FFFFFF;
+  --surface-alt: #EEEEF3;
+  --ink: #0B0B12;
+  --ink-body: #2A2A35;
+  --ink-muted: #6B6B7A;
+  --ink-faint: #A0A0B0;
+  --border: #DCDCE4;
+  --accent: #5B58D6;
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #F7F7FA;
+  --surface: #FFFFFF;
+  --surface-alt: #EEEEF3;
+  --ink: #0B0B12;
+  --ink-body: #2A2A35;
+  --ink-muted: #6B6B7A;
+  --ink-faint: #A0A0B0;
+  --border: #DCDCE4;
+  --accent: #5B58D6;
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
 }
 
 body { margin: 0; background: var(--bg); color: var(--ink-body); font: 400 1rem/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
