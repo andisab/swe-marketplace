@@ -1,20 +1,6 @@
-# Research Team Plugin
+# research-team
 
-Multi-agent research system for comprehensive topic investigation with parallel execution and professional report synthesis.
-
-## Overview
-
-The Research Team plugin provides a coordinated multi-agent system designed to conduct thorough research on complex topics. It breaks research into distinct subtopics, investigates them in parallel using multiple specialized agents, and synthesizes findings into professional reports.
-
-## Features
-
-- **Multi-Agent Orchestration**: Lead coordinator breaks topics into 2-5 subtopics and manages parallel research
-- **Parallel Research Execution**: Multiple researchers investigate simultaneously for 4x speedup
-- **Web-First Research**: Mandatory WebSearch usage ensures current, factual information
-- **Professional Reports**: Synthesized findings with citations and proper formatting
-- **Joplin Integration**: Optional markdown formatting optimized for Joplin note-taking
-- **Context Isolation**: Each researcher operates independently with focused context
-- **File-Based Coordination**: Researchers save findings, report-writer synthesizes
+research-team turns one research question into a short, cited report. It splits the topic into two to five subtopics, has a separate agent search the web for each one in parallel, and then has a writer agent combine their notes into a Markdown report of 500 to 800 words, optionally formatted for Joplin. Use it for questions that need several sources, such as comparing tools, surveying a market or catching up on a field.
 
 ## Install
 
@@ -33,308 +19,59 @@ Or add the marketplace once, then install by name:
 
 In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **research-team**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
 
-## Components
-
-### Skills
+## Try it
 
-#### coordinator
-**Role**: Main-thread orchestrator
-**Runs in**: Main agent context (not a subagent)
-**Tools**: Task, Bash(mkdir:*), Glob, Read
+The coordinator starts only when you name the plugin in your request. Paste one of these into Claude Code:
 
-Orchestrates the entire research workflow from the main thread so its `Task` calls are first-level (Claude Code does not support nested subagent spawning, which is why this was migrated from an agent to a skill in v1.2.0):
-- Analyzes the user's research request
-- Breaks the topic into 2-5 distinct subtopics with assigned output paths
-- Spawns `research-team:research-specialist` subagents in parallel
-- Verifies each note on disk via Glob; respawns any failed subtopic once
-- Spawns `research-team:research-report-writer` only after verification passes
-- Reports the verified report path
+- *"Use research-team to research vector database pricing."*
+  The coordinator names the subtopics it picked and starts one researcher for each. When the writer finishes, the coordinator prints the report's path, such as `~/Documents/Claude/Research/reports/vector-database-pricing_summary_20261022.md`.
+- *"research-team: compare Django, Flask and FastAPI for a new internal API."*
+  Each framework becomes a subtopic, usually with one more for selection criteria. The report compares them with a citation for every claim.
+- *"Use research-team to research the EU AI Act's obligations for model providers, for my Joplin notes."*
+  Because the request mentions Joplin, the writer loads the `joplin-research` skill and follows its heading and table-of-contents rules. The report is still a `.md` file in the same `reports/` folder.
 
-**Trigger**: Activates only on explicit research-team invocation (e.g., "use research-team to research X", "research-team: research X"). Generic research prompts fall through to whatever other mechanism is in play.
+## How it works
 
-#### joplin-research
-Comprehensive markdown formatting guidelines for research artifacts:
-- Technical rundowns and surveys
-- Book and article summaries
-- Research notes
-- Optimized for Joplin note-taking app with custom CSS
-
-**Trigger**: Loaded by the report-writer when the user mentions "Joplin" in the original request.
+1. **Split.** The coordinator picks two to five subtopics that don't overlap and gives each one a file name, such as `01_quantum-hardware.md`.
+2. **Research.** It starts one `research-specialist` agent per subtopic, all at the same time. Each researcher runs 3 to 7 web searches, keeps the 3 to 5 most authoritative sources, and saves a note of 3 to 4 paragraphs with the source URLs.
+3. **Check.** Each researcher ends its reply with a short `output-manifest` block that names the file it wrote. The coordinator confirms that every named file exists on disk, and it restarts a researcher once if its file is missing.
+4. **Write.** One `research-report-writer` agent reads the notes and writes the report. The coordinator confirms that the report exists, then gives you its path.
 
-### Agents
+The researchers run in parallel, so a run takes about as long as the slowest researcher plus the writer, not the sum of every researcher's time. A run starts up to six subagents on Sonnet (five researchers and the writer), and they count toward your usage like any other subagent work.
 
-#### 1. research-specialist
-**Role**: Information Gatherer
-**Model**: Sonnet
-**Tools**: WebSearch, Write
+The coordinator is a skill rather than an agent because of how Claude Code runs agents. Every agent runs as a subagent, and a subagent can't start subagents of its own. A skill runs in your main conversation, so the coordinator can start the researchers and the writer itself.
 
-Conducts focused research on specific subtopics:
-- Uses WebSearch exclusively (3-7 queries per subtopic)
-- Extracts findings from authoritative sources
-- Saves concise summaries (3-4 paragraphs) to files
-- Includes URLs and citations
-- Ends every response with an `output-manifest` block (used by the coordinator for disk verification)
+## What's inside
 
-**Output Location**: `~/Documents/Claude/Research/research_notes/`
+| Component | Kind | What it does | Tools |
+|---|---|---|---|
+| `coordinator` | Skill | Splits the topic, starts and checks the agents, and reports the path. | `Task` (the Agent tool's former name, still accepted), `Bash` limited to `mkdir`, `Glob`, `Read` |
+| `research-specialist` | Agent, Sonnet | Researches one subtopic through web search and saves a note. | `WebSearch`, `Write` |
+| `research-report-writer` | Agent, Sonnet | Reads all the notes and writes the report. | `Glob`, `Read`, `Write`, `Skill` |
+| `joplin-research` | Skill | Formatting rules and templates for Joplin notes: technical surveys and rundowns, what's-new notes, and summaries of books, articles and whitepapers. | — |
 
-#### 2. research-report-writer
-**Role**: Report Synthesizer
-**Model**: Sonnet
-**Tools**: Glob, Read, Write, Skill
+The `joplin-research` description asks Claude to load it whenever a prompt mentions Joplin, so it also formats Joplin notes outside a research run. The `patterns/` folder documents the orchestration design, and `templates/` holds sample research requests, notes and reports for anyone changing the plugin.
 
-Creates comprehensive summary reports:
-- Reads all research notes from files
-- Synthesizes findings into a coherent narrative
-- Maintains citations from original research
-- Loads the joplin-research skill when the user mentioned "Joplin"
-- Saves final reports (500-800 words) in markdown (`.md`) by default
+## Requirements
 
-**Output Location**: `~/Documents/Claude/Research/reports/`
+The researchers and the writer are agents, so research-team needs Claude Code or Cowork in Claude Desktop. Chat in Claude Desktop and on claude.ai doesn't run plugin agents. The researchers search with the `WebSearch` tool, so a run also needs a session where that tool is available.
 
-### Patterns
+## Questions and troubleshooting
 
-#### multi-agent-research
-Documents the orchestration pattern:
-- Parallel execution architecture
-- File-based coordination
-- Context isolation strategy
-- Usage guidelines and best practices
+**Where do the notes and the report go?** Notes go to `~/Documents/Claude/Research/research_notes/`, and reports go to `~/Documents/Claude/Research/reports/`. The coordinator creates both folders on its first run. The paths are written into the coordinator skill and both agents, so to use another folder you have to change all three in your own copy of the plugin. Edits to the installed copy are replaced the next time the plugin updates.
 
-#### parallel-research-workflow
-Documents the workflow:
-- Phase-by-phase execution
-- File structure and organization
-- Timing and performance metrics
-- Quality assurance checks
+**Why didn't "research X" start a research run?** The coordinator starts only when you name the plugin, as in "use research-team to …" or "research-team: …". That way a question that one web search can answer doesn't start six agents.
 
-## Usage
+**The report mixes in a topic from an earlier run.** The writer reads every note in `research_notes/`, including notes left from earlier runs, and nothing deletes them. Move or delete the old notes before you start a new topic.
 
-### Basic Research Request
+**What happens when a researcher fails?** The coordinator restarts each researcher whose note is missing, once. If a note is still missing after that, the coordinator doesn't start the writer. It tells you which subtopics failed and whether the researcher returned no manifest or named a file that isn't on disk. Run the request again to retry.
 
-```
-User: Research the latest developments in quantum computing
+**How do I get the report into Joplin?** Mention Joplin in your request so the writer formats the report for Joplin. The plugin saves a Markdown file and doesn't create the note itself, so bring the file in with Joplin's Markdown import (**File → Import**).
 
-Lead Coordinator:
-"Researching 4 areas: hardware/qubits, algorithms/applications,
-industry players/investments, and challenges/timeline. Spawning researchers."
+**Can I get a longer report?** The writer aims for 500 to 800 words unless its instructions ask for a longer synthesis. Say in your request that you want a detailed report, so the coordinator can pass that on.
 
-[Spawns 4 researcher subagents in parallel]
-[Each conducts 3-7 WebSearch queries on their subtopic]
-[Each saves findings to ~/Documents/Claude/Research/research_notes/]
-[All complete in 2-5 minutes]
+For installing, updates, context cost and safety, see the [marketplace FAQ](../../README.md#faq). To request a feature or report a problem, open an [issue](https://github.com/andisab/swe-marketplace/issues).
 
-[Spawns report-writer subagent]
-[Report-writer reads all notes and creates synthesis]
-[Saves to ~/Documents/Claude/Research/reports/]
+---
 
-"Research complete. Report: /Users/you/Documents/Claude/Research/reports/quantum_computing_summary_20260423.md"
-```
-
-### With Joplin Formatting
-
-```
-User: Research electric vehicles for my Joplin notes
-
-[Same workflow as above, but...]
-[Report-writer loads joplin-research skill]
-[Output format changes to markdown with proper formatting]
-
-"Research complete. Report: /Users/you/Documents/Claude/Research/reports/electric_vehicles_summary_20260423.md"
-```
-
-## File Structure
-
-After running research, you'll find:
-
-```
-~/Documents/Claude/Research/
-├── research_notes/              # Intermediate findings
-│   ├── quantum_hardware_qubits.md
-│   ├── quantum_algorithms_apps.md
-│   ├── quantum_industry_investments.md
-│   └── quantum_challenges_timeline.md
-└── reports/                     # Final synthesized reports
-    └── quantum_computing_summary_20260423.md
-```
-
-## Configuration
-
-### Output Directory
-
-Default: `~/Documents/Claude/Research/`
-
-To use a different location, the agents would need to be modified (advanced users only).
-
-### Model Selection
-
-All agents default to `sonnet` for high-quality output. This can be changed per-use by specifying model in agent invocation.
-
-### Research Depth
-
-- Number of subtopics: 2-5 (configured by lead coordinator based on topic complexity)
-- WebSearch queries per researcher: 3-7
-- Research note length: 3-4 paragraphs per researcher
-- Final report length: 500-800 words (adjustable in report-writer prompt)
-
-## Use Cases
-
-### ✅ Excellent For
-
-- **Market Research**: Investigate competitors, trends, technology, regulations
-- **Technical Comparisons**: Compare tools on features, pricing, performance, ecosystem
-- **Academic Research**: Explore history, current state, future directions, applications
-- **Competitive Analysis**: Product features, market position, customer sentiment, financials
-- **Technology Surveys**: Overview multiple tools/frameworks in a space
-
-### ❌ Not Suitable For
-
-- Simple factual queries (single WebSearch sufficient)
-- Real-time interaction with user required
-- Topics with insufficient web information
-- Highly specialized topics needing expert knowledge unavailable online
-
-## Performance
-
-### Timing
-
-| Phase | Duration |
-|-------|----------|
-| Analysis | < 5 seconds |
-| Research (parallel) | 2-5 minutes |
-| Synthesis | 1-2 minutes |
-| **Total** | **3-7 minutes** |
-
-### Speedup
-
-- **Parallel (4 researchers)**: 3-7 minutes
-- **Sequential (4 researchers)**: 12-28 minutes
-- **Improvement**: 4x faster
-
-## Examples
-
-### Example 1: Technology Research
-
-**Request**: "Research Python web frameworks"
-
-**Subtopics**:
-- Django features and ecosystem
-- Flask flexibility and use cases
-- FastAPI performance and modern features
-- Framework comparison and selection criteria
-
-**Output**: Comprehensive comparison with recommendations
-
-### Example 2: Market Research
-
-**Request**: "Research the AI chip market"
-
-**Subtopics**:
-- Major players (NVIDIA, AMD, Intel, startups)
-- Market size and growth projections
-- Technology trends (inference vs training chips)
-- Supply chain and manufacturing
-
-**Output**: Market overview with key insights
-
-### Example 3: Academic Topic
-
-**Request**: "Research neural architecture search for Joplin"
-
-**Subtopics**:
-- NAS methodology and algorithms
-- Key papers and breakthroughs
-- Practical applications and results
-- Tools and frameworks
-
-**Output**: Markdown-formatted research summary for Joplin
-
-## Troubleshooting
-
-### No Research Notes Found
-
-**Symptom**: Report-writer can't find files
-**Solution**:
-- Ensure `~/Documents/Claude/Research/research_notes/` exists
-- Check researchers actually saved files
-- Verify file permissions
-
-### Poor Report Quality
-
-**Symptom**: Report lacks depth or citations
-**Solution**:
-- Verify researchers ran 3-7 WebSearch queries each
-- Check research notes include URLs
-- Ensure report-writer read all files
-
-### Slow Execution
-
-**Symptom**: Takes > 10 minutes
-**Solution**:
-- Verify researchers spawned in parallel (not sequential)
-- Check WebSearch API availability
-- Reduce number of queries per researcher
-
-### Missing Joplin Formatting
-
-**Symptom**: Report uses generic markdown instead of Joplin-specific formatting (no `>[toc]`, no CSS-aware headings, etc.)
-**Solution**:
-- Ensure user mentioned "Joplin" in the original request
-- Verify the joplin-research skill is installed
-- Check the report-writer's skill activation logic
-
-## Best Practices
-
-### For Users
-
-1. **Be Specific**: State research topic and desired depth clearly
-2. **Mention Joplin**: If you want markdown, say "Joplin" in request
-3. **Allow Time**: Expect 3-7 minutes for completion
-4. **Check Output**: Verify files in `~/Documents/Claude/Research/reports/`
-
-### For Developers
-
-1. **Maintain Parallelism**: Never make researchers execute sequentially
-2. **Validate Paths**: Ensure directory structure exists before use
-3. **Test End-to-End**: Run complete workflow from request to report
-4. **Monitor Quality**: Verify WebSearch usage and citation preservation
-5. **Update Prompts**: Adjust subtopic decomposition logic as needed
-
-## Roadmap
-
-Potential future enhancements:
-
-- [ ] Support for custom output directories
-- [ ] Configurable research depth (light/standard/deep)
-- [ ] Integration with additional note-taking apps
-- [ ] Export to multiple formats (PDF, HTML, DOCX)
-- [ ] Iterative research with user feedback loop
-- [ ] Research archiving and versioning
-- [ ] Cross-research citation linking
-- [ ] Research template library
-
-## Contributing
-
-To contribute improvements:
-
-1. Test changes thoroughly with end-to-end research workflows
-2. Maintain backward compatibility with existing file structure
-3. Update documentation for any prompt or workflow changes
-4. Follow agent frontmatter conventions for metadata
-5. Preserve parallel execution architecture
-
-## License
-
-MIT License - See repository root for details
-
-## Support
-
-For issues or questions:
-- Check pattern documentation in `patterns/`
-- Review troubleshooting section above
-- Open issue in repository
-- Reference agent prompts for implementation details
-
-## Version
-
-**Current Version**: 1.2.4 (history in the [marketplace changelog](../../CHANGELOG.md))
-**Status**: Stable
+Part of [swe-marketplace](../../README.md). Changes are in the [changelog](../../CHANGELOG.md). MIT license.

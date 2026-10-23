@@ -8,7 +8,7 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 arch 1.0.1 · context-engineering 1.1.1 · data 1.0.1 · databases 1.0.1 · dev 1.0.1 · frontend 1.0.1 · genai 1.0.1 · infrastructure 1.0.1 · machine-learning 1.0.1 · product-management 1.0.1
 
-- **Fixed:** 49 of 54 agents listed tools Claude Code doesn't have, so most of them had no Edit tool (only whole-file Write) and none could reach Context7. `MultiEdit` is now `Edit`; `Context7` is `mcp__context7__*` plus the plugin-installed form `mcp__plugin_context7_context7__*`; `LS`, `Find` and `FD` are `Glob`; `Docker` and `Git` are `Bash`; `Task` is `Agent`. `infra-security-auditor` also gains `Read`.
+- **Fixed:** 49 of 54 agents listed tools Claude Code doesn't have, so most of them had no Edit tool (only whole-file Write) and none could reach Context7. `MultiEdit` is now `Edit`; `Context7` is `mcp__context7__*` plus the plugin-installed form `mcp__plugin_context7_context7__*`; `LS`, `Find` and `FD` are `Glob`; `Docker` and `Git` are `Bash`; `Task` is `Agent`. `infrastructure:security-auditor` also gains `Read`.
 - **context-engineering:** the agent-dev and hook-dev skills and the tool-restriction patterns no longer teach `MultiEdit`, `TodoRead` or `NotebookRead`, so new agents don't inherit the problem.
 
 ### knowledgeware 1.8.1
@@ -25,7 +25,8 @@ arch 1.0.1 · context-engineering 1.1.1 · data 1.0.1 · databases 1.0.1 · dev 
 ### Marketplace
 
 - CI runs `claude plugin validate` on the catalog and every plugin on each pull request and push, plus a new agent tool-name check, [`scripts/check-agent-tools.py`](./scripts/check-agent-tools.py) (also part of `validate-all.sh`).
-- README: a start-here table, a knowledgeware gallery and a Skills Directory badge; the catalog description now matches what the marketplace holds.
+- README: a start-here table, a knowledgeware gallery and a Skills Directory badge; the catalog description now matches what the marketplace holds. The plugin-count badge reads the catalog, so it stays current.
+- Every README rewritten for first-time users: a step-by-step first install with what you should see, a FAQ (cost, what runs on your machine and what leaves it, context cost, updates, agents vs asking Claude), troubleshooting, and in each plugin README examples with where the output lands, plus that plugin's own questions. Claims the plugins don't back up are gone, such as context-engineering's settings options, which nothing reads, research-team's unmeasured speedups, and adv's `/adv-review` command, which doesn't exist (adv-review is an agent).
 
 ## [1.0.0] — 2026-10-21
 

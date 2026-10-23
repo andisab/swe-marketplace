@@ -270,7 +270,7 @@
     {
       "name": "dev",
       "source": "./plugins/dev",
-      "description": "Language-specific development experts covering 13 programming languages including Python, TypeScript, JavaScript, Go, Rust, C++, and more. Includes refactoring specialist.",
+      "description": "Development experts for 10 programming languages (Python, TypeScript, JavaScript, Go, Rust, C++, Kotlin, PHP, Lua and Perl), plus FastAPI and Node.js specialists and a refactoring agent.",
       "version": "1.0.1",
       "author": {
         "name": "Andis A. Blukis",
