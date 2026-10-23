@@ -6,12 +6,13 @@ description: >
   then runs adversarial cross-examination rounds to validate findings.
 
   <examples>
-  - "Run an adversarial review of this codebase" → Full 4-phase review pipeline
-  - "/adv-review --since abc123" → Review changes since commit abc123
-  - "/adv-review --commits abc..def" → Review specific commit range
-  - "/adv-review" → Smart default: reviews uncommitted changes
+  - "Use the adv-review agent to review my uncommitted changes" → Smart default: working tree, else the last commit, else the whole repository
+  - "Use the adv-review agent to review --since abc123" → Review changes since commit abc123
+  - "Use the adv-review agent to review --commits abc..def" → Review a specific commit range
+  - "Use the adv-review agent to review --pr 42" → Review a GitHub pull request's diff (via gh)
+  - "Use the adv-review agent to review the whole repository with --full" → Full 4-phase review pipeline over a file manifest
   </examples>
-argument-hint: "[--commits hash..hash | --since hash | --full]"
+argument-hint: "[--commits hash..hash | --since hash | --full | --pr number]"
 model: sonnet
 effort: high
 allowed-tools: Bash, Read, Write, Glob, Grep, Agent
@@ -58,20 +59,21 @@ dispatch.sh returns classified exit codes and a JSON status line:
 - `3` — quota exhausted (`error_type: "quota"`)
 - `4` — timeout (`error_type: "timeout"`)
 - `5` — empty/invalid response (`error_type: "empty_response"`)
+- `6` — model not found (`error_type: "model_not_found"`)
 - `1` — general error (`error_type: "general"`)
 
-Failed dispatches write a `DISPATCH_ERROR:` marker to the output file (includes engine, exit_code, error_type, model).
+The status line also carries `model_used` (the model that answered) and `tokens_in` / `tokens_out`. Failed dispatches write a `DISPATCH_ERROR:` marker to the output file (includes engine, exit_code, error_type, model).
 
 ## Phase 0 — Preflight
 
 Run a single preflight script that handles dependency checks, engine health checks, and scope resolution:
 
 ### 0.1 Parse arguments
-Parse `$ARGUMENTS` for `--commits <range>`, `--since <ref>`, or `--full`. Default: smart scope (uncommitted changes > last commit > full repo).
+Parse `$ARGUMENTS` for `--commits <range>`, `--since <ref>`, `--full`, or `--pr <number|url>`. Default: smart scope (uncommitted changes > last commit > full repo).
 
 ### 0.2 Run preflight
 ```bash
-PREFLIGHT_JSON=$(bash "$PREFLIGHT" [--commits <range> | --since <ref> | --full])
+PREFLIGHT_JSON=$(bash "$PREFLIGHT" [--commits <range> | --since <ref> | --full | --pr <number|url>])
 ```
 
 This single call:
@@ -84,15 +86,18 @@ This single call:
 
 Parse the JSON output to extract:
 - **Engine availability**: `engines.codex.available`, `engines.gemini.available`
-- **Gemini model**: `engines.gemini.model` (`engine_default`, or the fallback model such as `gemini-3-flash-preview` when the health check had to fall back)
-- **Scope type**: `scope.type` (`working`, `commits`, or `full`)
+- **Gemini model**: `engines.gemini.model` (empty when the CLI picks its own model, or the fallback model such as `gemini-3-flash-preview` when the health check had to fall back)
+- **Scope type**: `scope.type` (`working`, `commits`, `full`, or `pr`)
 - **Scope content file**: `scope.content_file`
+- **Codex review scope**: `scope.codex_review` — a sentence naming the git scope, set for every local diff scope. With it, the Codex reviewers run `codex review` (Codex's review mode) and read the changes from the repository themselves. Empty for `full` and `pr`.
+- **Pull request**: `scope.pr` (`{number, baseRefName, headRefName, headRefOid, url}`, or null)
 
 Set availability flags:
 ```
 CODEX_AVAILABLE = engines.codex.available
 GEMINI_AVAILABLE = engines.gemini.available
 GEMINI_MODEL = engines.gemini.model
+CODEX_REVIEW_SCOPE = scope.codex_review  (only if CODEX_AVAILABLE; otherwise empty)
 CLAUDE_AVAILABLE = true  (always)
 ```
 
@@ -130,7 +135,10 @@ For each of the 5 reviewers:
    - **working**: `This is a unified diff of uncommitted working tree changes. Review these changes specifically.`
    - **commits**: `This is a unified diff of recent changes. Review these changes specifically.`
    - **full**: `This is a file manifest of the full repository. You have filesystem access to read any file. Focus on the most critical files.`
+   - **pr**: `This is the unified diff of pull request #<number> (<headRefName> into <baseRefName>), fetched from GitHub. Review these changes specifically. The files on disk are the current checkout, not the pull request's branch.`
 3. Use the **Write tool** to write the prepared prompt to `$TMP/prompt-<name>.md`
+
+Write all five prompts with the diff even when `CODEX_REVIEW_SCOPE` is set: run-phase builds the Codex review prompts itself from the templates, and uses your prompt for the Claude fallback.
 
 ### 1.3 Dispatch external reviewers (4 in parallel)
 
@@ -140,10 +148,11 @@ Build the assignments string from the engine decisions and dispatch all 4 extern
 REVIEW_JSON=$(bash "$RUN_PHASE" --phase review \
   --assignments "quality:$QUALITY_ENGINE,implementation:$IMPL_ENGINE,testing:$TESTING_ENGINE,documentation:$DOCS_ENGINE" \
   --prompt-dir "$TMP" --output-dir "$TMP" --timeout 300 \
-  ${GEMINI_MODEL:+--gemini-model "$GEMINI_MODEL"})
+  ${GEMINI_MODEL:+--gemini-model "$GEMINI_MODEL"} \
+  ${CODEX_REVIEW_SCOPE:+--codex-review "$CODEX_REVIEW_SCOPE"})
 ```
 
-Parse the JSON output to get success count, per-reviewer status, and fallback info.
+Parse the JSON output to get the success count and, per reviewer, `engine`, `status`, `fallback_used`, `model_used`, `tokens_in` and `tokens_out`; `tokens.in` / `tokens.out` are the phase totals. Keep the models and token totals for the report.
 
 ### 1.4 Dispatch Claude simplification reviewer (via Agent tool)
 
@@ -201,7 +210,7 @@ For each round N (1 to 3):
      --prompt-dir "$TMP" --output-dir "$TMP" --timeout 300 \
      ${GEMINI_MODEL:+--gemini-model "$GEMINI_MODEL"})
    ```
-7. Parse the JSON output. Check verdict counts.
+7. Parse the JSON output. Check verdict counts, and add `tokens.in` / `tokens.out` and each engine's `model_used` to the running totals.
 
 **Circuit breaker**: If a round produces zero new disputes AND zero new findings (`verdicts.dispute == 0 && verdicts.new_findings == 0`), stop early.
 Report: "Cross-examination converged after N rounds."
@@ -224,6 +233,7 @@ You are the synthesizer. Use the **Read tool** to read all findings and cross-ex
 5. **Rank**: 🔴 first, then 🟡, then 🟣. Within tier, rank by agreement count.
 6. **Fix plan**: Group by file. Each item: `[ ] Line N: <description> (severity)`
 7. **Engine health**: Note any unavailable engines and fallbacks used.
+8. **Models**: In the review metadata, name the model each engine ran (`model_used` from the run-phase results, which can differ per reviewer when Gemini fell back) and the token totals.
 
 Use the **Write tool** to write the final review to the output file using the format from `$PROMPTS/synthesize.md`.
 
@@ -239,6 +249,8 @@ Output a concise summary to the conversation:
 - 🟣 Pre-existing: N
 - Reviewers: N/5 succeeded
 - Engines: Codex ✓|✗, Gemini ✓|✗, Claude ✓ (fallbacks: N)
+- Models: codex <model_used>, gemini <model_used>, claude <model_used>
+- Tokens: ~N in / ~N out across the engine calls (Codex's review mode reports none)
 - Cross-examination: N rounds (converged/max)
 - Duration: ~Ns
 
@@ -268,10 +280,12 @@ Use the **Write tool** to create `.claude/reviews/findings-<timestamp>.json` (sa
 ```json
 {
   "timestamp": "<ISO-8601>",
-  "scope": {"type": "<working|commits|full>", "range": "<if applicable>", "files_changed": N},
-  "engines": {"codex": true|false, "gemini": true|false, "gemini_model": "<model>"},
+  "scope": {"type": "<working|commits|full|pr>", "range": "<if applicable>", "files_changed": N, "pr": <scope.pr or null>},
+  "engines": {"codex": true|false, "gemini": true|false, "gemini_model": "<model>", "codex_review_mode": true|false},
+  "models": {"codex": "<model_used>", "gemini": "<model_used>", "claude": "<model_used>"},
+  "tokens": {"in": N, "out": N},
   "reviewers": {
-    "quality": {"engine": "<engine>", "status": "success|failed", "fallback_used": false},
+    "quality": {"engine": "<engine>", "status": "success|failed", "fallback_used": false, "model_used": "<model>"},
     ...
   },
   "cross_examination": {"rounds": N, "converged": true|false},

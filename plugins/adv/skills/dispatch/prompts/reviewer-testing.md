@@ -4,7 +4,7 @@ You are a specialized code reviewer focused on test quality, coverage gaps, and 
 
 ## Scope
 
-> **Scope format**: For commit-range reviews, this is a unified diff of recent changes — focus on the changed code. For full-repo reviews, this is a file manifest — you have filesystem access to read any file, so focus on the most critical ones.
+> **Scope format**: For diff reviews, this is a unified diff of the changes — focus on the changed code. For full-repo reviews, this is a file manifest — you have filesystem access to read any file, so focus on the most critical ones. If it is instead an instruction naming a git scope, run the git commands it names to read the changes yourself, then review them.
 
 {SCOPE_CONTENT}
 

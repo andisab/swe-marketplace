@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "A curated Claude Code plugin marketplace for everyday software engineering: slide decks, knowledge bases and diagrams, cross-model code review, multi-agent research, plugin authoring, and specialist agents.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "plugins": [
     {
       "name": "adv",
       "source": "./plugins/adv",
       "description": "Adversarial multi-model code review and model dispatch. Orchestrates Claude, Codex CLI, and Gemini CLI for cross-examined code review with 5 specialized reviewers.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",

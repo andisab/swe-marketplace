@@ -204,7 +204,7 @@ Most plugins are instructions for Claude and need nothing else on your machine. 
 
 | Plugin | Needs | Optional |
 |---|---|---|
-| `adv` | [Codex CLI](https://github.com/openai/codex) and [Gemini CLI](https://github.com/google-gemini/gemini-cli), signed in | — |
+| `adv` | [Codex CLI](https://github.com/openai/codex), signed in with a ChatGPT plan or an OpenAI API key, and [Gemini CLI](https://github.com/google-gemini/gemini-cli) with a Gemini API key from a project that has billing enabled (the free tier can't finish a review). The key can come from `GOOGLE_API_KEY`, `GEMINI_API_KEY` or 1Password through `~/.env`. The [adv README](./plugins/adv/README.md#setup) walks through sign-in, the key lookup and a health check. | `gh` for reviewing a pull request by number. |
 | `knowledgeware` | Node.js for slide builds and registry scripts (the draw.io MCP server runs through `npx`) | LibreOffice and poppler for PowerPoint previews, and a browser MCP server (Playwright or Claude in Chrome) for visual checks. The [knowledgeware README](./plugins/knowledgeware/README.md#requirements) has the details. |
 
 ## Catalog
@@ -224,7 +224,7 @@ Both work, and both change: adv depends on the Codex and Gemini CLIs, whose flag
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`adv`](./plugins/adv/) | 0.3.0 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
+| [`adv`](./plugins/adv/) | 0.4.0 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
 | [`context-engineering`](./plugins/context-engineering/) | 1.1.1 | The plugin for building other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
 
 ### Agent packs
@@ -396,7 +396,7 @@ Open an [issue](https://github.com/andisab/swe-marketplace/issues). For a bug, i
 
 **A skill or agent doesn't start when you ask.** Open `/plugin` and check the **Installed** tab to confirm the plugin is installed and enabled. If you installed it from a shell or in another session, run `/reload-plugins`. Two skills start only when you name them, the knowledgebase skill (*"use the knowledgebase skill to …"*) and research-team's coordinator (*"use research-team to research …"*). For the others, naming the skill or agent in your request is the most reliable way to start it.
 
-**adv's review comes back from Claude alone.** adv falls back to Claude when Codex CLI or Gemini CLI is missing, signed out or out of quota. Install and sign in to both, then run the dependency check in the [adv README](./plugins/adv/README.md#requirements).
+**adv's review comes back from Claude alone.** adv falls back to Claude when Codex CLI or Gemini CLI is missing, signed out or out of quota, and its setup line names the reason (`auth`, `quota`, `timeout`, `model_not_found`). The usual causes are an expired `codex login`, a Gemini key that didn't reach the CLI (no variable set, or 1Password locked), and a free-tier Gemini key whose daily quota is gone. The [adv README](./plugins/adv/README.md#when-an-engine-fails) has a table of every failure class with its fix, and the health-check commands that show the reason in a second.
 
 **A plugin installed but didn't load.** Open the **Errors** tab in `/plugin` for the reason, then look it up in Anthropic's [plugin troubleshooting guide](https://code.claude.com/docs/en/plugins/troubleshooting).
 
