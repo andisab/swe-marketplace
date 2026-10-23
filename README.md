@@ -180,7 +180,7 @@ Most plugins are instructions for Claude and need nothing else on your machine. 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`adv`](./plugins/adv/) | 0.2.0 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
+| [`adv`](./plugins/adv/) | 0.2.1 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
 | [`context-engineering`](./plugins/context-engineering/) | 1.1.1 | The plugin for building other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
 | [`research-team`](./plugins/research-team/) | 1.2.4 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, optionally formatted for Joplin. | 2 agents · 2 skills |
 | [`knowledgeware`](./plugins/knowledgeware/) | 1.8.1 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |

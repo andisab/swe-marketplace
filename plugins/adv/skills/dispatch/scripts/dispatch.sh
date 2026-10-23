@@ -115,6 +115,14 @@ check_deps() {
     ok=false
   fi
 
+  # Times each call, and stops stuck ones when GNU timeout is absent
+  if command -v python3 &>/dev/null; then
+    echo "OK: $(python3 --version 2>&1)"
+  else
+    echo "MISSING: python3 — Install via 'brew install python'"
+    ok=false
+  fi
+
   # Check Gemini google_search extension
   if command -v gemini &>/dev/null; then
     if gemini extensions list 2>/dev/null | grep -qi "google.search\|google_search"; then
@@ -205,7 +213,9 @@ mkdir -p "$LOG_DIR"
 # --- Utilities ---
 get_ms() { python3 -c 'import time; print(int(time.time()*1000))'; }
 
-# Portable timeout: use GNU timeout/gtimeout if available, else run directly
+# Portable timeout: GNU timeout/gtimeout if available, else a python3 watchdog
+# (macOS ships neither). Both exit 124 on timeout and signal the engine's whole
+# process group, so a child the CLI started can't keep the output pipe open.
 TIMEOUT_CMD=""
 if command -v timeout &>/dev/null; then
   TIMEOUT_CMD="timeout"
@@ -218,7 +228,31 @@ run_with_timeout() {
   if [[ -n "$TIMEOUT_CMD" ]]; then
     "$TIMEOUT_CMD" "$secs" "$@"
   else
-    "$@"
+    python3 -c '
+import os, signal, subprocess, sys
+child = subprocess.Popen(sys.argv[2:], start_new_session=True)
+def stop(sig):
+    try:
+        os.killpg(child.pid, sig)
+    except ProcessLookupError:
+        pass
+def forward(sig, _frame):
+    stop(sig)
+    sys.exit(128 + sig)
+for s in (signal.SIGHUP, signal.SIGINT, signal.SIGTERM):
+    signal.signal(s, forward)
+try:
+    rc = child.wait(timeout=float(sys.argv[1]))
+except subprocess.TimeoutExpired:
+    stop(signal.SIGTERM)
+    try:
+        child.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        pass
+    stop(signal.SIGKILL)
+    sys.exit(124)
+sys.exit(128 - rc if rc < 0 else rc)
+' "$secs" "$@"
   fi
 }
 
@@ -299,7 +333,7 @@ dispatch_gemini() {
     local tmp_args
     tmp_args="$(mktemp)"
     printf '%s\0' "${gemini_args[@]}" > "$tmp_args"
-    op run --env-file="$HOME/.env" -- bash -c \
+    run_with_timeout "$TIMEOUT" op run --env-file="$HOME/.env" -- bash -c \
       'export GOOGLE_API_KEY="${GOOGLE_API_KEY:-${GEMINI_API_KEY:-}}"; mapfile -d "" args < "$1"; exec gemini "${args[@]}"' \
       _ "$tmp_args" 2>>"$LOG_DIR/dispatch.log"
     local op_exit=$?
@@ -327,7 +361,9 @@ END_MS=$(get_ms)
 DURATION_MS=$(( END_MS - START_MS ))
 
 # --- Classify failures ---
-if [[ $EXIT_CODE -ne 0 ]]; then
+if [[ $EXIT_CODE -eq 124 ]]; then
+  EXIT_CODE=4  # run_with_timeout stopped the engine
+elif [[ $EXIT_CODE -ne 0 ]]; then
   # Try to classify the specific error type
   classify_error || EXIT_CODE=$?
 fi
@@ -339,6 +375,20 @@ if [[ $EXIT_CODE -eq 0 ]]; then
     EXIT_CODE=5
     VALIDATED=false
   fi
+fi
+
+# --- Status ---
+SUCCESS=true
+ERROR_TYPE="none"
+if [[ $EXIT_CODE -ne 0 ]]; then
+  SUCCESS=false
+  case $EXIT_CODE in
+    2) ERROR_TYPE="auth" ;;
+    3) ERROR_TYPE="quota" ;;
+    4) ERROR_TYPE="timeout" ;;
+    5) ERROR_TYPE="empty_response" ;;
+    *) ERROR_TYPE="general" ;;
+  esac
 fi
 
 # --- Write output ---
@@ -353,19 +403,6 @@ if [[ -n "$OUTPUT_FILE" ]]; then
 fi
 
 # --- Status line ---
-SUCCESS=true
-ERROR_TYPE="none"
-if [[ $EXIT_CODE -ne 0 ]]; then
-  SUCCESS=false
-  case $EXIT_CODE in
-    2) ERROR_TYPE="auth" ;;
-    3) ERROR_TYPE="quota" ;;
-    4) ERROR_TYPE="timeout" ;;
-    5) ERROR_TYPE="empty_response" ;;
-    *) ERROR_TYPE="general" ;;
-  esac
-fi
-
 jq -nc \
   --arg engine "$ENGINE" \
   --argjson success "$SUCCESS" \

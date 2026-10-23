@@ -8,16 +8,13 @@ adv calls two other command-line tools, so install and sign in to both before yo
 
 - **Codex CLI.** Install it with `npm install -g @openai/codex`, then run `codex login`.
 - **Gemini CLI.** Install it with `npm install -g @google/gemini-cli`, then sign in with its own login or set `GOOGLE_API_KEY` or `GEMINI_API_KEY` in your environment.
-- **jq, git and python3.** The scripts parse JSON with jq, read the diff with git, and time each call with python3. A review stops at the start if jq is missing or if you aren't inside a git repository.
+- **jq, git and python3.** The scripts parse JSON with jq and read the diff with git. They use python3 to time each engine call and to stop one that runs longer than 300 seconds. A review stops at the start if jq is missing or if you aren't inside a git repository.
 
 If Codex or Gemini is missing or fails its health check, the reviewers assigned to it run on Claude instead. The review still finishes, but with fewer independent opinions, and with neither CLI available all five reviewers run on Claude.
 
-Two optional extras change how the plugin behaves:
+Gemini's `google_search` extension is optional. `/adv:adv-gemini-research` uses it to ground answers in Google Search, and without it the command still runs, but without search grounding.
 
-- **GNU `timeout`.** The scripts stop a stuck engine call after 300 seconds only when `timeout` or `gtimeout` is on your `PATH`. macOS doesn't include either, so install `gtimeout` with `brew install coreutils`.
-- **Gemini's `google_search` extension.** `/adv:adv-gemini-research` uses it to ground answers in Google Search. Without it, the command still runs, but without search grounding.
-
-Once the plugin is installed, check your setup from a terminal. Replace `<version>` with the version that `claude plugin list` shows for adv, such as `0.2.0`:
+Once the plugin is installed, check your setup from a terminal. Replace `<version>` with the version that `claude plugin list` shows for adv, such as `0.2.1`:
 
 ```bash
 bash ~/.claude/plugins/cache/swe-marketplace/adv/<version>/skills/dispatch/scripts/dispatch.sh --check-deps
@@ -97,7 +94,7 @@ The answer comes back in the conversation. Nothing is written to `.claude/review
 
 **How many model calls does one review make?** With both CLIs available, a review makes one health-check call to each engine, four reviewer calls split between Codex and Gemini, and up to six cross-examination calls, two per round for at most three rounds. The simplification reviewer, any Claude fallbacks and the synthesis run on Claude.
 
-**How long does a review take?** It depends on the size of the diff and on how quickly each engine answers, and the summary at the end reports the duration of that run. Each engine call has a 300-second limit when GNU `timeout` is installed (see [Requirements](#requirements)).
+**How long does a review take?** It depends on the size of the diff and on how quickly each engine answers, and the summary at the end reports the duration of that run. adv stops any engine call that runs longer than 300 seconds and counts it as a failure, so that reviewer falls back to Claude.
 
 **The review stopped with "Only N/5 reviewers succeeded".** adv needs at least two of the five reviewers to finish before it cross-examines anything. The temporary folder stays in place after this error, so read `.claude/reviews/.tmp/dispatch.log` for the reason each engine failed, then run the dependency check above.
 

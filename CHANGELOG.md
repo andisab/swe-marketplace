@@ -11,6 +11,11 @@ arch 1.0.1 · context-engineering 1.1.1 · data 1.0.1 · databases 1.0.1 · dev 
 - **Fixed:** 49 of 54 agents listed tools Claude Code doesn't have, so most of them had no Edit tool (only whole-file Write) and none could reach Context7. `MultiEdit` is now `Edit`; `Context7` is `mcp__context7__*` plus the plugin-installed form `mcp__plugin_context7_context7__*`; `LS`, `Find` and `FD` are `Glob`; `Docker` and `Git` are `Bash`; `Task` is `Agent`. `infrastructure:security-auditor` also gains `Read`.
 - **context-engineering:** the agent-dev and hook-dev skills and the tool-restriction patterns no longer teach `MultiEdit`, `TodoRead` or `NotebookRead`, so new agents don't inherit the problem.
 
+### adv 0.2.1
+
+- **Fixed:** a failed engine call crashed `dispatch.sh` before it wrote its error marker, because the marker used `ERROR_TYPE` before the script set it. `run-phase.sh` then counted that reviewer as successful, so the Gemini quota retry and the Claude fallback never ran, and the review lost that reviewer's findings.
+- **Fixed:** engine calls stop after 300 seconds on macOS too. The limit used to depend on GNU `timeout`, which macOS doesn't ship, so a stuck Codex or Gemini call could hang the review. Without `timeout` or `gtimeout`, a python3 watchdog now stops the engine and every process it started, and the call fails with `error_type: timeout`. Gemini calls made through 1Password's `op run` get the same limit, and `--check-deps` now checks for python3.
+
 ### knowledgeware 1.8.1
 
 - **Fixed:** HTML decks' title, section, big-number and quote slides now center vertically as their layouts intend. Reveal's inline `display: block` had overridden the layouts' flexbox since 1.1.0, so every slide sat at the top. The presenter view's previews match.
