@@ -109,3 +109,6 @@ plugins/knowledgeware/skills/slideware/pptx/assets/samples/*/node_modules
 
 # Playwright MCP output (screenshots, snapshots)
 .playwright-mcp/
+
+# adv review reports (plugins/adv writes them here when its agent runs in this repo)
+.claude/reviews/
