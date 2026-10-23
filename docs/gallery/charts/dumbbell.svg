@@ -1,0 +1,79 @@
+<svg viewBox="0 0 480 360" width="480" height="360" xmlns="http://www.w3.org/2000/svg" class="cw-db" role="img" aria-labelledby="db-t db-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="db-t">p95 latency before and after the edge cache (ms)</title>
+  <desc id="db-d">Dumbbell chart. Every service's p95 fell, checkout the most, from 840 ms to 310 ms; notifications from 240 to 95.</desc>
+  <style>
+    .cw-db { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-db { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-db { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-db .grid{stroke:var(--cw-grid)}.cw-db .tick{fill:var(--cw-muted);font-size:11px}.cw-db .cat{fill:var(--cw-ink);font-size:12px}.cw-db .val{fill:var(--cw-muted);font-size:11px;font-variant-numeric:tabular-nums}.cw-db .lgd{fill:var(--cw-ink);font-size:11px}
+    .cw-db .bar{stroke:var(--cw-grid);stroke-width:2;stroke-linecap:round}.cw-db .before{fill:var(--cw-c2)}.cw-db .after{fill:var(--cw-c1)}.cw-db .dot{stroke:var(--cw-bg);stroke-width:1.5}
+  </style>
+  <g><circle class="before" cx="298" cy="16" r="5"/><text class="lgd" x="308" y="16" dy="0.32em">before</text><circle class="after" cx="378" cy="16" r="5"/><text class="lgd" x="388" y="16" dy="0.32em">after</text></g>
+  <g transform="translate(120,40)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="0" x2="0" y2="272"/>
+      <line class="grid" x1="82" y1="0" x2="82" y2="272"/>
+      <line class="grid" x1="164" y1="0" x2="164" y2="272"/>
+      <line class="grid" x1="246" y1="0" x2="246" y2="272"/>
+      <line class="grid" x1="328" y1="0" x2="328" y2="272"/>
+    </g>
+    <g text-anchor="middle">
+      <text class="tick" x="0" y="280" dy="0.71em">0</text>
+      <text class="tick" x="82" y="280" dy="0.71em">250</text>
+      <text class="tick" x="164" y="280" dy="0.71em">500</text>
+      <text class="tick" x="246" y="280" dy="0.71em">750</text>
+      <text class="tick" x="328" y="280" dy="0.71em">1,000</text>
+    </g>
+    <g>
+      <line class="bar" x1="101.7" y1="17" x2="275.5" y2="17"/>
+      <circle class="dot before" cx="275.5" cy="17" r="5.5"><title>checkout before — 840 ms</title></circle>
+      <circle class="dot after" cx="101.7" cy="17" r="5.5"><title>checkout after — 310 ms</title></circle>
+      <text class="val" x="285.5" y="17" dy="0.32em">840</text>
+      <text class="val" x="91.7" y="17" dy="0.32em" text-anchor="end">310</text>
+      <text class="cat" x="-10" y="17" dy="0.32em" text-anchor="end">checkout</text>
+      <line class="bar" x1="95.1" y1="51" x2="203.4" y2="51"/>
+      <circle class="dot before" cx="203.4" cy="51" r="5.5"><title>search before — 620 ms</title></circle>
+      <circle class="dot after" cx="95.1" cy="51" r="5.5"><title>search after — 290 ms</title></circle>
+      <text class="val" x="213.4" y="51" dy="0.32em">620</text>
+      <text class="val" x="85.1" y="51" dy="0.32em" text-anchor="end">290</text>
+      <text class="cat" x="-10" y="51" dy="0.32em" text-anchor="end">search</text>
+      <line class="bar" x1="85.3" y1="85" x2="147.6" y2="85"/>
+      <circle class="dot before" cx="147.6" cy="85" r="5.5"><title>catalog before — 450 ms</title></circle>
+      <circle class="dot after" cx="85.3" cy="85" r="5.5"><title>catalog after — 260 ms</title></circle>
+      <text class="val" x="157.6" y="85" dy="0.32em">450</text>
+      <text class="val" x="75.3" y="85" dy="0.32em" text-anchor="end">260</text>
+      <text class="cat" x="-10" y="85" dy="0.32em" text-anchor="end">catalog</text>
+      <line class="bar" x1="68.9" y1="119" x2="141.0" y2="119"/>
+      <circle class="dot before" cx="141.0" cy="119" r="5.5"><title>recommendations before — 430 ms</title></circle>
+      <circle class="dot after" cx="68.9" cy="119" r="5.5"><title>recommendations after — 210 ms</title></circle>
+      <text class="val" x="151.0" y="119" dy="0.32em">430</text>
+      <text class="val" x="58.9" y="119" dy="0.32em" text-anchor="end">210</text>
+      <text class="cat" x="-10" y="119" dy="0.32em" text-anchor="end">recommendations</text>
+      <line class="bar" x1="59.0" y1="153" x2="127.9" y2="153"/>
+      <circle class="dot before" cx="127.9" cy="153" r="5.5"><title>auth before — 390 ms</title></circle>
+      <circle class="dot after" cx="59.0" cy="153" r="5.5"><title>auth after — 180 ms</title></circle>
+      <text class="val" x="137.9" y="153" dy="0.32em">390</text>
+      <text class="val" x="49.0" y="153" dy="0.32em" text-anchor="end">180</text>
+      <text class="cat" x="-10" y="153" dy="0.32em" text-anchor="end">auth</text>
+      <line class="bar" x1="55.8" y1="187" x2="101.7" y2="187"/>
+      <circle class="dot before" cx="101.7" cy="187" r="5.5"><title>profile before — 310 ms</title></circle>
+      <circle class="dot after" cx="55.8" cy="187" r="5.5"><title>profile after — 170 ms</title></circle>
+      <text class="val" x="111.7" y="187" dy="0.32em">310</text>
+      <text class="val" x="45.8" y="187" dy="0.32em" text-anchor="end">170</text>
+      <text class="cat" x="-10" y="187" dy="0.32em" text-anchor="end">profile</text>
+      <line class="bar" x1="49.2" y1="221" x2="91.8" y2="221"/>
+      <circle class="dot before" cx="91.8" cy="221" r="5.5"><title>cart before — 280 ms</title></circle>
+      <circle class="dot after" cx="49.2" cy="221" r="5.5"><title>cart after — 150 ms</title></circle>
+      <text class="val" x="101.8" y="221" dy="0.32em">280</text>
+      <text class="val" x="39.2" y="221" dy="0.32em" text-anchor="end">150</text>
+      <text class="cat" x="-10" y="221" dy="0.32em" text-anchor="end">cart</text>
+      <line class="bar" x1="31.2" y1="255" x2="78.7" y2="255"/>
+      <circle class="dot before" cx="78.7" cy="255" r="5.5"><title>notifications before — 240 ms</title></circle>
+      <circle class="dot after" cx="31.2" cy="255" r="5.5"><title>notifications after — 95 ms</title></circle>
+      <text class="val" x="88.7" y="255" dy="0.32em">240</text>
+      <text class="val" x="21.2" y="255" dy="0.32em" text-anchor="end">95</text>
+      <text class="cat" x="-10" y="255" dy="0.32em" text-anchor="end">notifications</text>
+    </g>
+  </g>
+</svg>

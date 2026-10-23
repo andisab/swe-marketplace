@@ -5,7 +5,7 @@ The sources behind the images in `docs/images/`, so the gallery can be rebuilt a
 | Image | Built from |
 |---|---|
 | `styles.jpg` | `styles-sheet.html`: the five styles' own `css/<name>.css` and marks, light and dark, in iframes |
-| `charts.jpg` | `charts-sheet.html`: nine of chartware's SVG templates as they ship |
+| `charts.jpg`, `diagram.jpg` | `charts-sheet.html` over `charts/*.svg`, richer variants of nine templates written by `make-charts.py`; the sheet links `styles/style-4/css/style-4.css` and inlines the SVGs, so their token blocks pick up Warm Sage. `?only=diagram-flow` renders the diagram alone |
 | `decks.jpg` | `decks-sheet.html` over slides from three HTML decks built with slideware from `deck-style-{1,3,5}.slides.js` |
 | `presenter.jpg` | `presenter-sheet.html`: the style-1 deck's slide 2 and its presenter view (`index.html?presenter#/1`) |
 | `knowledgebase.jpg` | `kb-sheet.html` over `kb-upgrade.html` (the template's palette) and `kb-incident.html` (a dark palette set through the template's CSS variables) |

@@ -1,0 +1,48 @@
+<svg viewBox="0 0 480 400" width="480" height="400" xmlns="http://www.w3.org/2000/svg" class="cw-sl" role="img" aria-labelledby="sl-t sl-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="sl-t">Traffic share by channel, 2025 vs 2026 (%)</title>
+  <desc id="sl-d">Slopegraph. Organic search grew from 34% to 38% and social from 7% to 11%; direct, paid search, referral, email and display fell; partners rose one point.</desc>
+  <style>
+    .cw-sl { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-sl { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-sl { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-sl .col{stroke:var(--cw-grid)}.cw-sl .hdr{fill:var(--cw-muted);font-size:11px;letter-spacing:.06em}.cw-sl .lbl{fill:var(--cw-ink);font-size:12px;font-variant-numeric:tabular-nums}
+    .cw-sl .line{fill:none;stroke-width:2;stroke-linecap:round}.cw-sl .up{stroke:var(--cw-c1)}.cw-sl .down{stroke:var(--cw-c2)}.cw-sl .flat{stroke:var(--cw-grid)}.cw-sl .dot{stroke:var(--cw-bg);stroke-width:1.5}.cw-sl .dot.up{fill:var(--cw-c1)}.cw-sl .dot.down{fill:var(--cw-c2)}.cw-sl .dot.flat{fill:var(--cw-grid)}
+  </style>
+  <g text-anchor="middle"><text class="hdr" x="170" y="28">2025</text><text class="hdr" x="310" y="28">2026</text></g>
+  <g shape-rendering="crispEdges"><line class="col" x1="170" y1="44" x2="170" y2="360"/><line class="col" x1="310" y1="44" x2="310" y2="360"/></g>
+  <g>
+    <line class="line up" x1="170" y1="91.4" x2="310" y2="59.8"><title>Organic search: 34% → 38%</title></line>
+    <circle class="dot up" cx="170" cy="91.4" r="4"/><circle class="dot up" cx="310" cy="59.8" r="4"/>
+    <text class="lbl" x="158" y="91.4" dy="0.32em" text-anchor="end">Organic search 34</text>
+    <text class="lbl" x="322" y="59.8" dy="0.32em">38 Organic search</text>
+    <line class="line down" x1="170" y1="186.2" x2="310" y2="209.9"><title>Direct: 22% → 19%</title></line>
+    <circle class="dot down" cx="170" cy="186.2" r="4"/><circle class="dot down" cx="310" cy="209.9" r="4"/>
+    <text class="lbl" x="158" y="186.2" dy="0.32em" text-anchor="end">Direct 22</text>
+    <text class="lbl" x="322" y="209.9" dy="0.32em">19 Direct</text>
+    <line class="line down" x1="170" y1="249.4" x2="310" y2="273.1"><title>Paid search: 14% → 11%</title></line>
+    <circle class="dot down" cx="170" cy="249.4" r="4"/><circle class="dot down" cx="310" cy="273.1" r="4"/>
+    <text class="lbl" x="158" y="249.4" dy="0.32em" text-anchor="end">Paid search 14</text>
+    <text class="lbl" x="322" y="273.1" dy="0.32em">11 Paid search</text>
+    <line class="line down" x1="170" y1="288.9" x2="310" y2="296.8"><title>Referral: 9% → 8%</title></line>
+    <circle class="dot down" cx="170" cy="288.9" r="4"/><circle class="dot down" cx="310" cy="296.8" r="4"/>
+    <text class="lbl" x="158" y="288.9" dy="0.32em" text-anchor="end">Referral 9</text>
+    <text class="lbl" x="322" y="301.1" dy="0.32em">8 Referral</text>
+    <line class="line up" x1="170" y1="304.7" x2="310" y2="273.1"><title>Social: 7% → 11%</title></line>
+    <circle class="dot up" cx="170" cy="304.7" r="4"/><circle class="dot up" cx="310" cy="273.1" r="4"/>
+    <text class="lbl" x="158" y="304.7" dy="0.32em" text-anchor="end">Social 7</text>
+    <text class="lbl" x="322" y="287.1" dy="0.32em">11 Social</text>
+    <line class="line down" x1="170" y1="312.6" x2="310" y2="320.5"><title>Email: 6% → 5%</title></line>
+    <circle class="dot down" cx="170" cy="312.6" r="4"/><circle class="dot down" cx="310" cy="320.5" r="4"/>
+    <text class="lbl" x="158" y="318.7" dy="0.32em" text-anchor="end">Email 6</text>
+    <text class="lbl" x="322" y="329.1" dy="0.32em">5 Email</text>
+    <line class="line up" x1="170" y1="320.5" x2="310" y2="312.6"><title>Partners: 5% → 6%</title></line>
+    <circle class="dot up" cx="170" cy="320.5" r="4"/><circle class="dot up" cx="310" cy="312.6" r="4"/>
+    <text class="lbl" x="158" y="332.7" dy="0.32em" text-anchor="end">Partners 5</text>
+    <text class="lbl" x="322" y="315.1" dy="0.32em">6 Partners</text>
+    <line class="line down" x1="170" y1="336.3" x2="310" y2="344.2"><title>Display: 3% → 2%</title></line>
+    <circle class="dot down" cx="170" cy="336.3" r="4"/><circle class="dot down" cx="310" cy="344.2" r="4"/>
+    <text class="lbl" x="158" y="346.7" dy="0.32em" text-anchor="end">Display 3</text>
+    <text class="lbl" x="322" y="344.2" dy="0.32em">2 Display</text>
+  </g>
+</svg>

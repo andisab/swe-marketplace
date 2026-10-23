@@ -1,0 +1,75 @@
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg" class="cw-wf" role="img" aria-labelledby="wf-t wf-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="wf-t">Operating profit bridge, FY25 to FY26 ($M)</title>
+  <desc id="wf-d">Waterfall. Profit went from $128M to $130M: volume +22, price +9, new markets +14 and one-offs +5 against mix −6, churn −17, costs −21 and FX −4.</desc>
+  <style>
+    .cw-wf { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-wf { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-wf { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-wf .grid{stroke:var(--cw-grid);stroke-width:1}.cw-wf .zero{stroke:var(--cw-axis)}.cw-wf .tick,.cw-wf .cat{fill:var(--cw-muted);font-size:11px}.cw-wf .val{fill:var(--cw-ink);font-size:11px;font-variant-numeric:tabular-nums}
+    .cw-wf .total{fill:var(--cw-c2)}.cw-wf .up{fill:var(--cw-c1)}.cw-wf .down{fill:var(--cw-neg)}.cw-wf .link{stroke:var(--cw-axis);stroke-width:1;stroke-dasharray:3 3}
+  </style>
+  <g transform="translate(52,32)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="270.0" x2="644" y2="270.0"/>
+      <line class="grid" x1="0" y1="216.0" x2="644" y2="216.0"/>
+      <line class="grid" x1="0" y1="162.0" x2="644" y2="162.0"/>
+      <line class="grid" x1="0" y1="108.0" x2="644" y2="108.0"/>
+      <line class="grid" x1="0" y1="54.0" x2="644" y2="54.0"/>
+      <line class="grid" x1="0" y1="0.0" x2="644" y2="0.0"/>
+      <line class="zero" x1="0" y1="324" x2="644" y2="324"/>
+    </g>
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="324.0" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="270.0" dy="0.32em">30</text>
+      <text class="tick" x="-8" y="216.0" dy="0.32em">60</text>
+      <text class="tick" x="-8" y="162.0" dy="0.32em">90</text>
+      <text class="tick" x="-8" y="108.0" dy="0.32em">120</text>
+      <text class="tick" x="-8" y="54.0" dy="0.32em">150</text>
+      <text class="tick" x="-8" y="0.0" dy="0.32em">180</text>
+    </g>
+    <g>
+      <rect class="bar total" x="12.2" y="93.6" width="39.9" height="230.4"><title>FY25: 128</title></rect>
+      <text class="val" x="32.2" y="87.6" text-anchor="middle">128</text>
+      <line class="link" x1="52.2" y1="93.6" x2="76.6" y2="93.6"/>
+      <rect class="bar up" x="76.6" y="54.0" width="39.9" height="39.6"><title>Volume: 22</title></rect>
+      <text class="val" x="96.6" y="48.0" text-anchor="middle">+22</text>
+      <line class="link" x1="116.6" y1="54.0" x2="141.0" y2="54.0"/>
+      <rect class="bar up" x="141.0" y="37.8" width="39.9" height="16.2"><title>Price: 9</title></rect>
+      <text class="val" x="161.0" y="31.8" text-anchor="middle">+9</text>
+      <line class="link" x1="181.0" y1="37.8" x2="205.4" y2="37.8"/>
+      <rect class="bar down" x="205.4" y="37.8" width="39.9" height="10.8"><title>Mix: -6</title></rect>
+      <text class="val" x="225.4" y="31.8" text-anchor="middle">−6</text>
+      <line class="link" x1="245.4" y1="48.6" x2="269.8" y2="48.6"/>
+      <rect class="bar down" x="269.8" y="48.6" width="39.9" height="30.6"><title>Churn: -17</title></rect>
+      <text class="val" x="289.8" y="42.6" text-anchor="middle">−17</text>
+      <line class="link" x1="309.8" y1="79.2" x2="334.2" y2="79.2"/>
+      <rect class="bar up" x="334.2" y="54.0" width="39.9" height="25.2"><title>New markets: 14</title></rect>
+      <text class="val" x="354.2" y="48.0" text-anchor="middle">+14</text>
+      <line class="link" x1="374.2" y1="54.0" x2="398.6" y2="54.0"/>
+      <rect class="bar down" x="398.6" y="54.0" width="39.9" height="37.8"><title>Costs: -21</title></rect>
+      <text class="val" x="418.6" y="48.0" text-anchor="middle">−21</text>
+      <line class="link" x1="438.6" y1="91.8" x2="463.0" y2="91.8"/>
+      <rect class="bar down" x="463.0" y="91.8" width="39.9" height="7.2"><title>FX: -4</title></rect>
+      <text class="val" x="483.0" y="85.8" text-anchor="middle">−4</text>
+      <line class="link" x1="503.0" y1="99.0" x2="527.4" y2="99.0"/>
+      <rect class="bar up" x="527.4" y="90.0" width="39.9" height="9.0"><title>One-offs: 5</title></rect>
+      <text class="val" x="547.4" y="84.0" text-anchor="middle">+5</text>
+      <line class="link" x1="567.4" y1="90.0" x2="591.8" y2="90.0"/>
+      <rect class="bar total" x="591.8" y="90.0" width="39.9" height="234.0"><title>FY26: 130</title></rect>
+      <text class="val" x="611.8" y="84.0" text-anchor="middle">130</text>
+    </g>
+    <g text-anchor="middle">
+      <text class="cat" x="32.2" y="332" dy="0.71em">FY25</text>
+      <text class="cat" x="96.6" y="332" dy="0.71em">Volume</text>
+      <text class="cat" x="161.0" y="332" dy="0.71em">Price</text>
+      <text class="cat" x="225.4" y="332" dy="0.71em">Mix</text>
+      <text class="cat" x="289.8" y="332" dy="0.71em">Churn</text>
+      <text class="cat" x="354.2" y="332" dy="0.71em">New markets</text>
+      <text class="cat" x="418.6" y="332" dy="0.71em">Costs</text>
+      <text class="cat" x="483.0" y="332" dy="0.71em">FX</text>
+      <text class="cat" x="547.4" y="332" dy="0.71em">One-offs</text>
+      <text class="cat" x="611.8" y="332" dy="0.71em">FY26</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,47 @@
+<svg viewBox="0 0 720 420" width="720" height="420" xmlns="http://www.w3.org/2000/svg" class="cw-sk" role="img" aria-labelledby="sk-t sk-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="sk-t">Visitors by source and outcome (% of sessions)</title>
+  <desc id="sk-d">Sankey diagram. Organic brings 34% of sessions and converts best; social brings 12% and bounces most. 24% sign up, 18% start a trial, 38% browse and 20% bounce.</desc>
+  <style>
+    .cw-sk { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-sk { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-sk { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-sk .node{fill:var(--cw-muted)}.cw-sk .node-out{fill:var(--cw-ink)}.cw-sk .flow{fill:var(--cw-c1);fill-opacity:.35}.cw-sk .flow.lost{fill:var(--cw-c2);fill-opacity:.3}.cw-sk:hover .flow{fill-opacity:.15}.cw-sk .flow:hover{fill-opacity:.6}
+    .cw-sk .lbl{fill:var(--cw-ink);font-size:12px}.cw-sk .val{fill:var(--cw-muted);font-size:11px;font-variant-numeric:tabular-nums}
+  </style>
+  <g transform="translate(0,32)">
+    <g>
+      <path class="flow" d="M150,0.0 C360,0.0 360,0.0 570,0.0 L570,38.4 C360,38.4 360,37.0 150,37.0 Z"><title>Organic → Signed up: 12%</title></path>
+      <path class="flow" d="M150,37.0 C360,37.0 360,88.8 570,88.8 L570,114.4 C360,114.4 360,61.6 150,61.6 Z"><title>Organic → Trial: 8%</title></path>
+      <path class="flow" d="M150,61.6 C360,61.6 360,158.4 570,158.4 L570,193.6 C360,193.6 360,95.5 150,95.5 Z"><title>Organic → Browsed: 11%</title></path>
+      <path class="flow lost" d="M150,95.5 C360,95.5 360,292.0 570,292.0 L570,301.6 C360,301.6 360,104.7 150,104.7 Z"><title>Organic → Bounced: 3%</title></path>
+      <path class="flow" d="M150,116.7 C360,116.7 360,38.4 570,38.4 L570,57.6 C360,57.6 360,135.2 150,135.2 Z"><title>Direct → Signed up: 6%</title></path>
+      <path class="flow" d="M150,135.2 C360,135.2 360,114.4 570,114.4 L570,127.2 C360,127.2 360,147.5 150,147.5 Z"><title>Direct → Trial: 4%</title></path>
+      <path class="flow" d="M150,147.5 C360,147.5 360,193.6 570,193.6 L570,222.4 C360,222.4 360,175.2 150,175.2 Z"><title>Direct → Browsed: 9%</title></path>
+      <path class="flow lost" d="M150,175.2 C360,175.2 360,301.6 570,301.6 L570,311.2 C360,311.2 360,184.5 150,184.5 Z"><title>Direct → Bounced: 3%</title></path>
+      <path class="flow" d="M150,196.5 C360,196.5 360,57.6 570,57.6 L570,67.2 C360,67.2 360,205.7 150,205.7 Z"><title>Paid → Signed up: 3%</title></path>
+      <path class="flow" d="M150,205.7 C360,205.7 360,127.2 570,127.2 L570,136.8 C360,136.8 360,215.0 150,215.0 Z"><title>Paid → Trial: 3%</title></path>
+      <path class="flow" d="M150,215.0 C360,215.0 360,222.4 570,222.4 L570,244.8 C360,244.8 360,236.5 150,236.5 Z"><title>Paid → Browsed: 7%</title></path>
+      <path class="flow lost" d="M150,236.5 C360,236.5 360,311.2 570,311.2 L570,327.2 C360,327.2 360,251.9 150,251.9 Z"><title>Paid → Bounced: 5%</title></path>
+      <path class="flow" d="M150,263.9 C360,263.9 360,67.2 570,67.2 L570,73.6 C360,73.6 360,270.1 150,270.1 Z"><title>Referral → Signed up: 2%</title></path>
+      <path class="flow" d="M150,270.1 C360,270.1 360,136.8 570,136.8 L570,143.2 C360,143.2 360,276.2 150,276.2 Z"><title>Referral → Trial: 2%</title></path>
+      <path class="flow" d="M150,276.2 C360,276.2 360,244.8 570,244.8 L570,264.0 C360,264.0 360,294.7 150,294.7 Z"><title>Referral → Browsed: 6%</title></path>
+      <path class="flow lost" d="M150,294.7 C360,294.7 360,327.2 570,327.2 L570,340.0 C360,340.0 360,307.0 150,307.0 Z"><title>Referral → Bounced: 4%</title></path>
+      <path class="flow" d="M150,319.0 C360,319.0 360,73.6 570,73.6 L570,76.8 C360,76.8 360,322.1 150,322.1 Z"><title>Social → Signed up: 1%</title></path>
+      <path class="flow" d="M150,322.1 C360,322.1 360,143.2 570,143.2 L570,146.4 C360,146.4 360,325.2 150,325.2 Z"><title>Social → Trial: 1%</title></path>
+      <path class="flow" d="M150,325.2 C360,325.2 360,264.0 570,264.0 L570,280.0 C360,280.0 360,340.6 150,340.6 Z"><title>Social → Browsed: 5%</title></path>
+      <path class="flow lost" d="M150,340.6 C360,340.6 360,340.0 570,340.0 L570,356.0 C360,356.0 360,356.0 150,356.0 Z"><title>Social → Bounced: 5%</title></path>
+    </g>
+    <g>
+      <rect class="node" x="136" y="0.0" width="14" height="104.7"/><text class="lbl" x="126" y="52.4" dy="0.32em" text-anchor="end">Organic <tspan class="val">34%</tspan></text>
+      <rect class="node" x="136" y="116.7" width="14" height="67.8"/><text class="lbl" x="126" y="150.6" dy="0.32em" text-anchor="end">Direct <tspan class="val">22%</tspan></text>
+      <rect class="node" x="136" y="196.5" width="14" height="55.4"/><text class="lbl" x="126" y="224.2" dy="0.32em" text-anchor="end">Paid <tspan class="val">18%</tspan></text>
+      <rect class="node" x="136" y="263.9" width="14" height="43.1"/><text class="lbl" x="126" y="285.5" dy="0.32em" text-anchor="end">Referral <tspan class="val">14%</tspan></text>
+      <rect class="node" x="136" y="319.0" width="14" height="37.0"/><text class="lbl" x="126" y="337.5" dy="0.32em" text-anchor="end">Social <tspan class="val">12%</tspan></text>
+      <rect class="node node-out" x="570" y="0.0" width="14" height="76.8"/><text class="lbl" x="594" y="38.4" dy="0.32em">Signed up <tspan class="val">24%</tspan></text>
+      <rect class="node node-out" x="570" y="88.8" width="14" height="57.6"/><text class="lbl" x="594" y="117.6" dy="0.32em">Trial <tspan class="val">18%</tspan></text>
+      <rect class="node node-out" x="570" y="158.4" width="14" height="121.6"/><text class="lbl" x="594" y="219.2" dy="0.32em">Browsed <tspan class="val">38%</tspan></text>
+      <rect class="node node-out" x="570" y="292.0" width="14" height="64.0"/><text class="lbl" x="594" y="324.0" dy="0.32em">Bounced <tspan class="val">20%</tspan></text>
+    </g>
+  </g>
+</svg>

@@ -64,9 +64,13 @@ A style or brand is one folder: a brandbook in Markdown that states the palette,
 
 ### chartware: charts and diagrams in three media
 
-![Nine SVG chart templates from grouped bars to a Sankey diagram](docs/images/charts.jpg)
+![Eight SVG charts in the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey](docs/images/charts.jpg)
 
-*Nine of chartware's thirteen SVG templates: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell, Sankey and a flow diagram.*
+*Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
+
+![An architecture diagram in the Warm Sage style with nine nodes, two groups and icons from the sprite](docs/images/diagram.jpg)
+
+*A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
 
 chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, hand-authored SVG for data charts and figures that must be exact, and draw.io through its bundled MCP server for diagrams someone will keep editing. The SVG templates carry their scale math in comments and read the page's theme tokens, so a chart inlined in a knowledgebase page turns dark with the page. A geometry lint checks a diagram's routing, labels and clipping before anything is rendered, and an existing draw.io, Mermaid or Excalidraw diagram can be redrawn in any medium with a ledger of what was kept, renamed or dropped.
 
