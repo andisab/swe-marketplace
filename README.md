@@ -32,26 +32,43 @@ To install one, run this in Claude Code (v2.1.275 or later), with any plugin nam
 
 ## What knowledgeware makes
 
-<table>
-<tr>
-<td width="33%"><a href="docs/images/decks.jpg"><img src="docs/images/decks.jpg" alt="Six slides from three HTML decks in three built-in styles: a card row and a two-column slide in Editorial Light, a heatmap and a bullet slide in Dark Precision, a card row and a big-number slide in Material Olive"></a></td>
-<td width="33%"><a href="docs/images/presenter.jpg"><img src="docs/images/presenter.jpg" alt="A deck slide beside its presenter view: the current slide with previous and next, the session timer and per-slide pacing, and the formatted speaker notes"></a></td>
-<td width="33%"><a href="docs/images/knowledgebase.jpg"><img src="docs/images/knowledgebase.jpg" alt="Two knowledge-base pages: a PostgreSQL upgrade runbook with a fleet table, a trap callout and a sequence diagram, and a dark incident review with a timeline table, a flowchart and callouts"></a></td>
-</tr>
-<tr>
-<td><b>Decks</b> as PowerPoint or self-contained HTML, in a built-in style or your brand, with charts on the slides.</td>
-<td><b>Presenter view</b> for HTML decks: notes, pacing timer, previous and next slides.</td>
-<td><b>Knowledge-base sites</b> with navigation, diagrams, callouts and dated verification stamps.</td>
-</tr>
-<tr>
-<td colspan="2"><a href="docs/images/styles.jpg"><img src="docs/images/styles.jpg" alt="The five built-in styles, light and dark: Editorial Light, Minimal, Dark Precision, Warm Sage and Material Olive, each with its mark, palette swatches and a sample card"></a></td>
-<td><a href="docs/images/charts.jpg"><img src="docs/images/charts.jpg" alt="Nine SVG chart templates: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell, Sankey and a flow diagram"></a></td>
-</tr>
-<tr>
-<td colspan="2"><b>Five built-in styles</b>, each with a light and a dark palette, a mark and a stylesheet, shared by decks, sites and charts. Your own brand drops in beside them.</td>
-<td><b>Charts and diagrams</b> as hand-drawn SVG from thirteen templates, Mermaid, or editable draw.io files.</td>
-</tr>
-</table>
+### slideware: decks in PowerPoint or HTML
+
+![Six slides from three HTML decks in three built-in styles](docs/images/decks.jpg)
+
+*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+
+slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
+
+![A deck slide beside its presenter view with notes and pacing](docs/images/presenter.jpg)
+
+*The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted notes.*
+
+Press S in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
+
+### knowledgebase: sites for the material a team reads repeatedly
+
+![Two knowledge-base pages: an upgrade runbook and a dark incident review](docs/images/knowledgebase.jpg)
+
+*Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
+
+knowledgebase builds multi-page HTML sites for runbooks, field guides and incident reviews. A page is one HTML file with sidebar navigation, an on-page table of contents, callouts for traps and tips, Mermaid diagrams, tables, and a dated "last verified" stamp under any fact that goes stale. The dark page is the same template with its CSS variables set from another style, and nothing else changed. The plugin's librarian agent reads those stamps and re-verifies what's due.
+
+### brandware: the registry the other skills read
+
+![The five built-in styles in light and dark with marks, swatches and a sample card](docs/images/styles.jpg)
+
+*The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
+
+A style or brand is one folder: a brandbook in Markdown that states the palette, type and layout rules, a derived token file, the marks and logos, and a stylesheet. The five styles ship with the plugin, each with a light and a dark palette. A brand of your own goes in a directory you point the plugin at, so it survives plugin updates and shadows a built-in style of the same name, and a `.knowledgeware` file in a repository pins the brand for that project. Decks, sites and charts then share one identity without being told twice.
+
+### chartware: charts and diagrams in three media
+
+![Nine SVG chart templates from grouped bars to a Sankey diagram](docs/images/charts.jpg)
+
+*Nine of chartware's thirteen SVG templates: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell, Sankey and a flow diagram.*
+
+chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, hand-authored SVG for data charts and figures that must be exact, and draw.io through its bundled MCP server for diagrams someone will keep editing. The SVG templates carry their scale math in comments and read the page's theme tokens, so a chart inlined in a knowledgebase page turns dark with the page. A geometry lint checks a diagram's routing, labels and clipping before anything is rendered, and an existing draw.io, Mermaid or Excalidraw diagram can be redrawn in any medium with a ledger of what was kept, renamed or dropped.
 
 ## Install
 
