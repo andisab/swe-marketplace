@@ -4,14 +4,22 @@ knowledgeware makes slide decks, multi-page HTML knowledge bases, and diagrams a
 
 <table>
 <tr>
-<td width="33%"><a href="../../docs/images/decks.jpg"><img src="../../docs/images/decks.jpg" alt="Four slides from the sample PowerPoint decks: a statistics slide, a dark three-card slide, a dark metrics table and a five-step process flow"></a></td>
-<td width="33%"><a href="../../docs/images/presenter.jpg"><img src="../../docs/images/presenter.jpg" alt="Presenter view of an HTML deck: previous, current and next slides across the top, formatted speaker notes below, and a session timer in the header"></a></td>
-<td width="33%"><a href="../../docs/images/knowledgebase.jpg"><img src="../../docs/images/knowledgebase.jpg" alt="A knowledge-base page with sidebar navigation, an on-page table of contents, a table with a Last verified stamp, and a Mermaid decision diagram"></a></td>
+<td width="33%"><a href="../../docs/images/decks.jpg"><img src="../../docs/images/decks.jpg" alt="Six slides from three HTML decks in three built-in styles: a card row and a two-column slide in Editorial Light, a heatmap and a bullet slide in Dark Precision, a card row and a big-number slide in Material Olive"></a></td>
+<td width="33%"><a href="../../docs/images/presenter.jpg"><img src="../../docs/images/presenter.jpg" alt="A deck slide beside its presenter view: the current slide with previous and next, the session timer and per-slide pacing, and the formatted speaker notes"></a></td>
+<td width="33%"><a href="../../docs/images/knowledgebase.jpg"><img src="../../docs/images/knowledgebase.jpg" alt="Two knowledge-base pages: a PostgreSQL upgrade runbook with a fleet table, a trap callout and a sequence diagram, and a dark incident review with a timeline table, a flowchart and callouts"></a></td>
 </tr>
 <tr>
-<td><b>PowerPoint decks</b> (slideware)</td>
-<td><b>HTML decks with a presenter view</b> (slideware)</td>
-<td><b>Knowledge-base sites</b> (knowledgebase)</td>
+<td><b>Decks</b> as PowerPoint or self-contained HTML, in a built-in style or your brand, with charts on the slides.</td>
+<td><b>Presenter view</b> for HTML decks: notes, pacing timer, previous and next slides.</td>
+<td><b>Knowledge-base sites</b> with navigation, diagrams, callouts and dated verification stamps.</td>
+</tr>
+<tr>
+<td colspan="2"><a href="../../docs/images/styles.jpg"><img src="../../docs/images/styles.jpg" alt="The five built-in styles, light and dark: Editorial Light, Minimal, Dark Precision, Warm Sage and Material Olive, each with its mark, palette swatches and a sample card"></a></td>
+<td><a href="../../docs/images/charts.jpg"><img src="../../docs/images/charts.jpg" alt="Nine SVG chart templates: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell, Sankey and a flow diagram"></a></td>
+</tr>
+<tr>
+<td colspan="2"><b>Five built-in styles</b>, each with a light and a dark palette, a mark and a stylesheet, shared by decks, sites and charts. Your own brand drops in beside them.</td>
+<td><b>Charts and diagrams</b> as hand-drawn SVG from thirteen templates, Mermaid, or editable draw.io files.</td>
 </tr>
 </table>
 

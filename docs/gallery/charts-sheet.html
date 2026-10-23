@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>charts</title>
+<style>
+  body { margin:0; background:#E4E2DC; }
+  .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; width: 1600px; box-sizing: border-box; }
+  .p { background:#fff; border-radius:6px; padding:12px; display:flex; align-items:center; justify-content:center; min-height: 300px; }
+  .p img { width:100%; height:auto; display:block; }
+</style></head><body><div class="grid" id="g"></div>
+<script>
+for (const f of ["bar-grouped","line-area","donut","waterfall","heatmap","slopegraph","dumbbell","sankey","diagram-flow"]) {
+  const d = document.createElement("div"); d.className = "p"; const i = document.createElement("img"); i.src = "/charts/" + f + ".svg"; d.appendChild(i); document.getElementById("g").appendChild(d);
+}
+</script></body></html>
