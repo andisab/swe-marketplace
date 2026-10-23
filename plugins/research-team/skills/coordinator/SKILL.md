@@ -10,8 +10,8 @@ description: >
   Activate ONLY when the user explicitly invokes this plugin — for example:
   "use research-team", "run the research-team coordinator", "research X with the
   research-team plugin", "research-team: research X", or when the user requests
-  research that specifically needs Joplin-formatted output via this plugin's
-  report-writer.
+  research with a report formatted for a particular editor (Markdown, Obsidian
+  or Joplin) via this plugin's report-writer.
 
   Do NOT activate for generic research requests. A separate user-global
   multi-agent-research skill (if installed) handles unqualified "research X"
@@ -39,7 +39,7 @@ Claude Code agents are always spawned as *sub*agents. An agent that itself needs
 ## Available tools in this workflow
 
 - **Task**: Spawn `research-team:research-specialist` and `research-team:research-report-writer` subagents. Primary tool. Always use the fully-qualified plugin-namespaced form for `subagent_type` — bare names fail to resolve across plugin boundaries.
-- **Bash(mkdir:*)**: Run exactly ONE command per run to create this run's notes folder and the reports folder: `mkdir -p ~/Documents/Claude/Research/research_notes/<run-id> ~/Documents/Claude/Research/reports`. Idempotent. Do not issue any other Bash call — your scope only permits `mkdir`.
+- **Bash(mkdir:*)**: Run exactly ONE command per run to create this run's notes folder and the reports folder: `mkdir -p <base>/research_notes/<run-id> <base>/reports`, where `<base>` is `~/Documents/Claude/Research` unless the user named another folder (see STEP 0). Idempotent. Do not issue any other Bash call — your scope only permits `mkdir`.
 - **Glob**: Primary verification tool — confirm that researchers' claimed output paths and the report-writer's output actually exist on disk. Also used once in STEP 0 to pick an unused run id.
 - **Read**: Escape hatch only — for diagnosing a malformed output manifest. Do NOT read research notes and summarize them yourself; that violates the delegation rule.
 
@@ -47,6 +47,7 @@ Claude Code agents are always spawned as *sub*agents. An agent that itself needs
 
 **STEP 0: CREATE THIS RUN'S FOLDERS**
 Every run keeps its notes in a folder of its own, so the report-writer never reads notes left by an earlier run on another topic.
+0. Pick the base folder. It is `~/Documents/Claude/Research` unless the request names a folder to save into (e.g., "save it in ~/Obsidian/Research" or "into my vault at ~/Notes"); then that folder is the base, and the notes and the report go under it. Use the base wherever the steps below say `~/Documents/Claude/Research`.
 1. Pick a run id: `<topic-slug>_<YYYYMMDD>`, where `topic-slug` is a short kebab-case name for the user's topic (e.g., `vector-database-pricing`) and the date is today's (e.g., `vector-database-pricing_20261022`).
 2. Run `Glob(pattern="~/Documents/Claude/Research/research_notes/<run-id>*/*.md")` once. If it lists notes inside `<run-id>/`, an earlier run used that id, so append `-2` (or `-3`, and so on) until you have an id whose folder holds no notes.
 3. Create the folders with exactly one call:
@@ -89,7 +90,7 @@ Every run keeps its notes in a folder of its own, so the report-writer never rea
 - Include in the prompt:
   - Instruction to read ALL research notes in this run's folder, `~/Documents/Claude/Research/research_notes/<run-id>/`, and no other folder.
   - The exact report path (see Task tool usage below).
-  - If the user mentioned Joplin, tell the report-writer to load the `joplin-research` skill for formatting.
+  - The format profile: `obsidian` when the request mentions Obsidian or a vault, `joplin` when it mentions Joplin, otherwise `markdown`. The report-writer loads the `report-formats` skill for every report.
   - Requirement to end its response with a fenced `output-manifest` block.
 
 **STEP 5: VERIFY AND CONFIRM COMPLETION**
@@ -127,7 +128,7 @@ For report-writer (`subagent_type: "research-team:research-report-writer"` — a
 - **prompt**: Must include:
   1. Instruction to Glob and Read all files in `~/Documents/Claude/Research/research_notes/<run-id>/` and nothing outside that folder.
   2. Target save path: `~/Documents/Claude/Research/reports/<topic-slug>_summary_<date>.md`, where `<date>` is the run id's date plus its suffix, if it has one (e.g., `20261022` or `20261022-2`).
-  3. If the user mentioned Joplin, instruction to load the `joplin-research` skill.
+  3. The format profile (`markdown`, `obsidian` or `joplin`) and, when the user asked for one, the report type (survey, decision brief, landscape scan, what's new, source summary).
   4. Requirement to end the response with an `output-manifest` block (`path:` + `bytes:`).
 
 ## Parallel spawning
@@ -148,7 +149,7 @@ BAD (sequential, one spawn per response):
 |---|---|
 | "Use research-team to research quantum computing" | hardware/qubits, algorithms/applications, industry players/investments, challenges/timeline |
 | "Research-team: competitive analysis of EV makers" | battery technology, major manufacturers, market share/trends, charging infrastructure |
-| "Run the research-team on Python web frameworks for Joplin" | Django (features/ecosystem), Flask (flexibility/use cases), FastAPI (performance/modern), selection criteria/comparison |
+| "Run the research-team on Python web frameworks, for my Obsidian vault" | Django (features/ecosystem), Flask (flexibility/use cases), FastAPI (performance/modern), selection criteria/comparison |
 
 ## Response style
 

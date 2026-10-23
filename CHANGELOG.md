@@ -32,7 +32,11 @@ Tested against Codex CLI 0.163.0 and Gemini CLI 0.65.0 (October 2026). Both CLIs
 - slideware and brandware stop with the plugin install line when they're copied out of the plugin on their own (as skills directories do), instead of failing on missing styles and scripts.
 - The canonical-samples reference maps each sample deck to its closest built-in style; it no longer calls an unshipped brandbook the default.
 
-### research-team 1.2.4
+### research-team 1.3.0
+
+- The `joplin-research` skill is replaced by `report-formats`. The old skill held one person's Joplin stylesheet rules (548 lines) and loaded for any request mentioning a "summary" or "research document", whether or not Joplin was involved. The new skill writes plain Markdown by default, which renders the same in VS Code, Cursor and GitHub, and applies an Obsidian profile (properties block, callouts) or a Joplin profile (`>[toc]`) when the request names the editor. A Joplin skill the user installs in `~/.claude/skills/` takes precedence.
+- Six report types with section lists: technical survey, technical rundown, decision brief, landscape scan, what's new, and source summary (article, paper, whitepaper or book). The writer picks the type from the findings, or the one the request asks for.
+- A folder named in the request ("save it in ~/Obsidian/Research") replaces `~/Documents/Claude/Research` as the base for that run's notes and report.
 
 - The coordinator skill stops with the plugin install line when its agents aren't available (installed on its own).
 - **Fixed:** the report writer read every note in `research_notes/`, so notes from earlier runs on other topics leaked into new reports. Each run now keeps its notes in a folder of its own, such as `research_notes/vector-database-pricing_20261022/`, and the writer reads only that folder. A second run on the same topic and day gets a `-2` folder and report name.

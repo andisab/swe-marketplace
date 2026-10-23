@@ -24,7 +24,7 @@ The multi-agent research pattern enables comprehensive investigation of complex 
 3. **Research Report Writer** (Synthesizer)
    - Reads all research notes
    - Creates comprehensive summary reports
-   - Applies formatting (Joplin skill when mentioned)
+   - Applies the format profile from the report-formats skill (Markdown, Obsidian or Joplin)
    - Tools: Glob, Read, Write, Skill
 
 ### Communication Pattern
@@ -154,13 +154,9 @@ Each subagent operates with its own context window:
 4. **WebSearch Dependency**: Limited to publicly available web information
 5. **Fixed Workflow**: Not suitable for iterative or exploratory research requiring user feedback
 
-## Integration with Joplin
+## Output formats
 
-When user mentions "Joplin":
-- Report writer activates `joplin-research` skill
-- Output format changes to markdown (.md extension)
-- Follows specific formatting guidelines (headings, spacing, citations)
-- Optimized for Joplin note-taking application
+The report-writer loads the `report-formats` skill for every report. Plain Markdown is the default; a request that mentions Obsidian or a vault gets the Obsidian profile (properties block, callouts), and one that mentions Joplin gets `>[toc]` for Joplin's table of contents. A folder named in the request replaces `~/Documents/Claude/Research`.
 
 ## Monitoring and Debugging
 

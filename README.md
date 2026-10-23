@@ -182,7 +182,7 @@ Most plugins are instructions for Claude and need nothing else on your machine. 
 |---|---|---|---|
 | [`adv`](./plugins/adv/) | 0.3.0 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
 | [`context-engineering`](./plugins/context-engineering/) | 1.1.1 | The plugin for building other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
-| [`research-team`](./plugins/research-team/) | 1.2.4 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, optionally formatted for Joplin. | 2 agents · 2 skills |
+| [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
 | [`knowledgeware`](./plugins/knowledgeware/) | 1.8.1 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
 | [`dev`](./plugins/dev/) | 1.0.1 | Specialists for 10 languages, FastAPI and Node.js, plus cross-language refactoring. | 13 agents |
 | [`frontend`](./plugins/frontend/) | 1.0.1 | React, Vue, Next.js, HTML and CSS specialists, plus a designer that turns mockups into specs. | 6 agents |
@@ -207,7 +207,7 @@ Claude loads a skill when your request matches the skill's description. You can 
 | `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
 | `knowledgeware:brandware` | The shared brand registry. It imports, derives or edits the brandbooks and logos that every deliverable uses. |
 | `research-team:coordinator` | Runs the research pipeline. It splits a topic into subtopics, researches them in parallel, then has the report written. |
-| `research-team:joplin-research` | Formatting rules for research notes saved to Joplin. |
+| `research-team:report-formats` | Format profiles (Markdown, Obsidian, Joplin) and six report types for the research reports. |
 | `context-engineering:agent-dev` | Designing subagents: frontmatter, system prompt, tool access, example-driven descriptions. |
 | `context-engineering:skill-dev` | Designing skills whose descriptions trigger at the right moments. |
 | `context-engineering:command-dev` | Slash commands: arguments, file references, bash, frontmatter. |

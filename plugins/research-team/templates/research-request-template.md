@@ -52,11 +52,11 @@ Research the AI chip market and major players
 ## With Formatting Preference
 
 ```
-Research neural architecture search for my Joplin notes
+Research neural architecture search for my Obsidian vault, save it in ~/Obsidian/Research
 ```
 
 **Special handling:**
-- Activates joplin-research skill
+- The writer uses the Obsidian profile of the report-formats skill (properties block, callouts)
 - Outputs markdown with proper formatting
 - Optimized for note-taking application
 
@@ -64,5 +64,5 @@ Research neural architecture search for my Joplin notes
 
 - Research requests can be any length from one sentence to detailed briefs
 - More specific requests lead to more targeted research
-- Mentioning "Joplin" ensures markdown formatting
+- Name Obsidian or Joplin for that editor's format; plain Markdown is the default. Name a folder to save somewhere other than ~/Documents/Claude/Research
 - The coordinator adapts to request complexity (2-5 subtopics)
