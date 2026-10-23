@@ -26,6 +26,7 @@ arch 1.0.1 · context-engineering 1.1.1 · data 1.0.1 · databases 1.0.1 · dev 
 ### research-team 1.2.4
 
 - The coordinator skill stops with the plugin install line when its agents aren't available (installed on its own).
+- **Fixed:** the report writer read every note in `research_notes/`, so notes from earlier runs on other topics leaked into new reports. Each run now keeps its notes in a folder of its own, such as `research_notes/vector-database-pricing_20261022/`, and the writer reads only that folder. A second run on the same topic and day gets a `-2` folder and report name.
 
 ### Marketplace
 

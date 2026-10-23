@@ -33,10 +33,10 @@ The multi-agent research pattern enables comprehensive investigation of complex 
 User Request
      ↓
 Lead Coordinator
-     ├──→ Researcher 1 (Subtopic A) ──→ research_notes/subtopic_a.md
-     ├──→ Researcher 2 (Subtopic B) ──→ research_notes/subtopic_b.md
-     ├──→ Researcher 3 (Subtopic C) ──→ research_notes/subtopic_c.md
-     └──→ Researcher 4 (Subtopic D) ──→ research_notes/subtopic_d.md
+     ├──→ Researcher 1 (Subtopic A) ──→ research_notes/<run-id>/subtopic_a.md
+     ├──→ Researcher 2 (Subtopic B) ──→ research_notes/<run-id>/subtopic_b.md
+     ├──→ Researcher 3 (Subtopic C) ──→ research_notes/<run-id>/subtopic_c.md
+     └──→ Researcher 4 (Subtopic D) ──→ research_notes/<run-id>/subtopic_d.md
            ↓ (all complete)
      Report Writer ──→ reports/final_report.txt
      ↓
@@ -71,8 +71,8 @@ The lead coordinator spawns all researchers **simultaneously**, not sequentially
 
 Agents communicate through files rather than direct message passing:
 
-1. **Research Phase**: Each researcher saves findings to `~/Documents/Claude/Research/research_notes/{subtopic}.md`
-2. **Synthesis Phase**: Report writer reads all files from `research_notes/` directory
+1. **Research Phase**: Each researcher saves findings to `~/Documents/Claude/Research/research_notes/{run-id}/{subtopic}.md`, in a folder the coordinator creates for this run
+2. **Synthesis Phase**: Report writer reads all files in this run's folder, `research_notes/{run-id}/`, and no other
 3. **Output Phase**: Final report saved to `~/Documents/Claude/Research/reports/{topic}_summary_YYYYMMDD.txt`
 
 ### Context Isolation
@@ -130,10 +130,10 @@ Each subagent operates with its own context window:
 4. **Researcher 4**: Charging infrastructure and grid impact
 
 ### Research Notes Output
-- `~/Documents/Claude/Research/research_notes/ev_battery_technology.md`
-- `~/Documents/Claude/Research/research_notes/ev_market_trends.md`
-- `~/Documents/Claude/Research/research_notes/ev_manufacturers.md`
-- `~/Documents/Claude/Research/research_notes/ev_infrastructure.md`
+- `~/Documents/Claude/Research/research_notes/electric-vehicles_20251117/ev_battery_technology.md`
+- `~/Documents/Claude/Research/research_notes/electric-vehicles_20251117/ev_market_trends.md`
+- `~/Documents/Claude/Research/research_notes/electric-vehicles_20251117/ev_manufacturers.md`
+- `~/Documents/Claude/Research/research_notes/electric-vehicles_20251117/ev_infrastructure.md`
 
 ### Final Report
 - `~/Documents/Claude/Research/reports/electric_vehicles_summary_20251117.txt`
@@ -177,7 +177,7 @@ When user mentions "Joplin":
 - **Poor synthesis**: Research notes were too sparse or lacked citations
 
 ### Debugging Tips
-- Check `~/Documents/Claude/Research/research_notes/` for all expected files
+- Check this run's folder under `~/Documents/Claude/Research/research_notes/` for all expected files
 - Verify each researcher actually used WebSearch (check for URLs in notes)
 - Confirm report writer read all files (should mention number of sources)
 - Review lead agent's subtopic breakdown for clarity and coverage

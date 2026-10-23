@@ -32,10 +32,10 @@ The coordinator starts only when you name the plugin in your request. Paste one 
 
 ## How it works
 
-1. **Split.** The coordinator picks two to five subtopics that don't overlap and gives each one a file name, such as `01_quantum-hardware.md`.
+1. **Split.** The coordinator creates a notes folder for this run, named after the topic and the date, such as `research_notes/quantum-computing_20261022/`. It picks two to five subtopics that don't overlap and gives each one a file name in that folder, such as `01_quantum-hardware.md`.
 2. **Research.** It starts one `research-specialist` agent per subtopic, all at the same time. Each researcher runs 3 to 7 web searches, keeps the 3 to 5 most authoritative sources, and saves a note of 3 to 4 paragraphs with the source URLs.
 3. **Check.** Each researcher ends its reply with a short `output-manifest` block that names the file it wrote. The coordinator confirms that every named file exists on disk, and it restarts a researcher once if its file is missing.
-4. **Write.** One `research-report-writer` agent reads the notes and writes the report. The coordinator confirms that the report exists, then gives you its path.
+4. **Write.** One `research-report-writer` agent reads the notes in this run's folder and writes the report. The coordinator confirms that the report exists, then gives you its path.
 
 The researchers run in parallel, so a run takes about as long as the slowest researcher plus the writer, not the sum of every researcher's time. A run starts up to six subagents on Sonnet (five researchers and the writer), and they count toward your usage like any other subagent work.
 
@@ -47,7 +47,7 @@ The coordinator is a skill rather than an agent because of how Claude Code runs 
 |---|---|---|---|
 | `coordinator` | Skill | Splits the topic, starts and checks the agents, and reports the path. | `Task` (the Agent tool's former name, still accepted), `Bash` limited to `mkdir`, `Glob`, `Read` |
 | `research-specialist` | Agent, Sonnet | Researches one subtopic through web search and saves a note. | `WebSearch`, `Write` |
-| `research-report-writer` | Agent, Sonnet | Reads all the notes and writes the report. | `Glob`, `Read`, `Write`, `Skill` |
+| `research-report-writer` | Agent, Sonnet | Reads this run's notes and writes the report. | `Glob`, `Read`, `Write`, `Skill` |
 | `joplin-research` | Skill | Formatting rules and templates for Joplin notes: technical surveys and rundowns, what's-new notes, and summaries of books, articles and whitepapers. | — |
 
 The `joplin-research` description asks Claude to load it whenever a prompt mentions Joplin, so it also formats Joplin notes outside a research run. The `patterns/` folder documents the orchestration design, and `templates/` holds sample research requests, notes and reports for anyone changing the plugin.
@@ -58,11 +58,11 @@ The researchers and the writer are agents, so research-team needs Claude Code or
 
 ## Questions and troubleshooting
 
-**Where do the notes and the report go?** Notes go to `~/Documents/Claude/Research/research_notes/`, and reports go to `~/Documents/Claude/Research/reports/`. The coordinator creates both folders on its first run. The paths are written into the coordinator skill and both agents, so to use another folder you have to change all three in your own copy of the plugin. Edits to the installed copy are replaced the next time the plugin updates.
+**Where do the notes and the report go?** Each run's notes go to a folder of their own under `~/Documents/Claude/Research/research_notes/`, such as `research_notes/vector-database-pricing_20261022/`, and reports go to `~/Documents/Claude/Research/reports/`. The coordinator creates the folders as it needs them. The paths are written into the coordinator skill and both agents, so to use another folder you have to change all three in your own copy of the plugin. Edits to the installed copy are replaced the next time the plugin updates.
 
 **Why didn't "research X" start a research run?** The coordinator starts only when you name the plugin, as in "use research-team to …" or "research-team: …". That way a question that one web search can answer doesn't start six agents.
 
-**The report mixes in a topic from an earlier run.** The writer reads every note in `research_notes/`, including notes left from earlier runs, and nothing deletes them. Move or delete the old notes before you start a new topic.
+**Can notes from an earlier run end up in a new report?** No. The writer reads only the current run's folder. A second run on the same topic on the same day gets a new folder whose name ends in `-2`, and its report name ends in `-2` too, so it doesn't replace the first report. Nothing deletes old notes, so clear out `research_notes/` when you no longer need them. Versions before 1.2.4 kept every run's notes in one folder and could mix topics.
 
 **What happens when a researcher fails?** The coordinator restarts each researcher whose note is missing, once. If a note is still missing after that, the coordinator doesn't start the writer. It tells you which subtopics failed and whether the researcher returned no manifest or named a file that isn't on disk. Run the request again to retry.
 

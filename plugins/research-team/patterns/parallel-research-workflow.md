@@ -36,7 +36,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 2. Execute 3-7 WebSearch queries on the subtopic
 3. Identify 3-5 most authoritative sources
 4. Extract key findings from search results
-5. Save concise summary (3-4 paragraphs) to `~/Documents/Claude/Research/research_notes/{subtopic}.md`
+5. Save concise summary (3-4 paragraphs) to `~/Documents/Claude/Research/research_notes/{run-id}/{subtopic}.md`
 6. Report completion
 
 **Example** (Researcher 1: Hardware/Qubits):
@@ -46,7 +46,7 @@ The parallel research workflow orchestrates multiple research agents working sim
   - "quantum error correction latest advances"
   - "quantum computing hardware companies"
 - Top sources: IBM Research, Nature Physics, Google Quantum AI
-- Output: `~/Documents/Claude/Research/research_notes/quantum_hardware_qubits.md`
+- Output: `~/Documents/Claude/Research/research_notes/quantum-computing_20251117/quantum_hardware_qubits.md`
 
 **Duration**: 2-5 minutes per researcher (all running simultaneously)
 
@@ -55,7 +55,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 **Responsible Agent**: Research Report Writer
 
 **Activities**:
-1. Use Glob to find all files in `~/Documents/Claude/Research/research_notes/`
+1. Use Glob to find all files in this run's folder, `~/Documents/Claude/Research/research_notes/{run-id}/`
 2. Read each research note file
 3. Check if "Joplin" was mentioned in original request
 4. If Joplin mentioned: Load joplin-research skill, output markdown
@@ -65,7 +65,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 8. Save report to `~/Documents/Claude/Research/reports/{topic}_summary_YYYYMMDD.txt` (or .md)
 
 **Example**:
-- Input: 4 research notes from `research_notes/`
+- Input: 4 research notes from `research_notes/quantum-computing_20251117/`
 - Processing: Combine findings, organize by theme
 - Output: `~/Documents/Claude/Research/reports/quantum_computing_summary_20251117.txt`
 
@@ -93,11 +93,12 @@ Research complete. Report saved to ~/Documents/Claude/Research/reports/quantum_c
 
 ```
 ~/Documents/Claude/Research/
-├── research_notes/           # Intermediate research findings
-│   ├── quantum_hardware_qubits.md
-│   ├── quantum_algorithms_apps.md
-│   ├── quantum_industry_investments.md
-│   └── quantum_challenges_timeline.md
+├── research_notes/           # Intermediate research findings, one folder per run
+│   └── quantum-computing_20251117/
+│       ├── quantum_hardware_qubits.md
+│       ├── quantum_algorithms_apps.md
+│       ├── quantum_industry_investments.md
+│       └── quantum_challenges_timeline.md
 └── reports/                  # Final synthesized reports
     └── quantum_computing_summary_20251117.txt
 ```
@@ -107,7 +108,7 @@ Research complete. Report saved to ~/Documents/Claude/Research/reports/quantum_c
 **Research Notes**:
 - Format: `{descriptive_subtopic_name}.md`
 - Example: `ev_battery_technology.md`
-- Location: `~/Documents/Claude/Research/research_notes/`
+- Location: `~/Documents/Claude/Research/research_notes/{run-id}/`, where the run id is `{topic-slug}_YYYYMMDD`, with `-2`, `-3` and so on added when an earlier run that day used the same id
 
 **Final Reports**:
 - Format: `{main_topic}_summary_YYYYMMDD.txt` (or `.md` for Joplin)
