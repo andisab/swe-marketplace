@@ -28,29 +28,17 @@ To install one, run this in Claude Code (v2.1.275 or later), with any plugin nam
 /plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-[Install](#install) shows what you'll see at each step, and covers older Claude Code versions, Claude Desktop, teams, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent.
+[Install](#install) shows what you'll see at each step, and covers older Claude Code versions, Claude Desktop, teams, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other nine are agent packs, a set of agent definitions each and nothing more.
 
 ## What knowledgeware makes
 
-### slideware: decks in PowerPoint or HTML
-
-![Six slides from three HTML decks in three built-in styles](docs/images/decks.jpg)
-
-*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
-
-slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
-
-![A deck slide beside its presenter view with notes and pacing](docs/images/presenter.jpg)
-
-*The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted notes.*
-
-Press S in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
+The sections below show one image per skill, in the order the [knowledgeware README](./plugins/knowledgeware/README.md) uses; that README also holds the five styles, the brands directory, the librarian and the troubleshooting notes.
 
 ### knowledgebase: sites for the material a team reads repeatedly
 
 ![Two knowledge-base pages: an upgrade runbook and a dark incident review](docs/images/knowledgebase.jpg)
 
-*Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
+  Figure 1. *Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
 
 knowledgebase builds multi-page HTML sites for runbooks, field guides and incident reviews. A page is one HTML file with sidebar navigation, an on-page table of contents, callouts for traps and tips, Mermaid diagrams, tables, and a dated "last verified" stamp under any fact that goes stale. The dark page is the same template with its CSS variables set from another style, and nothing else changed. The plugin's librarian agent reads those stamps and re-verifies what's due.
 
@@ -58,7 +46,7 @@ knowledgebase builds multi-page HTML sites for runbooks, field guides and incide
 
 ![The five built-in styles in light and dark with marks, swatches and a sample card](docs/images/styles.jpg)
 
-*The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
+  Figure 2. *The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
 
 A style or brand is one folder: a brandbook in Markdown that states the palette, type and layout rules, a derived token file, the marks and logos, and a stylesheet. The five styles ship with the plugin, each with a light and a dark palette. A brand of your own goes in a directory you point the plugin at, so it survives plugin updates and shadows a built-in style of the same name, and a `.knowledgeware` file in a repository pins the brand for that project. Decks, sites and charts then share one identity without being told twice.
 
@@ -66,13 +54,27 @@ A style or brand is one folder: a brandbook in Markdown that states the palette,
 
 ![Eight SVG charts in the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey](docs/images/charts.jpg)
 
-*Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
+  Figure 3. *Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
 
 ![An architecture diagram in the Warm Sage style with nine nodes, two groups and icons from the sprite](docs/images/diagram.jpg)
 
-*A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
+  Figure 4. *A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
 
 chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, hand-authored SVG for data charts and figures that must be exact, and draw.io through its bundled MCP server for diagrams someone will keep editing. The SVG templates carry their scale math in comments and read the page's theme tokens, so a chart inlined in a knowledgebase page turns dark with the page. A geometry lint checks a diagram's routing, labels and clipping before anything is rendered, and an existing draw.io, Mermaid or Excalidraw diagram can be redrawn in any medium with a ledger of what was kept, renamed or dropped.
+
+### slideware: decks in PowerPoint or HTML
+
+![Six slides from three HTML decks in three built-in styles](docs/images/decks.jpg)
+
+  Figure 5. *Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+
+slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
+
+![A deck slide beside its presenter view with notes and pacing](docs/images/presenter.jpg)
+
+  Figure 6. *The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
+
+Press "S" or "P" in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
 
 ## Install
 
@@ -207,12 +209,30 @@ Most plugins are instructions for Claude and need nothing else on your machine. 
 
 ## Catalog
 
+### Core plugins
+
+The two plugins I use daily and keep current. Both carry scripts, templates and tests of their own, and their versions move the most.
+
+| Plugin | Version | What it's for | Contents |
+|---|---|---|---|
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.9.0 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
+
+### Experimental plugins
+
+Both work, and both change: adv depends on the Codex and Gemini CLIs, whose flags and models change between months, and context-engineering teaches conventions that Anthropic's plugin and skill guides keep updating. Expect their interfaces to move between minor versions.
+
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
 | [`adv`](./plugins/adv/) | 0.3.0 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
 | [`context-engineering`](./plugins/context-engineering/) | 1.1.1 | The plugin for building other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
-| [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.9.0 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+
+### Agent packs
+
+One domain each, and nothing but agent definitions: no scripts, no MCP servers, nothing that runs on your machine beyond the agent's own tool calls. Install the pack for the stack you work in.
+
+| Plugin | Version | What it's for | Contents |
+|---|---|---|---|
 | [`dev`](./plugins/dev/) | 1.0.1 | Specialists for 10 languages, FastAPI and Node.js, plus cross-language refactoring. | 13 agents |
 | [`frontend`](./plugins/frontend/) | 1.0.1 | React, Vue, Next.js, HTML and CSS specialists, plus a designer that turns mockups into specs. | 6 agents |
 | [`infrastructure`](./plugins/infrastructure/) | 1.0.1 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
@@ -231,10 +251,10 @@ Claude loads a skill when your request matches the skill's description. You can 
 
 | Skill | What it does |
 |---|---|
-| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, session pacing and speaker notes. |
 | `knowledgeware:knowledgebase` | Multi-page, offline HTML knowledge bases (field guides, handbooks, runbooks, study guides), each with a maintenance page so it can be kept current. |
-| `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
 | `knowledgeware:brandware` | The shared brand registry. It imports, derives or edits the brandbooks and logos that every deliverable uses. |
+| `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
+| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, session pacing and speaker notes. |
 | `research-team:coordinator` | Runs the research pipeline. It splits a topic into subtopics, researches them in parallel, then has the report written. |
 | `research-team:report-formats` | Format profiles (Markdown, Obsidian, Joplin) and six report types for the research reports. |
 | `context-engineering:agent-dev` | Designing subagents: frontmatter, system prompt, tool access, example-driven descriptions. |
@@ -362,6 +382,10 @@ Skills directories copy a single skill folder. Some skills depend on files elsew
 
 Yes, with limits. The Desktop app's Code tab and Cowork run these plugins, while Desktop Chat and claude.ai run only skills and commands, as [What runs where](#what-runs-where) shows. Cloud sessions, including Claude Code on the web at claude.ai/code, don't load plugins you installed on your own machine.
 
+### What isn't here?
+
+Hooks, LSP servers, output styles and service connectors. For those, start with Anthropic's own marketplace, `claude-plugins-official`, which Claude Code adds for you; run `/plugin` to browse it. Before you add any other marketplace, check who publishes it: plugins can register hooks and MCP servers that run on your machine, so read what a plugin will run and review its permissions.
+
 ### Something doesn't work, or I'd like an agent added.
 
 Open an [issue](https://github.com/andisab/swe-marketplace/issues). For a bug, include the output of `claude --version`, the plugin and version from `claude plugin list`, what you asked Claude, and what happened.
@@ -382,24 +406,6 @@ Open an [issue](https://github.com/andisab/swe-marketplace/issues). For a bug, i
 - **Loads in the Agent SDK.** Every plugin ships its own `plugin.json` next to its catalog entry, so the Claude Agent SDK and `claude --plugin-dir` can load a plugin straight from a clone. When a marketplace ships only the catalog, those loaders don't register its skills, commands and hooks, and they don't report an error either.
 - **Validated in CI.** Every pull request and push to `main` runs `claude plugin validate` on the catalog and every plugin and fails on any error or warning, including the plugin-directory checks for README install lines and icons. CI also checks that the generated manifests match the catalog, and it rejects agents that name tools Claude Code doesn't have.
 - **Tested with evals.** I use skill-creator and my own eval harness to build and evaluate plugins, and most of the skills and plugins here have been through evals.
-
-## Other marketplaces
-
-This marketplace has no hooks, LSP servers or output styles, and one MCP server. If you need something it doesn't have, start with Anthropic's official marketplace, `claude-plugins-official`, which Claude Code adds for you; run `/plugin` to browse it. These community marketplaces are also worth a look:
-
-| Repository | Stars (Aug 2026) | Description |
-|---|---|---|
-| [claudemarketplaces.com](https://claudemarketplaces.com/) | ⭐ 20 | Indexes marketplaces. Thank you, Mert! ([Substack](https://mertbuilds.substack.com/), [Github](https://github.com/mertbuilds)) |
-| [wshobson/agents](https://github.com/wshobson/agents) | ⭐ 21,030 | **Arguably the OG.** 185 agents, 16 orchestrators, 153 skills, 100 commands in 80 plugins. Thank you, Seth! |
-| [EveryInc/every-marketplace](https://github.com/EveryInc/every-marketplace) | ⭐ 725 | Official Every-Env plugin marketplace. |
-| [jeremylongshore/claude-code-plugins-plus](https://github.com/jeremylongshore/claude-code-plugins-plus) | ⭐ 468 | 243 plugins, first 100% compliant with the Anthropic 2025 Skills schema. |
-| [ananddtyagi/claude-code-marketplace](https://github.com/ananddtyagi/claude-code-marketplace) | ⭐ 174 | Community-driven marketplace. |
-| [Dev-GOM/claude-code-marketplace](https://github.com/Dev-GOM/claude-code-marketplace) | ⭐ 23 | Productivity plugins with hooks, commands, and agents. |
-| [jmanhype/claude-code-plugin-marketplace](https://github.com/jmanhype/claude-code-plugin-marketplace) | ⭐ 5 | 19 multi-agent trading and GitHub automation plugins. |
-| [kivilaid/plugin-marketplace](https://github.com/kivilaid/plugin-marketplace) | ⭐ 2 | Showcase of every component type. |
-| [netresearch/claude-code-marketplace](https://github.com/netresearch/claude-code-marketplace) | ⭐ 3 | Curated skills by Netresearch DTT GmbH. |
-
-> **Safety note:** Check who publishes a marketplace before you add it. Plugins can register hooks and MCP servers that run on your machine, so read what a plugin will run and review its permissions.
 
 ## Contributing
 
