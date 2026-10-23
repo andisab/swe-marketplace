@@ -15,9 +15,9 @@ Both are driven by the same layered visual-design system of **styles** (generic)
 
 The skill is opinionated about visual quality (no plain-bullets-on-white) and ships with:
 
-- **5 default styles** at the plugin's `styles/` folder (style-1 through style-5) — generic, no brand references, marketplace-safe. See the **Default styles at a glance** section below for visual personalities.
+- **5 default styles** at the plugin's `styles/` folder (style-1 through style-5), one folder each with the brandbook, a generic mark and a stylesheet — no brand references, marketplace-safe. See the **Default styles at a glance** section below for visual personalities.
 - **A brand registry** — brandbooks + per-brand logo assets, managed by the sibling **brandware** skill and shared with the knowledgebase and chartware skills. Locations: the user's own `$KNOWLEDGEWARE_BRANDS_DIR` (preferred — survives plugin updates) and `styles/brands/` at the plugin root; user entries shadow plugin entries.
-- **Cached design tokens** next to every style and brandbook — `styles/tokens/*.json` and `styles/brands/tokens/*.json`. The loader uses these instead of parsing when fresh.
+- **Cached design tokens** next to every style and brandbook — `<name>/tokens.json` beside each `brand.md`. The loader uses these instead of parsing when fresh, and rebuilds them when the brandbook changes.
 - **Filesystem-driven discovery** — adding a style or brandbook is a single `.md` drop, no code edits. Run `node <plugin>/scripts/list-styles.js` to see the current set (use `--default` / `--brands` to filter).
 - **`polish-deck.py`** — XML-level pre-render checker (text overflow, vertical imbalance, off-grid alignment, edge encroachment, invalid-dimension shapes that break PowerPoint).
 - **`text-fit.js`** — per-font character-advance calibration for text-capacity estimates.
@@ -100,18 +100,19 @@ The skill auto-activates on words like "deck", "slides", "presentation", "pitch"
 
 The fastest path. Available names are discovered at runtime from the registry:
 
-- `styles/*.md` — 5 default styles (`style-1` through `style-5`)
-- `styles/brands/*.md` — brandbooks installed in the plugin (via brandware)
-- `$KNOWLEDGEWARE_BRANDS_DIR/*.md` — the user's own brands directory, if set (shadows the above)
+- `styles/<name>/brand.md` — 5 default styles (`style-1` through `style-5`)
+- `styles/brands/<name>/brand.md` — brandbooks installed in the plugin (via brandware)
+- `$KNOWLEDGEWARE_BRANDS_DIR/<name>/brand.md` — the user's own brands directory, if set (shadows the above)
+- the older flat `<name>.md` layout is still read
 
 List them with `node <plugin>/scripts/list-styles.js`.
 
 > *"Build me a 6-slide deck on our new code review policy. Use **style-3**."*
 > *"Match the **anthropic** brandbook."* *(if anthropic is in styles/brands/)*
 
-The skill reads pre-built tokens from `tokens/` next to whichever registry entry won. No parsing, no network. If the user doesn't specify: a `DEFAULT` marker in the registry (user directory's wins) names the identity; absent that, `style-1` (Editorial Light).
+The skill reads the `tokens.json` cache next to whichever registry entry won. No parsing, no network. If the user doesn't specify: a `.knowledgeware` file in the project, then a `DEFAULT` marker in the registry (user directory's wins), names the identity; absent both, `style-1` (Editorial Light).
 
-**To add a new style**, drop `styles/<name>.md` (a generic style — goes in defaults) or `<brands-dir>/<name>.md` (a brandbook — see the brandware skill, which also gathers logos and similar assets). No code edits either way; token caches regenerate automatically.
+**To add a new style**, create `styles/<name>/brand.md` (a generic style — goes in defaults) or `<brands-dir>/<name>/brand.md` (a brandbook — see the brandware skill, which also gathers logos and similar assets). No code edits either way; token caches regenerate automatically.
 
 ### 2. Local CSS or markdown brandbook
 
@@ -220,11 +221,10 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 | `html/references/{workflow,layout-patterns,reveal}.md` | HTML build path, 8 archetypes, Reveal.js conventions |
 | `../brandware/references/brandbook-spec.md` | What makes a style/brandbook parseable (same spec for both) |
 | `pptx/references/canonical-samples.md` | How to use the 3 reference samples |
-| `<plugin>/styles/style-{1..5}.md` | 5 default generic styles (marketplace-safe) |
-| `<plugin>/styles/tokens/*.json` | Pre-built tokens for default styles (skip-parse) |
-| `<plugin>/styles/brands/*.md` | Brandbooks (host-installed via brandware, kept out of the public repo) |
-| `<plugin>/styles/brands/tokens/*.json` | Pre-built tokens for brandbooks (skip-parse) |
-| `<brands-dir>/<name>/assets/` | Per-brand assets — logos, wordmarks (gathered by brandware; never mixed across brands) |
+| `<plugin>/styles/style-{1..5}/` | 5 default generic styles (marketplace-safe): `brand.md`, `tokens.json`, `assets/mark*.svg`, `css/` |
+| `<plugin>/styles/brands/<name>/` | Brandbooks (host-installed via brandware, kept out of the public repo), same folder shape |
+| `<brands-dir>/<name>/assets/` | Per-brand assets — logos, marks, wordmarks (gathered by brandware; never mixed across brands) |
+| `<plugin>/scripts/registry.js` | Finds entries in every registry and both layouts; the loaders go through it |
 | `pptx/assets/samples/<bb>/` | Canonical sample decks (build script + rendered PNGs) |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with checklist + pitfalls inline |
 | `html/assets/templates/{build-deck,slides}.js` | HTML renderer + slide-descriptor scaffold |

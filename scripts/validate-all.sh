@@ -45,6 +45,11 @@ if ! bash plugins/adv/tests/dispatch-test.sh; then
   failed=1
 fi
 
+# knowledgeware's style registry: both layouts, shadowing, markers, loaders
+if ! node plugins/knowledgeware/tests/registry-test.js; then
+  failed=1
+fi
+
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue
   run_validate "$dir" "$(basename "$dir")"

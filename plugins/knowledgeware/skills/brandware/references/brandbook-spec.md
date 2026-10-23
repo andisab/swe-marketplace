@@ -5,7 +5,7 @@ A "brandbook" (or "style" — the terms are interchangeable) is one `.md` file d
 1. **Prose body — canonical, always required.** Markdown sections (palette table, typography, layout, distinctive treatments) readable by humans and by the model-driven consumers (chartware, knowledgebase), and heuristically parseable by both machine loaders. Every registry entry works with prose alone.
 2. **YAML frontmatter — optional precision layer.** Exact token values in a fixed schema. When present, loaders use these values verbatim instead of heuristics — per field, with prose filling anything the block omits.
 
-Derived token caches (`tokens/<name>.json`) are a third, purely internal layer: regenerated automatically (mtime-invalidated), never hand-edited, never presented to users as a setup step.
+Derived token caches (`<name>/tokens.json`, or `tokens/<name>.json` in the flat layout) are a third, purely internal layer: regenerated automatically (mtime-invalidated), never hand-edited, never presented to users as a setup step.
 
 **Loader contract**: the pptx token loader (`scripts/load-style.js`) and the html converter (`skills/slideware/html/scripts/load-style.js`) both prefer frontmatter when present and heuristically parse the prose otherwise. **Generator contract**: anything that produces a brandbook (`scripts/derive-style.js`, the html converter's `.css` import) emits *both* layers, so the machine and prose views of a brand can never live in different files.
 
@@ -107,8 +107,18 @@ layout:
   radiusPx:      4                    # required — corner radius in CSS pixels
   shadowOpacity: 0                    # required — card shadow strength (0-1)
   marginIn:      0.6                  # required — slide padding (CSS supports `in`)
+  containerPx:   1240                 # optional — page content width for HTML consumers
+  gutterPx:      24                   # optional — grid gutter for HTML consumers
+
+paletteDark:                          # optional — the same palette keys for a dark theme
+  bg:          '#1C1915'              #   (any subset; consumers fall back to the light value)
+  surface:     '#262219'
+  ink:         '#F3EEE4'
+  accent:      '#E8836B'
 ---
 ```
+
+Two more optional keys live under `type:`: `headingTracking` and `labelTracking`, in em (e.g. `-0.02` for tight display headings, `0.12` for spaced capitals). Loaders pass `paletteDark`, the tracking values and the container keys through to the tokens untouched; the html converter writes `paletteDark` back into the frontmatter it generates. The five default styles under `styles/` show every optional key in use.
 
 **Hex convention**: hex values are quoted **with** the `#` prefix (IDEs render inline color swatches). The pptx loader strips the `#` (pptxgenjs expects bare 6-char hex); the html renderer keeps it (CSS expects it). One brandbook works for both.
 
@@ -252,7 +262,7 @@ Output is a both-layer brandbook (frontmatter + prose) that every loader and con
 
 ## Authoring a new brandbook
 
-1. Write `<dest>/<name>.md` (`<dest>` = the brands directory per SKILL.md §Add / import) — copy a bundled style or the `acmecorp` example as the template.
+1. Write `<dest>/<name>/brand.md` (`<dest>` = the brands directory per SKILL.md §Add / import) — copy a bundled style or the `acmecorp` example as the template.
 2. Author the **prose body** first (it's the canonical layer), then the **frontmatter block** from the schema above. Keep the two consistent.
 3. Test: `node scripts/load-style.js <name>` (pptx tokens) and `node skills/slideware/html/scripts/load-style.js <name>` (html style.md) — sanity-check the values against your intent.
 4. Optionally run the audit ("audit the brandbooks") to catch layer disagreements, spec drift, and dead asset references.

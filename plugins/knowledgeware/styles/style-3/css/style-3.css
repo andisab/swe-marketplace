@@ -1,0 +1,45 @@
+/* style-3 — Dark Precision. Generated from brand.md; the brandbook is the source of truth. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap');
+
+:root {
+  --bg: #0B0B12;
+  --surface: #16161D;
+  --surface-alt: #1F1F28;
+  --ink: #F4F4F8;
+  --ink-body: #D4D4DC;
+  --ink-muted: #9090A0;
+  --ink-faint: #5A5A6A;
+  --border: #2A2A35;
+  --accent: #7C7AEB;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #F87171;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Inter', Georgia, serif;
+  --font-mono: 'JetBrains Mono', Menlo, monospace;
+  --radius: 6px;
+  --shadow-opacity: 0;
+  color-scheme: dark;
+}
+
+body { margin: 0; background: var(--bg); color: var(--ink-body); font: 400 1rem/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { color: var(--ink); font-family: var(--font-sans); line-height: 1.2; margin: 1.5em 0 0.5em; }
+h1 { font-size: 2.5rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.25rem; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+small, .muted { color: var(--ink-muted); }
+hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+code, pre { font-family: var(--font-mono); font-size: 0.875em; }
+pre { background: var(--surface-alt); padding: 1rem; border-radius: var(--radius); overflow: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+th { color: var(--ink-muted); font-weight: 500; }
+.container { max-width: 72ch; margin: 0 auto; padding: 2rem 1rem; }
+
+/* Motif: three brightness levels (bg, surface, surface-alt) instead of shadows; one violet strip on covers. */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; }
+.card .card { background: var(--surface-alt); }
+.strip-left { border-left: 12px solid var(--accent); }
+.stat { font: 700 clamp(3rem, 8vw, 7.5rem)/1 var(--font-sans); letter-spacing: -0.03em; color: var(--accent); }
+.kicker { font: 500 0.6875rem/1.2 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+h1, h2, h3 { letter-spacing: -0.02em; }
+code, pre { font-family: var(--font-mono); background: var(--surface-alt); border-radius: calc(var(--radius) - 2px); }

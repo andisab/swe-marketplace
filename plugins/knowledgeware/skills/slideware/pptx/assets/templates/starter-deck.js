@@ -5,7 +5,7 @@
 //   npm install pptxgenjs react react-dom react-icons sharp
 //   node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json
 //   # Or for bundled brandbooks, copy the pre-built tokens (no parse needed):
-//   cp $PLUGIN/styles/brands/tokens/<name>.json style-tokens.json
+//   cp $PLUGIN/styles/brands/<name>/tokens.json style-tokens.json
 //
 // ── PRE-RENDER ALIGNMENT CHECKLIST (run mentally per slide before building) ──
 // 1. Title at y=0.5, h=0.6. Content starts at y≥1.4 (gives the title room to wrap).
@@ -52,7 +52,7 @@ if (!fs.existsSync(tokensPath)) {
   console.error("style-tokens.json missing. Either:");
   console.error("  node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json");
   console.error("  # or copy a pre-built bundled one:");
-  console.error("  cp $PLUGIN/styles/brands/tokens/<name>.json style-tokens.json");
+  console.error("  cp $PLUGIN/styles/brands/<name>/tokens.json style-tokens.json");
   process.exit(1);
 }
 const B = JSON.parse(fs.readFileSync(tokensPath, "utf8"));

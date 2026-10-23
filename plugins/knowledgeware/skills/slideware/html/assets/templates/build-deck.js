@@ -13,7 +13,7 @@
 // Setup (one-time per deck dir):
 //   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
 //   npm install                     # js-yaml and the pinned reveal.js
-//   cp $PLUGIN/shared/styles/<name>.md ./style.md
+//   node $PLUGIN/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md
 //   node build-deck.js .
 //
 // ── PRE-BUILD ALIGNMENT CHECKLIST (run mentally per slide before building) ──
@@ -52,9 +52,9 @@ function loadTokens(cwd) {
   const stylePath = path.join(cwd, "style.md");
   if (!fs.existsSync(stylePath)) {
     console.error("style.md missing. Either:");
-    console.error("  cp $PLUGIN/shared/styles/<name>.md ./style.md");
+    console.error("  node $PLUGIN/skills/slideware/html/scripts/load-style.js <name> -o ./style.md   # e.g. style-1, or a brand");
     console.error("  # or for custom brandbooks:");
-    console.error("  cp $PLUGIN/shared/styles/custom/<name>.md ./style.md");
+    console.error("  node $PLUGIN/skills/slideware/html/scripts/load-style.js ./my-brand.md -o ./style.md");
     console.error("  # or generate from a CSS/URL via the loader script:");
     console.error("  node scripts/load-style.js <path> -o ./style.md");
     process.exit(1);

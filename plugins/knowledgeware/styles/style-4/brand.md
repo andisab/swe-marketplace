@@ -1,3 +1,52 @@
+---
+name: style-4
+description: Warm-gray canvas, serif headings over a sans body, a calm sage accent, and outlined rather than filled containers.
+
+palette:
+  bg:         '#F2EDE3'
+  surface:    '#FFFFFF'
+  surfaceAlt: '#EAE4D6'
+  ink:        '#1F1810'
+  inkBody:    '#3D342B'
+  inkMuted:   '#7A6F60'
+  inkFaint:   '#B0A696'
+  border:     '#C9C3B7'
+  accent:     '#7C9A6A'
+  success:    '#7C9A6A'
+  warning:    '#C97A1A'
+  error:      '#C24A3F'
+
+paletteDark:
+  bg:         '#1B1814'
+  surface:    '#241F1A'
+  surfaceAlt: '#2B2620'
+  ink:        '#F1EBE0'
+  inkBody:    '#D5CDBF'
+  inkMuted:   '#A0978A'
+  inkFaint:   '#6B6357'
+  border:     '#3A332B'
+  accent:     '#9BB789'
+  success:    '#9BB789'
+  warning:    '#E0A24A'
+  error:      '#E06A5F'
+
+type:
+  sans:           'Inter'
+  serif:          'Lora'
+  mono:           'JetBrains Mono'
+  heroPt:         40
+  sectionPt:      28
+  titlePt:        26
+  bodyPt:         14
+  subBodyPt:      12
+  captionPt:      10
+  codePt:         11
+
+layout:
+  radiusPx:       6
+  shadowOpacity:  0
+  marginIn:       0.5
+---
 # Style 4 — Warm Sage
 
 > Warm-gray canvas, serif headings + sans body, sage green accent, outlined-not-filled containers. Reads as thoughtful, slow, diagrammatic — for technical write-ups, internal training, decks that want to feel hand-crafted rather than corporate.

@@ -131,6 +131,8 @@ Name a style (`style-1` to `style-5`) in any request, or let the skill choose. W
 | **style-4**, Warm Sage | Warm gray background, serif headings, outlined containers, a sage green accent | Technical write-ups and internal training |
 | **style-5**, Material Olive | Material Design 3 palette of olive, sage and teal on a pale cream-green background | Product roadmaps and sustainability decks |
 
+Each style is a folder under `styles/` with the brandbook (`brand.md`), a generic mark for light and dark backgrounds (`assets/mark.svg`, `assets/mark-dark.svg`), a stylesheet with the tokens as CSS variables and the style's motif classes (`css/<name>.css`), and a README. Four of the five carry a dark palette as well; style-3 is dark to begin with. The marks are original drawings, free to use, and a brand of your own replaces them.
+
 ## Using your own brand
 
 Ask Claude to *"use brandware to add a brand for example.com"*. brandware derives the style from the site, gathers its logos into the brand's folder, records where each one came from, and saves the brandbook in your brands directory. The derivation reads the site's HTML and CSS and picks colors and fonts by how often they appear, so compare the result with the live site before you rely on it. To make the brand your default, ask Claude to *"set example as the default brand"*, or run `echo example > $BRANDS/DEFAULT`.
@@ -138,17 +140,19 @@ Ask Claude to *"use brandware to add a brand for example.com"*. brandware derive
 `$BRANDS` here means your brands directory (see the next section), or `<plugin-root>/styles/brands` if you haven't set one. You can also add a brand by hand, from the plugin root:
 
 ```bash
+mkdir -p $BRANDS/example/assets
+
 # 1. Derive from a live website (a heuristic, so review the result by hand)
-node scripts/derive-style.js https://example.com -o $BRANDS/example.md
+node scripts/derive-style.js https://example.com -o $BRANDS/example/brand.md
 
 # 2. Import an existing .md or .css brandbook, or fetch one from Google Drive
-cp ~/my-brandbook.md $BRANDS/example.md
-bash scripts/fetch-resource.sh <drive-share-url> $BRANDS/example.md
+cp ~/my-brandbook.md $BRANDS/example/brand.md
+bash scripts/fetch-resource.sh <drive-share-url> $BRANDS/example/brand.md
 
 # 3. Write one by hand, following skills/brandware/references/brandbook-spec.md and the acmecorp example
 ```
 
-Logos and wordmarks go in a folder per brand, `$BRANDS/example/assets/`. slideware installs a brand's Google Fonts when it builds a PowerPoint deck. To install them yourself, run `bash scripts/install-fonts.sh example`.
+Logos and wordmarks go in the brand's `assets/` folder, and a stylesheet or starters can sit beside them in `css/` and `starters/`. If you have a design kit or brand plugin already, copy its brandbook, logos and stylesheet into this shape and note where they came from in the folder's README. slideware installs a brand's Google Fonts when it builds a PowerPoint deck. To install them yourself, run `bash scripts/install-fonts.sh example`.
 
 ## Bring your own brands directory
 
@@ -168,10 +172,15 @@ The directory has the same layout as the plugin's own brands folder:
 ```
 ~/my-brands/
 ├── DEFAULT                # optional: one line naming your go-to brand, e.g. "acmecorp"
-├── <name>.md              # a brandbook
-├── tokens/<name>.json     # a cache derived from the brandbook (regenerated automatically)
-└── <name>/assets/         # logos, wordmarks
+└── <name>/
+    ├── brand.md           # the brandbook
+    ├── tokens.json        # a cache derived from the brandbook (regenerated automatically)
+    ├── assets/            # logos, marks, wordmarks
+    ├── css/<name>.css     # optional stylesheet
+    └── README.md          # optional: provenance and notes
 ```
+
+Brands in the older flat layout (`<name>.md` next to `tokens/<name>.json` and `<name>/assets/`) keep working; move one into a folder whenever you edit it.
 
 Everything in this directory survives plugin updates, and it works well as a private git repository. Its entries win over same-named entries in the plugin, and its `DEFAULT` file wins over the plugin's.
 
@@ -187,7 +196,7 @@ styles/brands/                 # brandbooks inside the plugin install
 styles/                        # the five built-in styles (checked last)
 ```
 
-The first match wins. When a request names nothing, the skills use the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
+The first match wins. When a request names nothing, the skills look for a `.knowledgeware` file in the project or any parent directory (one line naming a brand, for a repository that's always in one brand), then the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
 
 ---
 

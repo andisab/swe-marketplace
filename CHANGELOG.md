@@ -25,7 +25,13 @@ Tested against Codex CLI 0.163.0 and Gemini CLI 0.65.0 (October 2026). Both CLIs
 - `--check-deps` prints each CLI's version, notes when one is older than the tested version, and reports `BROKEN` when a CLI is on `PATH` but can't run. The health check allows 60 seconds instead of 30, since Gemini's first run of a session took about 40.
 - `plugins/adv/tests/dispatch-test.sh` runs `dispatch.sh` against fake engines (success, auth, quota, hang, model not found) on any bash; `validate-all.sh` and CI run it.
 
-### knowledgeware 1.8.1
+### knowledgeware 1.9.0
+
+- **One folder per style or brand.** Every registry entry is now `<name>/brand.md` with `tokens.json`, `assets/`, an optional `css/` and `starters/`, and a README beside it, the same shape for the five default styles, for `styles/brands/` and for `$KNOWLEDGEWARE_BRANDS_DIR`. The older flat layout (`<name>.md`, `tokens/<name>.json`, `<name>/assets/`) is still read, and a folder wins over a flat file of the same name, so installed brands keep working. A new `scripts/registry.js` holds the search order and both layouts; `load-style.js`, `list-styles.js` and the slideware html converter go through it, and the token cache is rebuilt next to `brand.md` after a miss instead of only being read.
+- **The five default styles gain assets.** Each has an original mark for light and dark backgrounds (`assets/mark.svg`, `assets/mark-dark.svg`), a stylesheet with the tokens as CSS variables, base typography and the style's motif classes (`css/<name>.css`, with the dark palette under `prefers-color-scheme` and `data-theme`), a YAML precision layer in `brand.md`, and a README. Four styles gain a designed dark palette; style-3 was dark already.
+- **Brandbook spec:** optional `paletteDark`, `type.headingTracking`, `type.labelTracking`, `layout.containerPx` and `layout.gutterPx`. Loaders pass them through, and the html converter writes `paletteDark` into the frontmatter it generates.
+- **Per-project brand:** a `.knowledgeware` file (one line naming a registry entry) in a project or any parent directory is checked before the `DEFAULT` markers, so a repository can pin its brand.
+- `plugins/knowledgeware/tests/registry-test.js` covers both layouts, shadowing, cache paths, markers and the loaders; `validate-all.sh` and CI run it.
 
 - **Fixed:** HTML decks' title, section, big-number and quote slides now center vertically as their layouts intend. Reveal's inline `display: block` had overridden the layouts' flexbox since 1.1.0, so every slide sat at the top. The presenter view's previews match.
 - **Fixed:** the slide number sits bottom-left, clear of the navigation arrows.

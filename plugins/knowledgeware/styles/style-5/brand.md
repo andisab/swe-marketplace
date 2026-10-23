@@ -1,3 +1,56 @@
+---
+name: style-5
+description: A Material Design 3 palette on a pale cream-green canvas: olive primary, sage secondary, teal tertiary, soft shadows on rounded cards.
+
+palette:
+  bg:         '#F9FAEF'
+  bgDark:     '#12140E'
+  surface:    '#FFFFFF'
+  surfaceAlt: '#EEEFE3'
+  ink:        '#1A1C16'
+  inkBody:    '#44483D'
+  inkMuted:   '#75796C'
+  inkFaint:   '#C5C8BA'
+  border:     '#C5C8BA'
+  accent:     '#4C662B'
+  accent2:    '#386663'
+  success:    '#586249'
+  warning:    '#C97A1A'
+  error:      '#BA1A1A'
+
+paletteDark:
+  bg:         '#12140E'
+  surface:    '#1B1E15'
+  surfaceAlt: '#23271B'
+  ink:        '#E8EADF'
+  inkBody:    '#C9CDBE'
+  inkMuted:   '#9A9F8E'
+  inkFaint:   '#5F6455'
+  border:     '#343A2B'
+  accent:     '#AFD08A'
+  accent2:    '#8FC2BE'
+  success:    '#B2BA9E'
+  warning:    '#E0A24A'
+  error:      '#FF8A80'
+
+type:
+  sans:           'Inter'
+  serif:          'Inter'
+  mono:           'JetBrains Mono'
+  heroPt:         44
+  sectionPt:      32
+  titlePt:        26
+  bodyPt:         14
+  subBodyPt:      12
+  captionPt:      10
+  codePt:         12
+  labelTracking:  0.08
+
+layout:
+  radiusPx:       12
+  shadowOpacity:  0.1
+  marginIn:       0.5
+---
 # Style 5 — Material Olive
 
 > Material Design 3 palette: olive primary, sage secondary, teal tertiary on a pale cream-green canvas. Reads as organic and modern — for product roadmaps, sustainability decks, design work that wants natural authority without corporate severity.
@@ -75,4 +128,4 @@ Kickers and section labels: ALL CAPS with `charSpacing: 3`. Display sizes: leave
 
 ## Source
 
-Derived from a Material Design 3 token set: `~/Projects/ab-github/swe-marketplace/plugins/slideware/styles/style-5/{light,dark,light-mc,dark-mc,light-hc,dark-hc}.css`. Six files cover light/dark × default/medium-contrast/high-contrast. This spec captures the light default; swap colors from `*-hc.css` for WCAG-AAA contrast.
+Derived from a Material Design 3 token export (six CSS files: light/dark × default, medium-contrast and high-contrast). Six files cover light/dark × default/medium-contrast/high-contrast. This spec captures the light default; swap colors from `*-hc.css` for WCAG-AAA contrast.

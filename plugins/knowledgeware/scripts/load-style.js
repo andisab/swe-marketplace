@@ -4,9 +4,9 @@
 //   node load-style.js <name|path>           # prints JSON to stdout
 //   node load-style.js <name|path> -o out.json
 //
-// Bundled styles are discovered at runtime from three locations (plugin root = ../ from here):
-//   - styles/*.md              → 5 default generic styles (style-1 through style-5), marketplace-safe
-//   - styles/brands/*.md       → brandbooks (brand-specific / proprietary; copied in from a private
+// Bundled styles are discovered at runtime by registry.js from three locations (plugin root = ../ from here):
+//   - styles/<name>/brand.md   → 5 default generic styles (style-1 through style-5), marketplace-safe
+//   - styles/brands/           → brandbooks (brand-specific / proprietary; copied in from a private
 //                                repo and NOT checked into the plugin repository)
 //   - $KNOWLEDGEWARE_BRANDS_DIR/*.md → user-owned brandbook directory, anywhere on disk.
 //                                Survives plugin updates. Same layout as styles/brands/.
@@ -18,41 +18,8 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const STYLES_DIR = path.join(__dirname, "..", "styles");
-const BRANDS_DIR = path.join(STYLES_DIR, "brands");
-
-// User-owned registry from $KNOWLEDGEWARE_BRANDS_DIR (with ~ expansion), or null.
-function resolveUserBrandsDir() {
-  let d = process.env.KNOWLEDGEWARE_BRANDS_DIR;
-  if (!d || !d.trim()) return null;
-  d = d.trim();
-  if (d === "~") d = os.homedir();
-  else if (d.startsWith("~/")) d = path.join(os.homedir(), d.slice(2));
-  return path.resolve(d);
-}
-const USER_BRANDS_DIR = resolveUserBrandsDir();
-
-// Discover bundled styles from default + brand directories. Brand shadows default
-// if names collide. tokens/ subdirectories are excluded — they hold cached JSON.
-function listBundled() {
-  const found = new Map();  // name → { name, source, kind }
-  const dirs = [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]];
-  if (USER_BRANDS_DIR) dirs.push([USER_BRANDS_DIR, "brand"]);
-  for (const [dir, kind] of dirs) {
-    if (!fs.existsSync(dir)) continue;
-    for (const f of fs.readdirSync(dir)) {
-      if (!f.endsWith(".md") || /^readme\.md$/i.test(f)) continue;
-      const name = f.replace(/\.md$/, "");
-      // Later iterations (brand) overwrite earlier (default) — brand shadows default
-      found.set(name, { name, source: path.join(dir, f), kind });
-    }
-  }
-  return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function findBundled(name) {
-  return listBundled().find(b => b.name === name) || null;
-}
+const registry = require("./registry");
+const { listBundled, findBundled, tokensCachePath } = registry;
 
 function resolveSource(input) {
   const hit = findBundled(input);
@@ -62,18 +29,26 @@ function resolveSource(input) {
   throw new Error(`Style/brandbook not found: "${input}". Use one of [${names}] or a valid file path.`);
 }
 
-// Pre-built tokens for bundled styles — skips parse if file is fresh.
+// Pre-built tokens for bundled styles — skips parse if the cache is fresh.
 function tryPrebuiltTokens(input) {
   const hit = findBundled(input);
   if (!hit) return null;
-  // Cache lives in tokens/ next to the source .md, whichever registry it came from
-  const tokensDir = path.join(path.dirname(hit.source), "tokens");
-  const cachePath = path.join(tokensDir, `${input}.json`);
-  const srcPath = hit.source;
-  if (!fs.existsSync(cachePath) || !fs.existsSync(srcPath)) return null;
+  const cachePath = tokensCachePath(hit);
+  if (!fs.existsSync(cachePath) || !fs.existsSync(hit.source)) return null;
   // Invalidate cache if the .md is newer than the cached .json
-  if (fs.statSync(srcPath).mtimeMs > fs.statSync(cachePath).mtimeMs) return null;
+  if (fs.statSync(hit.source).mtimeMs > fs.statSync(cachePath).mtimeMs) return null;
   return cachePath;
+}
+
+// Rebuild a bundled entry's cache after a miss. Best effort: a read-only install just skips it.
+function refreshCache(input, json) {
+  const hit = findBundled(input);
+  if (!hit) return;
+  try {
+    const cachePath = tokensCachePath(hit);
+    fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+    fs.writeFileSync(cachePath, json);
+  } catch {}
 }
 
 // Parse the optional YAML frontmatter precision layer (the fixed two-level schema
@@ -249,7 +224,9 @@ function build(srcPath) {
 
   const fm = parseFrontmatter(text) || {};
   const fmP = fm.palette || {}, fmT = fm.type || {}, fmL = fm.layout || {};
-  const name = fm.name || path.basename(srcPath).replace(/\.(md|css)$/i, "");
+  // In the folder layout the file is always brand.md, so the folder is the name.
+  const base = path.basename(srcPath).replace(/\.(md|css)$/i, "");
+  const name = fm.name || (base === "brand" ? path.basename(path.dirname(srcPath)) : base);
 
   const tableRoles = harvestTableRoles(text);
   const cssVars = harvestCssVars(text);
@@ -317,7 +294,22 @@ function build(srcPath) {
     marginIn: num(fmL.marginIn) ?? 0.5,
   };
 
-  return { name, source: srcPath, palette, type, layout };
+  // Optional precision keys (brandbook-spec §Layer 2): passed through only when the frontmatter has them.
+  const hexMap = (o) => {
+    if (!o || typeof o !== "object") return null;
+    const out = {};
+    for (const [k, val] of Object.entries(o)) { const h = hex6(val); if (h) out[k] = h; }
+    return Object.keys(out).length ? out : null;
+  };
+  const paletteDark = hexMap(fm.paletteDark);
+  if (num(fmT.headingTracking) !== null) type.headingTracking = fmT.headingTracking;
+  if (num(fmT.labelTracking) !== null) type.labelTracking = fmT.labelTracking;
+  if (num(fmL.containerPx) !== null) layout.containerPx = fmL.containerPx;
+  if (num(fmL.gutterPx) !== null) layout.gutterPx = fmL.gutterPx;
+
+  const tokens = { name, source: srcPath, palette, type, layout };
+  if (paletteDark) tokens.paletteDark = paletteDark;
+  return tokens;
 }
 
 function main() {
@@ -331,6 +323,7 @@ function main() {
   const json = cached
     ? fs.readFileSync(cached, "utf8")
     : JSON.stringify(build(resolveSource(argv[0])), null, 2);
+  if (!cached) refreshCache(argv[0], json);
   const name = JSON.parse(json).name;
 
   const outIdx = argv.indexOf("-o");
@@ -343,4 +336,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { build, listBundled };
+module.exports = { build, listBundled, findBundled, resolveSource, tokensCachePath };

@@ -35,17 +35,18 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 
 1. **Explicit local path** — read directly.
 2. **Bundled name** — discovered at runtime from the registry (shadow order: default &lt; plugin brand &lt; user brand):
-   - `$PLUGIN/styles/*.md` — 5 default generic styles (`style-1` through `style-5`)
-   - `$PLUGIN/styles/brands/*.md` — brandbooks (managed by the **brandware** skill)
-   - `$KNOWLEDGEWARE_BRANDS_DIR/*.md` — the user's own brands directory, if that env var is set (survives plugin updates)
+   - `$PLUGIN/styles/<name>/brand.md` — 5 default generic styles (`style-1` through `style-5`), each with a mark in `assets/`
+   - `$PLUGIN/styles/brands/<name>/brand.md` — brandbooks (managed by the **brandware** skill)
+   - `$KNOWLEDGEWARE_BRANDS_DIR/<name>/brand.md` — the user's own brands directory, if that env var is set (survives plugin updates)
+   - the older flat `<name>.md` files are still read; `scripts/registry.js` searches both layouts
 
    Run `node $PLUGIN/scripts/list-styles.js` for the current list (`--default` / `--brands` / `--names` / `--json`).
 3. **Website URL** — `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load. Heuristic; verify against the live site.
 4. **Google Drive URL** — `bash $PLUGIN/scripts/fetch-resource.sh <url> <dest>`.
-5. **No style given** — if a `DEFAULT` marker exists (a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `$PLUGIN/styles/brands/DEFAULT`), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
+5. **No style given** — if a marker exists (`.knowledgeware` in the project or a parent, then a `DEFAULT` file: a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `$PLUGIN/styles/brands/DEFAULT`), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
 
 **Staging differs per format** (each guide shows the exact command):
-- pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (pre-built caches in `tokens/` next to each registry's brandbooks).
+- pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (serves the `tokens.json` cache next to each `brand.md` when it's fresh, and rebuilds it otherwise).
 - html consumes a **YAML-frontmatter `style.md`** — `node $PLUGIN/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md` (converts any registry brandbook or CSS file).
 
 **Fonts (handle silently)**: brandbooks name fonts; nothing embeds them. When building **pptx**, after resolving the style run `bash $PLUGIN/scripts/install-fonts.sh --check <name>` and, if Google Fonts are missing, install them with the same script without asking — just mention it in one line. Non–Google-Fonts families can't be auto-installed: fall back per the brandbook and tell the user which face to install manually. HTML decks load Google Fonts via `<link>`, so viewers (and you) need nothing installed.

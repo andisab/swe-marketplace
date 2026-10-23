@@ -1,3 +1,39 @@
+---
+name: style-3
+description: Dark-first canvas, bright violet accent, tight-tracked sans, and elevation by brightness instead of shadow.
+
+palette:
+  bg:         '#0B0B12'
+  surface:    '#16161D'
+  surfaceAlt: '#1F1F28'
+  ink:        '#F4F4F8'
+  inkBody:    '#D4D4DC'
+  inkMuted:   '#9090A0'
+  inkFaint:   '#5A5A6A'
+  border:     '#2A2A35'
+  accent:     '#7C7AEB'
+  success:    '#22C55E'
+  warning:    '#F59E0B'
+  error:      '#F87171'
+
+type:
+  sans:           'Inter'
+  serif:          'Inter'
+  mono:           'JetBrains Mono'
+  heroPt:         48
+  sectionPt:      32
+  titlePt:        28
+  bodyPt:         14
+  subBodyPt:      12
+  captionPt:      10
+  codePt:         12
+  headingTracking:-0.02
+
+layout:
+  radiusPx:       6
+  shadowOpacity:  0
+  marginIn:       0.5
+---
 # Style 3 — Dark Precision
 
 > Dark-first canvas, bright violet accent, sans with tight negative tracking. Elevated surfaces (no drop shadows — separation comes from brightness levels). Reads as premium SaaS, engineering review, after-hours product work.

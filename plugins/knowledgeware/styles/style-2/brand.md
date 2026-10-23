@@ -1,3 +1,52 @@
+---
+name: style-2
+description: Pure white canvas, one geometric sans, one bright indigo accent under five percent of the page, and whitespace doing the rest.
+
+palette:
+  bg:         '#FFFFFF'
+  surface:    '#FFFFFF'
+  surfaceAlt: '#FAFAFA'
+  ink:        '#111111'
+  inkBody:    '#222222'
+  inkMuted:   '#6B6B6B'
+  inkFaint:   '#B8B8B8'
+  border:     '#E5E5E5'
+  accent:     '#4F46E5'
+  success:    '#10B981'
+  warning:    '#F59E0B'
+  error:      '#EF4444'
+
+paletteDark:
+  bg:         '#0F0F11'
+  surface:    '#0F0F11'
+  surfaceAlt: '#17171A'
+  ink:        '#F2F2F2'
+  inkBody:    '#D6D6D8'
+  inkMuted:   '#9A9AA0'
+  inkFaint:   '#55555C'
+  border:     '#26262B'
+  accent:     '#8B85F0'
+  success:    '#34D399'
+  warning:    '#FBBF24'
+  error:      '#F87171'
+
+type:
+  sans:           'Inter'
+  serif:          'Inter'
+  mono:           'JetBrains Mono'
+  heroPt:         48
+  sectionPt:      32
+  titlePt:        28
+  bodyPt:         14
+  subBodyPt:      12
+  captionPt:      10
+  codePt:         12
+
+layout:
+  radiusPx:       2
+  shadowOpacity:  0
+  marginIn:       0.5
+---
 # Style 2 — Minimal
 
 > Pure white canvas, geometric sans throughout, single bright indigo accent. Massive whitespace. Reads precise and modern — for product announcements, design-led pitches, decks where the message *is* the restraint.

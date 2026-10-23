@@ -21,6 +21,11 @@ jobs:
         run: python scripts/check-agent-tools.py
       - name: Test adv's dispatcher against fake engines
         run: sudo apt-get install -y -qq jq >/dev/null && bash plugins/adv/tests/dispatch-test.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test knowledgeware's style registry
+        run: node plugins/knowledgeware/tests/registry-test.js
 
   validate-manifests:
     name: claude plugin validate

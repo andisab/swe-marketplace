@@ -8,7 +8,7 @@ Path convention: `$PLUGIN` = the knowledgeware plugin root (this format lives at
 
 ```bash
 mkdir -p my-deck/output && cd my-deck
-cp $PLUGIN/styles/tokens/style-1.json style-tokens.json   # any default style, or $PLUGIN/styles/brands/tokens/<name>.json for a brandbook
+cp $PLUGIN/styles/style-1/tokens.json style-tokens.json   # any default style, or $PLUGIN/styles/brands/<name>/tokens.json for a brandbook
 cp $PLUGIN/skills/slideware/pptx/assets/templates/{starter-deck.js,package.json} .
 npm install
 # Author build-deck.js
@@ -24,7 +24,7 @@ Target time: 3-8 min. Skip visual review if the deck is throwaway or polish-deck
 ### 1. Gather inputs
 
 - **Content** — outline, brief, source doc. If vague, propose an outline first and confirm.
-- **Style / brandbook** — explicit path, Google Drive URL, or bundled name. Bundled names are discovered at runtime from `$PLUGIN/styles/*.md` (defaults) and `$PLUGIN/styles/brands/*.md` (brandbooks — see the brandware skill); list them with `node $PLUGIN/scripts/list-styles.js`. **Default to `style-1` if unspecified** and tell the user. Don't auto-pick a brandbook.
+- **Style / brandbook** — explicit path, Google Drive URL, or bundled name. Bundled names are discovered at runtime from `$PLUGIN/styles/<name>/brand.md` (defaults) and `$PLUGIN/styles/brands/<name>/brand.md` (brandbooks — see the brandware skill); list them with `node $PLUGIN/scripts/list-styles.js`. **Default to `style-1` if unspecified** and tell the user. Don't auto-pick a brandbook.
 - **Sample deck** (optional) — `.pptx` whose style to mimic.
 - **Output path** — default `./<sanitized-title>.pptx`.
 - **Length** — 6-10 is typical default.
@@ -33,8 +33,8 @@ Target time: 3-8 min. Skip visual review if the deck is throwaway or polish-deck
 
 | Input | Action |
 |---|---|
-| Default style (fast) | `cp $PLUGIN/styles/tokens/style-N.json style-tokens.json` |
-| Brandbook (fast) | `cp $PLUGIN/styles/brands/tokens/<name>.json style-tokens.json` |
+| Default style (fast) | `cp $PLUGIN/styles/style-N/tokens.json style-tokens.json` |
+| Brandbook (fast) | `cp $PLUGIN/styles/brands/<name>/tokens.json style-tokens.json` (or `node $PLUGIN/scripts/load-style.js <name> -o style-tokens.json`, which also works for the flat layout) |
 | Local `.md`/`.css` | `node $PLUGIN/scripts/load-style.js <path> -o style-tokens.json` |
 | Google Drive URL | `bash $PLUGIN/scripts/fetch-resource.sh <url> ./brand.md` then load |
 | Website URL | `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load |
