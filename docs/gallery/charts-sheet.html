@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>charts</title>
+<link rel="stylesheet" href="/styles/style-4/css/style-4.css">
+<style>
+  :root { --muted: var(--ink-muted); --panel: var(--surface); }
+  body { margin:0; background: var(--bg); }
+  .grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px; width: 1600px; box-sizing: border-box; }
+  .grid.one { grid-template-columns: 1fr; }
+  .p { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display:flex; align-items:center; justify-content:center; }
+  .p svg { width: 100%; height: auto; }
+  .grid.one .p svg { max-width: none; }
+</style></head><body>
+<div class="grid" id="g"></div>
+<script>
+const list = (new URLSearchParams(location.search).get("only") || "bar-grouped,line-area,donut,waterfall,heatmap,slopegraph,dumbbell,sankey").split(",");
+const g = document.getElementById("g"); if (list.length === 1) g.classList.add("one");
+(async () => { for (const f of list) { const d = document.createElement("div"); d.className = "p"; d.innerHTML = await (await fetch("/gcharts/" + f + ".svg")).text(); g.appendChild(d); } })();
+</script></body></html>

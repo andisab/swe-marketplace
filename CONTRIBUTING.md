@@ -68,6 +68,8 @@ Required formats (per `claude plugin validate`):
 
 Every agent file needs YAML frontmatter or the validator emits a warning.
 
+An agent's `tools:` list may name only real Claude Code tools. `claude plugin validate` doesn't check these names, and an agent can't use a tool that doesn't exist, so one listing `MultiEdit` but not `Edit` can only rewrite whole files. `validate-all.sh` and CI run `scripts/check-agent-tools.py` to catch them: use `Edit` (not `MultiEdit`), `Glob` (not `LS`), `Agent` (not `Task`), and `mcp__<server>__*` for an MCP server such as Context7. Leave `tools:` out to give an agent every tool.
+
 ## Adding a new plugin
 
 1. **Create the directory structure** under `plugins/<your-plugin>/`:
@@ -92,7 +94,8 @@ Every agent file needs YAML frontmatter or the validator emits a warning.
 
 ## Pull request checklist
 
-- [ ] `marketplace.json` updated (if you touched anything in `plugins/`)
+- [ ] `marketplace.json` updated (if you touched anything in `plugins/`), with the plugin's version bumped: Claude Code only updates installed plugins when the version changes
+- [ ] A line under the unreleased section of [`CHANGELOG.md`](./CHANGELOG.md)
 - [ ] `python scripts/synthesize-plugin-manifests.py --check` passes (no drift)
 - [ ] `./scripts/validate-all.sh` passes (zero errors, zero warnings)
 - [ ] Every new agent file has YAML frontmatter

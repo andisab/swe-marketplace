@@ -1,7 +1,7 @@
 ---
 name: kotlin-expert
 description: Expert in Kotlin programming language, focusing on idiomatic Kotlin code, coroutines, extension functions, and memory management.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#7f52ff"
 tags:

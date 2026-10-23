@@ -1,7 +1,7 @@
 ---
 name: aws-cloud-architect
 description: AWS cloud infrastructure architect specializing in designing, implementing, and optimizing scalable AWS solutions. Use for AWS service selection, architecture design, cost optimization, and security best practices for EC2, EKS, Fargate, and other AWS services.
-tools: Read, Write, MultiEdit, Bash, Docker, context7
+tools: Read, Write, Edit, Bash, mcp__context7__*, mcp__plugin_context7_context7__*
 color: "#98971a"
 tags:
   - aws

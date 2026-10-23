@@ -8,7 +8,7 @@ on:
 
 jobs:
   drift-check:
-    name: plugin.json sync with marketplace.json
+    name: plugin.json sync and agent tool names
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,20 +17,34 @@ jobs:
           python-version: "3.12"
       - name: Verify generated plugin.json files are in sync
         run: python scripts/synthesize-plugin-manifests.py --check
+      - name: Verify agents name only real tools
+        run: python scripts/check-agent-tools.py
+      - name: Test adv's dispatcher against fake engines
+        run: sudo apt-get install -y -qq jq >/dev/null && bash plugins/adv/tests/dispatch-test.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test knowledgeware's style registry
+        run: node plugins/knowledgeware/tests/registry-test.js
+      - name: Test chartware's SVG lint
+        run: bash plugins/knowledgeware/tests/svg-lint-test.sh
+      - name: Test chartware's diagram digest
+        run: bash plugins/knowledgeware/tests/diagram-digest-test.sh
 
   validate-manifests:
     name: claude plugin validate
     runs-on: ubuntu-latest
-    # The claude CLI is not preinstalled on GitHub runners. This job runs the
-    # validator when the CLI is available (e.g. on self-hosted runners) and
-    # skips cleanly otherwise; the drift-check above is the always-on guard.
     steps:
       - uses: actions/checkout@v4
-      - name: Run validate-all.sh if claude CLI is available
-        run: |
-          if command -v claude >/dev/null 2>&1; then
-            ./scripts/validate-all.sh
-          else
-            echo "claude CLI not available on this runner; skipping."
-            echo "Run ./scripts/validate-all.sh locally before merging."
-          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Pinned so a new validator check can't fail CI unannounced; bump it
+      # after running ./scripts/validate-all.sh locally with the newer CLI.
+      # Validation is a local check and needs no login or API key.
+      - name: Install the Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code@2.1.308
+      - name: Validate the catalog and every plugin
+        env:
+          DISABLE_AUTOUPDATER: "1"
+        run: ./scripts/validate-all.sh

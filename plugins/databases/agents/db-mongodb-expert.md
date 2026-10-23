@@ -1,7 +1,7 @@
 ---
 name: db-mongodb-expert
 description: Expert in MongoDB 6.x/7.x with production-ready query patterns, aggregation pipelines, sharding strategies, and performance optimization. Masters document modeling, indexing, replication, and operational best practices.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#8f3f71"
 tags:

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Editorial Light mark">
+<rect x="14" y="8" width="36" height="48" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
+<rect x="14" y="8" width="36" height="5" rx="1" fill="#D9624A"/>
+<line x1="22" y1="26" x2="42" y2="26" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+<line x1="22" y1="34" x2="42" y2="34" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+<line x1="22" y1="42" x2="34" y2="42" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+</svg>

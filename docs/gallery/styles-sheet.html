@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><title>styles</title>
+<style>
+  body { margin:0; background:#E4E2DC; font-family: Inter, system-ui, sans-serif; }
+  .grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 10px; width: 1600px; box-sizing: border-box; }
+  iframe { width:100%; height: 336px; border:0; display:block; border-radius: 6px; }
+</style></head><body><div class="grid" id="g"></div>
+<script>
+const S = [["style-1","Editorial Light"],["style-2","Minimal"],["style-3","Dark Precision"],["style-4","Warm Sage"],["style-5","Material Olive"]];
+for (const theme of ["light","dark"]) for (const [s, name] of S) {
+  const mark = theme === "dark" ? "mark-dark.svg" : "mark.svg";
+  const doc = `<!doctype html><html data-theme="${theme}"><head><meta charset="utf-8"><link rel="stylesheet" href="/styles/${s}/css/${s}.css">
+  <style>body{padding:18px 18px 14px;overflow:hidden} .sw{display:flex;gap:4px;margin:12px 0 10px} .sw i{display:block;width:100%;height:14px;border-radius:3px;border:1px solid var(--border)}
+  h1{font-size:1.25rem;margin:.25em 0 0} .card{margin-top:8px;padding:12px 14px;font-size:.84rem;line-height:1.45} .card p{margin:0 0 .4rem} .kicker{font-size:.65rem}</style></head>
+  <body><div style="display:flex;align-items:center;gap:12px"><img src="/styles/${s}/assets/${mark}" width="44" height="44" alt="">
+  <div><span class="kicker">${s}</span><h1>${name}</h1></div></div>
+  <div class="sw"><i style="background:var(--bg)"></i><i style="background:var(--surface-alt)"></i><i style="background:var(--border)"></i><i style="background:var(--ink-muted)"></i><i style="background:var(--ink)"></i><i style="background:var(--accent)"></i></div>
+  <div class="card"><p><strong>Deploy time fell from 38 to 11 minutes</strong> once CI ran in the branch; the rest of the gap is the canary.</p>
+  <ul class="dots" style="margin:0 0 .4rem;padding-left:1.1rem"><li>2,140 deploys measured</li><li>0 user-facing incidents</li></ul>
+  <p><span class="chip">roadmap</span> <span class="chip secondary">platform</span> <code>canary=true</code> <a href="#">Source</a></p></div></body></html>`;
+  const f = document.createElement("iframe"); f.srcdoc = doc; document.getElementById("g").appendChild(f);
+}
+</script></body></html>

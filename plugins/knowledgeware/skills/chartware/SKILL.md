@@ -21,7 +21,7 @@ Rules of thumb: flowchart in a README → Mermaid. Revenue chart in a report pag
 
 ## Brand resolution (all media)
 
-If the user names a brand or style ("in the AAB style", "AcmeCorp-branded"), resolve it from the registry — `$KNOWLEDGEWARE_BRANDS_DIR/<name>.md` first (if that env var is set — the user's own brands directory), then `styles/brands/<name>.md` (plugin root — two directories above this skill), falling through to `styles/<name>.md` for the generic defaults — and substitute its palette/typography per the **brandware skill's `references/consumer-mappings.md` §chartware**. The mapping is deliberately understated — surface fills with categorical strokes, brand accent in at most two roles, low-saturation tints; a branded diagram should read as the brand's document, not a poster of its colors. For data charts (bars, lines, KPIs) follow brandware's `references/chart-styling.md`. If the brand isn't installed, use the defaults below and say so. When the user names no brand at all, check the `DEFAULT` marker (a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `styles/brands/DEFAULT`) and apply that identity if it resolves, telling the user; otherwise use each medium's default styling.
+If the user names a brand or style ("in the AAB style", "AcmeCorp-branded"), resolve it from the registry — `$KNOWLEDGEWARE_BRANDS_DIR/<name>/brand.md` first (if that env var is set — the user's own brands directory), then `styles/brands/<name>/brand.md` (plugin root — two directories above this skill), falling through to `styles/<name>/brand.md` for the generic defaults (the flat `<name>.md` layout is still read) — and substitute its palette/typography per the **brandware skill's `references/consumer-mappings.md` §chartware**. The mapping is deliberately understated — surface fills with categorical strokes, brand accent in at most two roles, low-saturation tints; a branded diagram should read as the brand's document, not a poster of its colors. For data charts (bars, lines, KPIs) follow brandware's `references/chart-styling.md`. If the brand isn't installed, use the defaults below and say so. When the user names no brand at all, check the markers (a `.knowledgeware` file in the project or a parent directory, then `DEFAULT`: one-line files naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `styles/brands/DEFAULT`) and apply that identity if it resolves, telling the user; otherwise use each medium's default styling.
 
 ---
 
@@ -47,7 +47,7 @@ Hand-authored inline SVG — the default medium for **data charts**, and the rig
 
 **Read `references/svg-charts.md` before drawing** — it holds the mechanics: pixel-space viewBox + margin convention, scale/tick math (1-2-5-10), per-chart-type geometry (rounded-top bar paths, flat-tangent curve smoothing, the C=400 donut trick), text rules (`dy="0.32em"`, width estimation, halos), the three-layer theming token block (page-token inheritance + dark mode), accessibility pattern, and the pitfall list.
 
-**Start from a template** in `templates/svg/` and adapt data, scales, and labels:
+**Pick the size first** when the chart leaves the page: `references/svg-charts.md` §1 lists the presets (document, HTML slide 1280×720, PowerPoint 960×540, 4:3, social card, print) with each one's font floor, margins and export rule. **Start from a template** in `templates/svg/` and adapt data, scales, and labels:
 
 | Request | Template |
 |---|---|
@@ -57,11 +57,45 @@ Hand-authored inline SVG — the default medium for **data charts**, and the rig
 | Parts of a whole, share breakdown | `donut.svg` |
 | Correlation, distribution | `scatter.svg` |
 | Headline metric + delta + trend | `kpi-tile.svg` |
+| How a total moved: start, steps up and down, end (bridge) | `waterfall.svg` |
+| Two dimensions × a magnitude (weekday × hour, team × month) | `heatmap.svg` |
+| Change between two periods for several categories | `slopegraph.svg` |
+| Before and after per item (two points, one gap) | `dumbbell.svg` |
+| Plan on a time axis: phases, tasks, a milestone, today | `gantt.svg` |
+| Flows between two sets of nodes (sources to outcomes) | `sankey.svg` |
 | Node-and-arrow diagram, flow, architecture | `diagram-flow.svg` |
 
-**Workflow**: pick template → substitute data and recompute coordinates (show your scale math in a comment) → apply brand tokens (chrome from the brandbook per `chart-styling.md`; series 1 = accent) → rename all `id=""` attributes with a per-chart slug → verify. To verify visually, write the SVG into a minimal HTML page and screenshot it with the Playwright browser tools (as in the draw.io loop below); check for label collisions, clipped text at the viewBox edges, and dark-mode legibility. If no browser tools are available, deliver anyway and say the visual check was skipped.
+**Icons in diagrams** come from `templates/svg/icons.svg`, a sprite of 96 `currentColor` symbols (63 outline icons from Tabler Icons, 33 brand marks from Simple Icons; catalog and usage in `references/icons.md`). Copy the symbols a diagram uses into its own `<defs>` and place them with `<use href="#cwi-…">`, in the muted tone, one per node at most.
+
+**Complexity budget (diagrams)**: before drawing, state the type, the node count and what you'll leave out. One diagram holds at most **9 nodes, 12 edges, 2 accent roles and 2 edge crossings**; a sequence diagram at most 5 lifelines, a swimlane diagram at most 5 lanes. Over budget means the subject needs an overview diagram plus one detail diagram per subsystem, not a bigger canvas. Deleting is the first move: a node that doesn't change what the reader decides goes.
+
+**Workflow**: pick template → substitute data and recompute coordinates (show your scale math in a comment) → apply brand tokens (chrome from the brandbook per `chart-styling.md`; series 1 = accent) → rename all `id=""` attributes with a per-chart slug → **lint** → verify visually.
+
+The lint is `python3 scripts/svg-lint.py <file.svg>` (this skill's `scripts/` folder; no dependencies). It checks what a screenshot shows late or not at all: diagonal edge segments, two edges on the same attach point or on top of each other, an edge running through a node or closer than 8 units to one, more than 2 crossings, an edge label sitting on its line, a node label off its node's centre or wider than the node, anything outside the viewBox or inside the 16-unit padding, fonts under 10, `<tspan>` without `x`, missing markers, duplicate ids, `<style>` selectors not namespaced under the root class, the root's `role`/`<title>`/`<desc>`/`aria-labelledby` wiring, and the complexity budget. It exits 1 on errors; fix those, read the warnings, and only then screenshot. The template idiom is what it reads: class names containing `node`, `edge`, `elbl`, `lbl` and `group`, so keep them.
+
+To verify visually, write the SVG into a minimal HTML page and screenshot it with the Playwright browser tools (as in the draw.io loop below); check for label collisions, clipped text at the viewBox edges, and dark-mode legibility. If no browser tools are available, deliver after a clean lint and say the visual check was skipped.
+
+**Before delivering, check:**
+- The lint reports 0 errors, and every warning left is one you can defend.
+- One reading order (top-to-bottom or left-to-right), and the main path reads first.
+- Every node has a label a stranger can read without the legend; every edge that isn't the obvious flow has one too.
+- Accent appears in at most two roles, and the diagram still reads in grayscale (dash, weight and labels carry the second channel).
+- Light and dark both legible; nothing inside the 16-unit padding; the `<desc>` states the takeaway.
 
 **Delivery**: inline `<svg>` for HTML pages (inherits page theme via CSS custom properties); standalone `.svg` file needs the `xmlns` attribute and self-contained `<style>` (templates have both). For export to PNG/PPTX, bake literal hex — `var()` doesn't survive rasterizers.
+
+---
+
+## Importing a diagram: extract, digest, redraw, ledger
+
+When the user hands over a diagram that exists already (a `.drawio` file, a Mermaid block, an Excalidraw scene or one of chartware's own SVGs) and wants it in another medium, in the brand, or cleaned up, **redraw it; don't convert it.** A converted diagram keeps the old layout's faults in a new file. The contract has four steps, and the script does the two mechanical ones:
+
+1. **Extract.** `python3 scripts/diagram-digest.py extract <file> --md` writes the digest: the nodes with their labels, shapes and groups, the edges with their labels and styles, and the direction. Nothing about pixels. Read it, then read the original once as a picture if you have browser tools, to catch what the digest can't carry (an icon, a colour that means something, a note in the margin).
+2. **Decide the four dials and say them before drawing.** *Format*: the target medium by the fit table above, or the user's choice. *Size*: the preset (§Medium 2). *Detail*: full, or an overview with the budget applied (9 nodes, 12 edges), which usually means merging nodes into groups and dropping edges that don't change what the reader decides. *Audience*: who reads it, which decides the labels. Write the plan as one short paragraph, including what you intend to merge or drop and why.
+3. **Redraw** in the target medium from its template, under the normal rules for that medium (brand, routing, budget, lint for SVG). Keep the original's labels verbatim unless the audience dial says otherwise; renames go in the ledger.
+4. **Ledger.** `python3 scripts/diagram-digest.py ledger <original> <redrawn> --md` compares the two digests and lists every node as kept, renamed, merged, dropped or added, and every edge as kept, relabelled, dropped or added. Deliver the ledger with the diagram, with one line of reason per dropped or merged row. A ledger with unexplained drops means the redraw isn't finished.
+
+The extractor reads draw.io (including the compressed form draw.io saves by default), Mermaid `flowchart`/`graph` (node shapes, `|label|` and `-- label -->` edges, subgraphs, dashed and thick edges), Excalidraw (bound text, bound arrows, frames) and chartware SVG (the class idiom). Sequence diagrams, Gantt and other Mermaid types aren't parsed; redraw those from the text by hand and write the ledger yourself.
 
 ---
 

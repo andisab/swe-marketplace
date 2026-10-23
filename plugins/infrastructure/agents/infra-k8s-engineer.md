@@ -1,7 +1,7 @@
 ---
 name: k8s-engineer
 description: Kubernetes specialist for container orchestration, cluster management, and deployment strategies. Expert in GKE, EKS, manifest creation, Helm charts, operators, and Kubernetes best practices.
-tools: Read, Write, MultiEdit, Bash, Docker, context7
+tools: Read, Write, Edit, Bash, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#98971a"
 tags:

@@ -1,0 +1,63 @@
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg" class="cw-bar" role="img" aria-labelledby="gbar-t gbar-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="gbar-t">Revenue by region, half-years 2024 to 2026 ($M)</title>
+  <desc id="gbar-d">Grouped bars. Americas grew from $2.4M to $4.1M, EMEA from $1.9M to $3.4M and APAC from $0.8M to $2.3M; every region rose in H2 2026.</desc>
+  <style>
+    .cw-bar { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-bar { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-bar { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-bar .grid{stroke:var(--cw-grid);stroke-width:1}.cw-bar .zero{stroke:var(--cw-axis);stroke-width:1}.cw-bar .tick,.cw-bar .cat{fill:var(--cw-muted);font-size:11px}.cw-bar .lgd{fill:var(--cw-ink);font-size:11px}
+    .cw-bar .s1{fill:var(--cw-c1)}.cw-bar .s2{fill:var(--cw-c1);fill-opacity:.45}.cw-bar .s3{fill:var(--cw-c2)}.cw-bar:hover .bar{opacity:.45}.cw-bar .bar:hover{opacity:1}
+  </style>
+  <g>
+    <rect class="s1" x="446" y="10" width="12" height="12" rx="2"/><text class="lgd" x="464" y="16" dy="0.32em">EMEA</text>
+    <rect class="s2" x="536" y="10" width="12" height="12" rx="2"/><text class="lgd" x="554" y="16" dy="0.32em">Americas</text>
+    <rect class="s3" x="626" y="10" width="12" height="12" rx="2"/><text class="lgd" x="644" y="16" dy="0.32em">APAC</text>
+  </g>
+  <g transform="translate(48,36)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="259.2" x2="648" y2="259.2"/>
+      <line class="grid" x1="0" y1="194.4" x2="648" y2="194.4"/>
+      <line class="grid" x1="0" y1="129.6" x2="648" y2="129.6"/>
+      <line class="grid" x1="0" y1="64.8" x2="648" y2="64.8"/>
+      <line class="grid" x1="0" y1="0.0" x2="648" y2="0.0"/>
+      <line class="zero" x1="0" y1="324" x2="648" y2="324"/>
+    </g>
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="324.0" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="259.2" dy="0.32em">1</text>
+      <text class="tick" x="-8" y="194.4" dy="0.32em">2</text>
+      <text class="tick" x="-8" y="129.6" dy="0.32em">3</text>
+      <text class="tick" x="-8" y="64.8" dy="0.32em">4</text>
+      <text class="tick" x="-8" y="0.0" dy="0.32em">5</text>
+    </g>
+    <g>
+      <path class="bar s1" d="M13.3,324 L13.3,203.9 A3,3 0 0 1 16.3,200.9 L35.6,200.9 A3,3 0 0 1 38.6,203.9 L38.6,324 Z"><title>EMEA H1 24 — $1.9M</title></path>
+      <path class="bar s2" d="M41.4,324 L41.4,171.5 A3,3 0 0 1 44.4,168.5 L63.6,168.5 A3,3 0 0 1 66.6,171.5 L66.6,324 Z"><title>Americas H1 24 — $2.4M</title></path>
+      <path class="bar s3" d="M69.4,324 L69.4,275.2 A3,3 0 0 1 72.4,272.2 L91.7,272.2 A3,3 0 0 1 94.7,275.2 L94.7,324 Z"><title>APAC H1 24 — $0.8M</title></path>
+      <path class="bar s1" d="M121.3,324 L121.3,178.0 A3,3 0 0 1 124.3,175.0 L143.6,175.0 A3,3 0 0 1 146.6,178.0 L146.6,324 Z"><title>EMEA H2 24 — $2.3M</title></path>
+      <path class="bar s2" d="M149.4,324 L149.4,184.4 A3,3 0 0 1 152.4,181.4 L171.6,181.4 A3,3 0 0 1 174.6,184.4 L174.6,324 Z"><title>Americas H2 24 — $2.2M</title></path>
+      <path class="bar s3" d="M177.4,324 L177.4,255.7 A3,3 0 0 1 180.4,252.7 L199.7,252.7 A3,3 0 0 1 202.7,255.7 L202.7,324 Z"><title>APAC H2 24 — $1.1M</title></path>
+      <path class="bar s1" d="M229.3,324 L229.3,158.5 A3,3 0 0 1 232.3,155.5 L251.6,155.5 A3,3 0 0 1 254.6,158.5 L254.6,324 Z"><title>EMEA H1 25 — $2.6M</title></path>
+      <path class="bar s2" d="M257.4,324 L257.4,139.1 A3,3 0 0 1 260.4,136.1 L279.6,136.1 A3,3 0 0 1 282.6,139.1 L282.6,324 Z"><title>Americas H1 25 — $2.9M</title></path>
+      <path class="bar s3" d="M285.4,324 L285.4,242.8 A3,3 0 0 1 288.4,239.8 L307.7,239.8 A3,3 0 0 1 310.7,242.8 L310.7,324 Z"><title>APAC H1 25 — $1.3M</title></path>
+      <path class="bar s1" d="M337.3,324 L337.3,171.5 A3,3 0 0 1 340.3,168.5 L359.6,168.5 A3,3 0 0 1 362.6,171.5 L362.6,324 Z"><title>EMEA H2 25 — $2.4M</title></path>
+      <path class="bar s2" d="M365.4,324 L365.4,113.2 A3,3 0 0 1 368.4,110.2 L387.6,110.2 A3,3 0 0 1 390.6,113.2 L390.6,324 Z"><title>Americas H2 25 — $3.3M</title></path>
+      <path class="bar s3" d="M393.4,324 L393.4,223.3 A3,3 0 0 1 396.4,220.3 L415.7,220.3 A3,3 0 0 1 418.7,223.3 L418.7,324 Z"><title>APAC H2 25 — $1.6M</title></path>
+      <path class="bar s1" d="M445.3,324 L445.3,126.1 A3,3 0 0 1 448.3,123.1 L467.6,123.1 A3,3 0 0 1 470.6,126.1 L470.6,324 Z"><title>EMEA H1 26 — $3.1M</title></path>
+      <path class="bar s2" d="M473.4,324 L473.4,100.2 A3,3 0 0 1 476.4,97.2 L495.6,97.2 A3,3 0 0 1 498.6,100.2 L498.6,324 Z"><title>Americas H1 26 — $3.5M</title></path>
+      <path class="bar s3" d="M501.4,324 L501.4,197.4 A3,3 0 0 1 504.4,194.4 L523.7,194.4 A3,3 0 0 1 526.7,197.4 L526.7,324 Z"><title>APAC H1 26 — $2.0M</title></path>
+      <path class="bar s1" d="M553.3,324 L553.3,106.7 A3,3 0 0 1 556.3,103.7 L575.6,103.7 A3,3 0 0 1 578.6,106.7 L578.6,324 Z"><title>EMEA H2 26 — $3.4M</title></path>
+      <path class="bar s2" d="M581.4,324 L581.4,61.3 A3,3 0 0 1 584.4,58.3 L603.6,58.3 A3,3 0 0 1 606.6,61.3 L606.6,324 Z"><title>Americas H2 26 — $4.1M</title></path>
+      <path class="bar s3" d="M609.4,324 L609.4,178.0 A3,3 0 0 1 612.4,175.0 L631.7,175.0 A3,3 0 0 1 634.7,178.0 L634.7,324 Z"><title>APAC H2 26 — $2.3M</title></path>
+    </g>
+    <g text-anchor="middle">
+      <text class="cat" x="54.0" y="332" dy="0.71em">H1 24</text>
+      <text class="cat" x="162.0" y="332" dy="0.71em">H2 24</text>
+      <text class="cat" x="270.0" y="332" dy="0.71em">H1 25</text>
+      <text class="cat" x="378.0" y="332" dy="0.71em">H2 25</text>
+      <text class="cat" x="486.0" y="332" dy="0.71em">H1 26</text>
+      <text class="cat" x="594.0" y="332" dy="0.71em">H2 26</text>
+    </g>
+  </g>
+</svg>

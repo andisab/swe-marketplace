@@ -1,7 +1,7 @@
 ---
 name: html-expert
 description: Expert in HTML structure, semantics, and best practices for building clean, accessible, and optimized web pages.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#e34c26"
 tags:

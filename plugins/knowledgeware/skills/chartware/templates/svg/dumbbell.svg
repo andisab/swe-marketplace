@@ -1,0 +1,95 @@
+<!-- chartware SVG template: dumbbell (before/after per row)
+     viewBox 480x300 · plot translate(96,40) · innerW 352 · rowH 36 · xPx(v) = innerW*v/1000 = 0.352v
+     One row per item, sorted by the "before" value descending. A muted dot marks before, an accent dot after,
+     joined by a 2-unit line in the grid tone; the gap is the change. Value labels sit outside the dots:
+     the before value left of its dot when "after" is smaller (as here), otherwise right — never between them.
+     Legend above the plot (two series). Vertical gridlines on the value axis only.
+     Adapt: swap rows and values, recompute x, keep the token block; rename ids per chart. -->
+<svg viewBox="0 0 480 300" width="480" height="300" xmlns="http://www.w3.org/2000/svg"
+     class="cw-db" role="img" aria-labelledby="cwdb-t cwdb-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwdb-t">p95 latency before and after the cache (ms)</title>
+  <desc id="cwdb-d">Dumbbell chart. Every service's p95 fell: checkout from 840 ms to 310 ms, search 620 to 290, catalog 450 to 260, auth 390 to 180, profile 310 to 170 and cart 280 to 150.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-db { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; }
+    @media (prefers-color-scheme: dark) {
+      .cw-db { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent/--error) */
+    .cw-db { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); }
+    .cw-db .grid { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-db .tick { fill:var(--cw-muted); font-size:11px; }
+    .cw-db .cat  { fill:var(--cw-ink); font-size:12px; }
+    .cw-db .val  { fill:var(--cw-muted); font-size:11px; font-variant-numeric:tabular-nums; }
+    .cw-db .lgd  { fill:var(--cw-ink); font-size:11px; }
+    .cw-db .bar  { stroke:var(--cw-grid); stroke-width:2; stroke-linecap:round; }
+    .cw-db .before { fill:var(--cw-c2); }
+    .cw-db .after  { fill:var(--cw-c1); }
+    .cw-db .dot  { stroke:var(--cw-bg); stroke-width:1.5; }
+  </style>
+  <!-- legend: text wears ink, the swatch carries identity -->
+  <g>
+    <circle class="before" cx="298" cy="16" r="5"/><text class="lgd" x="308" y="16" dy="0.32em">before</text>
+    <circle class="after" cx="378" cy="16" r="5"/><text class="lgd" x="388" y="16" dy="0.32em">after</text>
+  </g>
+  <g transform="translate(96,40)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="0" x2="0" y2="216"/>
+      <line class="grid" x1="88" y1="0" x2="88" y2="216"/>
+      <line class="grid" x1="176" y1="0" x2="176" y2="216"/>
+      <line class="grid" x1="264" y1="0" x2="264" y2="216"/>
+      <line class="grid" x1="352" y1="0" x2="352" y2="216"/>
+    </g>
+    <g text-anchor="middle">
+      <text class="tick" x="0" y="224" dy="0.71em">0</text>
+      <text class="tick" x="88" y="224" dy="0.71em">250</text>
+      <text class="tick" x="176" y="224" dy="0.71em">500</text>
+      <text class="tick" x="264" y="224" dy="0.71em">750</text>
+      <text class="tick" x="352" y="224" dy="0.71em">1,000</text>
+    </g>
+    <g>
+      <line class="bar" x1="109.1" y1="18" x2="295.7" y2="18"/>
+      <circle class="dot before" cx="295.7" cy="18" r="5.5"><title>checkout before — 840 ms</title></circle>
+      <circle class="dot after" cx="109.1" cy="18" r="5.5"><title>checkout after — 310 ms</title></circle>
+      <text class="val" x="305.7" y="18" dy="0.32em">840</text>
+      <text class="val" x="99.1" y="18" dy="0.32em" text-anchor="end">310</text>
+      <text class="cat" x="-10" y="18" dy="0.32em" text-anchor="end">checkout</text>
+      <line class="bar" x1="102.1" y1="54" x2="218.2" y2="54"/>
+      <circle class="dot before" cx="218.2" cy="54" r="5.5"><title>search before — 620 ms</title></circle>
+      <circle class="dot after" cx="102.1" cy="54" r="5.5"><title>search after — 290 ms</title></circle>
+      <text class="val" x="228.2" y="54" dy="0.32em">620</text>
+      <text class="val" x="92.1" y="54" dy="0.32em" text-anchor="end">290</text>
+      <text class="cat" x="-10" y="54" dy="0.32em" text-anchor="end">search</text>
+      <line class="bar" x1="91.5" y1="90" x2="158.4" y2="90"/>
+      <circle class="dot before" cx="158.4" cy="90" r="5.5"><title>catalog before — 450 ms</title></circle>
+      <circle class="dot after" cx="91.5" cy="90" r="5.5"><title>catalog after — 260 ms</title></circle>
+      <text class="val" x="168.4" y="90" dy="0.32em">450</text>
+      <text class="val" x="81.5" y="90" dy="0.32em" text-anchor="end">260</text>
+      <text class="cat" x="-10" y="90" dy="0.32em" text-anchor="end">catalog</text>
+      <line class="bar" x1="63.4" y1="126" x2="137.3" y2="126"/>
+      <circle class="dot before" cx="137.3" cy="126" r="5.5"><title>auth before — 390 ms</title></circle>
+      <circle class="dot after" cx="63.4" cy="126" r="5.5"><title>auth after — 180 ms</title></circle>
+      <text class="val" x="147.3" y="126" dy="0.32em">390</text>
+      <text class="val" x="53.4" y="126" dy="0.32em" text-anchor="end">180</text>
+      <text class="cat" x="-10" y="126" dy="0.32em" text-anchor="end">auth</text>
+      <line class="bar" x1="59.8" y1="162" x2="109.1" y2="162"/>
+      <circle class="dot before" cx="109.1" cy="162" r="5.5"><title>profile before — 310 ms</title></circle>
+      <circle class="dot after" cx="59.8" cy="162" r="5.5"><title>profile after — 170 ms</title></circle>
+      <text class="val" x="119.1" y="162" dy="0.32em">310</text>
+      <text class="val" x="49.8" y="162" dy="0.32em" text-anchor="end">170</text>
+      <text class="cat" x="-10" y="162" dy="0.32em" text-anchor="end">profile</text>
+      <line class="bar" x1="52.8" y1="198" x2="98.6" y2="198"/>
+      <circle class="dot before" cx="98.6" cy="198" r="5.5"><title>cart before — 280 ms</title></circle>
+      <circle class="dot after" cx="52.8" cy="198" r="5.5"><title>cart after — 150 ms</title></circle>
+      <text class="val" x="108.6" y="198" dy="0.32em">280</text>
+      <text class="val" x="42.8" y="198" dy="0.32em" text-anchor="end">150</text>
+      <text class="cat" x="-10" y="198" dy="0.32em" text-anchor="end">cart</text>
+    </g>
+  </g>
+</svg>

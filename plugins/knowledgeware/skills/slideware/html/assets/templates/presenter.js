@@ -584,8 +584,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       frame.inert = true;
       frame.innerHTML = '<div class="backgrounds"></div><div class="slides"></div>';
       const bg = deck.getSlideBackground(slide);
-      if (bg) frame.firstChild.appendChild(showCopy(bg.cloneNode(true)));
-      const copy = showCopy(slide.cloneNode(true));
+      if (bg) frame.firstChild.appendChild(showCopy(bg.cloneNode(true), "block"));
+      const copy = showCopy(slide.cloneNode(true), deck.getConfig().display || "block");
       copy.querySelectorAll(".fragment").forEach((f) => { f.classList.add("visible"); f.classList.remove("current-fragment"); });
       copy.querySelectorAll("[autoplay]").forEach((m) => m.removeAttribute("autoplay"));
       const slidesEl = frame.lastChild;
@@ -593,11 +593,11 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       slidesEl.appendChild(copy);
       return frame;
     }
-    function showCopy(node) {
+    function showCopy(node, display) {
       node.classList.remove("past", "future");
       node.classList.add("present");
       node.removeAttribute("hidden");
-      Object.assign(node.style, { display: "block", transition: "none" });
+      Object.assign(node.style, { display, transition: "none" });
       return node;
     }
     function renderSide(side, i, emptyText) {

@@ -35,7 +35,7 @@ description: >
   Since authentication security is a concern, use the security-auditor agent to perform a thorough security review.
   </commentary>
   </example>
-tools: Glob, Grep, LS, Find, FD, Task, Bash, Edit, MultiEdit, Write, NotebookEdit
+tools: Read, Glob, Grep, Agent, Bash, Edit, Write, NotebookEdit
 model: sonnet
 color: "#98971a"
 tags:

@@ -1,0 +1,79 @@
+/* style-5 — Material Olive. Generated from brand.md; the brandbook is the source of truth. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
+
+:root {
+  --bg: #F9FAEF;
+  --bg-dark: #12140E;
+  --surface: #FFFFFF;
+  --surface-alt: #EEEFE3;
+  --ink: #1A1C16;
+  --ink-body: #44483D;
+  --ink-muted: #75796C;
+  --ink-faint: #C5C8BA;
+  --border: #C5C8BA;
+  --accent: #4C662B;
+  --accent2: #386663;
+  --success: #586249;
+  --warning: #C97A1A;
+  --error: #BA1A1A;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Inter', Georgia, serif;
+  --font-mono: 'JetBrains Mono', Menlo, monospace;
+  --radius: 12px;
+  --shadow-opacity: 0.1;
+  color-scheme: light dark;
+}
+
+/* Dark theme: follows the system, or set data-theme="dark" on <html>. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg: #12140E;
+  --surface: #1B1E15;
+  --surface-alt: #23271B;
+  --ink: #E8EADF;
+  --ink-body: #C9CDBE;
+  --ink-muted: #9A9F8E;
+  --ink-faint: #5F6455;
+  --border: #343A2B;
+  --accent: #AFD08A;
+  --accent2: #8FC2BE;
+  --success: #B2BA9E;
+  --warning: #E0A24A;
+  --error: #FF8A80;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12140E;
+  --surface: #1B1E15;
+  --surface-alt: #23271B;
+  --ink: #E8EADF;
+  --ink-body: #C9CDBE;
+  --ink-muted: #9A9F8E;
+  --ink-faint: #5F6455;
+  --border: #343A2B;
+  --accent: #AFD08A;
+  --accent2: #8FC2BE;
+  --success: #B2BA9E;
+  --warning: #E0A24A;
+  --error: #FF8A80;
+}
+
+body { margin: 0; background: var(--bg); color: var(--ink-body); font: 400 1rem/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { color: var(--ink); font-family: var(--font-sans); line-height: 1.2; margin: 1.5em 0 0.5em; }
+h1 { font-size: 2.5rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.25rem; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+small, .muted { color: var(--ink-muted); }
+hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+code, pre { font-family: var(--font-mono); font-size: 0.875em; }
+pre { background: var(--surface-alt); padding: 1rem; border-radius: var(--radius); overflow: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+th { color: var(--ink-muted); font-weight: 500; }
+.container { max-width: 72ch; margin: 0 auto; padding: 2rem 1rem; }
+
+/* Motif: rounded cards with a soft shadow (the one style that uses shadows), tri-color chips. */
+.card { background: var(--surface); border-radius: var(--radius); padding: 1.25rem 1.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, var(--shadow-opacity)); }
+.chip { display: inline-block; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.8125rem; font-weight: 500; background: var(--surface-alt); color: var(--accent); }
+.chip.secondary { color: var(--success); }
+.chip.tertiary { color: var(--accent-2); }
+.kicker { font: 600 0.6875rem/1.2 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Validate the marketplace manifest and every plugin manifest with `claude plugin validate`.
+# Validate the marketplace manifest and every plugin manifest with `claude plugin validate`,
+# and check that agents name only real tools.
 # Fails on any error or warning.
 
 set -euo pipefail
@@ -12,6 +13,11 @@ if ! command -v claude >/dev/null 2>&1; then
 fi
 
 failed=0
+
+# `claude plugin validate` doesn't check agent tool names; this does.
+if ! python3 scripts/check-agent-tools.py; then
+  failed=1
+fi
 
 run_validate() {
   local target="$1"
@@ -33,6 +39,26 @@ run_validate() {
 }
 
 run_validate "." "marketplace"
+
+# adv's dispatcher against fake engines (no accounts or network needed)
+if ! bash plugins/adv/tests/dispatch-test.sh; then
+  failed=1
+fi
+
+# knowledgeware's style registry: both layouts, shadowing, markers, loaders
+if ! node plugins/knowledgeware/tests/registry-test.js; then
+  failed=1
+fi
+
+# chartware's SVG geometry lint: templates pass, a broken diagram trips every rule
+if ! bash plugins/knowledgeware/tests/svg-lint-test.sh; then
+  failed=1
+fi
+
+# chartware's diagram digest and fidelity ledger
+if ! bash plugins/knowledgeware/tests/diagram-digest-test.sh; then
+  failed=1
+fi
 
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue

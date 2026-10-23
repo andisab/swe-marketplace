@@ -1,0 +1,74 @@
+/* style-2 — Minimal. Generated from brand.md; the brandbook is the source of truth. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
+
+:root {
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-alt: #FAFAFA;
+  --ink: #111111;
+  --ink-body: #222222;
+  --ink-muted: #6B6B6B;
+  --ink-faint: #B8B8B8;
+  --border: #E5E5E5;
+  --accent: #4F46E5;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Inter', Georgia, serif;
+  --font-mono: 'JetBrains Mono', Menlo, monospace;
+  --radius: 2px;
+  --shadow-opacity: 0;
+  color-scheme: light dark;
+}
+
+/* Dark theme: follows the system, or set data-theme="dark" on <html>. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg: #0F0F11;
+  --surface: #0F0F11;
+  --surface-alt: #17171A;
+  --ink: #F2F2F2;
+  --ink-body: #D6D6D8;
+  --ink-muted: #9A9AA0;
+  --ink-faint: #55555C;
+  --border: #26262B;
+  --accent: #8B85F0;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --error: #F87171;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F0F11;
+  --surface: #0F0F11;
+  --surface-alt: #17171A;
+  --ink: #F2F2F2;
+  --ink-body: #D6D6D8;
+  --ink-muted: #9A9AA0;
+  --ink-faint: #55555C;
+  --border: #26262B;
+  --accent: #8B85F0;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --error: #F87171;
+}
+
+body { margin: 0; background: var(--bg); color: var(--ink-body); font: 400 1rem/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { color: var(--ink); font-family: var(--font-sans); line-height: 1.2; margin: 1.5em 0 0.5em; }
+h1 { font-size: 2.5rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.25rem; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+small, .muted { color: var(--ink-muted); }
+hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+code, pre { font-family: var(--font-mono); font-size: 0.875em; }
+pre { background: var(--surface-alt); padding: 1rem; border-radius: var(--radius); overflow: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+th { color: var(--ink-muted); font-weight: 500; }
+.container { max-width: 72ch; margin: 0 auto; padding: 2rem 1rem; }
+
+/* Motif: extended-tracking capital kickers in indigo; no shadows, no strips, no decoration. */
+.kicker { font: 600 0.6875rem/1.2 var(--font-sans); letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+.button { display: inline-block; background: var(--accent); color: #fff; border-radius: var(--radius); padding: 0.6rem 1rem; font-weight: 500; text-decoration: none; }
+h1, h2, h3 { letter-spacing: -0.02em; }

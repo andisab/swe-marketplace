@@ -29,7 +29,7 @@ Quantum computing is advancing rapidly in research but remains pre-commercial fo
 
 ---
 
-## Example 2: Market Research Report (Markdown for Joplin)
+## Example 2: Market Research Report (Markdown)
 
 **Saved as:** `ev_market_analysis_20251119.md`
 
@@ -108,13 +108,14 @@ Challenges remain in grid capacity, charging infrastructure, and supply chain re
 - 500-800 words
 - Professional but accessible tone
 
-### Markdown Reports (.md) for Joplin
+### Markdown Reports (.md)
 - Headers and subheaders
 - **Bold** for emphasis on key metrics
 - Bullet points with `+/-` for advantages/disadvantages
 - Inline links `[text](url)`
 - Tables where appropriate
 - Slightly longer (can expand to 1000 words if topic warrants)
+- The `report-formats` skill adds an Obsidian profile (properties block, callouts) and a Joplin profile (`>[toc]`), plus five report types with section lists
 
 ## Notes
 

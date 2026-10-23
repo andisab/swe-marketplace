@@ -27,7 +27,7 @@ description: >
   </commentary>
   </example>
 
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7, WebSearch, WebFetch
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*, WebSearch, WebFetch
 model: sonnet
 color: "#458588"
 tags:

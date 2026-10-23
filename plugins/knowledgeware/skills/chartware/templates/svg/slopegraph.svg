@@ -1,0 +1,71 @@
+<!-- chartware SVG template: slopegraph (two periods, direct labels)
+     viewBox 480x360 · columns at x=150 (2025) and x=330 (2026) · yPx(v) = 320 - 5.52v  (domain 0–50)
+     Each category is one line between its two values. Rising lines wear the accent, falling the muted tone,
+     unchanged the grid tone — the slope is the message, so there is no y axis and no gridlines.
+     Direct labels: "name value" anchored end on the left, "value name" anchored start on the right,
+     12 units off the column. Labels are laid out top to bottom and any label closer than 14 units to the
+     one above is pushed down (the dot stays on the true value): here Social, Paid moved.
+     Adapt: swap categories and values, recompute y, keep the token block; rename ids per chart. -->
+<svg viewBox="0 0 480 360" width="480" height="360" xmlns="http://www.w3.org/2000/svg"
+     class="cw-sl" role="img" aria-labelledby="cwsl-t cwsl-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwsl-t">Traffic share by channel, 2025 vs 2026 (%)</title>
+  <desc id="cwsl-d">Slopegraph. Search grew from 42% to 47% and Social from 9% to 11%; Direct fell from 28% to 24%, Referral from 14% to 12% and Email from 5% to 4%; Paid stayed at 2%.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-sl { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; }
+    @media (prefers-color-scheme: dark) {
+      .cw-sl { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent/--error) */
+    .cw-sl { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); }
+    .cw-sl .col  { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-sl .hdr  { fill:var(--cw-muted); font-size:11px; letter-spacing:.06em; }
+    .cw-sl .lbl  { fill:var(--cw-ink); font-size:12px; font-variant-numeric:tabular-nums; }
+    .cw-sl .line { fill:none; stroke-width:2; stroke-linecap:round; }
+    .cw-sl .up   { stroke:var(--cw-c1); }
+    .cw-sl .down { stroke:var(--cw-c2); }
+    .cw-sl .flat { stroke:var(--cw-grid); }
+    .cw-sl .dot  { stroke:var(--cw-bg); stroke-width:1.5; }
+    .cw-sl .dot.up { fill:var(--cw-c1); } .cw-sl .dot.down { fill:var(--cw-c2); } .cw-sl .dot.flat { fill:var(--cw-grid); }
+  </style>
+  <g text-anchor="middle">
+    <text class="hdr" x="150" y="28">2025</text>
+    <text class="hdr" x="330" y="28">2026</text>
+  </g>
+  <g shape-rendering="crispEdges">
+    <line class="col" x1="150" y1="44" x2="150" y2="320"/>
+    <line class="col" x1="330" y1="44" x2="330" y2="320"/>
+  </g>
+  <g>
+    <line class="line up" x1="150" y1="88.2" x2="330" y2="60.6"><title>Search: 42% → 47%</title></line>
+    <circle class="dot up" cx="150" cy="88.2" r="4"/><circle class="dot up" cx="330" cy="60.6" r="4"/>
+    <text class="lbl" x="138" y="88.2" dy="0.32em" text-anchor="end">Search 42</text>
+    <text class="lbl" x="342" y="60.6" dy="0.32em">47 Search</text>
+    <line class="line down" x1="150" y1="165.4" x2="330" y2="187.5"><title>Direct: 28% → 24%</title></line>
+    <circle class="dot down" cx="150" cy="165.4" r="4"/><circle class="dot down" cx="330" cy="187.5" r="4"/>
+    <text class="lbl" x="138" y="165.4" dy="0.32em" text-anchor="end">Direct 28</text>
+    <text class="lbl" x="342" y="187.5" dy="0.32em">24 Direct</text>
+    <line class="line down" x1="150" y1="242.7" x2="330" y2="253.8"><title>Referral: 14% → 12%</title></line>
+    <circle class="dot down" cx="150" cy="242.7" r="4"/><circle class="dot down" cx="330" cy="253.8" r="4"/>
+    <text class="lbl" x="138" y="242.7" dy="0.32em" text-anchor="end">Referral 14</text>
+    <text class="lbl" x="342" y="253.8" dy="0.32em">12 Referral</text>
+    <line class="line up" x1="150" y1="270.3" x2="330" y2="259.3"><title>Social: 9% → 11%</title></line>
+    <circle class="dot up" cx="150" cy="270.3" r="4"/><circle class="dot up" cx="330" cy="259.3" r="4"/>
+    <text class="lbl" x="138" y="270.3" dy="0.32em" text-anchor="end">Social 9</text>
+    <text class="lbl" x="342" y="267.8" dy="0.32em">11 Social</text>
+    <line class="line down" x1="150" y1="292.4" x2="330" y2="297.9"><title>Email: 5% → 4%</title></line>
+    <circle class="dot down" cx="150" cy="292.4" r="4"/><circle class="dot down" cx="330" cy="297.9" r="4"/>
+    <text class="lbl" x="138" y="292.4" dy="0.32em" text-anchor="end">Email 5</text>
+    <text class="lbl" x="342" y="297.9" dy="0.32em">4 Email</text>
+    <line class="line flat" x1="150" y1="309" x2="330" y2="309"><title>Paid: 2% → 2%</title></line>
+    <circle class="dot flat" cx="150" cy="309" r="4"/><circle class="dot flat" cx="330" cy="309" r="4"/>
+    <text class="lbl" x="138" y="309" dy="0.32em" text-anchor="end">Paid 2</text>
+    <text class="lbl" x="342" y="311.9" dy="0.32em">2 Paid</text>
+  </g>
+</svg>

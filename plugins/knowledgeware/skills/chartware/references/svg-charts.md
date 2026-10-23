@@ -17,6 +17,19 @@ Brand colors come from the registry: chrome/series mapping per **brandware `refe
 | Donut + legend | `0 0 320 200` |
 | Diagram | computed from content grid |
 
+**Size presets** for charts that leave the page. The viewBox sets the design size; the font floor is what keeps text legible at the medium's real rendered size, so pick the preset first and author at it rather than scaling a doc chart up.
+
+| Preset | viewBox | Font floor | Margins | Notes |
+|---|---|---|---|---|
+| Document (default) | `0 0 720 400` | 11 | 16–48 | Content column of a knowledgebase page or README; renders at or below 720px |
+| Slide, HTML deck (16:9) | `0 0 1280 720` full bleed, or `0 0 1120 560` for a chart inside the slide's content area | 18 (ticks 16) | 48 | slideware's HTML decks are 1280×720; leave 80 units each side for the slide margin |
+| Slide, PowerPoint (16:9) | `0 0 960 540` (10 × 5.625 in at 96 dpi), or `0 0 864 440` inside the margins | 14 (ticks 12) | 40 | Export to PNG at 2× (1920×1080) with literal hex, then `addImage`; pptxgenjs can't read `var()` |
+| Slide (4:3) | `0 0 960 720` | 14 | 40 | Same export rule as above |
+| Social card | `0 0 1200 630` (Open Graph), `0 0 1080 1080` (square) | 24 | 64 | One number and one line; no axis labels under 20 |
+| Print A4 / Letter | `0 0 794 1123` / `0 0 816 1056` (96 dpi, portrait) | 10 | 48 | Bake hex, no `prefers-color-scheme`, no hover rules; export via the browser's print to PDF |
+
+For a slide, the bars, lines and dots scale with the viewBox but the strokes don't: use 2.5–3px lines and 1.5px gridlines on the 1280-unit canvas, and raise `r` on dots to 6–7. A chart that will be pasted into both a page and a deck is two files from one data set, not one file stretched.
+
 **Root element** (every chart):
 
 ```svg
@@ -87,7 +100,17 @@ Area fill = line path + `L{xEnd},{innerH} L{x0},{innerH} Z`, filled with a verti
 
 **Sparklines / KPI tiles** (`kpi-tile.svg`): no axes/grid/labels; inset the y-range 2–3px so peaks don't clip; dot on the last point only; value in `tabular-nums`; delta triangle as a path, not a ▲ glyph; delta color is per-metric semantic (churn down = good), not per-sign. Side-by-side sparks must share a y-domain.
 
-**Heatmap**: cell 20–36px, 2px gap, `rx 2`; 5–7 **discrete** buckets (quantile for skewed data), never a continuous ramp; in-cell values only when cell ≥ 32px; missing cells get a hatched/outlined rect — an absent rect reads as zero.
+**Heatmap** (`heatmap.svg`): cell 20–40px, 2px gap, `rx 2`; 5–7 **discrete** buckets (quantile cut points for skewed data), never a continuous ramp; one hue at `fill-opacity` steps (.08 → 1) over the canvas, which survives dark mode where a baked ramp wouldn't; in-cell values only when the cell is ≥ 32px, otherwise in `<title>`; missing cells get an outlined, dashed rect — an absent rect reads as zero. Legend: the bucket swatches in order with the lowest and highest cut points as text.
+
+**Waterfall** (`waterfall.svg`): start and end totals rise from the baseline in the muted tone; each step floats from the running total, increases in the accent, decreases in the error token (diverging polarity). `y = min(yPx(lo), yPx(hi))`, `h = abs(…)`, so a negative height can't happen. Dashed hairline connectors join each bar's end level to the next bar's start. **Write the conservation check in the file's comment** (start + Σ steps = end); the lint can't do arithmetic on your data. Value labels above every bar, signed on the steps.
+
+**Slopegraph** (`slopegraph.svg`): two value columns, one line per category, no y axis and no gridlines, because the slope is the message. Rising lines wear the accent, falling the muted tone, flat the grid tone. Direct labels only: `name value` anchored `end` on the left, `value name` anchored `start` on the right, 12 units off the column. Lay labels out top to bottom and push any label closer than 14 units to the one above it down; the dot stays on the true value. More than ~8 categories: show the top movers and group the rest.
+
+**Gantt** (`gantt.svg`): a time axis in weeks or months across the top, vertical gridlines at every second tick, one row per task under an uppercase phase label row. Bars are pills (`rx = barH/2`) coloured by status: done in the muted tone, active in the accent, planned outlined with a 12% tint; a milestone is a diamond path at its date. The "today" line is dashed in the error token with a small label above the plot. Left margin from the longest task label. Keep it to ~12 rows; a bigger plan is one Gantt per phase.
+
+**Sankey** (`sankey.svg`): two node columns (sources on the left, outcomes on the right) as solid bars whose heights are value × scale, with 14 units of padding between nodes; one scale per column so the columns sum to the same height. Each link is a ribbon: `M x0,ya0 C mx,ya0 mx,yb0 x1,yb0 L x1,yb1 C mx,yb1 mx,ya1 x0,ya1 Z`, with `mx` the midpoint, so ribbons leave and arrive flat. Stack a node's ribbons in the order of the opposite column so they don't cross inside the node. Ribbons wear one colour (the accent at `fill-opacity .35`), with the muted tone for the lost or negative outcome; hover dims the others. The data must conserve (rows sum to their source, columns to their outcome); check it before drawing. More than two columns or more than ~6 nodes per column: switch to draw.io.
+
+**Dumbbell** (`dumbbell.svg`): one row per item, sorted by the "before" value; a muted dot for before and an accent dot for after, joined by a 2px line in the grid tone, with a `bg`-colored 1.5px stroke halo on the dots so they sit cleanly on the line. Value labels outside the dots, never between them (before to the outer side of its dot, after to the outer side of its). Vertical gridlines on the value axis only; a two-item legend above the plot.
 
 ## 4. Text
 
@@ -169,6 +192,10 @@ Use `fill-opacity` for tints, **not** `opacity` (which washes out the stroke too
 `refX` past the tip (10.5 for a tip at 10) insets the arrow so the line never pokes through; `orient="auto-start-reverse"` lets the same marker serve `marker-start`. Keep markers fill-only (no stroke), and **`stroke-linecap:butt` on arrowed edges** — round/square caps extend past the endpoint and poke through the tip.
 
 **Edge routing**: attach at N/S/E/W midpoints of the rect (top-to-bottom flows connect S→N, left-to-right E→W); fan *n* exits from one side at `w·i/(n+1)`, never stacked. Straight where possible. Orthogonal elbows: route through the row/column gutters, corner radius `r = min(8, |dx|/2, |dy|/2)`, rounded with the **corner vertex as a `Q` control point** (`L x,(ym−r) Q x,ym (x±r),ym` — no arc sweep-flag reasoning needed). Smooth curves between nodes: cubic with control offset `k = clamp(0.45×|axis distance|, 40, 160)` along the departure axis (`C (x1+k),y1 (x2−k),y2 x2,y2` for E→W). Keep edges ≥8 units clear of node boxes; ≤2 crossings per diagram.
+
+**Icons**: `templates/svg/icons.svg` is a sprite of 96 `currentColor` symbols (Tabler outline icons and Simple Icons brand marks, 24-unit grid); `references/icons.md` lists them and shows the `<defs>` + `<use>` pattern. The lint reports a `<use>` whose `href` the file doesn't define.
+
+**Checking the geometry**: `scripts/svg-lint.py` enforces the routing rules above (diagonal segments, stacked edges, shared attach points, transit through nodes, clearance, crossings, clipping, label placement, font floor, ids, markers, selector namespacing) and reports the node/edge/accent counts against the budget in SKILL.md. Run it before the screenshot loop.
 
 **Edge labels**: positioned `<text>` + the paint-order halo (`paint-order:stroke; stroke:var(--cw-bg); stroke-width:4` — the halo is the *background token*, never literal white), offset ~10 units perpendicular from the line, on the long segment of an elbow. `<textPath>` only for organic curves (it flips on right-to-left segments).
 

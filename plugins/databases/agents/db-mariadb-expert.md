@@ -1,7 +1,7 @@
 ---
 name: db-mariadb-expert
 description: Expert in MariaDB 10.x/11.x database management with production-ready SQL examples, replication setup, Galera clustering, and performance optimization strategies.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#8f3f71"
 tags:

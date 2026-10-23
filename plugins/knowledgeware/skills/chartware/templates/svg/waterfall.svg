@@ -1,0 +1,92 @@
+<!-- chartware SVG template: waterfall (bridge) chart
+     viewBox 720x400 · plot translate(56,32) · innerW 640 · innerH 330
+     Bars: start and end totals from the baseline; each step floats from the running total.
+     Conservation check (write it in the comment, the lint can't): start 42 + Σ(9+6+-3+-11+-2) = end 41.
+     yPx(v) = innerH * (1 - v/niceMax) = 330 - 5.5v   (niceMax 60, ticks step 10; domain must include 0)
+     Band: step = innerW/n = 91.43 · barW = 0.6*step = 54.9 · totals in muted, increases in the accent,
+     decreases in the error token (diverging polarity, see brandware chart-styling.md). Hairline connectors
+     join each bar's end level to the next bar's start so the eye reads the running total.
+     Adapt: swap data, recompute y/heights, keep the class system + token block; rename ids per chart. -->
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg"
+     class="cw-wf" role="img" aria-labelledby="cwwf-t cwwf-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwwf-t">Operating profit bridge, 2025 to 2026 ($M)</title>
+  <desc id="cwwf-d">Waterfall chart. Operating profit went from $42M to $41M: price added $9M and volume $6M, while mix cost $3M, costs $11M and FX $2M.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-wf { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; }
+    @media (prefers-color-scheme: dark) {
+      .cw-wf { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent/--error) */
+    .cw-wf { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); }
+    .cw-wf .grid  { stroke:var(--cw-grid); stroke-width:1; }
+    .cw-wf .zero  { stroke:var(--cw-axis); stroke-width:1; }
+    .cw-wf .tick, .cw-wf .cat { fill:var(--cw-muted); font-size:11px; }
+    .cw-wf .val   { fill:var(--cw-ink); font-size:11px; font-variant-numeric:tabular-nums; }
+    .cw-wf .total { fill:var(--cw-c2); }
+    .cw-wf .up    { fill:var(--cw-c1); }
+    .cw-wf .down  { fill:var(--cw-neg); }
+    .cw-wf .link  { stroke:var(--cw-axis); stroke-width:1; stroke-dasharray:3 3; }
+    .cw-wf .bar   { transition:opacity .15s; }
+    .cw-wf:hover .bar { opacity:.45; }
+    .cw-wf .bar:hover { opacity:1; }
+  </style>
+  <g transform="translate(56,32)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="275" x2="640" y2="275"/>
+      <line class="grid" x1="0" y1="220" x2="640" y2="220"/>
+      <line class="grid" x1="0" y1="165" x2="640" y2="165"/>
+      <line class="grid" x1="0" y1="110" x2="640" y2="110"/>
+      <line class="grid" x1="0" y1="55" x2="640" y2="55"/>
+      <line class="grid" x1="0" y1="0" x2="640" y2="0"/>
+      <line class="zero" x1="0" y1="330" x2="640" y2="330"/>
+    </g>
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="330" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="275" dy="0.32em">10</text>
+      <text class="tick" x="-8" y="220" dy="0.32em">20</text>
+      <text class="tick" x="-8" y="165" dy="0.32em">30</text>
+      <text class="tick" x="-8" y="110" dy="0.32em">40</text>
+      <text class="tick" x="-8" y="55" dy="0.32em">50</text>
+      <text class="tick" x="-8" y="0" dy="0.32em">60</text>
+    </g>
+    <!-- bars and connectors: each step rect spans [running, running+delta]; negative heights never happen because y = min() and h = abs() -->
+    <g>
+      <rect class="bar total" x="18.3" y="99.0" width="54.9" height="231.0"><title>Start — $42M</title></rect>
+      <text class="val" x="45.75" y="93" text-anchor="middle">42</text>
+      <line class="link" x1="73.2" y1="99" x2="109.7" y2="99"/>
+      <rect class="bar up" x="109.7" y="49.5" width="54.9" height="49.5"><title>Price — +$9M</title></rect>
+      <text class="val" x="137.15" y="43.5" text-anchor="middle">+9</text>
+      <line class="link" x1="164.6" y1="49.5" x2="201.1" y2="49.5"/>
+      <rect class="bar up" x="201.1" y="16.5" width="54.9" height="33.0"><title>Volume — +$6M</title></rect>
+      <text class="val" x="228.55" y="10.5" text-anchor="middle">+6</text>
+      <line class="link" x1="256" y1="16.5" x2="292.6" y2="16.5"/>
+      <rect class="bar down" x="292.6" y="16.5" width="54.9" height="16.5"><title>Mix — −$3M</title></rect>
+      <text class="val" x="320.05" y="10.5" text-anchor="middle">−3</text>
+      <line class="link" x1="347.5" y1="33" x2="384" y2="33"/>
+      <rect class="bar down" x="384.0" y="33.0" width="54.9" height="60.5"><title>Costs — −$11M</title></rect>
+      <text class="val" x="411.45" y="27" text-anchor="middle">−11</text>
+      <line class="link" x1="438.9" y1="93.5" x2="475.4" y2="93.5"/>
+      <rect class="bar down" x="475.4" y="93.5" width="54.9" height="11.0"><title>FX — −$2M</title></rect>
+      <text class="val" x="502.85" y="87.5" text-anchor="middle">−2</text>
+      <line class="link" x1="530.3" y1="104.5" x2="566.8" y2="104.5"/>
+      <rect class="bar total" x="566.8" y="104.5" width="54.9" height="225.5"><title>End — $41M</title></rect>
+      <text class="val" x="594.25" y="98.5" text-anchor="middle">41</text>
+    </g>
+    <g text-anchor="middle">
+      <text class="cat" x="45.7" y="338" dy="0.71em">Start</text>
+      <text class="cat" x="137.1" y="338" dy="0.71em">Price</text>
+      <text class="cat" x="228.6" y="338" dy="0.71em">Volume</text>
+      <text class="cat" x="320" y="338" dy="0.71em">Mix</text>
+      <text class="cat" x="411.4" y="338" dy="0.71em">Costs</text>
+      <text class="cat" x="502.9" y="338" dy="0.71em">FX</text>
+      <text class="cat" x="594.3" y="338" dy="0.71em">End</text>
+    </g>
+  </g>
+</svg>

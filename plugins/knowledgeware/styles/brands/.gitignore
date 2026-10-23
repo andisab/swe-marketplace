@@ -4,9 +4,5 @@
 *
 !README.md
 !.gitignore
-!acmecorp.md
 !acmecorp/
 !acmecorp/**
-!tokens/
-tokens/*
-!tokens/acmecorp.json

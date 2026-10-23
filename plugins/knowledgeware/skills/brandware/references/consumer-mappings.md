@@ -1,6 +1,6 @@
 # Consumer Mappings
 
-How each consumer skill translates a registry brandbook into its medium. Token names refer to the derived JSON (`styles/brands/tokens/<name>.json` at the plugin root); when a brandbook defines richer detail than the tokens carry (e.g., heading colors, diagram stroke categories), read the `.md` directly — it is canonical.
+How each consumer skill translates a registry brandbook into its medium. Token names refer to the derived JSON (`<name>/tokens.json` beside each `brand.md`, or `tokens/<name>.json` in the flat layout); when a brandbook defines richer detail than the tokens carry (e.g., heading colors, diagram stroke categories), read the `.md` directly — it is canonical.
 
 For **data charts** (bar/line/pie/scatter/KPI tiles) in any medium, see `chart-styling.md` in this directory.
 

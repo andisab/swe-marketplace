@@ -1,0 +1,153 @@
+<!-- chartware SVG template: heatmap
+     viewBox 600x352 · grid translate(56,44) · cell 40x34 with a 2-unit gap · rx 2
+     Five DISCRETE buckets (quantile cut points: ≤2, ≤6, ≤14, ≤22, 23+), never a continuous ramp;
+     one hue (the accent) at fill-opacity .08 → 1 over the canvas, so the ramp survives dark mode.
+     A missing cell is an outlined rect (class na) — an absent cell would read as zero.
+     In-cell values only when the cell is ≥32 units; here they're in <title> hovers instead.
+     Adapt: swap the row/column labels and the bucket classes; keep the token block; rename ids per chart. -->
+<svg viewBox="0 0 600 352" width="600" height="352" xmlns="http://www.w3.org/2000/svg"
+     class="cw-hm" role="img" aria-labelledby="cwhm-t cwhm-d" focusable="false"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:auto;max-width:600px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="cwhm-t">Support tickets opened, by weekday and hour</title>
+  <desc id="cwhm-d">Heatmap of ticket volume. Weekday afternoons are the peak, with 25 to 28 tickets per two-hour slot between 10:00 and 16:00 from Monday to Thursday; weekends stay under 10. Sunday 16:00 has no data.</desc>
+  <style>
+    /* Local defaults; flip for standalone dark mode */
+    .cw-hm { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF;
+              --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; }
+    @media (prefers-color-scheme: dark) {
+      .cw-hm { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14;
+                --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; }
+    }
+    /* Page tokens win when present (knowledgebase pages define --ink/--muted/--border/--bg/--accent/--error) */
+    .cw-hm { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted));
+              --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); }
+    .cw-hm .rl, .cw-hm .cl, .cw-hm .lgd { fill:var(--cw-muted); font-size:11px; }
+    .cw-hm .cell { fill:var(--cw-c1); stroke:none; }
+    .cw-hm .q0 { fill-opacity:.08; } .cw-hm .q1 { fill-opacity:.25; } .cw-hm .q2 { fill-opacity:.45; }
+    .cw-hm .q3 { fill-opacity:.7; }  .cw-hm .q4 { fill-opacity:1; }
+    .cw-hm .na { fill:none; stroke:var(--cw-grid); stroke-width:1; stroke-dasharray:3 2; }
+  </style>
+  <!-- legend: the five buckets, lowest to highest, with the cut points -->
+  <g>
+    <text class="lgd" x="368" y="20" dy="0.32em" text-anchor="end">tickets ≤2</text>
+    <rect class="cell q0" x="376" y="14" width="14" height="12" rx="2"><title>≤2</title></rect>
+    <rect class="cell q1" x="394" y="14" width="14" height="12" rx="2"><title>3–6</title></rect>
+    <rect class="cell q2" x="412" y="14" width="14" height="12" rx="2"><title>7–14</title></rect>
+    <rect class="cell q3" x="430" y="14" width="14" height="12" rx="2"><title>15–22</title></rect>
+    <rect class="cell q4" x="448" y="14" width="14" height="12" rx="2"><title>23+</title></rect>
+    <text class="lgd" x="468" y="20" dy="0.32em">23+</text>
+  </g>
+  <g transform="translate(56,44)">
+    <g text-anchor="end">
+      <text class="rl" x="-8" y="17" dy="0.32em">Mon</text>
+      <text class="rl" x="-8" y="51" dy="0.32em">Tue</text>
+      <text class="rl" x="-8" y="85" dy="0.32em">Wed</text>
+      <text class="rl" x="-8" y="119" dy="0.32em">Thu</text>
+      <text class="rl" x="-8" y="153" dy="0.32em">Fri</text>
+      <text class="rl" x="-8" y="187" dy="0.32em">Sat</text>
+      <text class="rl" x="-8" y="221" dy="0.32em">Sun</text>
+    </g>
+    <g text-anchor="middle">
+      <text class="cl" x="20" y="-8">00</text>
+      <text class="cl" x="60" y="-8">02</text>
+      <text class="cl" x="100" y="-8">04</text>
+      <text class="cl" x="140" y="-8">06</text>
+      <text class="cl" x="180" y="-8">08</text>
+      <text class="cl" x="220" y="-8">10</text>
+      <text class="cl" x="260" y="-8">12</text>
+      <text class="cl" x="300" y="-8">14</text>
+      <text class="cl" x="340" y="-8">16</text>
+      <text class="cl" x="380" y="-8">18</text>
+      <text class="cl" x="420" y="-8">20</text>
+      <text class="cl" x="460" y="-8">22</text>
+    </g>
+    <g>
+      <rect class="cell q0" x="1" y="1" width="38" height="32" rx="2"><title>Mon 00:00 — 2</title></rect>
+      <rect class="cell q0" x="41" y="1" width="38" height="32" rx="2"><title>Mon 02:00 — 1</title></rect>
+      <rect class="cell q0" x="81" y="1" width="38" height="32" rx="2"><title>Mon 04:00 — 1</title></rect>
+      <rect class="cell q1" x="121" y="1" width="38" height="32" rx="2"><title>Mon 06:00 — 3</title></rect>
+      <rect class="cell q2" x="161" y="1" width="38" height="32" rx="2"><title>Mon 08:00 — 14</title></rect>
+      <rect class="cell q3" x="201" y="1" width="38" height="32" rx="2"><title>Mon 10:00 — 22</title></rect>
+      <rect class="cell q4" x="241" y="1" width="38" height="32" rx="2"><title>Mon 12:00 — 25</title></rect>
+      <rect class="cell q4" x="281" y="1" width="38" height="32" rx="2"><title>Mon 14:00 — 24</title></rect>
+      <rect class="cell q3" x="321" y="1" width="38" height="32" rx="2"><title>Mon 16:00 — 20</title></rect>
+      <rect class="cell q2" x="361" y="1" width="38" height="32" rx="2"><title>Mon 18:00 — 12</title></rect>
+      <rect class="cell q1" x="401" y="1" width="38" height="32" rx="2"><title>Mon 20:00 — 6</title></rect>
+      <rect class="cell q1" x="441" y="1" width="38" height="32" rx="2"><title>Mon 22:00 — 3</title></rect>
+      <rect class="cell q0" x="1" y="35" width="38" height="32" rx="2"><title>Tue 00:00 — 1</title></rect>
+      <rect class="cell q0" x="41" y="35" width="38" height="32" rx="2"><title>Tue 02:00 — 1</title></rect>
+      <rect class="cell q0" x="81" y="35" width="38" height="32" rx="2"><title>Tue 04:00 — 2</title></rect>
+      <rect class="cell q1" x="121" y="35" width="38" height="32" rx="2"><title>Tue 06:00 — 4</title></rect>
+      <rect class="cell q3" x="161" y="35" width="38" height="32" rx="2"><title>Tue 08:00 — 16</title></rect>
+      <rect class="cell q4" x="201" y="35" width="38" height="32" rx="2"><title>Tue 10:00 — 24</title></rect>
+      <rect class="cell q4" x="241" y="35" width="38" height="32" rx="2"><title>Tue 12:00 — 27</title></rect>
+      <rect class="cell q4" x="281" y="35" width="38" height="32" rx="2"><title>Tue 14:00 — 26</title></rect>
+      <rect class="cell q3" x="321" y="35" width="38" height="32" rx="2"><title>Tue 16:00 — 21</title></rect>
+      <rect class="cell q2" x="361" y="35" width="38" height="32" rx="2"><title>Tue 18:00 — 13</title></rect>
+      <rect class="cell q2" x="401" y="35" width="38" height="32" rx="2"><title>Tue 20:00 — 7</title></rect>
+      <rect class="cell q1" x="441" y="35" width="38" height="32" rx="2"><title>Tue 22:00 — 3</title></rect>
+      <rect class="cell q0" x="1" y="69" width="38" height="32" rx="2"><title>Wed 00:00 — 2</title></rect>
+      <rect class="cell q0" x="41" y="69" width="38" height="32" rx="2"><title>Wed 02:00 — 1</title></rect>
+      <rect class="cell q0" x="81" y="69" width="38" height="32" rx="2"><title>Wed 04:00 — 1</title></rect>
+      <rect class="cell q1" x="121" y="69" width="38" height="32" rx="2"><title>Wed 06:00 — 3</title></rect>
+      <rect class="cell q3" x="161" y="69" width="38" height="32" rx="2"><title>Wed 08:00 — 15</title></rect>
+      <rect class="cell q4" x="201" y="69" width="38" height="32" rx="2"><title>Wed 10:00 — 23</title></rect>
+      <rect class="cell q4" x="241" y="69" width="38" height="32" rx="2"><title>Wed 12:00 — 28</title></rect>
+      <rect class="cell q4" x="281" y="69" width="38" height="32" rx="2"><title>Wed 14:00 — 25</title></rect>
+      <rect class="cell q3" x="321" y="69" width="38" height="32" rx="2"><title>Wed 16:00 — 22</title></rect>
+      <rect class="cell q2" x="361" y="69" width="38" height="32" rx="2"><title>Wed 18:00 — 14</title></rect>
+      <rect class="cell q1" x="401" y="69" width="38" height="32" rx="2"><title>Wed 20:00 — 6</title></rect>
+      <rect class="cell q1" x="441" y="69" width="38" height="32" rx="2"><title>Wed 22:00 — 4</title></rect>
+      <rect class="cell q0" x="1" y="103" width="38" height="32" rx="2"><title>Thu 00:00 — 1</title></rect>
+      <rect class="cell q0" x="41" y="103" width="38" height="32" rx="2"><title>Thu 02:00 — 2</title></rect>
+      <rect class="cell q0" x="81" y="103" width="38" height="32" rx="2"><title>Thu 04:00 — 1</title></rect>
+      <rect class="cell q1" x="121" y="103" width="38" height="32" rx="2"><title>Thu 06:00 — 4</title></rect>
+      <rect class="cell q3" x="161" y="103" width="38" height="32" rx="2"><title>Thu 08:00 — 17</title></rect>
+      <rect class="cell q4" x="201" y="103" width="38" height="32" rx="2"><title>Thu 10:00 — 25</title></rect>
+      <rect class="cell q4" x="241" y="103" width="38" height="32" rx="2"><title>Thu 12:00 — 26</title></rect>
+      <rect class="cell q4" x="281" y="103" width="38" height="32" rx="2"><title>Thu 14:00 — 27</title></rect>
+      <rect class="cell q4" x="321" y="103" width="38" height="32" rx="2"><title>Thu 16:00 — 23</title></rect>
+      <rect class="cell q2" x="361" y="103" width="38" height="32" rx="2"><title>Thu 18:00 — 12</title></rect>
+      <rect class="cell q2" x="401" y="103" width="38" height="32" rx="2"><title>Thu 20:00 — 7</title></rect>
+      <rect class="cell q1" x="441" y="103" width="38" height="32" rx="2"><title>Thu 22:00 — 3</title></rect>
+      <rect class="cell q0" x="1" y="137" width="38" height="32" rx="2"><title>Fri 00:00 — 2</title></rect>
+      <rect class="cell q0" x="41" y="137" width="38" height="32" rx="2"><title>Fri 02:00 — 1</title></rect>
+      <rect class="cell q0" x="81" y="137" width="38" height="32" rx="2"><title>Fri 04:00 — 2</title></rect>
+      <rect class="cell q1" x="121" y="137" width="38" height="32" rx="2"><title>Fri 06:00 — 3</title></rect>
+      <rect class="cell q2" x="161" y="137" width="38" height="32" rx="2"><title>Fri 08:00 — 13</title></rect>
+      <rect class="cell q3" x="201" y="137" width="38" height="32" rx="2"><title>Fri 10:00 — 20</title></rect>
+      <rect class="cell q3" x="241" y="137" width="38" height="32" rx="2"><title>Fri 12:00 — 22</title></rect>
+      <rect class="cell q3" x="281" y="137" width="38" height="32" rx="2"><title>Fri 14:00 — 19</title></rect>
+      <rect class="cell q3" x="321" y="137" width="38" height="32" rx="2"><title>Fri 16:00 — 15</title></rect>
+      <rect class="cell q2" x="361" y="137" width="38" height="32" rx="2"><title>Fri 18:00 — 9</title></rect>
+      <rect class="cell q1" x="401" y="137" width="38" height="32" rx="2"><title>Fri 20:00 — 5</title></rect>
+      <rect class="cell q0" x="441" y="137" width="38" height="32" rx="2"><title>Fri 22:00 — 2</title></rect>
+      <rect class="cell q0" x="1" y="171" width="38" height="32" rx="2"><title>Sat 00:00 — 1</title></rect>
+      <rect class="cell q0" x="41" y="171" width="38" height="32" rx="2"><title>Sat 02:00 — 1</title></rect>
+      <rect class="cell q0" x="81" y="171" width="38" height="32" rx="2"><title>Sat 04:00 — 1</title></rect>
+      <rect class="cell q0" x="121" y="171" width="38" height="32" rx="2"><title>Sat 06:00 — 1</title></rect>
+      <rect class="cell q1" x="161" y="171" width="38" height="32" rx="2"><title>Sat 08:00 — 3</title></rect>
+      <rect class="cell q1" x="201" y="171" width="38" height="32" rx="2"><title>Sat 10:00 — 6</title></rect>
+      <rect class="cell q2" x="241" y="171" width="38" height="32" rx="2"><title>Sat 12:00 — 8</title></rect>
+      <rect class="cell q2" x="281" y="171" width="38" height="32" rx="2"><title>Sat 14:00 — 9</title></rect>
+      <rect class="cell q2" x="321" y="171" width="38" height="32" rx="2"><title>Sat 16:00 — 7</title></rect>
+      <rect class="cell q1" x="361" y="171" width="38" height="32" rx="2"><title>Sat 18:00 — 5</title></rect>
+      <rect class="cell q1" x="401" y="171" width="38" height="32" rx="2"><title>Sat 20:00 — 3</title></rect>
+      <rect class="cell q0" x="441" y="171" width="38" height="32" rx="2"><title>Sat 22:00 — 1</title></rect>
+      <rect class="cell q0" x="1" y="205" width="38" height="32" rx="2"><title>Sun 00:00 — 1</title></rect>
+      <rect class="cell q0" x="41" y="205" width="38" height="32" rx="2"><title>Sun 02:00 — 0</title></rect>
+      <rect class="cell q0" x="81" y="205" width="38" height="32" rx="2"><title>Sun 04:00 — 1</title></rect>
+      <rect class="cell q0" x="121" y="205" width="38" height="32" rx="2"><title>Sun 06:00 — 1</title></rect>
+      <rect class="cell q0" x="161" y="205" width="38" height="32" rx="2"><title>Sun 08:00 — 2</title></rect>
+      <rect class="cell q1" x="201" y="205" width="38" height="32" rx="2"><title>Sun 10:00 — 4</title></rect>
+      <rect class="cell q1" x="241" y="205" width="38" height="32" rx="2"><title>Sun 12:00 — 6</title></rect>
+      <rect class="cell q2" x="281" y="205" width="38" height="32" rx="2"><title>Sun 14:00 — 7</title></rect>
+      <rect class="na" x="321" y="205" width="38" height="32" rx="2"><title>Sun 16:00 — no data</title></rect>
+      <rect class="cell q1" x="361" y="205" width="38" height="32" rx="2"><title>Sun 18:00 — 4</title></rect>
+      <rect class="cell q0" x="401" y="205" width="38" height="32" rx="2"><title>Sun 20:00 — 2</title></rect>
+      <rect class="cell q0" x="441" y="205" width="38" height="32" rx="2"><title>Sun 22:00 — 1</title></rect>
+    </g>
+  </g>
+</svg>

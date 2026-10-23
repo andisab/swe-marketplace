@@ -36,7 +36,7 @@ The parallel research workflow orchestrates multiple research agents working sim
 2. Execute 3-7 WebSearch queries on the subtopic
 3. Identify 3-5 most authoritative sources
 4. Extract key findings from search results
-5. Save concise summary (3-4 paragraphs) to `~/Documents/Claude/Research/research_notes/{subtopic}.md`
+5. Save concise summary (3-4 paragraphs) to `~/Documents/Claude/Research/research_notes/{run-id}/{subtopic}.md`
 6. Report completion
 
 **Example** (Researcher 1: Hardware/Qubits):
@@ -46,7 +46,7 @@ The parallel research workflow orchestrates multiple research agents working sim
   - "quantum error correction latest advances"
   - "quantum computing hardware companies"
 - Top sources: IBM Research, Nature Physics, Google Quantum AI
-- Output: `~/Documents/Claude/Research/research_notes/quantum_hardware_qubits.md`
+- Output: `~/Documents/Claude/Research/research_notes/quantum-computing_20251117/quantum_hardware_qubits.md`
 
 **Duration**: 2-5 minutes per researcher (all running simultaneously)
 
@@ -55,17 +55,17 @@ The parallel research workflow orchestrates multiple research agents working sim
 **Responsible Agent**: Research Report Writer
 
 **Activities**:
-1. Use Glob to find all files in `~/Documents/Claude/Research/research_notes/`
+1. Use Glob to find all files in this run's folder, `~/Documents/Claude/Research/research_notes/{run-id}/`
 2. Read each research note file
-3. Check if "Joplin" was mentioned in original request
-4. If Joplin mentioned: Load joplin-research skill, output markdown
+3. Check whether the request names an editor (Obsidian, Joplin) or a report type
+4. If Joplin mentioned: Load report-formats skill (Obsidian or Joplin profile), output markdown
 5. If plain text: Use standard report format
 6. Synthesize all findings into coherent narrative
 7. Maintain all citations and sources from research notes
 8. Save report to `~/Documents/Claude/Research/reports/{topic}_summary_YYYYMMDD.txt` (or .md)
 
 **Example**:
-- Input: 4 research notes from `research_notes/`
+- Input: 4 research notes from `research_notes/quantum-computing_20251117/`
 - Processing: Combine findings, organize by theme
 - Output: `~/Documents/Claude/Research/reports/quantum_computing_summary_20251117.txt`
 
@@ -93,11 +93,12 @@ Research complete. Report saved to ~/Documents/Claude/Research/reports/quantum_c
 
 ```
 ~/Documents/Claude/Research/
-├── research_notes/           # Intermediate research findings
-│   ├── quantum_hardware_qubits.md
-│   ├── quantum_algorithms_apps.md
-│   ├── quantum_industry_investments.md
-│   └── quantum_challenges_timeline.md
+├── research_notes/           # Intermediate research findings, one folder per run
+│   └── quantum-computing_20251117/
+│       ├── quantum_hardware_qubits.md
+│       ├── quantum_algorithms_apps.md
+│       ├── quantum_industry_investments.md
+│       └── quantum_challenges_timeline.md
 └── reports/                  # Final synthesized reports
     └── quantum_computing_summary_20251117.txt
 ```
@@ -107,10 +108,10 @@ Research complete. Report saved to ~/Documents/Claude/Research/reports/quantum_c
 **Research Notes**:
 - Format: `{descriptive_subtopic_name}.md`
 - Example: `ev_battery_technology.md`
-- Location: `~/Documents/Claude/Research/research_notes/`
+- Location: `~/Documents/Claude/Research/research_notes/{run-id}/`, where the run id is `{topic-slug}_YYYYMMDD`, with `-2`, `-3` and so on added when an earlier run that day used the same id
 
 **Final Reports**:
-- Format: `{main_topic}_summary_YYYYMMDD.txt` (or `.md` for Joplin)
+- Format: `{main_topic}_summary_YYYYMMDD.txt` (`.md` in every profile)
 - Example: `quantum_computing_summary_20251117.txt`
 - Location: `~/Documents/Claude/Research/reports/`
 
@@ -225,7 +226,7 @@ Summary: [2 sentences on conclusions]
 - Length: 500-800 words
 - Citations: Every claim backed by source
 - Structure: Clear organization by theme or subtopic
-- Format: Plain text (.txt) or Joplin markdown (.md)
+- Format: Markdown (.md); Obsidian or Joplin profile on request
 
 ## Error Handling
 
@@ -247,28 +248,21 @@ Summary: [2 sentences on conclusions]
 - **Detection**: Error message or empty report
 - **Solution**: Check directory exists, verify file permissions, ensure markdown extension
 
-**Issue**: Missing Joplin formatting
+**Issue**: Report in the wrong format
 - **Detection**: Plain text output when markdown expected
-- **Solution**: Ensure "Joplin" mentioned in original request or synthesis prompt
+- **Solution**: Name the editor (Obsidian, Joplin) in the request; the coordinator passes the profile to the writer
 
 ## Integration Points
 
-### With Joplin Note-Taking
+### With Obsidian or Joplin
 
-**Trigger**: User mentions "Joplin" in research request
+**Trigger**: the request mentions Obsidian, a vault, or Joplin.
 
-**Workflow Changes**:
-1. Report writer loads `joplin-research` skill
-2. Output format changes to markdown (.md)
-3. Follows Joplin-specific formatting:
-   - Table of contents (`>[toc]`)
-   - Heading hierarchy (h2, h3 with separators)
-   - Proper spacing and typography
-   - Escaped advantages/disadvantages
+**Behavior**: the report-writer loads the `report-formats` skill and applies that editor's profile. For Obsidian the report starts with a properties block (title, date, tags, sources) and uses callouts; for Joplin it starts with `>[toc]`. Both are still `.md` files. Name a folder in the request ("save it in ~/Obsidian/Research") to write straight into a vault.
 
-**Example Request**:
+**Example**:
 ```
-"Research quantum computing for my Joplin notes"
+Use research-team to research quantum computing, for my Obsidian vault
 ```
 
 ### With External Tools
@@ -282,14 +276,14 @@ Summary: [2 sentences on conclusions]
 
 **File Format**:
 - Research notes: Always markdown (.md)
-- Final reports: `.txt` (default) or `.md` (Joplin)
+- Final reports: `.md`
 
 ## Best Practices
 
 ### For Users
 
 1. **Be Specific**: Clearly state your research topic and scope
-2. **Mention Joplin**: If you want markdown formatting, say "Joplin"
+2. **Name your editor**: say "Obsidian" or "Joplin" for that editor's format; plain Markdown is the default
 3. **Allow Time**: Expect 3-7 minutes for complete research cycle
 4. **Check Output**: Verify files at `~/Documents/Claude/Research/reports/`
 

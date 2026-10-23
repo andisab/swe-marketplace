@@ -1,0 +1,24 @@
+<svg viewBox="0 0 480 260" width="480" height="260" xmlns="http://www.w3.org/2000/svg" class="cw-donut" role="img" aria-labelledby="donut-t donut-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:480px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="donut-t">Cloud spend by category, Q3 2026</title>
+  <desc id="donut-d">Donut chart. $3.1M total: compute 38%, storage 21%, network 14%, managed databases 12%, observability 9%, other 6%.</desc>
+  <style>
+    .cw-donut { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-donut { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-donut { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-donut .seg{fill:none;stroke-width:24}.cw-donut .big{fill:var(--cw-ink);font-size:28px;font-weight:700;letter-spacing:-.02em}.cw-donut .sub,.cw-donut .pct{fill:var(--cw-muted);font-size:11px}.cw-donut .lgd{fill:var(--cw-ink);font-size:12px}
+  </style>
+  <circle class="seg" cx="118" cy="130" r="63.66" stroke="var(--cw-c1)" stroke-opacity="1" stroke-dasharray="152 248" stroke-dashoffset="0" transform="rotate(-90 118 130)"><title>Compute — 38%</title></circle>
+  <circle class="seg" cx="118" cy="130" r="63.66" stroke="var(--cw-c1)" stroke-opacity="0.78" stroke-dasharray="84 316" stroke-dashoffset="-152" transform="rotate(-90 118 130)"><title>Storage — 21%</title></circle>
+  <circle class="seg" cx="118" cy="130" r="63.66" stroke="var(--cw-c1)" stroke-opacity="0.58" stroke-dasharray="56 344" stroke-dashoffset="-236" transform="rotate(-90 118 130)"><title>Network — 14%</title></circle>
+  <circle class="seg" cx="118" cy="130" r="63.66" stroke="var(--cw-c1)" stroke-opacity="0.42" stroke-dasharray="48 352" stroke-dashoffset="-292" transform="rotate(-90 118 130)"><title>Managed DB — 12%</title></circle>
+  <circle class="seg" cx="118" cy="130" r="63.66" stroke="var(--cw-c1)" stroke-opacity="0.28" stroke-dasharray="36 364" stroke-dashoffset="-340" transform="rotate(-90 118 130)"><title>Observability — 9%</title></circle>
+  <circle class="seg" cx="118" cy="130" r="63.66" stroke="var(--cw-c2)" stroke-opacity="1" stroke-dasharray="24 376" stroke-dashoffset="-376" transform="rotate(-90 118 130)"><title>Other — 6%</title></circle>
+  <text class="big" x="118" y="130" text-anchor="middle" dy="0.1em">$3.1M</text><text class="sub" x="118" y="152" text-anchor="middle">Q3 spend</text>
+  <rect x="236" y="42" width="12" height="12" rx="2" fill="var(--cw-c1)" fill-opacity="1"/><text class="lgd" x="256" y="48" dy="0.32em">Compute</text><text class="pct" x="440" y="48" dy="0.32em" text-anchor="end">38%</text>
+  <rect x="236" y="72" width="12" height="12" rx="2" fill="var(--cw-c1)" fill-opacity="0.78"/><text class="lgd" x="256" y="78" dy="0.32em">Storage</text><text class="pct" x="440" y="78" dy="0.32em" text-anchor="end">21%</text>
+  <rect x="236" y="102" width="12" height="12" rx="2" fill="var(--cw-c1)" fill-opacity="0.58"/><text class="lgd" x="256" y="108" dy="0.32em">Network</text><text class="pct" x="440" y="108" dy="0.32em" text-anchor="end">14%</text>
+  <rect x="236" y="132" width="12" height="12" rx="2" fill="var(--cw-c1)" fill-opacity="0.42"/><text class="lgd" x="256" y="138" dy="0.32em">Managed DB</text><text class="pct" x="440" y="138" dy="0.32em" text-anchor="end">12%</text>
+  <rect x="236" y="162" width="12" height="12" rx="2" fill="var(--cw-c1)" fill-opacity="0.28"/><text class="lgd" x="256" y="168" dy="0.32em">Observability</text><text class="pct" x="440" y="168" dy="0.32em" text-anchor="end">9%</text>
+  <rect x="236" y="192" width="12" height="12" rx="2" fill="var(--cw-c2)" fill-opacity="1"/><text class="lgd" x="256" y="198" dy="0.32em">Other</text><text class="pct" x="440" y="198" dy="0.32em" text-anchor="end">6%</text>
+</svg>

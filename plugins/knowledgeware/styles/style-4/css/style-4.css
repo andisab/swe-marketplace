@@ -1,0 +1,76 @@
+/* style-4 — Warm Sage. Generated from brand.md; the brandbook is the source of truth. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Lora:wght@500;600&family=JetBrains+Mono:wght@400&display=swap');
+
+:root {
+  --bg: #F2EDE3;
+  --surface: #FFFFFF;
+  --surface-alt: #EAE4D6;
+  --ink: #1F1810;
+  --ink-body: #3D342B;
+  --ink-muted: #7A6F60;
+  --ink-faint: #B0A696;
+  --border: #C9C3B7;
+  --accent: #7C9A6A;
+  --success: #7C9A6A;
+  --warning: #C97A1A;
+  --error: #C24A3F;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+  --font-mono: 'JetBrains Mono', Menlo, monospace;
+  --radius: 6px;
+  --shadow-opacity: 0;
+  color-scheme: light dark;
+}
+
+/* Dark theme: follows the system, or set data-theme="dark" on <html>. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg: #1B1814;
+  --surface: #241F1A;
+  --surface-alt: #2B2620;
+  --ink: #F1EBE0;
+  --ink-body: #D5CDBF;
+  --ink-muted: #A0978A;
+  --ink-faint: #6B6357;
+  --border: #3A332B;
+  --accent: #9BB789;
+  --success: #9BB789;
+  --warning: #E0A24A;
+  --error: #E06A5F;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1B1814;
+  --surface: #241F1A;
+  --surface-alt: #2B2620;
+  --ink: #F1EBE0;
+  --ink-body: #D5CDBF;
+  --ink-muted: #A0978A;
+  --ink-faint: #6B6357;
+  --border: #3A332B;
+  --accent: #9BB789;
+  --success: #9BB789;
+  --warning: #E0A24A;
+  --error: #E06A5F;
+}
+
+body { margin: 0; background: var(--bg); color: var(--ink-body); font: 400 1rem/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { color: var(--ink); font-family: var(--font-serif); line-height: 1.2; margin: 1.5em 0 0.5em; }
+h1 { font-size: 2.5rem; } h2 { font-size: 1.75rem; } h3 { font-size: 1.25rem; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+small, .muted { color: var(--ink-muted); }
+hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+code, pre { font-family: var(--font-mono); font-size: 0.875em; }
+pre { background: var(--surface-alt); padding: 1rem; border-radius: var(--radius); overflow: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+th { color: var(--ink-muted); font-weight: 500; }
+.container { max-width: 72ch; margin: 0 auto; padding: 2rem 1rem; }
+
+/* Motif: outlined, not filled. White containers with a hairline on the warm-gray canvas; sage dots for list items. */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; }
+ul.dots { list-style: none; padding-left: 0; }
+ul.dots li { position: relative; padding-left: 1.25rem; }
+ul.dots li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--accent); }
+.kicker { font: 500 0.75rem/1.2 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+h1, h2, h3 { font-weight: 500; }

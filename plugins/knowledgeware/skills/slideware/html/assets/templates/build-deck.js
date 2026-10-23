@@ -13,7 +13,7 @@
 // Setup (one-time per deck dir):
 //   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
 //   npm install                     # js-yaml and the pinned reveal.js
-//   cp $PLUGIN/shared/styles/<name>.md ./style.md
+//   node $PLUGIN/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md
 //   node build-deck.js .
 //
 // ── PRE-BUILD ALIGNMENT CHECKLIST (run mentally per slide before building) ──
@@ -52,9 +52,9 @@ function loadTokens(cwd) {
   const stylePath = path.join(cwd, "style.md");
   if (!fs.existsSync(stylePath)) {
     console.error("style.md missing. Either:");
-    console.error("  cp $PLUGIN/shared/styles/<name>.md ./style.md");
+    console.error("  node $PLUGIN/skills/slideware/html/scripts/load-style.js <name> -o ./style.md   # e.g. style-1, or a brand");
     console.error("  # or for custom brandbooks:");
-    console.error("  cp $PLUGIN/shared/styles/custom/<name>.md ./style.md");
+    console.error("  node $PLUGIN/skills/slideware/html/scripts/load-style.js ./my-brand.md -o ./style.md");
     console.error("  # or generate from a CSS/URL via the loader script:");
     console.error("  node scripts/load-style.js <path> -o ./style.md");
     process.exit(1);
@@ -131,10 +131,18 @@ function themeCss({ palette: P, type: T, layout: L }) {
 .reveal .slides {
   text-align: left;
 }
+/* Reveal shows the current slide with an inline display taken from its display
+   option, set to flex in Reveal.initialize so layouts can center vertically. */
 .reveal .slides section {
   padding: var(--margin);
   box-sizing: border-box;
   height: 100%;
+  flex-direction: column;
+}
+/* Bottom-left, clear of the navigation arrows in the bottom-right corner. */
+.reveal .slide-number {
+  right: auto;
+  left: 8px;
 }
 .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
   font-family: var(--font-serif);
@@ -579,6 +587,7 @@ ${inlineScript(reveal.js)}
       width: ${SLIDE_W_PX},
       height: ${SLIDE_H_PX},
       hash: true,
+      display: 'flex',
       controls: true,
       progress: true,
       slideNumber: 'c/t',

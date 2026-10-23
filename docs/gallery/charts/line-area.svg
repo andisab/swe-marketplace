@@ -1,0 +1,53 @@
+<svg viewBox="0 0 720 400" width="720" height="400" xmlns="http://www.w3.org/2000/svg" class="cw-line" role="img" aria-labelledby="line-t line-d" focusable="false" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;max-width:720px;display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <title id="line-t">Checkout p95 latency by month, 2026 against 2025 (ms)</title>
+  <desc id="line-d">Line chart. 2026 p95 fell from 412 ms in January to 261 ms in December and crossed the 300 ms target in September; 2025 stayed between 433 and 488 ms all year.</desc>
+  <style>
+    .cw-line { --_ink:#111827; --_muted:#6B7280; --_grid:#E5E7EB; --_axis:#9CA3AF; --_bg:#FFFFFF; --_c1:#4969E1; --_c2:#8A97AD; --_neg:#C2410C; --_panel:#FFFFFF; --_border:#CBD5E1; --_edge:#94A3B8; }
+    @media (prefers-color-scheme: dark) { .cw-line { --_ink:#E6E9EF; --_muted:#9CA3AF; --_grid:#2A2F3A; --_axis:#4B5563; --_bg:#0B0E14; --_c1:#7B96F0; --_c2:#6B7686; --_neg:#F0875B; --_panel:#111A2E; --_border:#2B3A55; --_edge:#7C8DB0; } }
+    .cw-line { --cw-ink:var(--ink,var(--_ink)); --cw-muted:var(--muted,var(--_muted)); --cw-grid:var(--border,var(--_grid)); --cw-axis:var(--_axis); --cw-bg:var(--bg,var(--_bg));
+              --cw-c1:var(--accent,var(--_c1)); --cw-c2:var(--_c2); --cw-neg:var(--error,var(--_neg)); --cw-panel:var(--surface,var(--_panel)); --cw-border:var(--border,var(--_border)); --cw-edge:var(--_edge); }
+    .cw-line .grid{stroke:var(--cw-grid);stroke-width:1}.cw-line .tick,.cw-line .cat{fill:var(--cw-muted);font-size:11px}.cw-line .lgd{fill:var(--cw-ink);font-size:11px}
+    .cw-line .l1{fill:none;stroke:var(--cw-c1);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}.cw-line .l2{fill:none;stroke:var(--cw-c2);stroke-width:2;stroke-dasharray:6 3}
+    .cw-line .tgt{stroke:var(--cw-neg);stroke-width:1.25;stroke-dasharray:2 4}.cw-line .end{fill:var(--cw-ink);font-size:11px;font-weight:600}.cw-line .dot{fill:var(--cw-c1);stroke:var(--cw-bg);stroke-width:2}
+  </style>
+  <defs><linearGradient id="line-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="320"><stop offset="0" stop-color="var(--cw-c1,#4969E1)" stop-opacity=".28"/><stop offset="1" stop-color="var(--cw-c1,#4969E1)" stop-opacity="0"/></linearGradient></defs>
+  <g><line class="l1" x1="446" y1="16" x2="470" y2="16"/><text class="lgd" x="478" y="16" dy="0.32em">2026 p95</text>
+     <line class="l2" x1="556" y1="16" x2="580" y2="16"/><text class="lgd" x="588" y="16" dy="0.32em">2025 p95</text></g>
+  <g transform="translate(52,40)">
+    <g shape-rendering="crispEdges">
+      <line class="grid" x1="0" y1="320.0" x2="644" y2="320.0"/>
+      <line class="grid" x1="0" y1="256.0" x2="644" y2="256.0"/>
+      <line class="grid" x1="0" y1="192.0" x2="644" y2="192.0"/>
+      <line class="grid" x1="0" y1="128.0" x2="644" y2="128.0"/>
+      <line class="grid" x1="0" y1="64.0" x2="644" y2="64.0"/>
+      <line class="grid" x1="0" y1="0.0" x2="644" y2="0.0"/>
+    </g>
+    <g text-anchor="end">
+      <text class="tick" x="-8" y="320.0" dy="0.32em">0</text>
+      <text class="tick" x="-8" y="256.0" dy="0.32em">100</text>
+      <text class="tick" x="-8" y="192.0" dy="0.32em">200</text>
+      <text class="tick" x="-8" y="128.0" dy="0.32em">300</text>
+      <text class="tick" x="-8" y="64.0" dy="0.32em">400</text>
+      <text class="tick" x="-8" y="0.0" dy="0.32em">500</text>
+    </g>
+    <path d="M0.0,56.3 C29.3,56.3 29.3,65.3 58.5,65.3 C87.8,65.3 87.8,37.8 117.1,37.8 C146.4,37.8 146.4,60.8 175.6,60.8 C204.9,60.8 204.9,81.9 234.2,81.9 C263.5,81.9 263.5,90.9 292.7,90.9 C322.0,90.9 322.0,108.2 351.3,108.2 C380.5,108.2 380.5,96.6 409.8,96.6 C439.1,96.6 439.1,126.7 468.4,126.7 C497.6,126.7 497.6,135.7 526.9,135.7 C556.2,135.7 556.2,143.4 585.5,143.4 C614.7,143.4 614.7,153.0 644.0,153.0 L644,320 L0,320 Z" fill="url(#line-fade)"/>
+    <line class="tgt" x1="0" y1="128.0" x2="644" y2="128.0"/><text class="tick" x="644" y="122.0" text-anchor="end">target 300 ms</text>
+    <path class="l2" d="M0.0,28.8 C29.3,28.8 29.3,19.2 58.5,19.2 C87.8,19.2 87.8,24.3 117.1,24.3 C146.4,24.3 146.4,7.7 175.6,7.7 C204.9,7.7 204.9,16.0 234.2,16.0 C263.5,16.0 263.5,21.8 292.7,21.8 C322.0,21.8 322.0,26.9 351.3,26.9 C380.5,26.9 380.5,18.6 409.8,18.6 C439.1,18.6 439.1,30.7 468.4,30.7 C497.6,30.7 497.6,33.9 526.9,33.9 C556.2,33.9 556.2,39.0 585.5,39.0 C614.7,39.0 614.7,42.9 644.0,42.9"/>
+    <path class="l1" d="M0.0,56.3 C29.3,56.3 29.3,65.3 58.5,65.3 C87.8,65.3 87.8,37.8 117.1,37.8 C146.4,37.8 146.4,60.8 175.6,60.8 C204.9,60.8 204.9,81.9 234.2,81.9 C263.5,81.9 263.5,90.9 292.7,90.9 C322.0,90.9 322.0,108.2 351.3,108.2 C380.5,108.2 380.5,96.6 409.8,96.6 C439.1,96.6 439.1,126.7 468.4,126.7 C497.6,126.7 497.6,135.7 526.9,135.7 C556.2,135.7 556.2,143.4 585.5,143.4 C614.7,143.4 614.7,153.0 644.0,153.0"/>
+    <circle class="dot" cx="644.0" cy="153.0" r="4"/><text class="end" x="636.0" y="143.0" text-anchor="end">261 ms</text>
+    <g text-anchor="middle">
+      <text class="cat" x="0.0" y="328" dy="0.71em">Jan</text>
+      <text class="cat" x="58.5" y="328" dy="0.71em">Feb</text>
+      <text class="cat" x="117.1" y="328" dy="0.71em">Mar</text>
+      <text class="cat" x="175.6" y="328" dy="0.71em">Apr</text>
+      <text class="cat" x="234.2" y="328" dy="0.71em">May</text>
+      <text class="cat" x="292.7" y="328" dy="0.71em">Jun</text>
+      <text class="cat" x="351.3" y="328" dy="0.71em">Jul</text>
+      <text class="cat" x="409.8" y="328" dy="0.71em">Aug</text>
+      <text class="cat" x="468.4" y="328" dy="0.71em">Sep</text>
+      <text class="cat" x="526.9" y="328" dy="0.71em">Oct</text>
+      <text class="cat" x="585.5" y="328" dy="0.71em">Nov</text>
+      <text class="cat" x="644.0" y="328" dy="0.71em">Dec</text>
+    </g>
+  </g>
+</svg>

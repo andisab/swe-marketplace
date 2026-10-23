@@ -18,7 +18,7 @@ description: >
   - Creating a single standalone tool function (use mcp-tool-dev)
   - General REST API development
   - Claude Code agents, skills, or commands
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*, tree:*, ls:*), mcp__Conventions__search_conventions, mcp__Conventions__get_convention
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*, tree:*, ls:*), mcp__conventions__find_conventions, mcp__conventions__read_convention
 ---
 
 # MCP Server Creation

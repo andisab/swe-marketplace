@@ -19,7 +19,7 @@ description: >
     and streaming large datasets efficiently
   - "Convert my Colab notebook to production code" → Extract functions to modules, create training
     scripts, and guide transition to Vertex AI
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#F9AB00"
 tags:

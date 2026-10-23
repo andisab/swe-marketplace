@@ -131,17 +131,18 @@ else
   DIFF_FILE="$TMP_DIR/scope-diff.txt"
 
   working_changes=$(git diff HEAD --stat 2>/dev/null | tail -1 || true)
-  if echo "$working_changes" | grep -qE '[0-9]+ files? changed'; then
-    # Uncommitted working tree changes
+  untracked_now=$(git ls-files --others --exclude-standard -- . ':(exclude).claude/reviews' 2>/dev/null | wc -l | tr -d ' ')
+  if echo "$working_changes" | grep -qE '[0-9]+ files? changed' || [[ "$untracked_now" -gt 0 ]]; then
+    # Uncommitted working tree changes, tracked or untracked
     git diff HEAD > "$DIFF_FILE" 2>/dev/null
 
     # Include untracked files listing
-    untracked_count=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+    untracked_count=$(git ls-files --others --exclude-standard -- . ':(exclude).claude/reviews' 2>/dev/null | wc -l | tr -d ' ')
     if [[ "$untracked_count" -gt 0 ]]; then
       {
         echo ""
         echo "=== UNTRACKED NEW FILES ==="
-        git ls-files --others --exclude-standard 2>/dev/null
+        git ls-files --others --exclude-standard -- . ':(exclude).claude/reviews' 2>/dev/null
       } >> "$DIFF_FILE"
     fi
 

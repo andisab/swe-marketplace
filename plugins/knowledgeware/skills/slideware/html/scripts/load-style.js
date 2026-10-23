@@ -20,40 +20,11 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const STYLES_DIR = path.join(__dirname, "..", "..", "..", "..", "styles");   // plugin root registry
-const BRANDS_DIR = path.join(STYLES_DIR, "brands");
-
-// User-owned registry from $KNOWLEDGEWARE_BRANDS_DIR (with ~ expansion), or null.
-function resolveUserBrandsDir() {
-  let d = process.env.KNOWLEDGEWARE_BRANDS_DIR;
-  if (!d || !d.trim()) return null;
-  d = d.trim();
-  if (d === "~") d = os.homedir();
-  else if (d.startsWith("~/")) d = path.join(os.homedir(), d.slice(2));
-  return path.resolve(d);
-}
-const USER_BRANDS_DIR = resolveUserBrandsDir();
-
-// ── Discovery ────────────────────────────────────────────────────────────
-// Discover bundled styles from the plugin registry plus the optional user brands
-// directory. On name collision: user brands shadow plugin brands shadow defaults.
-function listBundled() {
-  const found = new Map();
-  const dirs = [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]];
-  if (USER_BRANDS_DIR) dirs.push([USER_BRANDS_DIR, "brand"]);
-  for (const [dir, kind] of dirs) {
-    if (!fs.existsSync(dir)) continue;
-    for (const f of fs.readdirSync(dir)) {
-      if (!f.endsWith(".md") || /^readme\.md$/i.test(f)) continue;
-      const name = f.replace(/\.md$/, "");
-      found.set(name, { name, source: path.join(dir, f), kind });
-    }
-  }
-  return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
+const registry = require(path.join(__dirname, "..", "..", "..", "..", "scripts", "registry.js"));
+const { listBundled } = registry;
 
 function resolveSource(input) {
-  const hit = listBundled().find(b => b.name === input);
+  const hit = registry.findBundled(input);
   if (hit) return hit.source;
   if (fs.existsSync(input)) return path.resolve(input);
   const names = listBundled().map(b => b.name).join(", ");
@@ -191,7 +162,8 @@ function harvestSlideScale(text) {
 
 function build(srcPath) {
   const text = fs.readFileSync(srcPath, "utf8");
-  const name = path.basename(srcPath).replace(/\.(md|css)$/i, "");
+  const base = path.basename(srcPath).replace(/\.(md|css)$/i, "");
+  const name = base === "brand" ? path.basename(path.dirname(srcPath)) : base;
 
   const tableRoles = harvestTableRoles(text);
   const cssVars = harvestCssVars(text);
@@ -302,9 +274,13 @@ function serializeFrontmatter(tokens, description) {
     `  radiusPx:      ${L.radiusPx}`,
     `  shadowOpacity: ${L.shadowOpacity}`,
     `  marginIn:      ${L.marginIn}`,
-    "---",
-    "",
   );
+  for (const key of ["paletteDark", "paletteLight"]) {
+    if (!tokens[key]) continue;
+    lines.push(`${key}:`);
+    for (const [k, val] of Object.entries(tokens[key])) lines.push(`  ${(k + ":").padEnd(12)}${hx(val)}`);
+  }
+  lines.push("---", "");
   return lines.join("\n");
 }
 

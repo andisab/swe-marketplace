@@ -1,7 +1,7 @@
 ---
 name: db-vector-expert
 description: Expert in vector databases (pgvector, Pinecone, Weaviate, Qdrant, FAISS) with production-ready similarity search examples, embedding strategies, and performance optimization for AI/ML applications.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob, Context7
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
 model: sonnet
 color: "#8f3f71"
 tags:

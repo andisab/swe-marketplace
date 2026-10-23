@@ -6,7 +6,7 @@ description: >
   discovery-optimized descriptions, proper directory structures, and supporting resources. Automatically
   invoked when user requests "create a skill", "make a capability", "add autonomous behavior", or mentions
   skill development. Ensures skills follow Anthropic specifications with clear activation triggers.
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(tree:*), mcp__Conventions__search_conventions
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(tree:*), mcp__conventions__find_conventions
 ---
 
 # Skill Dev Skill

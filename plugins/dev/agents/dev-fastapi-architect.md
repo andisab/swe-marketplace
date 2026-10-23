@@ -1,7 +1,7 @@
 ---
 name: fastapi-architect
 description: Expert in building production FastAPI applications with modern Python patterns. Specializes in Pydantic v2 models, SQLAlchemy 2.0 async patterns, JWT auth, and API architecture.
-tools: Read, Write, MultiEdit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#689d6a"
 tags:

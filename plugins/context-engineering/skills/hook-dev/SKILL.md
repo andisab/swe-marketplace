@@ -223,7 +223,7 @@ Hooks are configured in `.claude/settings.json`:
 **Regex pattern** (use pipe for OR):
 ```json
 {
-  "matcher": "Edit|Write|MultiEdit"
+  "matcher": "Edit|Write"
 }
 ```
 
@@ -234,7 +234,7 @@ Hooks are configured in `.claude/settings.json`:
 }
 ```
 
-**Common tool names**: Bash, Read, Write, Edit, MultiEdit, Glob, Grep, Task, WebFetch, WebSearch, TodoRead, TodoWrite, NotebookRead, NotebookEdit
+**Common tool names**: Bash, Read, Write, Edit, Glob, Grep, Agent, WebFetch, WebSearch, TodoWrite, NotebookEdit
 
 **MCP tools**: Use `mcp__<server>__<tool>` pattern (e.g., `mcp__github__create_issue`)
 
