@@ -40,6 +40,11 @@ run_validate() {
 
 run_validate "." "marketplace"
 
+# adv's dispatcher against fake engines (no accounts or network needed)
+if ! bash plugins/adv/tests/dispatch-test.sh; then
+  failed=1
+fi
+
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue
   run_validate "$dir" "$(basename "$dir")"

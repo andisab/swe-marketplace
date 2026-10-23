@@ -84,7 +84,7 @@ This single call:
 
 Parse the JSON output to extract:
 - **Engine availability**: `engines.codex.available`, `engines.gemini.available`
-- **Gemini model**: `engines.gemini.model` (may be `gemini-2.0-flash` if quota fallback)
+- **Gemini model**: `engines.gemini.model` (`engine_default`, or the fallback model such as `gemini-3-flash-preview` when the health check had to fall back)
 - **Scope type**: `scope.type` (`working`, `commits`, or `full`)
 - **Scope content file**: `scope.content_file`
 

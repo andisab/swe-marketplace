@@ -10,11 +10,13 @@ This skill provides shared infrastructure for multi-model CLI dispatch. It is NO
 
 ## Available Engines
 
-| Engine | CLI | Non-Interactive Flag | Sandbox Flag |
+| Engine | CLI | Non-Interactive Flags | Sandbox Flag |
 |---|---|---|---|
-| codex | `codex exec` | `--full-auto` | `-s read-only` |
-| gemini | `gemini` | `-p <prompt>` | `--sandbox --approval-mode plan` |
+| codex | `codex exec` | `--skip-git-repo-check -C <cwd>` (`--full-auto` was removed in Codex CLI 0.163) | `-s read-only` |
+| gemini | `gemini` | `-p <prompt> --skip-trust -o text` (`--skip-trust` is required for headless runs since Gemini CLI 0.65) | `--approval-mode plan` (read-only; `--sandbox` broke API calls on macOS in 0.65) |
 | claude | `claude` | `--print` | N/A (always sandboxed) |
+
+No model flag is passed unless the caller sets one. Each CLI then uses its own current default. Tested with Codex CLI 0.163.0 and Gemini CLI 0.65.0 (October 2026).
 
 ## Scripts
 
@@ -45,7 +47,7 @@ bash preflight.sh --full
   "deps": {"codex": true, "gemini": true, "claude": true, "jq": true},
   "engines": {
     "codex": {"available": true, "error_type": "none"},
-    "gemini": {"available": true, "error_type": "none", "model": "gemini-2.5-pro"}
+    "gemini": {"available": true, "error_type": "none", "model": "engine_default"}
   },
   "scope": {
     "type": "working",
@@ -87,7 +89,7 @@ bash run-phase.sh --phase cross-exam --round 1 \
 - `--output-dir <path>` — Directory for output files.
 - `--timeout <seconds>` — Timeout per dispatch (default: 300).
 - `--round <N>` — Cross-exam round number (required for cross-exam phase).
-- `--gemini-model <model>` — Override Gemini model (e.g., `gemini-2.0-flash`).
+- `--gemini-model <model>` — Override the Gemini model. By default no model is passed and the CLI uses its own current default.
 
 **File naming conventions**:
 - Review prompts: `prompt-<reviewer>.md` (e.g., `prompt-quality.md`)
@@ -117,7 +119,7 @@ Cross-exam output also includes verdict counts:
 ```
 
 **Fallback logic** (review phase only):
-1. If Gemini dispatch fails with quota, retries with `gemini-2.0-flash`
+1. If Gemini dispatch fails with quota or the model isn't found, retries with the fallback model (`ADV_GEMINI_FALLBACK_MODEL`, default `gemini-3-flash-preview`)
 2. If still failed, falls back to Claude
 3. Final status reported in JSON output
 
@@ -147,7 +149,7 @@ bash dispatch.sh --engine codex --health-check
 - `--engine <codex|gemini|claude>` — Required. Target engine.
 - `--prompt <string>` — The prompt text. Mutually exclusive with `--prompt-file`.
 - `--prompt-file <path>` — Read prompt from a file.
-- `--model <model>` — Override the default model for the engine.
+- `--model <model>` — Model for the engine. Default: none passed, so the CLI uses its own current default; `ADV_CODEX_MODEL`, `ADV_GEMINI_MODEL` and `ADV_CLAUDE_MODEL` set a default per engine.
 - `--cwd <path>` — Working directory for the CLI (default: current dir).
 - `--timeout <seconds>` — Max execution time (default: 300).
 - `--output-file <path>` — Write response to this file.
@@ -161,7 +163,8 @@ bash dispatch.sh --engine codex --health-check
 | 0 | Success | Use response |
 | 1 | General error | Log and fall back to Claude |
 | 2 | Auth failure | Mark engine unavailable, fall back |
-| 3 | Quota exhausted | Try model fallback (Gemini: `gemini-2.0-flash`), then fall back |
+| 3 | Quota exhausted | Try the Gemini fallback model (`gemini-3-flash-preview` unless `ADV_GEMINI_FALLBACK_MODEL` is set), then fall back to Claude |
+| 6 | Model not found | Same fallback as quota |
 | 4 | Timeout | Mark engine unavailable, fall back |
 | 5 | Empty/invalid response | Retry once, then fall back |
 

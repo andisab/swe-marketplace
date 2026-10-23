@@ -74,7 +74,8 @@ codex_available=false
 codex_error="unavailable"
 gemini_available=false
 gemini_error="unavailable"
-gemini_model="gemini-2.5-pro"
+gemini_model="engine_default"
+gemini_fallback_model="${ADV_GEMINI_FALLBACK_MODEL:-gemini-3-flash-preview}"
 
 if $dep_codex; then
   health_json=$(bash "$DISPATCH" --engine codex --health-check 2>/dev/null || true)
@@ -93,13 +94,13 @@ if $dep_gemini; then
     gemini_error="none"
   else
     gemini_error=$(echo "$health_json" | jq -r '.error_type // "unknown"' 2>/dev/null || echo "unknown")
-    # Gemini quota fallback: try flash model
-    if [[ "$gemini_error" == "quota" ]]; then
-      health_json=$(bash "$DISPATCH" --engine gemini --model gemini-2.0-flash --health-check 2>/dev/null || true)
+    # Quota exhausted, or the configured model is gone: try the cheaper fallback model
+    if [[ "$gemini_error" == "quota" || "$gemini_error" == "model_not_found" ]]; then
+      health_json=$(bash "$DISPATCH" --engine gemini --model "$gemini_fallback_model" --health-check 2>/dev/null || true)
       if echo "$health_json" | jq -e '.success == true' &>/dev/null; then
         gemini_available=true
         gemini_error="none"
-        gemini_model="gemini-2.0-flash"
+        gemini_model="$gemini_fallback_model"
       fi
     fi
   fi

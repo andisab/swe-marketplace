@@ -12,10 +12,18 @@ arch 1.0.1 · context-engineering 1.1.1 · data 1.0.1 · databases 1.0.1 · dev 
 - **context-engineering:** the agent-dev and hook-dev skills and the tool-restriction patterns no longer teach `MultiEdit`, `TodoRead` or `NotebookRead`, so new agents don't inherit the problem.
 - **context-engineering:** the context-engineer agent and four skills couldn't reach conventions-mcp. They called `search_conventions` and `get_convention`, which conventions-mcp 1.1.1 renamed to `find_conventions` and `read_convention`, and they expected the server name `Conventions`, while conventions-mcp's README registers it as `conventions`. Both now match conventions-mcp 1.1.2, and the README gives the `claude mcp add` line.
 
-### adv 0.2.1
+### adv 0.3.0
 
+Tested against Codex CLI 0.163.0 and Gemini CLI 0.65.0 (October 2026). Both CLIs changed enough since adv 0.2.0 that every engine call had been failing.
+
+- **Fixed:** Codex calls failed on `--full-auto`, which Codex CLI 0.163 removed; the read-only sandbox doesn't need approvals, so the flag is gone. Gemini calls failed on the trusted-folder check that Gemini CLI 0.65 applies to headless runs; adv now passes `--skip-trust`. Gemini's `--sandbox` is no longer passed either, because in 0.65 on macOS it broke the CLI's API calls and every call spent 70 seconds retrying; `--approval-mode plan` keeps Gemini read-only.
+- **Fixed:** adv no longer names models. `gemini-2.5-pro` (the default) and `gemini-2.0-flash` (the quota fallback) were both retired in 2026 and returned 404. Each CLI now uses its own current default (`gpt-6.1-sol` and Gemini's auto mode at the time of testing); `ADV_CODEX_MODEL`, `ADV_GEMINI_MODEL`, `ADV_CLAUDE_MODEL` and `ADV_GEMINI_FALLBACK_MODEL` (default `gemini-3-flash-preview`) override them. A model that doesn't exist or isn't on your plan is reported as `model_not_found` (exit 6) and triggers the same fallback as a quota failure.
 - **Fixed:** a failed engine call crashed `dispatch.sh` before it wrote its error marker, because the marker used `ERROR_TYPE` before the script set it. `run-phase.sh` then counted that reviewer as successful, so the Gemini quota retry and the Claude fallback never ran, and the review lost that reviewer's findings.
 - **Fixed:** engine calls stop after 300 seconds on macOS too. The limit used to depend on GNU `timeout`, which macOS doesn't ship, so a stuck Codex or Gemini call could hang the review. Without `timeout` or `gtimeout`, a python3 watchdog now stops the engine and every process it started, and the call fails with `error_type: timeout`. Gemini calls made through 1Password's `op run` get the same limit, and `--check-deps` now checks for python3.
+- **Fixed:** each engine call logs to its own file before it's folded into `dispatch.log`, so parallel reviewers can't have another engine's error attributed to them. The 1Password path no longer needs bash 4.4 (stock macOS has 3.2), and an `op` failure to supply the key is reported as `auth`.
+- The Gemini health check first sends one request through the REST API, because Gemini CLI answers an exhausted quota by retrying and switching models in silence, which looked like a hung engine. The probe reports quota (429), a bad key or a missing model in about a second, and the review falls back to Claude at once instead of after a 300-second timeout per call.
+- `--check-deps` prints each CLI's version, notes when one is older than the tested version, and reports `BROKEN` when a CLI is on `PATH` but can't run. The health check allows 60 seconds instead of 30, since Gemini's first run of a session took about 40.
+- `plugins/adv/tests/dispatch-test.sh` runs `dispatch.sh` against fake engines (success, auth, quota, hang, model not found) on any bash; `validate-all.sh` and CI run it.
 
 ### knowledgeware 1.8.1
 

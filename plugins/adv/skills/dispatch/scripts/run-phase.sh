@@ -13,6 +13,7 @@ ASSIGNMENTS=""
 PROMPT_DIR=""
 OUTPUT_DIR=""
 TIMEOUT=300
+GEMINI_FALLBACK_MODEL="${ADV_GEMINI_FALLBACK_MODEL:-gemini-3-flash-preview}"
 ROUND=""
 GEMINI_MODEL=""
 
@@ -29,7 +30,7 @@ Options:
   --output-dir <path>           Directory for output files
   --timeout <seconds>           Timeout per dispatch (default: 300)
   --round <N>                   Cross-exam round number (required for cross-exam phase)
-  --gemini-model <model>        Override Gemini model (e.g., gemini-2.0-flash)
+  --gemini-model <model>        Override Gemini model (default: the CLI's own; fallback on quota: $GEMINI_FALLBACK_MODEL)
   -h, --help                    Show this help
 
 Review phase expects:   prompt-dir/prompt-<reviewer>.md
@@ -135,9 +136,9 @@ run_review_phase() {
       local orig_model
       orig_model=$(echo "$error_line" | grep -oE 'model=[^ ]+' | cut -d= -f2)
 
-      # Gemini quota fallback: try flash model
-      if [[ "$engine" == "gemini" && "$error_type" == "quota" && "$orig_model" != "gemini-2.0-flash" ]]; then
-        bash "$DISPATCH" --engine gemini --model gemini-2.0-flash \
+      # Quota exhausted, or the model is gone: retry Gemini on the cheaper fallback model
+      if [[ "$engine" == "gemini" && ( "$error_type" == "quota" || "$error_type" == "model_not_found" ) && "$orig_model" != "$GEMINI_FALLBACK_MODEL" ]]; then
+        bash "$DISPATCH" --engine gemini --model "$GEMINI_FALLBACK_MODEL" \
           --prompt-file "$PROMPT_DIR/prompt-${reviewer}.md" \
           --output-file "$output_file" \
           --cwd "." --timeout "$TIMEOUT" 2>/dev/null || true

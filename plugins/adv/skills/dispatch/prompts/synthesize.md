@@ -62,7 +62,7 @@ Merge all validated findings into a deduplicated, severity-ranked report with a 
 
 ## Review Metadata
 - Duration: Ns
-- Models used: codex, gemini-2.5-pro, claude-sonnet
+- Models used: codex (<model from the status lines, or "engine default">), gemini (<same>), claude (sonnet)
 - Scope files: N
 - Cross-examination rounds: N
 ```

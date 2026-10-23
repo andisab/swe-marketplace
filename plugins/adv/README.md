@@ -4,23 +4,25 @@ adv reviews your code changes with three models at once. Five reviewers split ac
 
 ## Requirements
 
-adv calls two other command-line tools, so install and sign in to both before your first review:
+adv calls two other command-line tools, so install and sign in to both before your first review. adv 0.3.0 was tested with Codex CLI 0.163.0 and Gemini CLI 0.65.0 in October 2026; older versions of either CLI take different flags, so update both first.
 
-- **Codex CLI.** Install it with `npm install -g @openai/codex`, then run `codex login`.
-- **Gemini CLI.** Install it with `npm install -g @google/gemini-cli`, then sign in with its own login or set `GOOGLE_API_KEY` or `GEMINI_API_KEY` in your environment.
+- **Codex CLI 0.163 or later.** Install it with `npm install -g @openai/codex@latest`. Then sign in with your ChatGPT plan (`codex login`) or with an OpenAI API key (`printenv OPENAI_API_KEY | codex login --with-api-key`). Both work; a Plus plan covers a review's dozen or so calls.
+- **Gemini CLI 0.65 or later.** Install it with `npm install -g @google/gemini-cli@latest`, then set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in your environment to a [Gemini API key](https://aistudio.google.com/apikey) from a project with billing enabled. A free-tier key isn't enough: in October 2026 its limit was 20 requests per day on `gemini-3-flash`, and one review makes about nine Gemini calls, each of which can take several requests. Worse, when the quota runs out, Gemini CLI retries with backoff and switches models in silence instead of failing, so every call looks like a hang until adv's 300-second limit stops it. Signing in with a Google account instead (`gemini` then `/auth`) works on a paid Google AI plan; reports from June 2026 say the free Gemini CLI quota for personal Google accounts ended then, which I haven't verified myself.
 - **jq, git and python3.** The scripts parse JSON with jq and read the diff with git. They use python3 to time each engine call and to stop one that runs longer than 300 seconds. A review stops at the start if jq is missing or if you aren't inside a git repository.
 
 If Codex or Gemini is missing or fails its health check, the reviewers assigned to it run on Claude instead. The review still finishes, but with fewer independent opinions, and with neither CLI available all five reviewers run on Claude.
 
+**Models.** adv doesn't pass a model flag unless you ask it to. Each CLI then uses its own current default: in October 2026 that is `gpt-6.1-sol` for Codex, and Gemini's "auto" mode, which routed to `gemini-3.1-pro-preview` and `gemini-3-flash-preview` in testing. To pin a model, set `ADV_CODEX_MODEL`, `ADV_GEMINI_MODEL` or `ADV_CLAUDE_MODEL` (default `sonnet`) in your environment. When Gemini reports an exhausted quota or a model that no longer exists, adv retries that reviewer on `ADV_GEMINI_FALLBACK_MODEL` (default `gemini-3-flash-preview`) before falling back to Claude. If your `~/.codex/config.toml` pins a model that has since been retired, Codex warns `Model metadata for ... not found` on every call and runs on fallback settings, so remove the pin or update it.
+
 Gemini's `google_search` extension is optional. `/adv:adv-gemini-research` uses it to ground answers in Google Search, and without it the command still runs, but without search grounding.
 
-Once the plugin is installed, check your setup from a terminal. Replace `<version>` with the version that `claude plugin list` shows for adv, such as `0.2.1`:
+Once the plugin is installed, check your setup from a terminal. Replace `<version>` with the version that `claude plugin list` shows for adv, such as `0.3.0`:
 
 ```bash
 bash ~/.claude/plugins/cache/swe-marketplace/adv/<version>/skills/dispatch/scripts/dispatch.sh --check-deps
 ```
 
-When everything required is present, the last line reads `All required dependencies available.` Lines that start with `NOTE` describe optional pieces.
+When everything required is present, the last line reads `All required dependencies available.` It prints each CLI's version and a `NOTE` when one is older than the version adv was tested with. `BROKEN` means the command is on your `PATH` but can't run, which happens when an npm update leaves the Codex package without its native binary; reinstalling fixes it. Other `NOTE` lines describe optional pieces.
 
 ## Install
 
@@ -68,7 +70,7 @@ For `--full`, the reviewers get a list of the repository's files instead of a di
 /adv:adv-gemini Explain how requests flow through this service
 ```
 
-Both run in the current directory, with Codex in its read-only sandbox and Gemini in sandbox and plan mode.
+Both run in the current directory, with Codex in its read-only sandbox and Gemini in plan mode, which is its read-only mode.
 
 **Research a question with Google Search grounding.**
 
@@ -94,11 +96,15 @@ The answer comes back in the conversation. Nothing is written to `.claude/review
 
 **How many model calls does one review make?** With both CLIs available, a review makes one health-check call to each engine, four reviewer calls split between Codex and Gemini, and up to six cross-examination calls, two per round for at most three rounds. The simplification reviewer, any Claude fallbacks and the synthesis run on Claude.
 
-**How long does a review take?** It depends on the size of the diff and on how quickly each engine answers, and the summary at the end reports the duration of that run. adv stops any engine call that runs longer than 300 seconds and counts it as a failure, so that reviewer falls back to Claude.
+**How long does a review take?** It depends on the size of the diff and on how quickly each engine answers, and the summary at the end reports the duration of that run. For scale, in October 2026 testing a one-line health prompt took about 4 seconds on Codex (`gpt-6.1-sol`) and 7 to 15 seconds on Gemini in its default auto mode, which in plan mode routes every call to the Pro model. Gemini's times varied far more than Codex's: the same prompt took 15, 97 and 256 seconds on consecutive runs when the key's quota was close to its limit, because the CLI retries with backoff rather than failing. adv stops any engine call that runs longer than 300 seconds and counts it as a failure, so that reviewer falls back to Claude.
 
 **The review stopped with "Only N/5 reviewers succeeded".** adv needs at least two of the five reviewers to finish before it cross-examines anything. The temporary folder stays in place after this error, so read `.claude/reviews/.tmp/dispatch.log` for the reason each engine failed, then run the dependency check above.
 
-**Gemini reports an exhausted quota.** adv retries a Gemini quota failure with `gemini-2.0-flash` and falls back to Claude if that fails too. The report notes which reviewers fell back.
+**Gemini reports an exhausted quota, or a 404 for the model.** adv retries that reviewer on the fallback model (`gemini-3-flash-preview` unless `ADV_GEMINI_FALLBACK_MODEL` says otherwise) and falls back to Claude if that fails too. The report notes which reviewers fell back.
+
+**Every Gemini call runs for 300 seconds, then times out.** Gemini CLI doesn't report an exhausted quota; it retries with backoff and switches models until something answers. adv's health check sends one request through the REST API first and reports `quota` with Google's retry time in `.claude/reviews/.tmp/dispatch.log`, so the review falls back to Claude right away. If the health check passed and the review's calls still time out, the quota ran out mid-review, or the model the CLI routed to is out of quota while the probed one wasn't.
+
+**The health check fails with `auth` although my keys are set.** Read `.claude/reviews/.tmp/dispatch.log`. When adv gets the Gemini key through 1Password, an `op` error such as `More than one item matches` counts as an auth failure, and the fix is in your vault or `~/.env`, not in adv.
 
 **Should I commit `.claude/reviews/`?** adv creates the folder in your repository and keeps every report there. Add `.claude/reviews/` to `.gitignore` unless you want the review history in version control.
 
@@ -138,7 +144,7 @@ The report lists bugs first, then nits, then pre-existing problems.
 |---|---|
 | Codex unavailable | The quality and testing reviewers run on Claude. |
 | Gemini unavailable | The implementation and documentation reviewers run on Claude. |
-| Gemini quota exhausted on `gemini-2.5-pro` | adv retries with `gemini-2.0-flash`, then falls back to Claude. |
+| Gemini quota exhausted, or its model not found | adv retries with the fallback model (`gemini-3-flash-preview` by default), then falls back to Claude. |
 | Neither available | All five reviewers run on Claude. |
 
 ## Allow the scripts without prompts
@@ -156,7 +162,7 @@ The agent and commands call bash scripts inside the installed plugin. To stop Cl
 }
 ```
 
-Replace `/Users/<you>` with your home directory, such as `/home/<you>` on Linux. The first rule matches every installed version, so it keeps working after an update. The scripts start Codex with `-s read-only` and Gemini with `--sandbox --approval-mode plan`, and the second rule only removes the review's temporary folder.
+Replace `/Users/<you>` with your home directory, such as `/home/<you>` on Linux. The first rule matches every installed version, so it keeps working after an update. The scripts start Codex with `-s read-only` and Gemini with `--approval-mode plan`, and the second rule only removes the review's temporary folder.
 
 ## Gemini API key lookup
 
@@ -180,6 +186,7 @@ With no key from any of these, Gemini CLI uses its own sign-in.
 | 3 | Quota or rate limit reached | `quota` |
 | 4 | The engine timed out | `timeout` |
 | 5 | The engine returned an empty or error-only response | `empty_response` |
+| 6 | The model doesn't exist or isn't on your plan | `model_not_found` |
 
 ---
 

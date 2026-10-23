@@ -19,6 +19,8 @@ jobs:
         run: python scripts/synthesize-plugin-manifests.py --check
       - name: Verify agents name only real tools
         run: python scripts/check-agent-tools.py
+      - name: Test adv's dispatcher against fake engines
+        run: sudo apt-get install -y -qq jq >/dev/null && bash plugins/adv/tests/dispatch-test.sh
 
   validate-manifests:
     name: claude plugin validate
