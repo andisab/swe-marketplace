@@ -87,7 +87,13 @@ Area fill = line path + `L{xEnd},{innerH} L{x0},{innerH} Z`, filled with a verti
 
 **Sparklines / KPI tiles** (`kpi-tile.svg`): no axes/grid/labels; inset the y-range 2–3px so peaks don't clip; dot on the last point only; value in `tabular-nums`; delta triangle as a path, not a ▲ glyph; delta color is per-metric semantic (churn down = good), not per-sign. Side-by-side sparks must share a y-domain.
 
-**Heatmap**: cell 20–36px, 2px gap, `rx 2`; 5–7 **discrete** buckets (quantile for skewed data), never a continuous ramp; in-cell values only when cell ≥ 32px; missing cells get a hatched/outlined rect — an absent rect reads as zero.
+**Heatmap** (`heatmap.svg`): cell 20–40px, 2px gap, `rx 2`; 5–7 **discrete** buckets (quantile cut points for skewed data), never a continuous ramp; one hue at `fill-opacity` steps (.08 → 1) over the canvas, which survives dark mode where a baked ramp wouldn't; in-cell values only when the cell is ≥ 32px, otherwise in `<title>`; missing cells get an outlined, dashed rect — an absent rect reads as zero. Legend: the bucket swatches in order with the lowest and highest cut points as text.
+
+**Waterfall** (`waterfall.svg`): start and end totals rise from the baseline in the muted tone; each step floats from the running total, increases in the accent, decreases in the error token (diverging polarity). `y = min(yPx(lo), yPx(hi))`, `h = abs(…)`, so a negative height can't happen. Dashed hairline connectors join each bar's end level to the next bar's start. **Write the conservation check in the file's comment** (start + Σ steps = end); the lint can't do arithmetic on your data. Value labels above every bar, signed on the steps.
+
+**Slopegraph** (`slopegraph.svg`): two value columns, one line per category, no y axis and no gridlines, because the slope is the message. Rising lines wear the accent, falling the muted tone, flat the grid tone. Direct labels only: `name value` anchored `end` on the left, `value name` anchored `start` on the right, 12 units off the column. Lay labels out top to bottom and push any label closer than 14 units to the one above it down; the dot stays on the true value. More than ~8 categories: show the top movers and group the rest.
+
+**Dumbbell** (`dumbbell.svg`): one row per item, sorted by the "before" value; a muted dot for before and an accent dot for after, joined by a 2px line in the grid tone, with a `bg`-colored 1.5px stroke halo on the dots so they sit cleanly on the line. Value labels outside the dots, never between them (before to the outer side of its dot, after to the outer side of its). Vertical gridlines on the value axis only; a two-item legend above the plot.
 
 ## 4. Text
 

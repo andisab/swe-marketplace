@@ -57,6 +57,10 @@ Hand-authored inline SVG — the default medium for **data charts**, and the rig
 | Parts of a whole, share breakdown | `donut.svg` |
 | Correlation, distribution | `scatter.svg` |
 | Headline metric + delta + trend | `kpi-tile.svg` |
+| How a total moved: start, steps up and down, end (bridge) | `waterfall.svg` |
+| Two dimensions × a magnitude (weekday × hour, team × month) | `heatmap.svg` |
+| Change between two periods for several categories | `slopegraph.svg` |
+| Before and after per item (two points, one gap) | `dumbbell.svg` |
 | Node-and-arrow diagram, flow, architecture | `diagram-flow.svg` |
 
 **Complexity budget (diagrams)**: before drawing, state the type, the node count and what you'll leave out. One diagram holds at most **9 nodes, 12 edges, 2 accent roles and 2 edge crossings**; a sequence diagram at most 5 lifelines, a swimlane diagram at most 5 lanes. Over budget means the subject needs an overview diagram plus one detail diagram per subsystem, not a bigger canvas. Deleting is the first move: a node that doesn't change what the reader decides goes.
