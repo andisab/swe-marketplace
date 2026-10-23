@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when an agent's `tools:` frontmatter names a tool Claude Code doesn't have.
+"""Fail when an agent's `tools:` or `allowed-tools:` frontmatter names a tool Claude Code doesn't have.
 
 `claude plugin validate` doesn't check tool names, and an agent can't use a
 tool that doesn't exist: one listing `MultiEdit` but not `Edit` can only
@@ -31,7 +31,7 @@ KNOWN_TOOLS = {
 }
 
 FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.S)
-TOOLS_LINE = re.compile(r"^tools:[ \t]*(.*)$", re.M)
+TOOLS_LINE = re.compile(r"^(?:allowed-)?tools:[ \t]*(.*)$", re.M)   # agents use either key
 SPECIFIER = re.compile(r"^(\w+)\(.*\)$")
 
 
@@ -51,8 +51,7 @@ def main() -> int:
     problems = []
     for path in agents:
         frontmatter = FRONTMATTER.match(path.read_text())
-        line = frontmatter and TOOLS_LINE.search(frontmatter.group(1))
-        if line:
+        for line in TOOLS_LINE.finditer(frontmatter.group(1)) if frontmatter else []:
             bad = unknown_tools(line.group(1))
             if bad:
                 problems.append((path.relative_to(REPO_ROOT), bad))

@@ -192,7 +192,7 @@ To use one skill without its plugin, upload it as a zip under **Customize → Sk
 cd swe-marketplace/plugins/context-engineering/skills && zip -r skill-dev.zip skill-dev
 ```
 
-Skills need code execution, which you turn on under **Settings → Capabilities → Code execution and file creation**. A single skill works when it's self-contained, as context-engineering's authoring skills and research-team's `joplin-research` are. Skills that run their plugin's scripts (`knowledgeware`, `adv:dispatch`) or start agents (`research-team:coordinator`) need the whole plugin, installed in Claude Code or Cowork.
+Skills need code execution, which you turn on under **Settings → Capabilities → Code execution and file creation**. A single skill works when it's self-contained, as context-engineering's authoring skills and research-team's `report-formats` are. Skills that run their plugin's scripts (`knowledgeware`, `adv:dispatch`) or start agents (`research-team:coordinator`) need the whole plugin, installed in Claude Code or Cowork.
 
 ### Claude Agent SDK
 
@@ -364,7 +364,7 @@ Before you install a plugin from any marketplace, read the details pane that `/p
 
 ### Will installing several plugins fill up Claude's context?
 
-Each installed plugin adds the short descriptions of its skills and agents to every session, so Claude knows when to use them. The full instructions load only when Claude uses a skill or agent. To see what one plugin adds, run `claude plugin details <name>@swe-marketplace` in your shell and read the `Always-on` line. For knowledgeware 1.8.0 it reads about 1,500 tokens, under 1% of a 200,000-token context window. Disable plugins you aren't using with `claude plugin disable <name>@swe-marketplace`.
+Each installed plugin adds the short descriptions of its skills and agents to every session, so Claude knows when to use them. The full instructions load only when Claude uses a skill or agent. To see what one plugin adds, run `claude plugin details <name>@swe-marketplace` in your shell and read the `Always-on` line. For knowledgeware 1.9.0 it reads about 1,500 tokens, under 1% of a 200,000-token context window. Disable plugins you aren't using with `claude plugin disable <name>@swe-marketplace`.
 
 ### How do I get updates?
 
@@ -376,7 +376,7 @@ An agent starts with instructions written for its specialty and works in its own
 
 ### I added one skill from a skills directory, and it says it needs the whole plugin.
 
-Skills directories copy a single skill folder. Some skills depend on files elsewhere in their plugin, such as scripts, styles or agents. slideware, brandware and research-team's coordinator check for those files, and when they're missing, the skill stops and prints the command that installs the whole plugin. Run that command. The context-engineering skills and `joplin-research` are self-contained and work on their own.
+Skills directories copy a single skill folder. Some skills depend on files elsewhere in their plugin, such as scripts, styles or agents. slideware, brandware and research-team's coordinator check for those files, and when they're missing, the skill stops and prints the command that installs the whole plugin. Run that command. The context-engineering skills and research-team's `report-formats` are self-contained and work on their own.
 
 ### Can I use these plugins outside the terminal?
 
