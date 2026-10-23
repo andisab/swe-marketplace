@@ -55,6 +55,11 @@ if ! bash plugins/knowledgeware/tests/svg-lint-test.sh; then
   failed=1
 fi
 
+# chartware's diagram digest and fidelity ledger
+if ! bash plugins/knowledgeware/tests/diagram-digest-test.sh; then
+  failed=1
+fi
+
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue
   run_validate "$dir" "$(basename "$dir")"

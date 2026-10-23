@@ -86,6 +86,19 @@ To verify visually, write the SVG into a minimal HTML page and screenshot it wit
 
 ---
 
+## Importing a diagram: extract, digest, redraw, ledger
+
+When the user hands over a diagram that exists already (a `.drawio` file, a Mermaid block, an Excalidraw scene or one of chartware's own SVGs) and wants it in another medium, in the brand, or cleaned up, **redraw it; don't convert it.** A converted diagram keeps the old layout's faults in a new file. The contract has four steps, and the script does the two mechanical ones:
+
+1. **Extract.** `python3 scripts/diagram-digest.py extract <file> --md` writes the digest: the nodes with their labels, shapes and groups, the edges with their labels and styles, and the direction. Nothing about pixels. Read it, then read the original once as a picture if you have browser tools, to catch what the digest can't carry (an icon, a colour that means something, a note in the margin).
+2. **Decide the four dials and say them before drawing.** *Format*: the target medium by the fit table above, or the user's choice. *Size*: the preset (§Medium 2). *Detail*: full, or an overview with the budget applied (9 nodes, 12 edges), which usually means merging nodes into groups and dropping edges that don't change what the reader decides. *Audience*: who reads it, which decides the labels. Write the plan as one short paragraph, including what you intend to merge or drop and why.
+3. **Redraw** in the target medium from its template, under the normal rules for that medium (brand, routing, budget, lint for SVG). Keep the original's labels verbatim unless the audience dial says otherwise; renames go in the ledger.
+4. **Ledger.** `python3 scripts/diagram-digest.py ledger <original> <redrawn> --md` compares the two digests and lists every node as kept, renamed, merged, dropped or added, and every edge as kept, relabelled, dropped or added. Deliver the ledger with the diagram, with one line of reason per dropped or merged row. A ledger with unexplained drops means the redraw isn't finished.
+
+The extractor reads draw.io (including the compressed form draw.io saves by default), Mermaid `flowchart`/`graph` (node shapes, `|label|` and `-- label -->` edges, subgraphs, dashed and thick edges), Excalidraw (bound text, bound arrows, frames) and chartware SVG (the class idiom). Sequence diagrams, Gantt and other Mermaid types aren't parsed; redraw those from the text by hand and write the ledger yourself.
+
+---
+
 ## Medium 3: draw.io
 
 Editable, enterprise-grade diagrams via the bundled draw.io MCP's `open_drawio_xml` tool (load it via `tool_search` for "drawio" — the exact tool name varies by install) with the curated style catalog.

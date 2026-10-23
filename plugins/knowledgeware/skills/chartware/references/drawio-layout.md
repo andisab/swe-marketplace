@@ -117,6 +117,10 @@ The draw.io editor will be the active tab after `open_drawio_xml` opens it. No n
 
 **Patch strategy:** Edit only the affected cells — adjust `x`, `y`, `width`, `height`, or `style`. Do not regenerate the full XML unless the layout is fundamentally broken. Targeted edits are faster and less error-prone.
 
+## Redrawing an existing diagram
+
+To bring a `.drawio`, Mermaid or Excalidraw diagram into draw.io, follow SKILL.md §Importing a diagram: extract the digest with `scripts/diagram-digest.py`, plan the layout here from the digest's groups and edges (not from the old coordinates), build from the closest template, and deliver the fidelity ledger with the file.
+
 ## Rendering without the draw.io MCP (headless / posters)
 
 The canonical workflow for producing a PNG of a draw.io diagram with no MCP available (used e.g. by knowledgebase poster diagrams):
