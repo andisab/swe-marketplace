@@ -2,7 +2,7 @@
 
 Notable changes to the marketplace and its plugins. Each plugin carries its own version in [`marketplace.json`](./.claude-plugin/marketplace.json); a marketplace release (tagged `vX.Y.Z`, matching the catalog version) groups the plugin versions that shipped together. Claude Code updates an installed plugin when its version changes, so every shipped change to a plugin bumps its version.
 
-## [1.2.0] — unreleased
+## [1.2.0] — 2026-10-23
 
 ### Agents in every plugin that has them
 
