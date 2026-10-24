@@ -1,6 +1,6 @@
 # Canonical sample decks
 
-Three reference decks ship with this skill. They demonstrate **what good looks like** across three distinct visual personalities. **Read the rendered PNGs first** before authoring — concrete examples are stronger than abstract rules.
+Three reference decks ship with this skill as source plus rendered previews: each sample folder holds the `build-deck.js` that builds the deck, its style tokens, and a preview folder with one PNG per slide. The `.pptx` files themselves aren't shipped (the plugin carries no binaries); rebuild one with the commands at the end when you need the file. They demonstrate **what good looks like** across three distinct visual personalities. **Read the rendered previews first** before authoring — concrete examples are stronger than abstract rules.
 
 The samples were built with brandbooks that don't ship publicly (the folder names are those brandbooks' names). Each has a close built-in style, so the patterns carry over directly:
 
@@ -15,7 +15,7 @@ The samples were built with brandbooks that don't ship publicly (the folder name
 ### Before authoring a new deck
 
 1. Pick the sample whose personality is closest to the style or brandbook you're using.
-2. **Look at the PNGs** in `assets/samples/<bb>/preview/slide-*.png`. Each sample is 6 slides covering 6 distinct archetypes.
+2. **Look at the previews**: the preview folder inside the sample holds one PNG per slide. Each sample is 6 slides covering 6 distinct archetypes.
 3. Read the source `assets/samples/<bb>/build-deck.js` to see the *exact* pptxgenjs patterns that produce those visuals: chrome (kicker, page number), card layouts, accent placement, table styling.
 4. Borrow patterns. Adapt to the new content.
 
@@ -62,7 +62,7 @@ Each sample is one of *infinitely many* good decks for that brandbook. The same 
 
 ## Rebuilding the samples
 
-Rebuilding needs the sample's brandbook in your registry (see the brandware skill); with only the built-in styles, pass the closest style from the table above instead of `<bb>`.
+This produces the `.pptx` (and refreshes the previews). It needs the sample's brandbook in your registry (see the brandware skill); with only the built-in styles, pass the closest style from the table above instead of `<bb>`.
 
 ```bash
 cd assets/samples/<bb>

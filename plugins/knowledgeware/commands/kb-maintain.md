@@ -1,7 +1,7 @@
 ---
 description: Deprecated alias for `/knowledgeware:librarian sweep` — runs a maintenance sweep on one knowledgebase site. Kept so existing scheduled jobs keep working; switch them to the librarian command.
 argument-hint: "<site-dir> [--dry-run]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch, Agent
+allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Agent
 ---
 
 Run a maintenance sweep against the knowledgebase site at: $ARGUMENTS

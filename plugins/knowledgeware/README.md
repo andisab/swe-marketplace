@@ -213,7 +213,19 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 | **slideware** skill | Builds slide decks as PowerPoint files or as single-file HTML (Reveal.js) decks. Both formats carry speaker notes, session pacing and hidden slides. |
 | **librarian** agent and `/knowledgeware:librarian` | Reports which facts are due for re-checking across your sites and decks, writes an update plan, and fact-checks one site against its sources. See [Keeping sites and decks current](#keeping-sites-and-decks-current). |
 | `/knowledgeware:kb-maintain` | A deprecated alias for `librarian sweep`, kept so existing scheduled jobs keep running. |
-| **drawio** MCP server | The official draw.io server (`@drawio/mcp`), which chartware uses to open diagrams in draw.io. `npx` fetches it the first time it runs. |
+| **drawio** MCP server | The official draw.io server (`@drawio/mcp`, pinned to 1.10.0), which chartware uses to open diagrams in draw.io. `npx` fetches it from the npm registry the first time it runs. |
+
+## What it runs, and what leaves your machine
+
+Everything the plugin runs is a readable script inside the plugin folder: Node.js for the style registry and deck builds, Python (standard library only) for the deck, diagram and site checks, and shell scripts that call them. The network is used in these cases and no others:
+
+- **The draw.io MCP server.** `npx` downloads `@drawio/mcp@1.10.0` from the npm registry the first time chartware opens a diagram in draw.io, and the server opens the diagram in the draw.io web editor. It runs only in Claude Code and Cowork; claude.ai doesn't start local MCP servers.
+- **Fonts.** `scripts/install-fonts.sh` downloads a style's fonts from Google Fonts when you ask for them, and HTML decks link Google Fonts stylesheets. Without access, text falls back to system fonts.
+- **Mermaid.** A knowledgebase site vendors `mermaid.min.js` from jsDelivr once at build time, so the finished site works offline.
+- **Files you point it at.** `scripts/fetch-resource.sh` downloads the one URL you give it, such as a brandbook on Google Drive. For a Drive file behind the virus-scan page it keeps Google's confirmation cookie in a temporary file for that download and deletes it afterwards.
+- **The librarian.** A sweep fetches the sources a site cites and runs web searches to re-verify facts.
+
+Nothing is sent anywhere else, no telemetry is collected, and no credential, token or key is read from your environment or files. Deck, site and diagram files are written where you ask, in your current folder by default.
 
 ## Questions and troubleshooting
 
