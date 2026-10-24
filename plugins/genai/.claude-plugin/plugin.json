@@ -19,5 +19,10 @@
   ],
   "agents": [
     "./agents/genai-langchain-expert.md"
-  ]
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/genai/README.md",
+  "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+  "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
 }

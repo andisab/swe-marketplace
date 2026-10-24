@@ -4,6 +4,11 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ## [1.2.1] — unreleased
 
+### Directory listing fields, every plugin
+
+- Each plugin's `plugin.json` now carries the fields Anthropic's directory reads for a listing: `icon` (the `icon.png` beside the manifest), `documentationUrl` (the plugin's README), `supportUrl` (this repository's issues), `privacyPolicyUrl` (the new [PRIVACY.md](./PRIVACY.md)) and `termsOfServiceUrl` (the MIT license). The catalog can't hold them directly, since `claude plugin validate` warns on each in a marketplace entry, so they live under the entry's free-form `metadata.directory` and the generator hoists them into `plugin.json`. No plugin version changes for this: Claude Code ignores the fields, so there is nothing for an installed copy to pick up.
+- [PRIVACY.md](./PRIVACY.md) states what the plugins collect (nothing), what leaves the machine and to whom (the model providers you already use, plus knowledgeware's and research-team's documented fetches), and where output stays.
+
 ### knowledgeware 1.9.3
 
 Third round of the plugin directory's review, down to the two holds it names on every submission.
