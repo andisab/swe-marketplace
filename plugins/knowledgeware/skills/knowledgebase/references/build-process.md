@@ -6,7 +6,7 @@ The parallel-build playbook for sites larger than ~4 pages, plus the verificatio
 
 1. **Page map + nav**: fix the full page list, groups, and reading order. The nav is defined ONCE and baked into the working template; every page carries identical nav markup.
 2. **Working template**: copy `templates/page-template.html`, fill `{{SITE_TITLE}}`, `{{SITE_SUBTITLE}}`, `{{NAV_LINKS}}`, `{{FOOTER}}` — leave the per-page placeholders (`{{TITLE}} {{DESC}} {{CRUMB}} {{H1}} {{CHIPS}} {{CONTENT}} {{PAGENAV}}`) for writers. Park it at a stable path all agents can read.
-3. **Vendor Mermaid** into the site folder: `curl -sL -o mermaid.min.js https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js`
+3. **Vendor Mermaid** into the site folder: `python3 "${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/scripts/vendor-mermaid.py" .` downloads the pinned release (11.17.2) from jsDelivr, verifies its SHA-256, and writes `mermaid.min.js` beside the pages; it skips the download when a verified copy is already there.
 4. **Prev/next chain**: write out the full ordered chain so each writer brief carries its exact PAGENAV values.
 
 ## Phase B — Research fan-out (parallel background agents)

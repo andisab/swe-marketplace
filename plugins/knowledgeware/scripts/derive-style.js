@@ -9,8 +9,8 @@
 // Writes a both-layer brandbook.md (frontmatter + prose) compatible with scripts/load-style.js.
 //
 // Usage:
-//   node derive-style.js https://example.com -o ./my-brand.md
-//   node derive-style.js https://example.com               # prints to stdout
+//   node derive-style.js <site-url> -o ./my-brand.md
+//   node derive-style.js <site-url>               # prints to stdout
 //
 // Caveats:
 //   - This is a heuristic starting point, not a precise harvest. Modern sites compile

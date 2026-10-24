@@ -228,7 +228,7 @@ The loaders handle: frontmatter-bearing `.md` (precision path), prose-only `.md`
 ### Google Drive
 
 ```bash
-bash scripts/fetch-resource.sh "https://drive.google.com/file/d/FILE_ID/view" ./brand.md
+python3 scripts/fetch-resource.py "https://drive.google.com/file/d/FILE_ID/view" ./brand.md
 node scripts/load-style.js ./brand.md
 ```
 

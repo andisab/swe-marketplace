@@ -78,7 +78,7 @@ flowchart TD
   B -->|"yes"| C["Outcome"]
 </pre>
 ```
-Rules: ≤12 nodes; `TD` for decision trees, `LR` for pipelines; **no raw `<` `>` in labels** (breaks HTML parsing before Mermaid sees it — write "under 200K" or `&lt;`); `<br/>` allowed inside quoted labels for two-line nodes. Vendor `mermaid.min.js` into the site folder (`curl -sL -o mermaid.min.js https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js`).
+Rules: ≤12 nodes; `TD` for decision trees, `LR` for pipelines; **no raw `<` `>` in labels** (breaks HTML parsing before Mermaid sees it — write "under 200K" or `&lt;`); `<br/>` allowed inside quoted labels for two-line nodes. Vendor `mermaid.min.js` into the site folder (`python3 "${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/scripts/vendor-mermaid.py" .` (the pinned release, hash-verified)).
 
 **Poster diagrams (chartware)** — for the site's 2–4 flagship diagrams. Author and render via the `chartware` skill (style catalog: `skills/chartware/references/styles.md`; layout invariants and the no-MCP headless render workflow: `skills/chartware/references/drawio-layout.md`). Embed:
 ```html

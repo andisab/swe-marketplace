@@ -98,7 +98,7 @@ node scripts/derive-style.js https://example.com -o $BRANDS/example/brand.md
 
 # 2. Import an existing .md or .css brandbook, or fetch one from Google Drive
 cp ~/my-brandbook.md $BRANDS/example/brand.md
-bash scripts/fetch-resource.sh <drive-share-url> $BRANDS/example/brand.md
+python3 scripts/fetch-resource.py <drive-share-url> $BRANDS/example/brand.md
 
 # 3. Write one by hand, following skills/brandware/references/brandbook-spec.md and the acmecorp example
 ```
@@ -221,8 +221,8 @@ Everything the plugin runs is a readable script inside the plugin folder: Node.j
 
 - **The draw.io MCP server.** `npx` downloads `@drawio/mcp@1.10.0` from the npm registry the first time chartware opens a diagram in draw.io, and the server opens the diagram in the draw.io web editor. It runs only in Claude Code and Cowork; claude.ai doesn't start local MCP servers.
 - **Fonts.** `scripts/install-fonts.sh` downloads a style's fonts from Google Fonts when you ask for them, and HTML decks link Google Fonts stylesheets. Without access, text falls back to system fonts.
-- **Mermaid.** A knowledgebase site vendors `mermaid.min.js` from jsDelivr once at build time, so the finished site works offline.
-- **Files you point it at.** `scripts/fetch-resource.sh` downloads the one URL you give it, such as a brandbook on Google Drive. For a Drive file behind the virus-scan page it keeps Google's confirmation cookie in a temporary file for that download and deletes it afterwards.
+- **Mermaid.** A knowledgebase site vendors `mermaid.min.js` once at build time, so the finished site works offline: `vendor-mermaid.py` downloads the pinned release (11.17.2) from jsDelivr and writes it only if its SHA-256 matches the hash recorded in the script.
+- **Files you point it at.** `scripts/fetch-resource.py` downloads the one URL you give it, such as a brandbook on Google Drive. For a Drive file behind the virus-scan page it keeps Google's confirmation cookie in a temporary file for that download and deletes it afterwards.
 - **The librarian.** A sweep fetches the sources a site cites and runs web searches to re-verify facts.
 
 Nothing is sent anywhere else, no telemetry is collected, and no credential, token or key is read from your environment or files. Deck, site and diagram files are written where you ask, in your current folder by default.

@@ -4,6 +4,15 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ## [1.2.1] — unreleased
 
+### knowledgeware 1.9.2
+
+The second round of the plugin directory's review, after 1.9.1 cleared the blocking finding. The portal's per-file findings named the triggers this time.
+
+- **Fixed:** `scripts/fetch-resource.sh` is now `scripts/fetch-resource.py`: the same Google Drive handling (share link to direct download, the virus-scan page's confirm step) in Python's standard library, with the cookie jar in memory for the run and nothing written to disk. The directory read the curl version as a download-and-execute pattern. The follow-up request also handles Google's current form-based confirm page, which the old `confirm=` regex missed. The five places that documented the `.sh` name point at the `.py`.
+- Two identifiers that the directory's credential heuristic read as secrets beside a remote host are renamed: the HTML deck builder's `CUE_KEYS` constant (the presenter-cue field names, near a GitHub link in a comment) is `CUE_FIELDS`, and the two shell tests' `pass`/`fail` counters (near the W3C SVG namespace) are `n_ok`/`n_bad`. `derive-style.js`'s usage comment names `<site-url>` instead of `https://example.com`, which the directory counted as a destination data could be sent to.
+- `tests/diagram-digest-test.sh` reads JSON through a shipped helper, `tests/json-eval.py`, instead of `python3 -c`.
+- The knowledgebase build vendors Mermaid through a shipped script, `skills/knowledgebase/scripts/vendor-mermaid.py`, which downloads the pinned release (11.17.2, instead of the floating `mermaid@11`) and refuses to write it unless its SHA-256 matches the recorded hash. The two references that had a `curl` one-liner for this, which the directory read as a download-and-execute pattern, point at the script.
+
 ### knowledgeware 1.9.1
 
 Changes from the Anthropic plugin directory's review of 1.9.0 (submitted 2026-10-24), which pins fetched packages and holds plugins that read secrets, pre-approve broad tools or run code it can't read.

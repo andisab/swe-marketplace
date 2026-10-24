@@ -137,7 +137,7 @@ For brandbooks shared via Google Drive:
 
 > *"Use the brandbook at https://drive.google.com/file/d/.../view"*
 
-The skill calls `bash <plugin>/scripts/fetch-resource.sh <url> ./brand.md` which converts the share URL to a direct-download. If the user hasn't set the file to "Anyone with the link," the script will return HTML and the skill will ask the user to fix sharing.
+The skill calls `python3 <plugin>/scripts/fetch-resource.py <url> ./brand.md` which converts the share URL to a direct-download. If the user hasn't set the file to "Anyone with the link," the script will return HTML and the skill will ask the user to fix sharing.
 
 ### 5. Sample `.pptx` for style mimicry
 
@@ -233,7 +233,7 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 | `<plugin>/scripts/list-styles.js` | List discovered styles + brandbooks |
 | `<plugin>/scripts/load-style.js` | Style/brandbook → tokens parser |
 | `<plugin>/scripts/derive-style.js` | URL → brandbook via HTML/CSS scraping |
-| `<plugin>/scripts/fetch-resource.sh` | Google Drive URL → local file |
+| `<plugin>/scripts/fetch-resource.py` | Google Drive URL → local file |
 | `pptx/scripts/polish-deck.py` | pptx pre-render heuristic checks |
 | `pptx/scripts/render-slides.sh` | LibreOffice headless → per-slide PNGs |
 | `pptx/scripts/text-fit.js` | Text-capacity check for a given box + font |

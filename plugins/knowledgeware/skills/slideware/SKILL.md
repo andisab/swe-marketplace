@@ -42,7 +42,7 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 
    Run `node $PLUGIN/scripts/list-styles.js` for the current list (`--default` / `--brands` / `--names` / `--json`).
 3. **Website URL** — `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load. Heuristic; verify against the live site.
-4. **Google Drive URL** — `bash $PLUGIN/scripts/fetch-resource.sh <url> <dest>`.
+4. **Google Drive URL** — `python3 $PLUGIN/scripts/fetch-resource.py <url> <dest>`.
 5. **No style given** — if a marker exists (`.knowledgeware` in the project or a parent, then a `DEFAULT` file: a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `$PLUGIN/styles/brands/DEFAULT`), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
 
 **Staging differs per format** (each guide shows the exact command):

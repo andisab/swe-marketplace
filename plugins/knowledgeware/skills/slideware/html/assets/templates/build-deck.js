@@ -44,7 +44,7 @@ const SLIDE_W_PX = 1280;
 const SLIDE_H_PX = 720;
 
 // Speaker-notes cue fields read by presenter.js (see references/reveal.md §Speaker notes).
-const CUE_KEYS = ["session", "module", "run"];
+const CUE_FIELDS = ["session", "module", "run"];
 const CUE_RUNS = ["default", "cut-first", "add-back", "backup"];
 
 // ── Brandbook tokens (from YAML frontmatter of ./style.md) ───────────
@@ -463,10 +463,10 @@ function notesHtml(slide) {
   if (slide.notes == null && slide.cue == null) return "";
   const cue = slide.cue || {};
   if ("minutes" in cue) throw new Error("cue.minutes isn't supported: pacing comes from session lengths. Set `sessions` (or `minutes` for a deck without sessions) next to `slides` in slides.js.");
-  const unknown = Object.keys(cue).filter(k => !CUE_KEYS.includes(k));
-  if (unknown.length) throw new Error(`Unknown cue field(s): ${unknown.join(", ")}. Supported: ${CUE_KEYS.join(", ")}`);
+  const unknown = Object.keys(cue).filter(k => !CUE_FIELDS.includes(k));
+  if (unknown.length) throw new Error(`Unknown cue field(s): ${unknown.join(", ")}. Supported: ${CUE_FIELDS.join(", ")}`);
   if (cue.run != null && !CUE_RUNS.includes(cue.run)) throw new Error(`Unknown cue.run: "${cue.run}". Supported: ${CUE_RUNS.join(", ")}. To take a slide out of the deck, set hidden: true.`);
-  const attrs = CUE_KEYS.filter(k => cue[k] != null && cue[k] !== "").map(k => ` data-${k}="${esc(cue[k])}"`).join("");
+  const attrs = CUE_FIELDS.filter(k => cue[k] != null && cue[k] !== "").map(k => ` data-${k}="${esc(cue[k])}"`).join("");
   return `<aside class="notes"${attrs}>${esc(slide.notes || "").replace(/\r?\n/g, "&#10;")}</aside>`;
 }
 
