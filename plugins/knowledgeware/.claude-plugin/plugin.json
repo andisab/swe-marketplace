@@ -43,5 +43,10 @@
         "@drawio/mcp@1.10.0"
       ]
     }
-  }
+  },
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/knowledgeware/README.md",
+  "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+  "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
 }

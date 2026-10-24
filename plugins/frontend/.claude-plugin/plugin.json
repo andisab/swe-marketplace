@@ -27,5 +27,10 @@
     "./agents/fe-nextjs-expert.md",
     "./agents/fe-react-expert.md",
     "./agents/fe-vue-expert.md"
-  ]
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/frontend/README.md",
+  "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+  "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
 }

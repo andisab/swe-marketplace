@@ -39,7 +39,7 @@ CHANGELOG.md                        # one section per release, one subsection pe
 
 ## Configuration
 
-**Dual manifests.** `marketplace.json` is the only file you edit; `plugins/<name>/.claude-plugin/plugin.json` is generated from it. `plugin.json` = the catalog entry minus `source`, `category` and `strict` (marketplace-only; `claude plugin validate` warns on them in plugin.json). Formats the validator enforces: `agents` as file paths (`./agents/foo.md`), `skills` as directory paths (`./skills/foo`), `commands`/`hooks` as file paths, `repository` a string URL, `author` an object, `dependencies` an array of plugin names.
+**Dual manifests.** `marketplace.json` is the only file you edit (the directory listing fields `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl` and `termsOfServiceUrl` go under an entry's `metadata.directory`; the generator hoists them into `plugin.json`, where the validator accepts them, and drops `metadata`); `plugins/<name>/.claude-plugin/plugin.json` is generated from it. `plugin.json` = the catalog entry minus `source`, `category` and `strict` (marketplace-only; `claude plugin validate` warns on them in plugin.json). Formats the validator enforces: `agents` as file paths (`./agents/foo.md`), `skills` as directory paths (`./skills/foo`), `commands`/`hooks` as file paths, `repository` a string URL, `author` an object, `dependencies` an array of plugin names.
 
 **Changing a plugin.**
 1. Edit the catalog entry (bump its `version`; Claude Code updates an installed plugin only when the version changes).

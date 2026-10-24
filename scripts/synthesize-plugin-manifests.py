@@ -17,13 +17,23 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MARKETPLACE_MANIFEST = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 
+# Directory listing fields (icon, documentationUrl, supportUrl, privacyPolicyUrl,
+# termsOfServiceUrl) are accepted only in plugin.json: `claude plugin validate` warns
+# on each of them in a marketplace entry. The catalog carries them under the
+# free-form `metadata.directory` object, and the generator hoists them to the top
+# level of plugin.json, dropping `metadata` itself.
+LISTING_METADATA_KEY = "directory"
+
 # Fields that belong only in marketplace.json -- stripped from plugin.json.
 # `claude plugin validate` warns when any of these appear in plugin.json.
 MARKETPLACE_ONLY_FIELDS = {"source", "category", "strict"}
 
 
 def synthesize_plugin_manifest(entry: dict) -> dict:
-    return {k: v for k, v in entry.items() if k not in MARKETPLACE_ONLY_FIELDS}
+    manifest = {k: v for k, v in entry.items() if k not in MARKETPLACE_ONLY_FIELDS}
+    listing = (manifest.pop("metadata", None) or {}).get(LISTING_METADATA_KEY, {})
+    manifest.update(listing)
+    return manifest
 
 
 def plugin_manifest_path(entry: dict) -> Path:

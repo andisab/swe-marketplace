@@ -44,7 +44,16 @@
       ],
       "skills": [
         "./skills/dispatch"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/adv/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "arch",
@@ -71,7 +80,16 @@
       "agents": [
         "./agents/arch-context-agent.md",
         "./agents/build-orchestrator.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/arch/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "context-engineering",
@@ -111,7 +129,16 @@
         "./skills/hook-dev",
         "./skills/mcp-tool-dev",
         "./skills/mcp-server-dev"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/context-engineering/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "research-team",
@@ -133,7 +160,7 @@
         "web-search",
         "report-writing",
         "obsidian",
-      "joplin",
+        "joplin",
         "orchestration",
         "synthesis",
         "investigation"
@@ -147,7 +174,16 @@
       "skills": [
         "./skills/coordinator",
         "./skills/report-formats"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/research-team/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "knowledgeware",
@@ -197,6 +233,15 @@
             "@drawio/mcp@1.10.0"
           ]
         }
+      },
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/knowledgeware/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
       }
     },
     {
@@ -230,7 +275,16 @@
         "./agents/data-jupyter-expert.md",
         "./agents/data-python-data-engineer.md",
         "./agents/data-r-expert.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/data/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "databases",
@@ -266,7 +320,16 @@
         "./agents/db-postgres-expert.md",
         "./agents/db-sql-expert.md",
         "./agents/db-vector-expert.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/databases/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "dev",
@@ -308,7 +371,16 @@
         "./agents/dev-refactor-agent.md",
         "./agents/dev-rust-expert.md",
         "./agents/dev-typescript-expert.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/dev/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "frontend",
@@ -342,7 +414,16 @@
         "./agents/fe-nextjs-expert.md",
         "./agents/fe-react-expert.md",
         "./agents/fe-vue-expert.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/frontend/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "genai",
@@ -368,7 +449,16 @@
       "strict": true,
       "agents": [
         "./agents/genai-langchain-expert.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/genai/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "infrastructure",
@@ -405,7 +495,16 @@
         "./agents/infra-k8s-engineer.md",
         "./agents/infra-security-auditor.md",
         "./agents/infra-terraform-engineer.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/infrastructure/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "machine-learning",
@@ -434,7 +533,16 @@
         "./agents/ml-pytorch-expert.md",
         "./agents/ml-scikit-learn-expert.md",
         "./agents/ml-tensorflow-expert.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/machine-learning/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     },
     {
       "name": "product-management",
@@ -462,7 +570,16 @@
         "./agents/pm-content-writer.md",
         "./agents/pm-prd-writer.md",
         "./agents/pm-project-planner.md"
-      ]
+      ],
+      "metadata": {
+        "directory": {
+          "icon": "./.claude-plugin/icon.png",
+          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/product-management/README.md",
+          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+        }
+      }
     }
   ]
 }

@@ -30,5 +30,10 @@
     "./agents/infra-k8s-engineer.md",
     "./agents/infra-security-auditor.md",
     "./agents/infra-terraform-engineer.md"
-  ]
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/infrastructure/README.md",
+  "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+  "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
 }
