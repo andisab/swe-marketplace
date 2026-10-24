@@ -1,6 +1,14 @@
 # SWE Marketplace
 
-Claude Code plugins for everyday software engineering work. They make slide decks, knowledge-base sites and diagrams, review your code with three models at once, research a topic with parallel agents, help you build your own plugins, and add 54 specialist agents for languages, frameworks, clouds and databases. Each plugin installs on its own, so you add only what you'll use.
+A collection of Claude Code plugins for everyday software engineering and knowledge work.
+
+Claude is already great at creating slides or charts or HTML pages, but I find that there are always adjustments and fine-tuning that I want to make for more polished results: use these style elements here, reorganize the generated HTML this way, make the chart look like this... Over many months of software development and knowledge work, these small improvements add up to days or weeks of time and loads of tokens. The **knowledgeware** plugin sets helpful conventions and a unified style (a "brandbook") for generated artifacts: HTML knowledge bases, charts and flow diagrams, and presentations in PowerPoint or HTML (with speaker notes, if requested).
+
+Use **research-team** to run deep research on a given topic and produce template-formatted output (a technical survey, a technical rundown, a decision brief, a landscape scan, a what's-new digest or a source summary) with consistent formatting and cited sources.
+
+More experimental tools like **adv** help you review your code with Claude, Codex and Gemini at once, and **context-engineering** helps you translate business objectives into custom agentic resources according to best practices. Plus: 49 specialist starter agent templates for languages, frameworks, clouds and databases.
+
+Each plugin installs on its own, so feel free to add only what you'll use.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Validate plugin manifests](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/andisab/swe-marketplace/actions/workflows/validate-plugins.yml)
@@ -28,184 +36,68 @@ To install one, run this in Claude Code (v2.1.275 or later), with any plugin nam
 /plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-[Install](#install) shows what you'll see at each step, and covers older Claude Code versions, Claude Desktop, teams, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other nine are agent packs, a set of agent definitions each and nothing more.
+[Install](#install) is one command; [docs/install.md](./docs/install.md) covers older Claude Code versions, shells, teams, Claude Desktop, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other nine are agent packs, a set of agent definitions each and nothing more.
 
 ## What knowledgeware makes
 
 The sections below show one image per skill, in the order the [knowledgeware README](./plugins/knowledgeware/README.md) uses; that README also holds the five styles, the brands directory, the librarian and the troubleshooting notes.
 
-### knowledgebase: sites for the material a team reads repeatedly
+### **knowledgebase**: sites for technical material a team references and maintains
 
 ![Two knowledge-base pages: an upgrade runbook and a dark incident review](docs/images/knowledgebase.jpg)
 
-  Figure 1. *Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
+*Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
 
 knowledgebase builds multi-page HTML sites for runbooks, field guides and incident reviews. A page is one HTML file with sidebar navigation, an on-page table of contents, callouts for traps and tips, Mermaid diagrams, tables, and a dated "last verified" stamp under any fact that goes stale. The dark page is the same template with its CSS variables set from another style, and nothing else changed. The plugin's librarian agent reads those stamps and re-verifies what's due.
 
-### brandware: the registry the other skills read
+### **brandware**: a style registry the other skills read
 
 ![The five built-in styles in light and dark with marks, swatches and a sample card](docs/images/styles.jpg)
 
-  Figure 2. *The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
+*The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
 
 A style or brand is one folder: a brandbook in Markdown that states the palette, type and layout rules, a derived token file, the marks and logos, and a stylesheet. The five styles ship with the plugin, each with a light and a dark palette. A brand of your own goes in a directory you point the plugin at, so it survives plugin updates and shadows a built-in style of the same name, and a `.knowledgeware` file in a repository pins the brand for that project. Decks, sites and charts then share one identity without being told twice.
 
-### chartware: charts and diagrams in three media
+### **chartware**: charts and diagrams in three media modes
 
 ![Eight SVG charts in the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey](docs/images/charts.jpg)
 
-  Figure 3. *Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
+*Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
 
 ![An architecture diagram in the Warm Sage style with nine nodes, two groups and icons from the sprite](docs/images/diagram.jpg)
 
-  Figure 4. *A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
+*A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
 
 chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, hand-authored SVG for data charts and figures that must be exact, and draw.io through its bundled MCP server for diagrams someone will keep editing. The SVG templates carry their scale math in comments and read the page's theme tokens, so a chart inlined in a knowledgebase page turns dark with the page. A geometry lint checks a diagram's routing, labels and clipping before anything is rendered, and an existing draw.io, Mermaid or Excalidraw diagram can be redrawn in any medium with a ledger of what was kept, renamed or dropped.
 
-### slideware: decks in PowerPoint or HTML
+### **slideware**: decks in PowerPoint or HTML
 
 ![Six slides from three HTML decks in three built-in styles](docs/images/decks.jpg)
 
-  Figure 5. *Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
 
 slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
 
 ![A deck slide beside its presenter view with notes and pacing](docs/images/presenter.jpg)
 
-  Figure 6. *The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
+*The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
 
 Press "S" or "P" in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
 
+
 ## Install
 
-### Your first plugin in Claude Code
-
-These steps install knowledgeware. Every other plugin installs the same way.
-
-1. In a Claude Code session, run:
-
-   ```
-   /plugin install knowledgeware --marketplace andisab/swe-marketplace
-   ```
-
-   The first time, Claude Code shows the marketplace source, `andisab/swe-marketplace`, and asks you to confirm adding it.
-
-2. Claude Code opens the plugin's details, which list what it will install. Choose **Install for you (user scope)** to have the plugin in every project on this machine. The other two scopes turn it on for the current repository only.
-
-3. Read the last line of the install summary. `Plugin is now active.` means you can use it right away. If it says `Run /reload-plugins to apply.`, Claude Code runs that reload for you.
-
-4. Type `/knowledgeware:` in the prompt box, and you should see the plugin's skills, such as `/knowledgeware:slideware`. You don't have to call a skill by name, because Claude loads it when your request matches. Ask for a deck, and the slideware skill takes over.
-
-On Claude Code older than v2.1.275, add the marketplace first and then install the plugin by name:
+In Claude Code, run this once per plugin (knowledgeware shown; the other names are in the [catalog](#catalog)):
 
 ```
-/plugin marketplace add andisab/swe-marketplace
-/plugin install knowledgeware@swe-marketplace
+/plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-The part after the `@` is the name the marketplace registers under, `swe-marketplace`. The repository it comes from is `andisab/swe-marketplace`. Run `/plugin` with no arguments to browse every plugin in the marketplace.
+Confirm the marketplace the first time it asks, pick **Install for you (user scope)**, and the plugin is active. On Claude Code older than v2.1.275, add the marketplace first with `/plugin marketplace add andisab/swe-marketplace`, then install with `/plugin install knowledgeware@swe-marketplace`.
 
-### From a shell
+In Claude Desktop, open **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, and turn on the plugins you want. Skills and commands run everywhere; agents run in Claude Code and Cowork, not in Desktop chat or claude.ai.
 
-Use these in scripts, dotfiles or CI:
-
-```bash
-claude plugin marketplace add andisab/swe-marketplace
-claude plugin install knowledgeware@swe-marketplace            # add --scope project|local|user
-claude plugin install knowledgeware --marketplace andisab/swe-marketplace   # one step, v2.1.292+
-```
-
-Plugins installed from a shell load the next time you start Claude Code, or after `/reload-plugins` in a session that's already open.
-
-### Manage installed plugins
-
-| Task | Command |
-|---|---|
-| List installed plugins | `claude plugin list` |
-| Turn on automatic updates | `/plugin` → **Marketplaces** → **swe-marketplace** → **Enable auto-update** |
-| Update one plugin | `claude plugin update knowledgeware@swe-marketplace` |
-| Update everything from this marketplace | `/plugin` → **Marketplaces** → **swe-marketplace** → **Update marketplace** |
-| See what a plugin adds to each session | `claude plugin details knowledgeware@swe-marketplace` |
-| Turn a plugin off or on | `claude plugin disable knowledgeware@swe-marketplace` / `enable` |
-| Uninstall a plugin | `claude plugin uninstall knowledgeware@swe-marketplace` |
-| Remove the marketplace and its plugins | `claude plugin marketplace remove swe-marketplace` |
-
-### For a team
-
-Commit the marketplace and the plugins you want to the project's `.claude/settings.json`:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "swe-marketplace": { "source": { "source": "github", "repo": "andisab/swe-marketplace" } }
-  },
-  "enabledPlugins": {
-    "knowledgeware@swe-marketplace": true
-  }
-}
-```
-
-Teammates get the marketplace once they trust the project folder. Each of them then runs `claude plugin install knowledgeware@swe-marketplace --scope project` once, because enabling a plugin in settings doesn't download it.
-
-### From a local clone
-
-Use a clone to try changes or to work offline:
-
-```bash
-git clone https://github.com/andisab/swe-marketplace.git
-claude plugin marketplace add ./swe-marketplace                # a relative path must start with ./
-claude --plugin-dir ./swe-marketplace/plugins/knowledgeware    # load one plugin for a single session, no install
-```
-
-### Claude Desktop
-
-**Chat and Cowork.** Open **Customize → Plugins → Add**, and then choose one of two options:
-
-- **Add marketplace.** Enter `andisab/swe-marketplace` (or `https://github.com/andisab/swe-marketplace`) and install plugins from it. Updates arrive through the marketplace.
-- **Upload plugin.** Upload a `.zip` of one plugin folder. The zip must contain exactly one `.claude-plugin/plugin.json`. To make one from a clone, run:
-
-  ```bash
-  cd swe-marketplace/plugins && zip -r knowledgeware.zip knowledgeware -x '*.DS_Store'
-  ```
-
-**Code tab.** Click **+** next to the prompt box, choose **Add plugins**, and pick plugins from a marketplace you've added. Plugins aren't available in cloud sessions or under WSL.
-
-Cowork allows up to 200 MB and 5,000 files per plugin, and up to 25 added marketplaces.
-
-### What runs where
-
-A plugin bundles several kinds of components, and not every Claude app runs all of them:
-
-| Where you use Claude | Skills and commands | Agents and hooks | Local MCP servers | LSP servers, output styles, settings, `bin/` |
-|---|---|---|---|---|
-| Claude Code (terminal, IDE, Desktop Code tab) | ✓ | ✓ | ✓ | ✓ |
-| Desktop Cowork | ✓ | ✓ | ✓ | — |
-| Desktop Chat, claude.ai | ✓ | — | — | — |
-
-So `adv`'s reviewer agent, `research-team`'s researchers and `knowledgeware`'s librarian need Claude Code or Cowork. Bundled npm dependencies are installed only in Claude Code.
-
-### claude.ai (a single skill)
-
-To use one skill without its plugin, upload it as a zip under **Customize → Skills → + → Create skill → Upload a skill**. The zip must hold the skill's folder, not just its contents, and the folder name must match the skill's `name`:
-
-```bash
-cd swe-marketplace/plugins/context-engineering/skills && zip -r skill-dev.zip skill-dev
-```
-
-Skills need code execution, which you turn on under **Settings → Capabilities → Code execution and file creation**. A single skill works when it's self-contained, as context-engineering's authoring skills and research-team's `report-formats` are. Skills that run their plugin's scripts (`knowledgeware`, `adv:dispatch`) or start agents (`research-team:coordinator`) need the whole plugin, installed in Claude Code or Cowork.
-
-### Claude Agent SDK
-
-Every plugin ships its own `plugin.json`, so the SDK can load one straight from a clone with `ClaudeAgentOptions(plugins=[{"type": "local", "path": "swe-marketplace/plugins/knowledgeware"}])`, or with `--plugin-dir` on the CLI.
-
-### Requirements
-
-Most plugins are instructions for Claude and need nothing else on your machine. Two need tools installed:
-
-| Plugin | Needs | Optional |
-|---|---|---|
-| `adv` | [Codex CLI](https://github.com/openai/codex), signed in with a ChatGPT plan or an OpenAI API key, and [Gemini CLI](https://github.com/google-gemini/gemini-cli) with a Gemini API key from a project that has billing enabled (the free tier can't finish a review). The key can come from `GOOGLE_API_KEY`, `GEMINI_API_KEY` or 1Password through `~/.env`. The [adv README](./plugins/adv/README.md#setup) walks through sign-in, the key lookup and a health check. | `gh` for reviewing a pull request by number. |
-| `knowledgeware` | Node.js for slide builds and registry scripts (the draw.io MCP server runs through `npx`) | LibreOffice and poppler for PowerPoint previews, and a browser MCP server (Playwright or Claude in Chrome) for visual checks. The [knowledgeware README](./plugins/knowledgeware/README.md#requirements) has the details. |
+For updates, open `/plugin` → **Marketplaces** → **swe-marketplace** → **Enable auto-update**. `adv` also needs Codex CLI and Gemini CLI signed in, and `knowledgeware` needs Node.js; each plugin's README states what it needs and why. Shell commands, team settings, local clones, zip uploads, the Agent SDK and what runs where are in [docs/install.md](./docs/install.md).
 
 ## Catalog
 
@@ -348,9 +240,9 @@ An agent is a specialist with its own instructions and its own context window. C
 
 No. Each plugin works on its own, and none of them requires another. Adding the marketplace installs nothing by itself. It only lets you install plugins from it by name.
 
-### Is it free?
+### Is it free? Is it dangerous?
 
-The plugins are free and MIT-licensed. They run on whatever Claude Code already uses, your Claude subscription or API account, so they count toward the same usage limits or bill. `adv` also calls Codex CLI and Gemini CLI, which use your OpenAI and Google accounts.
+The plugins are free and MIT-licensed. They run on whatever Claude Code already uses, your Claude subscription or API account, so they count toward the same usage limits or bill. `adv` also calls Codex CLI and Gemini CLI, which use your OpenAI and Google accounts. Please use at your own risk and protect yourself at all times.
 
 ### What does a plugin run on my machine, and does anything leave it?
 
@@ -380,7 +272,7 @@ Skills directories copy a single skill folder. Some skills depend on files elsew
 
 ### Can I use these plugins outside the terminal?
 
-Yes, with limits. The Desktop app's Code tab and Cowork run these plugins, while Desktop Chat and claude.ai run only skills and commands, as [What runs where](#what-runs-where) shows. Cloud sessions, including Claude Code on the web at claude.ai/code, don't load plugins you installed on your own machine.
+Yes, with limits. The Desktop app's Code tab and Cowork run these plugins, while Desktop Chat and claude.ai run only skills and commands, as [What runs where](./docs/install.md#what-runs-where) shows. Cloud sessions, including Claude Code on the web at claude.ai/code, don't load plugins you installed on your own machine.
 
 ### What isn't here?
 
@@ -409,7 +301,7 @@ Open an [issue](https://github.com/andisab/swe-marketplace/issues). For a bug, i
 
 ## Contributing
 
-Agent improvements, new plugins, doc fixes and bug reports are all welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) has the full workflow.
+This is a never-ending labor of love. Thoughtful ideas, updates, agent improvements, doc fixes and bug reports are always welcome, and if you like the tools, please give the repo a star! If you'd like to contribute, [CONTRIBUTING.md](./CONTRIBUTING.md) has the full workflow.
 
 The marketplace ships two manifests. The catalog, `.claude-plugin/marketplace.json`, is the source of truth that `/plugin marketplace add` and `/plugin install` read. Each plugin's `plugins/<name>/.claude-plugin/plugin.json` is generated from its catalog entry for loaders that read one plugin directly, and the plugin's `icon.png` sits beside it. Edit the catalog, then regenerate and validate:
 
@@ -437,4 +329,3 @@ The pre-commit hook checks the staged files, not the working tree, so a commit w
 
 - **GitHub:** [@andisab](https://github.com/andisab)
 - **LinkedIn:** [andisab](https://www.linkedin.com/in/andisab)
-- **Email:** andis.blukis@gmail.com

@@ -1,6 +1,6 @@
 # Knowledgeware
 
-Claude is already great at creating slides or charts or html pages, but I find that there are always adjustments and fine-tuning that I want to make for more polished results: use these style elements here, reorganize the generated html this way, make the chart look like this... Over many months of knowledge work, these small quality improvements eat up DAYS or even WEEKS of time and loads of tokens. But. We are software engineers! We must adapt, overcome, and automate! Enter...
+Claude is already great at creating slides or charts or HTML pages, but I find that there are always adjustments and fine-tuning that I want to make for more polished results: use these style elements here, reorganize the generated HTML this way, make the chart look like this... Over many months of software development and knowledge work, these small improvements add up to days or weeks of time and loads of tokens. But. We are software engineers! We must improvise, adapt, overcome, and automate.
 
 **Knowledgeware** is the name of a plugin that contains various practical and battle-tested tools for knowledge work (mostly in a professional and business context). In short, it makes multi-page HTML knowledge bases, diagrams and charts, and slide decks that can all share one, integrated visual style. Decks come out as PowerPoint files or as single-file HTML decks with a presenter view. Five built-in styles work with no setup, and you can add your own brand later so every deliverable matches it.
 
@@ -25,15 +25,15 @@ In Claude Code v2.1.275 or later, one command does both:
 /plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **knowledgeware**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
+In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **knowledgeware**. Shell commands, team settings, zip upload and claude.ai options are in the marketplace's [install guide](../../docs/install.md).
 
 You need **Node.js** for deck builds, the style scripts and the draw.io server, and **Python 3** for the deck and diagram checks, which use only the standard library. Mermaid diagrams and SVG charts need neither. Ask in plain language; Claude prints the full path of every file it writes. If you don't say whether you want PowerPoint or HTML, slideware asks before it builds.
 
-## knowledgebase: sites for the material a team reads repeatedly
+## **knowledgebase**: sites for the material a team reads repeatedly
 
 ![Two knowledge-base pages: an upgrade runbook and a dark incident review](../../docs/images/knowledgebase.jpg)
 
-  Figure 1. *Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
+*Two pages from the knowledgebase template: a PostgreSQL upgrade runbook in the default palette and an incident review in a dark one.*
 
 knowledgebase builds multi-page HTML sites for runbooks, field guides and incident reviews. A page is one HTML file with sidebar navigation, an on-page table of contents, callouts for traps and tips, Mermaid diagrams, tables, and a dated "last verified" stamp under any fact that goes stale. The dark page is the same template with its CSS variables set from another style, and nothing else changed. The plugin's librarian agent reads those stamps and re-verifies what's due.
 
@@ -60,11 +60,11 @@ claude -p "/knowledgeware:librarian plan '/path/to/library'" --permission-mode a
 
 Add `--dry-run` inside the quoted sweep command for a first run, so the sweep reports what it would change and writes nothing. Sites follow the contract in `skills/knowledgebase/references/maintenance.md`. For a site built before that contract existed, the librarian matches the sections by their content and reports where they differ. A site with no maintenance page at all can't be swept, and the librarian offers to generate one. `/knowledgeware:kb-maintain` still runs a sweep, so existing scheduled jobs keep working.
 
-## brandware: the registry the other skills read
+## **brandware**: the registry the other skills read
 
 ![The five built-in styles in light and dark with marks, swatches and a sample card](../../docs/images/styles.jpg)
 
-  Figure 2. *The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
+*The five built-in styles in light and dark, each with its mark, palette swatches and a sample card from its own stylesheet.*
 
 A style or brand is one folder: a brandbook in Markdown that states the palette, type and layout rules, a derived token file, the marks and logos, and a stylesheet. The five styles ship with the plugin, each with a light and a dark palette. A brand of your own goes in a directory you point the plugin at, so it survives plugin updates and shadows a built-in style of the same name, and a `.knowledgeware` file in a repository pins the brand for that project. Decks, sites and charts then share one identity without being told twice.
 
@@ -149,15 +149,15 @@ styles/                        # the five built-in styles (checked last)
 
 The first match wins. When a request names nothing, the skills look for a `.knowledgeware` file in the project or any parent directory (one line naming a brand, for a repository that's always in one brand), then the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
 
-## chartware: charts and diagrams in three media
+## **chartware**: charts and diagrams in three media
 
 ![Eight SVG charts in the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey](../../docs/images/charts.jpg)
 
-  Figure 3. *Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
+*Eight of chartware's chart templates with fuller data, inlined in a page that sets the Warm Sage style: grouped bars, line and area, donut, waterfall, heatmap, slopegraph, dumbbell and Sankey.*
 
 ![An architecture diagram in the Warm Sage style with nine nodes, two groups and icons from the sprite](../../docs/images/diagram.jpg)
 
-  Figure 4. *A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
+*A flow diagram from the same template family: nine nodes in two groups, orthogonal edges through the gutters, icons from the sprite, and nothing the geometry lint objects to.*
 
 chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, hand-authored SVG for data charts and figures that must be exact, and draw.io through its bundled MCP server for diagrams someone will keep editing. The SVG templates carry their scale math in comments and read the page's theme tokens, so a chart inlined in a knowledgebase page turns dark with the page. A geometry lint checks a diagram's routing, labels and clipping before anything is rendered, and an existing draw.io, Mermaid or Excalidraw diagram can be redrawn in any medium with a ledger of what was kept, renamed or dropped.
 
@@ -165,17 +165,17 @@ chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, h
 
 **What ships with it.** Thirteen SVG templates (bars, lines, donut, scatter, KPI tile, waterfall, heatmap, slopegraph, dumbbell, Gantt, Sankey, a flow diagram) and a sprite of 96 icons. The geometry lint (`skills/chartware/scripts/svg-lint.py`) catches diagonal or stacked edges, edges through nodes, clipped content and labels on lines, and a complexity budget keeps one diagram to 9 nodes and 12 edges. The digest script (`skills/chartware/scripts/diagram-digest.py`) extracts an existing diagram's nodes and edges and writes the fidelity ledger for a redraw. The official draw.io MCP server (`@drawio/mcp`) is bundled, and `npx` fetches it the first time it runs. Screenshot checks of SVG diagrams use the Playwright MCP or Claude in Chrome when one is installed (`claude plugin install playwright@claude-plugins-official`); without one, the diagram is delivered after a clean lint and Claude says the visual check was skipped.
 
-## slideware: decks in PowerPoint or HTML
+## **slideware**: decks in PowerPoint or HTML
 
 ![Six slides from three HTML decks in three built-in styles](../../docs/images/decks.jpg)
 
-Figure 5. *Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
 
 slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
 
 ![A deck slide beside its presenter view with notes and pacing](../../docs/images/presenter.jpg)
 
-  Figure 6. *The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
+*The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
 
 Press "S" or "P" in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
 

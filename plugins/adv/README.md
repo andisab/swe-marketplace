@@ -78,7 +78,7 @@ Or add the marketplace once, then install by name:
 /plugin install adv@swe-marketplace
 ```
 
-In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **adv**. Shell commands, team settings, zip upload and claude.ai options are in the [marketplace README](../../README.md#install).
+In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **adv**. Shell commands, team settings, zip upload and claude.ai options are in the marketplace's [install guide](../../docs/install.md).
 
 ## Try it
 
