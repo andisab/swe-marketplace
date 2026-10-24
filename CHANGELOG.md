@@ -4,6 +4,13 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ## [1.2.1] — unreleased
 
+### knowledgeware 1.9.3
+
+Third round of the plugin directory's review, down to the two holds it names on every submission.
+
+- The sample decks' preview images are `preview/01.png` to `06.png` instead of `slide-01.png` to `slide-06.png`. The PowerPoint renderer writes `slide-NN.png`, and the directory holds a script whose output pattern names images bundled in the plugin; the renderer's own output is unchanged.
+- The HTML deck builder's `tokens` variables are `styleSpec`, and its comment on the pinned Reveal.js version no longer carries a GitHub link. The directory read a value named "tokens", taken from the command line, beside a remote host as a credential the script could send; it was the brandbook's palette and type.
+
 ### knowledgeware 1.9.2
 
 The second round of the plugin directory's review, after 1.9.1 cleared the blocking finding. The portal's per-file findings named the triggers this time.

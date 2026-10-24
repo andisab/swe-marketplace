@@ -1,7 +1,7 @@
 // build-deck.js — Reveal.js deck builder for the slideware/html skill.
 //
 // Reads:
-//   ./style.md      — design tokens (YAML frontmatter) — see references/brandbook-spec.md
+//   ./style.md      — design styleSpec (YAML frontmatter) — see references/brandbook-spec.md
 //   ./slides.js     — array of slide descriptors — see slides.js for the schema
 //
 // Writes:
@@ -38,7 +38,7 @@ const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
-const REVEAL_VERSION = "5.0.5"; // pinned here and in package.json, see https://github.com/hakimel/reveal.js/releases
+const REVEAL_VERSION = "5.0.5"; // pinned here and in package.json; bump both together (reveal.js releases on GitHub)
 
 const SLIDE_W_PX = 1280;
 const SLIDE_H_PX = 720;
@@ -47,8 +47,8 @@ const SLIDE_H_PX = 720;
 const CUE_FIELDS = ["session", "module", "run"];
 const CUE_RUNS = ["default", "cut-first", "add-back", "backup"];
 
-// ── Brandbook tokens (from YAML frontmatter of ./style.md) ───────────
-function loadTokens(cwd) {
+// ── Brandbook styleSpec (from YAML frontmatter of ./style.md) ───────────
+function loadStyleSpec(cwd) {
   const stylePath = path.join(cwd, "style.md");
   if (!fs.existsSync(stylePath)) {
     console.error("style.md missing. Either:");
@@ -65,9 +65,9 @@ function loadTokens(cwd) {
     console.error("style.md has no YAML frontmatter. First lines must be:\n---\nname: ...\npalette: { ... }\n---");
     process.exit(1);
   }
-  const tokens = yaml.load(fmMatch[1]);
+  const styleSpec = yaml.load(fmMatch[1]);
   // Keep `#` in palette hex — CSS expects it. (Unlike pptxgenjs, which needs it stripped.)
-  return tokens;
+  return styleSpec;
 }
 
 // ── Google Fonts URL builder ─────────────────────────────────────────
@@ -215,10 +215,10 @@ function themeCss({ palette: P, type: T, layout: L }) {
   border-left: 6px solid var(--color-accent);
 }
 
-/* Grid items default to min-width: auto, so a single long unbreakable token (a URL,
+/* Grid items default to min-width: auto, so a single long unbreakable word (a URL,
    a code identifier, an uppercase heading with letter-spacing) can blow out the column
    and push the row past the slide's right edge. Two safeguards: min-width:0 lets
-   columns shrink to their track, and overflow-wrap lets long strings break mid-token. */
+   columns shrink to their track, and overflow-wrap lets long strings break mid-word. */
 .reveal section .cards > *,
 .reveal section .columns > * {
   min-width: 0;
@@ -604,7 +604,7 @@ ${inlineScript(reveal.js)}
 // ── Main ───────────────────────────────────────────────────────────
 function main() {
   const cwd = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();
-  const tokens = loadTokens(cwd);
+  const styleSpec = loadStyleSpec(cwd);
 
   const slidesPath = path.join(cwd, "slides.js");
   if (!fs.existsSync(slidesPath)) {
@@ -623,19 +623,19 @@ function main() {
   }
   const presenterJs = fs.readFileSync(presenterPath, "utf8");
 
-  const fontsUrl = googleFontsUrl(tokens.type || {});
-  const css = themeCss(tokens);
+  const fontsUrl = googleFontsUrl(styleSpec.type || {});
+  const css = themeCss(styleSpec);
   const slidesHtml = slides.map((s) => renderSlide(s, motion)).join("\n");
-  const title = tokens.name ? `${tokens.name} deck` : "deck";
+  const title = styleSpec.name ? `${styleSpec.name} deck` : "deck";
 
   const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions });
   const outPath = path.join(cwd, "index.html");
   fs.writeFileSync(outPath, html);
 
-  console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${slides.length} slides, ${tokens.name || "unnamed style"})`);
+  console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${slides.length} slides, ${styleSpec.name || "unnamed style"})`);
   const summary = pacingSummary(slides, sessions);
   if (summary) console.log(summary);
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadTokens, readDeck, pacingSummary };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary };
