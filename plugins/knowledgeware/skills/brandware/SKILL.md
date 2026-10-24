@@ -39,7 +39,7 @@ scripts/                   # shared tooling (plugin root)
 ├── list-styles.js         # discover what's installed
 ├── derive-style.js        # live website → brandbook .md (heuristic)
 ├── install-fonts.sh       # install a brand's Google Fonts locally (see §Fonts)
-└── fetch-resource.sh      # Google Drive URL → local file
+└── fetch-resource.py      # Google Drive URL → local file
 skills/brandware/references/
 ├── brandbook-spec.md      # the .md format every style/brandbook follows (prose layer + optional frontmatter)
 ├── consumer-mappings.md   # how each consumer skill maps tokens onto its medium
@@ -85,7 +85,7 @@ Filesystem-driven — no code edits. **Destination**: `$KNOWLEDGEWARE_BRANDS_DIR
 - **From scratch or by hand**: write `<dest>/<name>/brand.md` following `references/brandbook-spec.md`; copy `styles/style-1/README.md` as the README template and fill in provenance.
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it to `<dest>/<name>/brand.md`, then normalize toward the spec if role tables are missing.
 - **From a design kit or brand plugin** the user already has (a folder with its own brandbook, tokens, CSS and logos): copy the brandbook to `brand.md`, the logos and marks into `assets/`, the stylesheet into `css/`, and write the README's provenance line (source path, version, date). Keep that kit as the owner of its runtime; the registry copy is for the knowledgeware consumers.
-- **From Google Drive**: `bash scripts/fetch-resource.sh <share-url> <dest>/<name>/brand.md` (file must be "Anyone with the link").
+- **From Google Drive**: `python3 scripts/fetch-resource.py <share-url> <dest>/<name>/brand.md` (file must be "Anyone with the link").
 
 Token caches are internals — consumers derive and refresh them automatically (rule 1); never present cache commands to the user as a setup step.
 

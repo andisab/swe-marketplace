@@ -7,9 +7,9 @@ CW="$HERE/../skills/chartware"
 LINT="$CW/scripts/svg-lint.py"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-pass=0; fail=0
-ok()   { echo "ok   $1"; pass=$((pass+1)); }
-bad()  { echo "FAIL $1"; fail=$((fail+1)); }
+n_ok=0; n_bad=0
+ok()   { echo "ok   $1"; n_ok=$((n_ok+1)); }
+bad()  { echo "FAIL $1"; n_bad=$((n_bad+1)); }
 
 # 1. Every template is clean (no errors, no warnings)
 for f in "$CW"/templates/svg/*.svg; do
@@ -64,5 +64,5 @@ cat > "$WORK/chart.svg" <<'EOF'
 EOF
 python3 -I "$LINT" --quiet "$WORK/chart.svg" >/dev/null && ok "translated plot group is not flagged as clipped" || bad "translate() handling"
 
-echo "svg-lint-test: $pass passed, $fail failed"
-[[ $fail -eq 0 ]]
+echo "svg-lint-test: $n_ok passed, $n_bad failed"
+[[ $n_bad -eq 0 ]]

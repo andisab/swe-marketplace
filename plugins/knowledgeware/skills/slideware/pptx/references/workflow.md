@@ -36,7 +36,7 @@ Target time: 3-8 min. Skip visual review if the deck is throwaway or polish-deck
 | Default style (fast) | `cp $PLUGIN/styles/style-N/tokens.json style-tokens.json` |
 | Brandbook (fast) | `cp $PLUGIN/styles/brands/<name>/tokens.json style-tokens.json` (or `node $PLUGIN/scripts/load-style.js <name> -o style-tokens.json`, which also works for the flat layout) |
 | Local `.md`/`.css` | `node $PLUGIN/scripts/load-style.js <path> -o style-tokens.json` |
-| Google Drive URL | `bash $PLUGIN/scripts/fetch-resource.sh <url> ./brand.md` then load |
+| Google Drive URL | `python3 $PLUGIN/scripts/fetch-resource.py <url> ./brand.md` then load |
 | Website URL | `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load |
 
 ### 3. (Optional) Ingest a sample deck

@@ -7,10 +7,10 @@ CW="$HERE/../skills/chartware"
 DD="$CW/scripts/diagram-digest.py"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-pass=0; fail=0
-ok()  { echo "ok   $1"; pass=$((pass+1)); }
-bad() { echo "FAIL $1"; fail=$((fail+1)); }
-jq_() { python3 -c "import sys,json; d=json.load(sys.stdin); print($1)"; }
+n_ok=0; n_bad=0
+ok()  { echo "ok   $1"; n_ok=$((n_ok+1)); }
+bad() { echo "FAIL $1"; n_bad=$((n_bad+1)); }
+jq_() { python3 "$HERE/json-eval.py" "$1"; }
 
 # 1. draw.io, plain XML (the flow template): nodes, an edge label, a decision shape
 out=$(python3 -I "$DD" extract "$CW/templates/flow.xml")
@@ -86,5 +86,5 @@ L=$(python3 -I "$DD" ledger "$CW/templates/svg/diagram-flow.svg" "$WORK/redraw.m
 [[ "$(jq_ "[r['original'] for r in d['nodes'] if r['status']=='dropped'][0]" <<<"$L")" == "Object Store" ]] && ok "ledger: names the dropped node" || bad "ledger dropped name"
 python3 -I "$DD" ledger "$CW/templates/svg/diagram-flow.svg" "$WORK/redraw.mmd" --md | grep -q "^| renamed | Tool Runtime | Tool runtime over MCP |" && ok "ledger: markdown table row for the rename" || bad "ledger markdown"
 
-echo "diagram-digest-test: $pass passed, $fail failed"
-[[ $fail -eq 0 ]]
+echo "diagram-digest-test: $n_ok passed, $n_bad failed"
+[[ $n_bad -eq 0 ]]
