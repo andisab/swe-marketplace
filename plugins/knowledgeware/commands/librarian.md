@@ -1,7 +1,7 @@
 ---
 description: Keep a library of knowledgeware deliverables current — status (what's due across sites and decks), plan (write a dated update plan), or sweep (verify and update one knowledgebase site). Sweeps are designed for weekly scheduled (headless) runs.
 argument-hint: "status [library] | plan [library] | sweep <site-dir> [--dry-run]"
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch, Agent
+allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Agent
 ---
 
 Act as the knowledgeware librarian with these arguments: $ARGUMENTS

@@ -11,9 +11,9 @@
 #   slide-count  = auto-detected from <section> count in the HTML
 #
 # Requirements:
-#   - Node.js (npm test puppeteer)
-#   - Either:
-#       a) puppeteer installed in the deck dir's node_modules, OR
+#   - Node.js, and either:
+#       a) puppeteer installed in the deck dir's node_modules (npm install puppeteer), which
+#          runs the shipped render-slides.js, OR
 #       b) Chrome / Chromium on PATH (then we fall back to a chrome-headless invocation)
 #
 # Output: PNG files numbered slide-001.png, slide-002.png, ...
@@ -44,51 +44,14 @@ fi
 
 echo "render-slides.sh: $HTML_PATH → $OUT_DIR ($SLIDE_COUNT slides)"
 
-# Try puppeteer first
-PUPPETEER_SCRIPT="$(mktemp -t render-slides.XXXXXX.js)"
-cat > "$PUPPETEER_SCRIPT" <<EOF
-const puppeteer = require("puppeteer");
-const path = require("path");
-
-(async () => {
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 });
-
-  const slideCount = $SLIDE_COUNT;
-  for (let i = 0; i < slideCount; i++) {
-    const url = "file://$HTML_PATH#/" + i;
-    await page.goto(url, { waitUntil: "networkidle0" });
-    await new Promise(r => setTimeout(r, 200));  // settle fonts
-    const fname = "$OUT_DIR/slide-" + String(i + 1).padStart(3, "0") + ".png";
-    await page.screenshot({ path: fname, omitBackground: false });
-    process.stdout.write("  wrote " + path.relative(process.cwd(), fname) + "\n");
-  }
-
-  await browser.close();
-})().catch(e => { console.error(e); process.exit(1); });
-EOF
-
-# Pick a node_modules with puppeteer
-if [[ -d "$(dirname "$HTML_PATH")/node_modules/puppeteer" ]]; then
+# Try puppeteer first, from the deck directory's node_modules, with the shipped render-slides.js
+RENDER_JS="$(cd "$(dirname "$0")" && pwd)/render-slides.js"
+DECK_DIR="$(dirname "$HTML_PATH")"
+if [[ -d "$DECK_DIR/node_modules/puppeteer" ]]; then
   echo "  using puppeteer from deck dir node_modules"
-  (cd "$(dirname "$HTML_PATH")" && node "$PUPPETEER_SCRIPT")
-  rm -f "$PUPPETEER_SCRIPT"
+  (cd "$DECK_DIR" && NODE_PATH="$DECK_DIR/node_modules" node "$RENDER_JS" "$HTML_PATH" "$OUT_DIR" "$SLIDE_COUNT")
   exit 0
 fi
-
-if command -v npx >/dev/null 2>&1; then
-  echo "  trying npx puppeteer (may install on first run)"
-  if (cd "$(dirname "$HTML_PATH")" && npx --yes puppeteer-script "$PUPPETEER_SCRIPT" 2>/dev/null); then
-    rm -f "$PUPPETEER_SCRIPT"
-    exit 0
-  fi
-fi
-
-rm -f "$PUPPETEER_SCRIPT"
 
 # Fallback: try chrome --headless with --screenshot. Single-slide only (no slide nav).
 # This is a last-resort warning — the user should install puppeteer for full coverage.

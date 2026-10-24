@@ -2,6 +2,16 @@
 
 Notable changes to the marketplace and its plugins. Each plugin carries its own version in [`marketplace.json`](./.claude-plugin/marketplace.json); a marketplace release (tagged `vX.Y.Z`, matching the catalog version) groups the plugin versions that shipped together. Claude Code updates an installed plugin when its version changes, so every shipped change to a plugin bumps its version.
 
+## [1.2.1] — unreleased
+
+### knowledgeware 1.9.1
+
+Changes from the Anthropic plugin directory's review of 1.9.0 (submitted 2026-10-24), which pins fetched packages and holds plugins that read secrets, pre-approve broad tools or run code it can't read.
+
+- **Fixed:** the bundled draw.io MCP server is pinned, `npx -y @drawio/mcp@1.10.0`, which the directory requires for every package a command fetches (the unpinned form was its one blocking finding).
+- The scripts that `python3 -c` or a heredoc used to generate at run time ship as files: `skills/knowledgebase/scripts/check-site.py` (broken internal links and raw `<` in Mermaid blocks, which the build-process reference used to inline), `scripts/style-fonts.py` (the style's font families, for `install-fonts.sh`) and `skills/slideware/html/scripts/render-slides.js` (the puppeteer renderer that `render-slides.sh` wrote to a temp file). `render-slides.sh` also loses its `npx puppeteer-script` fallback, a package that doesn't exist on npm; the deck directory's puppeteer and the Chrome fallback remain.
+- The librarian agent declares its tools with `tools:` (the subagent key) instead of `allowed-tools:`, and drops Bash, which its runbook never uses. The `/knowledgeware:librarian` and `/knowledgeware:kb-maintain` commands pre-approve only Read, Glob, Grep, WebFetch, WebSearch and Agent: edits in a headless sweep come from the scheduling recipe's `--permission-mode acceptEdits`, and WebFetch stays unscoped because a sweep verifies facts against whatever primary source a site cites.
+
 ## [1.2.0] — 2026-10-23
 
 ### Agents in every plugin that has them

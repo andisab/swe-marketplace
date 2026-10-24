@@ -36,16 +36,7 @@ is_system_font() {
 # Resolve an argument: registry name → its sans/serif/mono; otherwise literal family
 resolve_families() {
   local arg="$1"
-  if node "$SCRIPT_DIR/load-style.js" "$arg" 2>/dev/null | python3 -c '
-import json, sys
-try:
-    t = json.load(sys.stdin).get("type", {})
-except Exception:
-    sys.exit(1)
-fams = [t.get(k) for k in ("sans", "serif", "mono") if t.get(k)]
-if not fams: sys.exit(1)
-print("\n".join(dict.fromkeys(fams)))
-'; then return 0; fi
+  if node "$SCRIPT_DIR/load-style.js" "$arg" 2>/dev/null | python3 "$SCRIPT_DIR/style-fonts.py"; then return 0; fi
   echo "$arg"
 }
 
