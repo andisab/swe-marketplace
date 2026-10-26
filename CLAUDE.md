@@ -53,6 +53,8 @@ CHANGELOG.md                        # one section per release, one subsection pe
 - `node plugins/knowledgeware/tests/registry-test.js`, `bash plugins/knowledgeware/tests/svg-lint-test.sh`, `bash plugins/knowledgeware/tests/diagram-digest-test.sh`.
 - `python3 scripts/check-agent-tools.py` — only reads `tools:` lines, not `allowed-tools:`, so agents using the latter (adv-review, librarian) aren't checked.
 
+**Cutting a directory release.** Anthropic's plugin directory follows one git ref per submitted plugin, and each submitted plugin tracks `release/<plugin>` (knowledgeware since 2026-10-26), so work on `main` never reaches the directory on its own. To release, bump the plugin's version on `main` as usual, then run `scripts/cut-release.sh <plugin>` (`--dry-run` to preview). It fast-forwards `origin/release/<plugin>` to `origin/main`, refusing when the version on `main` isn't higher than the released one or the branch isn't an ancestor of `main`. The directory scans the new commit on its next check, or at once with the push webhook. Release branches are unprotected on purpose; nothing else pushes to them. GitHub marketplace installs keep tracking `main`, so those users get every bump and directory users get the cuts. The tracked branch is edited on the plugin's Settings tab in claude.ai/directory/manage, except while a version is with a reviewer.
+
 **Testing a plugin from this checkout.** The installed plugins come from the GitHub `main` of this repo (cache under `~/.claude/plugins/cache/swe-marketplace/`), so an agent run in a normal session uses the installed version, not the branch. To run branch code: `claude -p --plugin-dir "$PWD/plugins/<name>" --allowedTools "Bash,Read,Write,Glob,Grep,Agent" "<request>"`.
 
 ## Implementation notes
