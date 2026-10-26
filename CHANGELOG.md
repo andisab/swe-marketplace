@@ -4,6 +4,10 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ## [1.2.1] — unreleased
 
+### Release branches for the directory
+
+- Submitted plugins track `release/<plugin>` in Anthropic's directory instead of `main`, so day-to-day merges don't start a scan. `scripts/cut-release.sh <plugin>` fast-forwards that branch to `origin/main` after checking the plugin's version went up, prints the changelog lines and files since the last cut, and asks before pushing. `release/knowledgeware` starts at the 1.9.3 state.
+
 ### Directory listing fields, every plugin
 
 - Each plugin's `plugin.json` now carries the fields Anthropic's directory reads for a listing: `icon` (the `icon.png` beside the manifest), `documentationUrl` (the plugin's README), `supportUrl` (this repository's issues), `privacyPolicyUrl` (the new [PRIVACY.md](./PRIVACY.md)) and `termsOfServiceUrl` (the MIT license). The catalog can't hold them directly, since `claude plugin validate` warns on each in a marketplace entry, so they live under the entry's free-form `metadata.directory` and the generator hoists them into `plugin.json`. No plugin version changes for this: Claude Code ignores the fields, so there is nothing for an installed copy to pick up.
