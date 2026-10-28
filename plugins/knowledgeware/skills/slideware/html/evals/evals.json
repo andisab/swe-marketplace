@@ -16,7 +16,8 @@
         { "text": "<style> block present and scoped under .reveal" },
         { "text": "Google Fonts <link> with display=swap present" },
         { "text": "Reveal.js 5.0.5 is inlined (no CDN <script> or <link>), so the deck runs offline" },
-        { "text": "Output HTML does NOT reference ./style.md (grep for 'style.md' returns 0 matches)" }
+        { "text": "Output HTML does NOT reference ./style.md (grep for 'style.md' returns 0 matches)" },
+        { "text": "The inlined presenter plugin gives the deck a section overview: index.html contains the rp-ov markup, and pressing O (or opening with ?overview) shows every slide as a thumbnail grouped under the deck's section slides, styled from the deck's own tokens" }
       ],
       "files": []
     },

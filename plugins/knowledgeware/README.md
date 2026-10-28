@@ -187,6 +187,8 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 
 **The presenter view.** Open the deck's `index.html` in a browser and press `S` (or `P`). The presenter view opens in a second window, and moving either window moves both. If nothing happens, allow pop-ups for the page. `N` shows the notes at the bottom of the deck itself for rehearsal, and `?` lists every key.
 
+**The overview.** Press `O` in the deck or the presenter view to see every slide as a thumbnail, grouped under the deck's section slides, with the current slide outlined. Click a slide to go to it, or move with the arrow keys and press Enter; Esc closes. The overview takes its colors and fonts from the deck's style, so a dark deck has a dark overview. Opening the deck with `?overview` after its address starts in it.
+
 **A PDF of an HTML deck.** Open the deck in Chrome with `?print-pdf` added to the end of its address, then choose **File → Print → Save as PDF**. Print mode can misplace the footer on title slides. If the footers matter, ask Claude to render the slides as images instead.
 
 **The fonts look wrong.** A PowerPoint file names its fonts but doesn't embed them, so it shows substitutes on any computer that lacks them. Before a build, slideware installs the style's missing Google Fonts and tells you which other fonts to install by hand. An HTML deck loads its fonts from Google Fonts, so without a connection it shows the fallback fonts the style names.
