@@ -3,6 +3,8 @@
 // Reads:
 //   ./style.md      — design styleSpec (YAML frontmatter) — see references/brandbook-spec.md
 //   ./slides.js     — array of slide descriptors — see slides.js for the schema
+//   ./assets/logo-light.svg, logo-dark.svg — optional; the brand's logo for the running footer.
+//                     load-style.js copies them from the brand's folder; a generic style has none.
 //
 // Writes:
 //   ./index.html    — single self-contained HTML file: Reveal (from node_modules), theme
@@ -348,6 +350,24 @@ function themeCss({ palette: P, type: T, layout: L }) {
   text-align: center;
 }
 
+/* Running footer (deck-level \`footer\` in slides.js): text left, the brand's logo and the page
+   number right, on every slide but the title slide. Mono caption, muted, never in the way. */
+.reveal .chrome-bot {
+  position: absolute; left: var(--margin); right: var(--margin); bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--color-ink-muted); pointer-events: none;
+}
+.reveal .chrome-bot .ch-l { display: flex; align-items: center; min-width: 0; white-space: nowrap; overflow: hidden; }
+.reveal .chrome-bot .ch-l span + span::before {
+  content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%;
+  background: var(--color-ink-faint); margin: 0 14px; vertical-align: middle;
+}
+.reveal .chrome-bot .ch-r { display: flex; align-items: center; flex: none; }
+.reveal .chrome-bot .ch-logo { height: 13px; width: auto; opacity: 0.85; }
+.reveal .chrome-bot .ch-logo + .ch-pg { margin-left: 14px; }
+.reveal .chrome-bot .ch-pg { letter-spacing: 0.08em; color: var(--color-ink-body); font-variant-numeric: tabular-nums; }
+
 /* Entrance motion: [data-a] elements animate in each time their slide becomes current,
    staggered by --i. Off in print, for reduced-motion viewers, and in the presenter view. */
 .reveal .slides section.present [data-a] { animation: .5s cubic-bezier(.4, 0, .2, 1) calc(100ms + var(--i, 0) * 70ms) both; }
@@ -470,8 +490,17 @@ function notesHtml(slide) {
   return `<aside class="notes"${attrs}>${esc(slide.notes || "").replace(/\r?\n/g, "&#10;")}</aside>`;
 }
 
-// `motion` is the deck's default; a slide's own `motion` field overrides it.
-function renderSlide(slide, motion = false) {
+// The running footer of one slide: the deck's footer text on the left, the logo (if the deck
+// has one) and the page number on the right. Hidden slides get no number: Reveal drops them.
+function footerHtml(chrome) {
+  const parts = chrome.footer.map(t => `<span>${esc(t)}</span>`).join("");
+  const page = chrome.n ? `<span class="ch-pg">${String(chrome.n).padStart(2, "0")} / ${String(chrome.total).padStart(2, "0")}</span>` : "";
+  return `<div class="chrome-bot" aria-hidden="true"><span class="ch-l">${parts}</span><span class="ch-r">${chrome.logo}${page}</span></div>`;
+}
+
+// `motion` is the deck's default; a slide's own `motion` field overrides it. `chrome` is the
+// running footer for this slide ({ footer, logo, n, total }) or null; the title slide never gets it.
+function renderSlide(slide, motion = false, chrome = null) {
   const fn = renderers[slide.layout];
   if (!fn) throw new Error(`Unknown layout: "${slide.layout}". Supported: ${Object.keys(renderers).join(", ")}`);
   const moving = slide.motion != null ? !!slide.motion : motion;
@@ -479,20 +508,60 @@ function renderSlide(slide, motion = false) {
   let html = fn(slide, a);
   // Reveal removes hidden slides when the deck loads, so the presenter doesn't count them either.
   if (slide.hidden) html = html.replace(/^(<section class="[^"]*")/, '$1 data-visibility="hidden"');
-  const notes = notesHtml(slide);
-  return notes ? html.replace(/<\/section>$/, `  ${notes}\n</section>`) : html;
+  const tail = [chrome && slide.layout !== "title" ? footerHtml(chrome) : "", notesHtml(slide)].filter(Boolean);
+  return tail.length ? html.replace(/<\/section>$/, tail.map(t => `  ${t}\n`).join("") + "</section>") : html;
+}
+
+// The brand's logo for the footer, inlined: ./assets/logo-light.svg on a light background,
+// logo-dark.svg on a dark one, whichever exists. A deck-level `logo` names another SVG file;
+// `logo: false` leaves the logo out. No file, no logo: a generic style ships none.
+function logoSvg(cwd, deck, palette) {
+  if (deck.logo === false) return "";
+  const dark = luminance(palette.bg) < 0.5;
+  const candidates = deck.logo ? [deck.logo] : (dark ? ["assets/logo-dark.svg", "assets/logo-light.svg"] : ["assets/logo-light.svg", "assets/logo-dark.svg"]);
+  for (const rel of candidates) {
+    const file = path.resolve(cwd, rel);
+    if (!fs.existsSync(file)) { if (deck.logo) throw new Error(`logo: ${rel} not found`); continue; }
+    if (!/\.svg$/i.test(file)) throw new Error(`logo must be an SVG file, got ${rel}`);
+    const svg = fs.readFileSync(file, "utf8").replace(/<\?xml[^>]*>/, "").replace(/<!--[\s\S]*?-->/g, "").trim();
+    if (!/^<svg[\s>]/i.test(svg)) throw new Error(`${rel} doesn't start with an <svg> element`);
+    return { file: rel, svg: svg.replace(/^<svg/i, '<svg class="ch-logo" aria-hidden="true"') };
+  }
+  return "";
+}
+function luminance(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+  if (!m) return 1;
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// The tab icon: a rounded square in the style's ink, a slide in its background, an accent bar
+// under it. Tells a deck tab from a knowledge-base tab, in the deck's own colours.
+function faviconHref(palette) {
+  const hex = (v, fallback) => (v == null ? fallback : String(v).startsWith("#") ? v : `#${v}`);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="${hex(palette.ink, "#1A1A18")}"/>` +
+    `<rect x="6" y="10" width="20" height="12" rx="1.5" fill="${hex(palette.bg, "#FFFFFF")}"/><rect x="6" y="20" width="20" height="2" fill="${hex(palette.accent, "#3B5249")}"/></svg>`;
+  return "data:image/svg+xml," + encodeURIComponent(svg);
 }
 
 // ── Deck spec and pacing ───────────────────────────────────────────
-// slides.js exports either an array of slides or { slides, sessions, minutes, motion }:
+// slides.js exports either an array of slides or { slides, sessions, minutes, motion, footer, logo }:
 //   sessions  session label (cue.session) → length in minutes
 //   minutes   length of the slides that have no cue.session (a deck without sessions)
 //   motion    entrance motion on every slide (default true); a slide's own `motion` overrides it
+//   footer    running footer text: a string, or an array of strings shown dot-separated; with it,
+//             every slide but the title slide carries the footer, the logo and its page number
+//   logo      path of the SVG for the footer (default ./assets/logo-light.svg or logo-dark.svg),
+//             or false for no logo
 // The presenter gives every in-run slide of a session an equal share of its length.
 function readDeck(spec) {
   const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
   if (!Array.isArray(deck.slides)) throw new Error("slides.js must export an array of slides, or { slides: [...], sessions: {...} }.");
   if (deck.motion != null && typeof deck.motion !== "boolean") throw new Error(`motion must be true or false, got "${deck.motion}"`);
+  const footer = deck.footer == null || deck.footer === "" ? [] : Array.isArray(deck.footer) ? deck.footer : [deck.footer];
+  if (!footer.every(t => typeof t === "string" && t.trim())) throw new Error("footer must be a string or an array of strings");
+  if (deck.logo != null && deck.logo !== false && typeof deck.logo !== "string") throw new Error(`logo must be a file path or false, got "${deck.logo}"`);
   const labels = new Set(deck.slides.map(s => (s.cue && s.cue.session) || ""));
   const sessions = Object.assign(deck.minutes != null ? { "": deck.minutes } : {}, deck.sessions);
   for (const [label, minutes] of Object.entries(sessions)) {
@@ -501,7 +570,7 @@ function readDeck(spec) {
     if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
     sessions[label] = Number(minutes);
   }
-  return { slides: deck.slides, sessions, motion: deck.motion !== false };
+  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo };
 }
 
 // ── Reveal, inlined ────────────────────────────────────────────────
@@ -555,13 +624,14 @@ function minSec(minutes) {
 }
 
 // ── HTML page assembly ─────────────────────────────────────────────
-function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {} }) {
+function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>${esc(title)}</title>
+  ${favicon ? `<link rel="icon" href="${favicon.replace(/"/g, "%22")}"/>` : ""}
   ${fontsUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="${fontsUrl}" rel="stylesheet"/>` : ""}
@@ -590,7 +660,7 @@ ${inlineScript(reveal.js)}
       display: 'flex',
       controls: true,
       progress: true,
-      slideNumber: 'c/t',
+      slideNumber: ${footer ? "false" : "'c/t'"},${footer ? "   // the running footer carries the page number" : ""}
       transition: 'fade',${presenterJs ? `
       plugins: [RevealPresenter],
       presenter: { sessions: ${JSON.stringify(sessions).replace(/</g, "\\u003c")} },` : ""}
@@ -612,7 +682,8 @@ function main() {
     process.exit(1);
   }
   delete require.cache[slidesPath];
-  const { slides, sessions, motion } = readDeck(require(slidesPath));
+  const deck = readDeck(require(slidesPath));
+  const { slides, sessions, motion, footer } = deck;
   const reveal = revealAssets(__dirname);
 
   const presenterPath = path.join(__dirname, "presenter.js");
@@ -624,18 +695,24 @@ function main() {
   const presenterJs = fs.readFileSync(presenterPath, "utf8");
 
   const fontsUrl = googleFontsUrl(styleSpec.type || {});
-  const css = themeCss(styleSpec);
-  const slidesHtml = slides.map((s) => renderSlide(s, motion)).join("\n");
+  const palette = styleSpec.palette || {};
+  // With a footer, every slide keeps its bottom band clear for it: nothing but the footer in the bottom 40px.
+  const css = themeCss(styleSpec) + (footer.length ? "\n.reveal .slides section { padding-bottom: max(var(--margin), 40px); }" : "");
+  const logo = footer.length ? logoSvg(cwd, deck, palette) : "";
+  const visible = slides.filter(s => !s.hidden);
+  const slidesHtml = slides.map((s) => renderSlide(s, motion, footer.length
+    ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null)).join("\n");
   const title = styleSpec.name ? `${styleSpec.name} deck` : "deck";
 
-  const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions });
+  const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0 });
   const outPath = path.join(cwd, "index.html");
   fs.writeFileSync(outPath, html);
 
   console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${slides.length} slides, ${styleSpec.name || "unnamed style"})`);
+  if (footer.length) console.log(`Footer on every slide but the title: ${footer.join(" · ")} · ${logo ? `logo ${logo.file}` : "no logo (no ./assets/logo-*.svg; a brand's style stages one)"} · page n / ${visible.length}`);
   const summary = pacingSummary(slides, sessions);
   if (summary) console.log(summary);
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref };

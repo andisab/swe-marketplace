@@ -23,6 +23,11 @@
 //    references/reveal.md §Speaker notes.
 // 8. Entrance motion is on by default. Turn it off with `motion: false` next to
 //    `slides` (or on one slide). See references/reveal.md §Entrance motion.
+// 9. `footer: "Program name"` (or an array of strings) next to `slides` puts a running
+//    footer on every slide but the title slide: the text, the brand's logo (staged by
+//    load-style.js into ./assets/ when the style is a brand; none for a generic style)
+//    and the page number. `logo` names another SVG; `logo: false` leaves it out.
+//    See references/reveal.md §Running footer and logo.
 
 module.exports = [
   {

@@ -132,6 +132,24 @@ Each slide in the run gets an equal share of its session's length; add-back, bac
 
 Every build prints a summary: each session's length, slides in the run and time per slide, then the hidden slides by their position in `slides.js`. When asked to hide or show slides, change a session's length, or report which slides are hidden, edit `slides.js`, rebuild, and quote that summary.
 
+### Running footer and logo
+
+Two more deck-level fields next to `slides`:
+
+```js
+module.exports = {
+  footer: ["AI-native SDLC with Claude Code", "Advanced session"],   // or one string
+  // logo: "./assets/mark.svg",   // another SVG for the footer; false for none
+  slides: [ /* … */ ],
+};
+```
+
+With `footer` set, every slide but the title slide carries a running footer: the text on the left (array items dot-separated), the logo and the page number (`07 / 27`, visible slides only) on the right, in the mono caption treatment. Reveal's own slide number turns off; the progress bar stays. The builder also reserves the bottom band: slides get `padding-bottom: max(var(--margin), 40px)`, so nothing but the footer sits in the bottom 40px.
+
+The logo is the brand's: `load-style.js` copies `logo-light.svg` and `logo-dark.svg` from the brand's `assets/` folder into the deck's `./assets/` when it stages `style.md`, and the builder inlines `logo-light.svg` on a light background or `logo-dark.svg` on a dark one (by the luminance of `palette.bg`), whichever exists. The five generic styles have a mark but no logo, so a deck in a generic style gets a footer with no logo; `logo` names another SVG, and `logo: false` leaves it out. The build prints which file it used, or that it found none.
+
+Every deck also gets a tab icon: a rounded square in the style's ink, a slide in its background colour and an accent bar, as a data-URI SVG in `<head>`, so a deck tab is distinguishable from a knowledge-base tab.
+
 In the presenter, the current session's length is an editable field in the header, next to the resulting time per slide. An edit is saved in that browser and wins until the deck's own length for that session changes, so a rebuilt deck never loses to a stale edit.
 
 ### Presenting

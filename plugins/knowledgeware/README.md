@@ -187,6 +187,8 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 
 **The presenter view.** Open the deck's `index.html` in a browser and press `S` (or `P`). The presenter view opens in a second window, and moving either window moves both. If nothing happens, allow pop-ups for the page. `N` shows the notes at the bottom of the deck itself for rehearsal, and `?` lists every key.
 
+**A running footer.** Ask for one ("put the program name in the footer") and every slide but the cover gets the text on the left and the page number on the right, with your brand's logo beside it when the deck uses a brand from the registry. Decks in the five built-in styles get the footer without a logo. Each deck's browser tab also shows a small slide icon in the deck's colours, so deck tabs stand apart from knowledge-base tabs.
+
 **The overview.** Press `O` in the deck or the presenter view to see every slide as a thumbnail, grouped under the deck's section slides, with the current slide outlined. Click a slide to go to it, or move with the arrow keys and press Enter; Esc closes. The overview takes its colors and fonts from the deck's style, so a dark deck has a dark overview. Opening the deck with `?overview` after its address starts in it.
 
 **A PDF of an HTML deck.** Open the deck in Chrome with `?print-pdf` added to the end of its address, then choose **File → Print → Save as PDF**. Print mode can misplace the footer on title slides. If the footers matter, ask Claude to render the slides as images instead.
