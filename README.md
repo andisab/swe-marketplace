@@ -107,7 +107,7 @@ The two plugins I use daily and keep current. Both carry scripts, templates and 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.9.3 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.10.0 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
 | [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
 
 ### Experimental plugins
@@ -146,7 +146,7 @@ Claude loads a skill when your request matches the skill's description. You can 
 | `knowledgeware:knowledgebase` | Multi-page, offline HTML knowledge bases (field guides, handbooks, runbooks, study guides), each with a maintenance page so it can be kept current. |
 | `knowledgeware:brandware` | The shared brand registry. It imports, derives or edits the brandbooks and logos that every deliverable uses. |
 | `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
-| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, session pacing and speaker notes. |
+| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, a section overview, session pacing and speaker notes. |
 | `research-team:coordinator` | Runs the research pipeline. It splits a topic into subtopics, researches them in parallel, then has the report written. |
 | `research-team:report-formats` | Format profiles (Markdown, Obsidian, Joplin) and six report types for the research reports. |
 | `context-engineering:agent-dev` | Designing subagents: frontmatter, system prompt, tool access, example-driven descriptions. |

@@ -24,7 +24,7 @@ Opening slide. Large hero text, optional subtitle, optional small footer.
 
 ## 2. section
 
-Divider between sections of a longer deck. Big heading on `surfaceAlt` background with an accent stripe on the left.
+Divider between sections of a longer deck. Big heading on `surfaceAlt` background with an accent stripe on the left. Each section slide also heads a group in the deck's overview (`O`), labelled with its kicker and title, so the kicker and title should read as a table of contents entry.
 
 ```
 ┌▌───────────────────────────────────┐

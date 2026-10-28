@@ -19,7 +19,8 @@
 //    `hidden: true` to leave it out of the deck. For a pace plan, export
 //    { minutes: 20, slides: [...] } or { sessions: { "Session 1": 90 }, slides: [...] }
 //    instead of the bare array. Press S in the deck to present, N for a rehearsal
-//    drawer. See references/reveal.md §Speaker notes.
+//    drawer, O for an overview of every slide grouped by `section` slide. See
+//    references/reveal.md §Speaker notes.
 // 8. Entrance motion is on by default. Turn it off with `motion: false` next to
 //    `slides` (or on one slide). See references/reveal.md §Entrance motion.
 

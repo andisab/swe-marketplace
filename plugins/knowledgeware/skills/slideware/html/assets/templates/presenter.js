@@ -1,14 +1,25 @@
-// presenter.js — presenter view and rehearsal notes drawer for slideware HTML decks.
+// presenter.js — presenter view, section overview and rehearsal notes drawer for slideware
+// HTML decks.
 //
 // A Reveal.js 5 plugin. build-deck.js inlines this file into index.html and registers it:
 //   Reveal.initialize({ ..., plugins: [RevealPresenter] })
 // It replaces Reveal's own notes plugin (RevealNotes). Don't register both: both bind S.
+// It also replaces Reveal's zoomed-out overview (O) with the section overview below and
+// turns that one off (`overview: false`), so O means one thing.
 //
 // Audience window (the deck itself):
 //   S or P  open the presenter view in a second window; the two windows stay in sync
 //           (BroadcastChannel plus window.postMessage, so it also works from file://)
 //   N       toggle a notes drawer along the bottom of the deck, for rehearsal. Anyone
 //           who can see the screen can read it.
+//   O       toggle the overview: every slide as a thumbnail, in a grid per section. A
+//           section-divider slide (layout-section) heads its group with its kicker and
+//           title; the slides before the first divider are the opening; a deck with no
+//           dividers is one grid. The current slide is outlined, a click goes to a slide,
+//           the arrow keys move between thumbnails, Esc (or O) closes. Opening the deck
+//           with ?overview starts in it. The overview is drawn from the deck's own style
+//           tokens (its colors, fonts and radius), so it matches whatever brand the deck
+//           uses. Also available in the presenter window, where it moves both windows.
 //
 // Presenter window (the deck opened with ?presenter):
 //   previous slide | current slide | next slide across the top, notes full width below.
@@ -177,6 +188,35 @@ html.rp-presenter .reveal.rp-main { border-radius: 10px; box-shadow: 0 0 0 1px #
 .rp-split.rp-active::before, .rp-split.rp-active::after { background: ${ACCENT}; }
 html.rp-resizing-x, html.rp-resizing-x * { cursor: col-resize !important; user-select: none !important; }
 html.rp-resizing-y, html.rp-resizing-y * { cursor: row-resize !important; user-select: none !important; }
+
+/* Section overview: the deck's own tokens, so it matches the deck's style rather than a fixed theme. */
+.rp-ov { display: none; position: fixed; inset: 0; z-index: 50; overflow-y: auto; padding: 28px 36px 64px;
+  background: var(--color-surface-alt, var(--color-bg, #F4F4F2)); color: var(--color-ink, #1A1A18); font-family: ${SANS}; line-height: 1.4; text-align: left; }
+html.rp-ov-on .rp-ov { display: block; }
+.rp-ov-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.rp-ov-title { margin: 0 0 4px; font-family: var(--font-serif, ${SANS}); font-size: 22px; font-weight: 600; line-height: 1.2; color: var(--color-ink, #1A1A18); }
+.rp-ov-sub { margin: 0; font-size: 13px; color: var(--color-ink-muted, #6B6B63); }
+.rp-ov button.rp-ov-close { all: unset; cursor: pointer; flex: none; padding: 6px 12px; border: 1px solid var(--color-border, #CBD2CB); border-radius: var(--radius, 8px);
+  color: ${ACCENT}; font: 500 11px ${MONO}; letter-spacing: .08em; text-transform: uppercase; }
+.rp-ov button.rp-ov-close:hover { background: var(--color-surface, #FFFFFF); }
+.rp-ov button.rp-ov-close:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 2px; }
+.rp-ov-grp { display: flex; align-items: baseline; gap: 12px; margin: 30px 0 12px; padding-top: 16px; border-top: 1px solid var(--color-border, #E3E3DF);
+  font-family: var(--font-serif, ${SANS}); font-size: 17px; font-weight: 600; line-height: 1.25; color: var(--color-ink, #1A1A18); }
+.rp-ov-body > .rp-ov-grp:first-child { margin-top: 22px; padding-top: 0; border-top: 0; }
+.rp-ov-body > .rp-ov-grid:first-child { margin-top: 22px; }
+.rp-ov-kick { flex: none; font-family: ${MONO}; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
+.rp-ov-count { flex: none; margin-left: auto; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; color: var(--color-ink-faint, #9E9E97); }
+.rp-ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px 16px; }
+.rp-ov-th { all: unset; display: block; min-width: 0; cursor: pointer; }
+.rp-ov-box { position: relative; width: 100%; aspect-ratio: var(--rp-ratio, 16 / 9); overflow: hidden; border-radius: var(--radius, 6px);
+  background: var(--color-bg, #FFFFFF); outline: 1px solid var(--color-border, #E3E3DF); outline-offset: 0; transition: outline-color .12s; }
+.rp-ov-box > .rp-preview { position: absolute; inset: 0; pointer-events: none; }
+.rp-ov-th:hover .rp-ov-box, .rp-ov-th:focus-visible .rp-ov-box { outline: 2px solid ${ACCENT}; }
+.rp-ov-th.rp-cur .rp-ov-box { outline: 3px solid var(--color-ink, #1A1A18); }
+.rp-ov-cap { display: flex; gap: 8px; margin-top: 8px; font-size: 12px; line-height: 1.35; color: var(--color-ink-body, #1A1A18); }
+.rp-ov-cap b { flex: none; font-family: ${MONO}; font-weight: 500; color: ${ACCENT}; font-variant-numeric: tabular-nums; }
+.rp-ov-cap span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rp-ov .reveal [data-a] { animation: none !important; }   /* thumbnails show each slide fully in place */
 `;
 
   const splitHtml = (name, axis, label) => `<div class="rp-split rp-split-${axis}" data-split="${name}" role="separator"
@@ -265,6 +305,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     let deck, slides = [], notes = [], cur = 0;
     let bc = null, peer = null, applying = false, connected = false;
     let drawer, shell, revealEl, ratio = 16 / 9, slideW = 1280, slideH = 720;
+    let ov, ovFilled = false;   // the overview panel; its thumbnails are made on first open
     const timer = { start: 0, paused: 0, pausedAt: 0 };
     // prev / next: sidebar widths (%); hide: collapsed sidebars; soloRow: slides-row height (px)
     // when both sidebars are hidden, unset for the largest that fits.
@@ -314,11 +355,15 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         if (!timer.start && applying !== "initial") timer.start = Date.now();
         render(moved);
       } else renderDrawer();
+      if (overviewOpen()) markCurrent();
     }
 
     // ── Audience window ────────────────────────────────────────────
     function presenterUrl() {
-      const url = location.href.split("#")[0];
+      const u = new URL(location.href);
+      u.searchParams.delete("overview");   // the presenter window starts on its slides, not in the overview
+      u.hash = "";
+      const url = u.href;
       return url + (url.indexOf("?") >= 0 ? "&" : "?") + "presenter" + location.hash;
     }
     function openPresenter() {
@@ -493,7 +538,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         const box = frame.parentNode, w = Math.max(0, Math.min(box.clientWidth, box.clientHeight * ratio));
         const left = frame.closest(".rp-side-prev") ? box.clientWidth - w : 0;
         Object.assign(frame.style, { left: left + "px", width: w + "px", height: w / ratio + "px" });
-        frame.querySelector(".slides").style.transform = "translate(-50%, -50%) scale(" + w / slideW + ")";
+        scaleCopy(frame, w);
       });
     }
 
@@ -503,12 +548,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       shell.className = "rp-shell";
       shell.innerHTML = SHELL_HTML;
       document.body.appendChild(shell);
-      revealEl = deck.getRevealElement();
       revealEl.classList.add("rp-main");
-      const cfg = deck.getConfig();
-      slideW = Number(cfg.width) || 1280;
-      slideH = Number(cfg.height) || 720;
-      ratio = slideW / slideH;
       shell.style.setProperty("--rp-ratio", slideW + " / " + slideH);
       loadPrefs();
       ["prev", "next", "row"].forEach(wireSplit);
@@ -600,6 +640,134 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       Object.assign(node.style, { display, transition: "none" });
       return node;
     }
+    // Scale a copy's slide to a frame w px wide; the copy's .slides sits centred in the frame.
+    function scaleCopy(frame, w) {
+      frame.querySelector(".slides").style.transform = "translate(-50%, -50%) scale(" + w / slideW + ")";
+    }
+
+    // ── Overview: every slide as a thumbnail, grouped by section ───
+    // A section-divider slide starts a group, headed by its kicker and title. Slides before
+    // the first divider are the opening; a deck with no dividers is one grid. Thumbnails are
+    // the same fully built copies the presenter's sidebars use, sized by the grid.
+    function overviewOpen() { return document.documentElement.classList.contains("rp-ov-on"); }
+    function captionOf(slide) {   // the heading, else the most title-like text a layout has
+      for (const sel of ["h1, h2, h3", ".label", "blockquote", ".caption", ".figure"]) {
+        const el = slide.querySelector(sel);
+        if (el) return el.textContent.replace(/\s+/g, " ").trim();
+      }
+      return "";
+    }
+    function groupOf(slide) {
+      if (!slide.classList.contains("layout-section")) return null;
+      const kick = slide.querySelector(".kicker");
+      return { kicker: kick ? kick.textContent.trim() : "", title: titleOf(slide) || "Section" };
+    }
+    function buildOverview() {
+      ov = document.createElement("div");
+      ov.className = "rp-ov";
+      ov.setAttribute("role", "dialog");
+      ov.setAttribute("aria-modal", "true");
+      ov.setAttribute("aria-label", "Slide overview");
+      ov.style.setProperty("--rp-ratio", slideW + " / " + slideH);
+      ov.innerHTML = '<div class="rp-ov-head"><div><h1 class="rp-ov-title"></h1><p class="rp-ov-sub"></p></div>' +
+        '<button type="button" class="rp-ov-close" title="Close the overview (Esc)">Close</button></div><div class="rp-ov-body"></div>';
+      ov.addEventListener("click", (e) => {
+        const th = e.target.closest(".rp-ov-th");
+        if (th) { closeOverview(); goTo(slides[+th.dataset.i]); }
+        else if (e.target.closest(".rp-ov-close")) closeOverview();
+      });
+      new ResizeObserver(scaleOverview).observe(ov);   // window resizes, and the first display
+      document.body.appendChild(ov);
+    }
+    function fillOverview() {
+      const body = ov.querySelector(".rp-ov-body"), hasSections = slides.some((s) => s.classList.contains("layout-section"));
+      let grid = null, groups = 0;
+      slides.forEach((slide, i) => {
+        const g = groupOf(slide);
+        if (g || !grid) {
+          const head = g || (hasSections ? { kicker: "", title: "Opening" } : null);
+          if (head) {
+            groups += g ? 1 : 0;
+            const h = document.createElement("h2");
+            h.className = "rp-ov-grp";
+            h.innerHTML = (head.kicker ? '<span class="rp-ov-kick"></span>' : "") + '<span class="rp-ov-grp-title"></span><span class="rp-ov-count"></span>';
+            if (head.kicker) h.firstChild.textContent = head.kicker;
+            h.querySelector(".rp-ov-grp-title").textContent = head.title;
+            body.appendChild(h);
+          }
+          grid = document.createElement("div");
+          grid.className = "rp-ov-grid";
+          body.appendChild(grid);
+        }
+        const caption = captionOf(slide), th = document.createElement("button");
+        th.type = "button";
+        th.className = "rp-ov-th";
+        th.dataset.i = i;
+        th.setAttribute("aria-label", "Go to slide " + (i + 1) + (caption ? ": " + caption : ""));
+        th.innerHTML = '<div class="rp-ov-box"></div><div class="rp-ov-cap"><b></b><span></span></div>';
+        th.querySelector(".rp-ov-cap b").textContent = pad(i + 1);
+        th.querySelector(".rp-ov-cap span").textContent = caption;
+        th.querySelector(".rp-ov-box").appendChild(slideCopy(slide));
+        grid.appendChild(th);
+      });
+      body.querySelectorAll(".rp-ov-grp").forEach((h) => {
+        const n = h.nextElementSibling.childElementCount;
+        h.querySelector(".rp-ov-count").textContent = n + (n === 1 ? " slide" : " slides");
+      });
+      ov.querySelector(".rp-ov-title").textContent = titleOf(slides[0]) || document.title.replace(/^Presenter · /, "");
+      ov.querySelector(".rp-ov-sub").textContent = slides.length + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
+        ". Click a slide to go to it; Esc closes.";
+      ovFilled = true;
+    }
+    function scaleOverview() {
+      if (!overviewOpen()) return;
+      ov.querySelectorAll(".rp-ov-box > .rp-preview").forEach((frame) => scaleCopy(frame, frame.parentNode.clientWidth));
+    }
+    function markCurrent() {
+      ov.querySelectorAll(".rp-ov-th").forEach((t) => t.classList.toggle("rp-cur", +t.dataset.i === cur));
+    }
+    function goTo(slide) {
+      const i = deck.getIndices(slide);
+      deck.slide(i.h, i.v);
+    }
+    function openOverview() {
+      if (overviewOpen()) return;
+      if (!ovFilled) fillOverview();
+      document.documentElement.classList.add("rp-ov-on");
+      [revealEl, drawer, shell].forEach((el) => { if (el) el.inert = true; });   // the deck behind it takes no clicks or focus
+      markCurrent();
+      scaleOverview();
+      document.addEventListener("keydown", onOverviewKey, true);
+      const at = ov.querySelector(".rp-ov-th.rp-cur");
+      if (at) { at.scrollIntoView({ block: "center" }); at.focus({ preventScroll: true }); }
+    }
+    function closeOverview() {
+      if (!overviewOpen()) return;
+      document.documentElement.classList.remove("rp-ov-on");
+      [revealEl, drawer, shell].forEach((el) => { if (el) el.inert = false; });
+      document.removeEventListener("keydown", onOverviewKey, true);
+      if (document.activeElement && ov.contains(document.activeElement)) document.activeElement.blur();
+    }
+    function toggleOverview() { if (overviewOpen()) closeOverview(); else openOverview(); }
+    // While the overview is open, keys belong to it: Reveal (listening on document, bubbling)
+    // and the presenter's own keys don't see them. Tab, Enter and Space keep their defaults.
+    function onOverviewKey(e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      e.stopPropagation();
+      if (e.key === "Escape" || e.key === "o" || e.key === "O") { e.preventDefault(); closeOverview(); return; }
+      const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
+      let step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 0, ArrowUp: 0 }[e.key];
+      if (step === undefined) return;
+      e.preventDefault();
+      if (at < 0) { if (ths.length) ths[0].focus(); return; }
+      if (step === 0) {   // up or down a row: the columns per grid are the thumbnails sharing the focused one's top edge
+        const row = ths.filter((t) => t.parentNode === ths[at].parentNode && t.offsetTop === ths[at].offsetTop).length;
+        step = e.key === "ArrowDown" ? row : -row;
+      }
+      const next = ths[Math.min(ths.length - 1, Math.max(0, at + step))];
+      next.focus({ preventScroll: true });
+      next.scrollIntoView({ block: "nearest" });
+    }
     function renderSide(side, i, emptyText) {
       const pane = q(".rp-side-" + side), box = pane.querySelector(".rp-thumb"), slide = slides[i];
       pane.querySelector(".rp-side-num").textContent = slide ? pad(i + 1) + " / " + slides.length : "";
@@ -675,6 +843,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       ["slidechanged", "fragmentshown", "fragmenthidden", "overviewhidden"].forEach((ev) => deck.on(ev, onNav));
       ["paused", "resumed"].forEach((ev) => deck.on(ev, () => { if (!applying) send("state"); }));
       if (isPresenter) startPresenter();
+      if (/[?&]overview(?:[=&]|$)/.test(location.search)) openOverview();
     }
 
     function init(reveal) {
@@ -683,10 +852,18 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       const style = document.createElement("style");
       style.textContent = CSS;
       document.head.appendChild(style);
+      const cfg = deck.getConfig();
+      slideW = Number(cfg.width) || 1280;
+      slideH = Number(cfg.height) || 720;
+      ratio = slideW / slideH;
+      revealEl = deck.getRevealElement();
       if (isPresenter) {
         deck.configure(PRESENTER_CONFIG);   // before Reveal is ready, this only updates the config it starts with
         buildShell();
       } else buildAudience();
+      deck.configure({ overview: false });   // Reveal's zoomed-out overview gives way to the section overview
+      buildOverview();
+      deck.addKeyBinding({ keyCode: 79, key: "O", description: "Slide overview, by section" }, toggleOverview);
       connect();
       if (deck.isReady()) onReady(); else deck.on("ready", onReady);
     }

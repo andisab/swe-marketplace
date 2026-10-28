@@ -4,7 +4,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 
 ## Status
 
-- 13 plugins, catalog version `1.2.0` (unreleased). Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.9.0, context-engineering 1.1.1, the nine agent packs 1.0.1.
+- 13 plugins, catalog version `1.2.0` (unreleased). Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.10.0, context-engineering 1.1.1, the nine agent packs 1.0.1.
 - Work happens on `feature/repo-polish` (24 commits ahead of `main`, never pushed). Andis reviews and merges; don't push without him. At the merge, replace `unreleased` in the CHANGELOG heading with the date.
 - Everything validates clean with `./scripts/validate-all.sh` except two pre-existing plugin-directory warnings it reports (a stray `.DS_Store` on disk under `plugins/data`, and four under `plugins/knowledgeware`), which make it end with "validation failed" although the tests and manifests pass.
 - `core.hooksPath` is unset in this clone, so the pre-commit drift check doesn't run here; enable it with `git config core.hooksPath scripts/git-hooks`.
