@@ -13,6 +13,14 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 - Each plugin's `plugin.json` now carries the fields Anthropic's directory reads for a listing: `icon` (the `icon.png` beside the manifest), `documentationUrl` (the plugin's README), `supportUrl` (this repository's issues), `privacyPolicyUrl` (the new [PRIVACY.md](./PRIVACY.md)) and `termsOfServiceUrl` (the MIT license). The catalog can't hold them directly, since `claude plugin validate` warns on each in a marketplace entry, so they live under the entry's free-form `metadata.directory` and the generator hoists them into `plugin.json`. No plugin version changes for this: Claude Code ignores the fields, so there is nothing for an installed copy to pick up.
 - [PRIVACY.md](./PRIVACY.md) states what the plugins collect (nothing), what leaves the machine and to whom (the model providers you already use, plus knowledgeware's and research-team's documented fetches), and where output stays.
 
+### knowledgeware 1.12.2
+
+Brandware as the standard, the other skills as adapters. No behaviour changes.
+
+- **Style and brandbook are defined.** A style is the identity (`brand.md` and its token cache); a brandbook is a style plus what a brand ships with (logos and marks, a stylesheet, starters, mocks, templates, a README with provenance), in the same folder shape. The spec says so in its first lines.
+- **A consumer contract replaces the mapping file.** `skills/brandware/references/consumer-contract.md` states what every rendering skill owes (resolve by name through the registry, honour the markers, load through the loader, use the brandbook's extras, degrade gracefully, keep its mapping next to its code), the intent each medium must honour, and an index of where each mapping lives. It also records the planned per-consumer extension folders inside a brand, not yet implemented.
+- **Mappings live with the code that implements them.** The pptx mapping moved from the spec's Appendix A into `pptx/references/pptxgenjs.md`; the html mapping is the format guide's own table (Appendix B and the redirect stub under `html/references/` are gone); the knowledgebase and chartware mappings moved from brandware into `references/brand-mapping.md` in each skill. The spec's loading section is three commands.
+
 ### knowledgeware 1.12.1
 
 Consolidation after a three-reviewer pass over the plugin, plus one change to how the librarian works.

@@ -21,7 +21,7 @@ Rules of thumb: flowchart in a README → Mermaid. Revenue chart in a report pag
 
 ## Brand resolution (all media)
 
-A brand or style the user names ("in the AAB style", "AcmeCorp-branded") resolves through the registry per the **brandware skill's resolution contract** (`../brandware/SKILL.md` §Resolution contract: the user's brands directory, then the plugin's brands, then the five generic styles; when nothing is named, the `.knowledgeware` and `DEFAULT` markers, telling the user what they resolved to). Substitute its palette and typography per brandware's `references/consumer-mappings.md` §chartware. The mapping is deliberately understated — surface fills with categorical strokes, brand accent in at most two roles, low-saturation tints; a branded diagram should read as the brand's document, not a poster of its colors. For data charts (bars, lines, KPIs) follow brandware's `references/chart-styling.md`. This skill's own fallback, when no brand is named or installed and no marker resolves: each medium's default styling below, and say so.
+A brand or style the user names ("in the AAB style", "AcmeCorp-branded") resolves through the registry per the **brandware skill's resolution contract** (`../brandware/SKILL.md` §Resolution contract: the user's brands directory, then the plugin's brands, then the five generic styles; when nothing is named, the `.knowledgeware` and `DEFAULT` markers, telling the user what they resolved to). Substitute its palette and typography per this skill's `references/brand-mapping.md` (the intent it implements: brandware's `references/consumer-contract.md`). The mapping is deliberately understated — surface fills with categorical strokes, brand accent in at most two roles, low-saturation tints; a branded diagram should read as the brand's document, not a poster of its colors. For data charts (bars, lines, KPIs) follow brandware's `references/chart-styling.md`. This skill's own fallback, when no brand is named or installed and no marker resolves: each medium's default styling below, and say so.
 
 ---
 
@@ -31,7 +31,7 @@ For flowcharts, sequence diagrams, state machines, ER diagrams, gantt charts, an
 
 **Embedding**: ` ```mermaid ` fences in markdown and artifact pages; `<pre class="mermaid">` blocks in HTML that loads mermaid (knowledgebase pages do). If a mermaid validation/render tool is available (`tool_search` for "mermaid"), validate the syntax before delivering; otherwise double-check quoting — labels with `()`, `/`, or `:` need `["..."]` quoting.
 
-**Branding**: apply the brandbook via an init block using the themeVariables mapping in brandware's `consumer-mappings.md` (§knowledgebase covers it): `primaryColor` = ~12% accent tint over bg · `primaryBorderColor` = accent · `primaryTextColor` = ink · `lineColor` = ink at ~70% (never the accent — edges recede) · `edgeLabelBackground` = bg · `fontFamily` = brand sans:
+**Branding**: apply the brandbook via an init block using the themeVariables block in the knowledgebase skill's `references/brand-mapping.md`: `primaryColor` = ~12% accent tint over bg · `primaryBorderColor` = accent · `primaryTextColor` = ink · `lineColor` = ink at ~70% (never the accent — edges recede) · `edgeLabelBackground` = bg · `fontFamily` = brand sans:
 
 ```
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDF0FC","primaryBorderColor":"#4969E1","primaryTextColor":"#111827","lineColor":"#4B5563","edgeLabelBackground":"#FFFFFF","fontFamily":"Inter, sans-serif"}}}%%

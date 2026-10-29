@@ -1,6 +1,6 @@
 # Chart Styling from a Brandbook
 
-How to color and typeset **data charts** — bar, line, area, pie/donut, scatter, heatmap, KPI/stat tiles — so they read as the brand's document in any medium (slideware decks, knowledgebase pages, standalone SVG/HTML). This complements `consumer-mappings.md` (§chartware covers *diagrams*; this file covers *data*).
+How to color and typeset **data charts** — bar, line, area, pie/donut, scatter, heatmap, KPI/stat tiles — so they read as the brand's document in any medium (slideware decks, knowledgebase pages, standalone SVG/HTML). This complements `consumer-contract.md` (the intent per medium) and chartware's `references/brand-mapping.md` (diagrams); this file covers *data*.
 
 Same governing principle as diagrams: **neutral ink carries the chart; accents encode data.** A branded chart is recognizable by its canvas, type, and one accent — not by every series screaming a logo color.
 
