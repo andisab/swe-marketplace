@@ -333,6 +333,65 @@ ok("in a lane, hidden and deleted go to the overlay by key, the order to slides.
   assert.match(laneHtml, /<section class="layout-card-row"[^>]*data-visibility="hidden"/);
   assert.ok(!/<section class="layout-card-row"[^>]*data-visibility="hidden"/.test(read("index.html")), "the base deck still shows it");
 });
+ok("after a reorder, leftovers and comments follow their slides to the new keys and the next build succeeds", () => {
+  reset();
+  // s4 (the card row) moves to the front and becomes s1; its ambiguous edit and comment must follow it.
+  edits({ s4: { "cards.0.body": { from: "Shared text", to: "Card body, edited" }, comment: "tighten this" }, s2: { comment: "divider ok" } },
+    { keys: KEYS, deck: { order: ["s4", "cover", "s2", "cols", "s5"], deleted: ["s5"] } });
+  let r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const left = JSON.parse(read("edits.json"));
+  assert.deepStrictEqual(left.keys, ["s1", "cover", "s3", "cols"]);
+  assert.deepStrictEqual(Object.keys(left.slides).sort(), ["s1", "s3"]);
+  assert.strictEqual(left.slides.s1.comment, "tighten this");
+  assert.strictEqual(left.slides.s1["cards.0.body"].to, "Card body, edited");
+  assert.strictEqual(left.slides.s3.comment, "divider ok");
+  assert.strictEqual(left.deck, undefined);
+  assert.match(read("index.html"), /<h4 data-f="cards.0.heading">Card 1<\/h4><p data-f="cards.0.body" data-html="">Card body, edited</, "the layered edit lands on the moved slide");
+  r = build();   // the next build must not wedge on the stale keys
+  assert.strictEqual(r.code, 0, r.out);
+  assert.ok(read("index.html").includes("Card body, edited"));
+});
+ok("an edit on a deleted slide is dropped, not left to wedge the build", () => {
+  reset();
+  edits({ s5: { quote: { from: "Nope", to: "x" }, comment: "gone" } }, { keys: KEYS, deck: { deleted: ["s5"], order: KEYS } });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.match(r.out, /dropped quote on s5: the slide was deleted/);
+  assert.ok(!fs.existsSync(path.join(deck, "edits.json")));
+});
+ok("an order that doesn't list every slide exactly once is kept, not folded", () => {
+  reset();
+  for (const order of [["cover", "s2", "cols", "s4"], ["cover", "cover", "s2", "cols", "s4"], ["cover", "s2", "cols", "s4", "zz"]]) {
+    edits({}, { keys: KEYS, deck: { order } });
+    const r = build();
+    assert.strictEqual(r.code, 0, r.out);
+    assert.strictEqual(read("slides.js"), SLIDES, "slides.js is untouched for " + order.join(","));
+    assert.match(r.out, /the order doesn't list every slide exactly once/);
+    assert.deepStrictEqual(JSON.parse(read("edits.json")).deck.order, order);
+    fs.unlinkSync(path.join(deck, "edits.json"));
+  }
+});
+ok("a deck dir given through a symlink builds from the folded slides.js", () => {
+  reset();
+  const link = path.join(tmp, "deck-link");
+  try { fs.unlinkSync(link); } catch (e) { /* absent */ }
+  fs.symlinkSync(deck, link, "dir");
+  edits({ cover: { title: { from: "Deck title", to: "Through the symlink" } } });
+  const r = (() => { try { return { out: execFileSync(process.execPath, ["build-deck.js", link], { cwd: link, env: ENV, stdio: "pipe" }).toString(), code: 0 }; } catch (e) { return { out: e.stdout.toString() + e.stderr.toString(), code: e.status }; } })();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.ok(read("slides.js").includes('title: "Through the symlink"'));
+  assert.ok(read("index.html").includes("Through the symlink"), "index.html was built from the stale module");
+});
+ok("a slide whose text contains \"key:\" still reorders", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('notes: "What to say.', 'notes: "The key: takeaway. What to say.'));
+  edits({}, { keys: KEYS, deck: { order: ["s2", "cover", "cols", "s4", "s5"] } });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.match(r.out, /Folded the slide list/);
+  assert.ok(!fs.existsSync(path.join(deck, "edits.json")));
+});
 ok("applyEdits layers hidden flags, the order and deletions", () => {
   const b = require(path.join(deck, "build-deck.js"));
   const slides = [{ key: "a", layout: "title", title: "A" }, { layout: "section", title: "B" }, { key: "c", layout: "quote", quote: "C", hidden: true }];

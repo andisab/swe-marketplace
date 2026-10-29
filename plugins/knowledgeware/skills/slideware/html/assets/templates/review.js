@@ -185,11 +185,13 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       persist();
       renderBar();
     }
-    function record(el) {
+    // `settle` writes the cleaned HTML back into the field; only on blur, since rewriting a
+    // field while it's being typed in moves the caret and undoes a browser-inserted line break.
+    function record(el, settle) {
       const key = keyOf(el);
       if (!key) return;
       let to = valueOf(el);
-      if (isHtml(el)) { const clean = sanitize(to); if (clean !== to) { setValue(el, clean); to = clean; } }
+      if (isHtml(el)) { const clean = sanitize(to); if (settle && clean !== to) setValue(el, clean); to = clean; }
       set(key, el.dataset.f, originals.get(el), to);
       el.classList.toggle("rv-edited", to !== originals.get(el));
     }
@@ -466,8 +468,8 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       q(panel, ".rv-notes").addEventListener("input", onNotesInput);
       q(panel, ".rv-comment").addEventListener("input", onCommentInput);
       const stage = deck.getSlidesElement();
-      stage.addEventListener("input", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el); });
-      stage.addEventListener("focusout", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el); });
+      stage.addEventListener("input", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el, false); });
+      stage.addEventListener("focusout", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el, true); });
       stage.addEventListener("keydown", (e) => {
         const el = e.target.closest && e.target.closest("[data-f]");
         if (!el || !on) return;

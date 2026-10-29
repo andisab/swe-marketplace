@@ -930,7 +930,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       fillOverview();
       markCurrent();
       scaleOverview();
-      const th = focusKey && ov.querySelector(`.rp-ov-cell[data-key="${CSS.escape(focusKey)}"] .rp-ov-th`);
+      const th = focusKey && ov.querySelector(`.rp-ov-cell[data-key="${root.CSS.escape(focusKey)}"] .rp-ov-th`);   // root.CSS: the stylesheet string above is named CSS too
       if (th) th.focus({ preventScroll: false });
     }
     function fillOverview() {
