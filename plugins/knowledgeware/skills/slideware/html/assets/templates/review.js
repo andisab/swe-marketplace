@@ -97,7 +97,7 @@ html.rv-on .reveal [data-f]:hover { outline-color: ${ACCENT}; }
 html.rv-on .reveal [data-f]:focus { outline: 2px solid ${ACCENT}; background: color-mix(in srgb, ${ACCENT} 6%, transparent); }
 html.rv-on .reveal [data-f].rv-edited { outline-style: solid; outline-color: color-mix(in srgb, ${ACCENT} 70%, transparent); }
 html.rv-on .reveal [data-a] { animation: none !important; }   /* nothing moves under the caret */
-html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
+html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); }   /* the deck re-fits above the panel (presenter.js declares the same rule) */
 @media print { .rv-bar, .rv-panel, .rv-confirm, .rv-toast { display: none !important; } }
 `;
 
@@ -442,6 +442,11 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
         else el.removeAttribute("contenteditable");
       }
       if (on) { renderBar(); renderPanel(); } else if (document.activeElement && typing(document.activeElement)) document.activeElement.blur();
+      // The deck gives up the panel's height while editing; afterwards the presenter's drawer reclaims its own.
+      if (on) document.documentElement.style.setProperty("--rp-reserve-bottom", panel.offsetHeight + "px");
+      else document.documentElement.style.removeProperty("--rp-reserve-bottom");
+      deck.layout();
+      if (!on) document.dispatchEvent(new CustomEvent("rp-reserve-recompute"));
     }
     function build() {
       const style = document.createElement("style");

@@ -11,7 +11,9 @@
 //   S or P  open the presenter view in a second window; the two windows stay in sync
 //           (BroadcastChannel plus window.postMessage, so it also works from file://)
 //   N       toggle a notes drawer along the bottom of the deck, for rehearsal. Anyone
-//           who can see the screen can read it.
+//           who can see the screen can read it. The deck shrinks to the space above the
+//           drawer (the --rp-reserve-bottom custom property on <html>, which review.js's
+//           panel uses too), so long notes never cover the slide.
 //   O       toggle the overview: every slide as a thumbnail, in a grid per section. A
 //           section-divider slide (layout-section) heads its group with its kicker and
 //           title; the slides before the first divider are the opening; a deck with no
@@ -102,6 +104,8 @@
   padding: 16px 28px 22px; background: rgba(250,250,249,.97); border-top: 1px solid #E3E3DF;
   box-shadow: 0 -8px 24px rgba(26,26,24,.10); color: #1A1A18; font-family: ${SANS}; line-height: 1.55; text-align: left; }
 html.rp-drawer-on .rp-drawer { display: block; padding-bottom: 64px; }   /* room for the navigation pill, which sits above the drawer */
+/* The deck gives up the bottom of the viewport to whatever sits there (the notes drawer, review mode's panel) and Reveal re-fits the slide. */
+html.rp-drawer-on body > .reveal, html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); }
 .rp-cue-text { font-family: ${MONO}; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-drawer .rp-md { margin-top: 8px; font-size: 18px; max-width: 1100px; }
 .rp-md p { margin: 0 0 .8em; }
@@ -488,6 +492,16 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     function toggleDrawer() {
       document.documentElement.classList.toggle("rp-drawer-on");
       renderDrawer();
+      reserveBottom();
+    }
+    // How much of the viewport's bottom the deck gives up: the drawer's height while it's shown
+    // (review mode's panel sets the same property itself and hides the drawer). Reveal re-fits.
+    function reserveBottom() {
+      if (document.documentElement.classList.contains("rv-on")) return;   // review.js owns it then
+      const on = document.documentElement.classList.contains("rp-drawer-on");
+      if (on) document.documentElement.style.setProperty("--rp-reserve-bottom", drawer.offsetHeight + "px");
+      else document.documentElement.style.removeProperty("--rp-reserve-bottom");
+      deck.layout();
     }
     function renderDrawer() {
       if (!document.documentElement.classList.contains("rp-drawer-on")) return;
@@ -501,6 +515,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       drawer.setAttribute("aria-live", "polite");
       drawer.innerHTML = '<div class="rp-cue-text"></div><div class="rp-md"></div>';
       document.body.appendChild(drawer);
+      new ResizeObserver(() => { if (document.documentElement.classList.contains("rp-drawer-on")) reserveBottom(); }).observe(drawer);   // notes change length per slide
+      document.addEventListener("rp-reserve-recompute", reserveBottom);   // review mode closed; the drawer's claim applies again
       deck.addKeyBinding({ keyCode: 83, key: "S", description: "Open presenter view" }, openPresenter);
       deck.addKeyBinding({ keyCode: 80, key: "P", description: "Open presenter view" }, openPresenter);
       deck.addKeyBinding({ keyCode: 78, key: "N", description: "Notes drawer (the audience can see it)" }, toggleDrawer);
@@ -804,8 +820,14 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       return node;
     }
     // Scale a copy's slide to a frame w px wide; the copy's .slides sits centred in the frame.
+    // The copy is also re-centred from its own height: Reveal sets each live slide's inline
+    // `top` when it lays the slide out, and a slide it hasn't shown yet (display: none, beyond
+    // the view distance) keeps a stale value, typically half the slide height, which the clone
+    // would inherit and show as content shifted down. scrollHeight ignores the scale transform.
     function scaleCopy(frame, w) {
       frame.querySelector(".slides").style.transform = "translate(-50%, -50%) scale(" + w / slideW + ")";
+      const sec = frame.querySelector(".slides > section");
+      if (sec && sec.offsetParent !== null) sec.style.top = Math.max((slideH - sec.scrollHeight) / 2, 0) + "px";
     }
 
     // ── Overview: every slide as a thumbnail, grouped by section ───
