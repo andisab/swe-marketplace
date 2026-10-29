@@ -30,6 +30,21 @@ function resolveSource(input) {
   const names = listBundled().map(b => b.name).join(", ");
   throw new Error(`Style/brandbook not found: "${input}". Use one of [${names}] or a valid file path.`);
 }
+// The brand's logo files, staged next to the output style.md as ./assets/, where build-deck.js
+// reads them for the running footer. Registry brands keep them in their assets/ folder (a local
+// brand.md in an assets/ folder beside it); the generic styles have a mark but no logo, so a deck
+// in a generic style gets no logo. Returns the names copied.
+const LOGO_FILES = ["logo-light.svg", "logo-dark.svg"];
+function stageLogos(input, srcPath, outPath) {
+  const hit = registry.findBundled(input);
+  const assetsDir = hit ? hit.assetsDir : path.join(path.dirname(srcPath), "assets");
+  const found = LOGO_FILES.filter(f => fs.existsSync(path.join(assetsDir, f)));
+  if (!found.length) return [];
+  const dest = path.join(path.dirname(path.resolve(outPath)), "assets");
+  fs.mkdirSync(dest, { recursive: true });
+  for (const f of found) fs.copyFileSync(path.join(assetsDir, f), path.join(dest, f));
+  return found;
+}
 
 // ── Frontmatter detection ────────────────────────────────────────────────
 function hasFrontmatter(text) {
@@ -350,11 +365,12 @@ function main() {
   if (outIdx >= 0 && argv[outIdx + 1]) {
     fs.writeFileSync(argv[outIdx + 1], outText);
     const note = hasFrontmatter(srcText) ? "frontmatter present, copied through" : "frontmatter generated";
-    console.error(`Wrote ${argv[outIdx + 1]} (${note})`);
+    const logos = stageLogos(argv[0], srcPath, argv[outIdx + 1]);
+    console.error(`Wrote ${argv[outIdx + 1]} (${note}${logos.length ? `; logo staged in ./assets/: ${logos.join(", ")}` : "; no logo: the style has none"})`);
   } else {
     process.stdout.write(outText + (outText.endsWith("\n") ? "" : "\n"));
   }
 }
 
 if (require.main === module) main();
-module.exports = { build, listBundled, serializeFrontmatter, hasFrontmatter };
+module.exports = { build, listBundled, serializeFrontmatter, hasFrontmatter, stageLogos };

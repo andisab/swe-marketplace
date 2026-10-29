@@ -20,6 +20,12 @@
 //           with ?overview starts in it. The overview is drawn from the deck's own style
 //           tokens (its colors, fonts and radius), so it matches whatever brand the deck
 //           uses. Also available in the presenter window, where it moves both windows.
+//           When the deck was built in lanes (presenter: { lanes: [{ name, file }] }), the
+//           overview's header holds a lane switcher that opens the same slide in another lane.
+//   Navigation pill: a floating bar at the bottom (previous, the slide number, next, the
+//           current section's name, the overview, fullscreen), in the deck's tokens. Shown
+//           for 2.5 s after the mouse moves or on hover; hidden in print, in the presenter
+//           window and under the overview. It replaces Reveal's arrows (controls: false).
 //
 // Presenter window (the deck opened with ?presenter):
 //   previous slide | current slide | next slide across the top, notes full width below.
@@ -217,7 +223,38 @@ html.rp-ov-on .rp-ov { display: block; }
 .rp-ov-cap b { flex: none; font-family: ${MONO}; font-weight: 500; color: ${ACCENT}; font-variant-numeric: tabular-nums; }
 .rp-ov-cap span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .rp-ov .reveal [data-a] { animation: none !important; }   /* thumbnails show each slide fully in place */
+.rp-ov-lane { display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 12px; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted, #6B6B63); }
+.rp-ov-lane select { font: 500 12px ${SANS}; color: var(--color-ink, #1A1A18); background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); border-radius: var(--radius, 8px); padding: 5px 8px; }
+.rp-ov-lane select:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
+
+/* Navigation pill: the deck's surface at 92%, its ink, border and accent, so a dark style gives a dark pill. */
+.rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 4px; padding: 5px;
+  border-radius: 12px; border: 1px solid var(--color-border, #E3E3DF); background: var(--color-surface, #FFFFFF);
+  background: color-mix(in srgb, var(--color-surface, #FFFFFF) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--color-ink, #1A1A18); font-family: ${SANS}; font-size: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, .18); opacity: 0; transition: opacity .3s; }
+html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within { opacity: 1; }
+.rp-hud button { all: unset; cursor: pointer; height: 30px; min-width: 30px; padding: 0 9px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--color-ink, #1A1A18); }
+.rp-hud button:hover { background: color-mix(in srgb, var(--color-ink, #1A1A18) 7%, transparent); }
+.rp-hud button:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
+.rp-hud svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rp-hud .rp-hud-count { font-family: ${MONO}; font-size: 12px; padding: 0 8px; min-width: 74px; text-align: center; font-variant-numeric: tabular-nums; }
+.rp-hud .rp-hud-count span { color: var(--color-ink-muted, #6B6B63); }
+.rp-hud .rp-hud-sep { width: 1px; height: 18px; margin: 0 3px; background: color-mix(in srgb, var(--color-ink, #1A1A18) 14%, transparent); }
+.rp-hud .rp-hud-name { padding: 0 8px; max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink-muted, #6B6B63); }
+.rp-hud .rp-hud-name:empty, .rp-hud .rp-hud-name:empty + .rp-hud-sep { display: none; }
+html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
+@media print { .rp-hud { display: none !important; } }
 `;
+  const HUD_HTML = `
+<button type="button" data-hud="prev" aria-label="Previous slide" title="Previous"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+<span class="rp-hud-count"></span>
+<button type="button" data-hud="next" aria-label="Next slide" title="Next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
+<span class="rp-hud-sep"></span>
+<span class="rp-hud-name"></span>
+<span class="rp-hud-sep"></span>
+<button type="button" data-hud="grid" aria-label="Slide overview (O)" title="Overview (O)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+<button type="button" data-hud="full" aria-label="Fullscreen (F)" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>`;
+  const OPENING = "Opening";   // the group of slides before the first section divider
 
   const splitHtml = (name, axis, label) => `<div class="rp-split rp-split-${axis}" data-split="${name}" role="separator"
   aria-label="${label}" aria-orientation="${axis === "x" ? "vertical" : "horizontal"}" tabindex="0"
@@ -306,6 +343,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     let bc = null, peer = null, applying = false, connected = false;
     let drawer, shell, revealEl, ratio = 16 / 9, slideW = 1280, slideH = 720;
     let ov, ovFilled = false;   // the overview panel; its thumbnails are made on first open
+    let hud, hudTimer = 0;      // the navigation pill (audience window only)
     const timer = { start: 0, paused: 0, pausedAt: 0 };
     // prev / next: sidebar widths (%); hide: collapsed sidebars; soloRow: slides-row height (px)
     // when both sidebars are hidden, unset for the largest that fits.
@@ -354,7 +392,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (isPresenter) {
         if (!timer.start && applying !== "initial") timer.start = Date.now();
         render(moved);
-      } else renderDrawer();
+      } else { renderDrawer(); renderHud(); }
       if (overviewOpen()) markCurrent();
     }
 
@@ -396,6 +434,51 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       deck.addKeyBinding({ keyCode: 83, key: "S", description: "Open presenter view" }, openPresenter);
       deck.addKeyBinding({ keyCode: 80, key: "P", description: "Open presenter view" }, openPresenter);
       deck.addKeyBinding({ keyCode: 78, key: "N", description: "Notes drawer (the audience can see it)" }, toggleDrawer);
+      buildHud();
+    }
+
+    // ── Navigation pill ────────────────────────────────────────────
+    function buildHud() {
+      hud = document.createElement("nav");
+      hud.className = "rp-hud";
+      hud.setAttribute("aria-label", "Slide navigation");
+      hud.innerHTML = HUD_HTML;
+      document.body.appendChild(hud);
+      hud.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-hud]");
+        if (!btn) return;
+        btn.blur();   // so Space and the arrows keep moving slides
+        const act = btn.dataset.hud;
+        if (act === "prev") deck.prev();
+        else if (act === "next") deck.next();
+        else if (act === "grid") toggleOverview();
+        else if (act === "full") toggleFullscreen();
+      });
+      const show = () => {
+        document.documentElement.classList.add("rp-hud-on");
+        clearTimeout(hudTimer);
+        hudTimer = setTimeout(() => document.documentElement.classList.remove("rp-hud-on"), 2500);
+      };
+      document.addEventListener("mousemove", show);
+      document.addEventListener("touchstart", show, { passive: true });
+      show();
+    }
+    function toggleFullscreen() {
+      const el = document.documentElement;
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (el.requestFullscreen) el.requestFullscreen();
+    }
+    function sectionOf(i) {   // the heading of the nearest section divider at or before slide i, or the opening
+      for (let k = i; k >= 0; k--) {
+        const g = groupOf(slides[k]);
+        if (g) return g.title;
+      }
+      return slides.some((s) => groupOf(s)) ? OPENING : "";
+    }
+    function renderHud() {
+      if (!hud) return;
+      hud.querySelector(".rp-hud-count").innerHTML = pad(cur + 1) + " <span>/ " + slides.length + "</span>";
+      hud.querySelector(".rp-hud-name").textContent = sectionOf(cur);
     }
 
     // ── Presenter window: layout ───────────────────────────────────
@@ -671,6 +754,23 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       ov.style.setProperty("--rp-ratio", slideW + " / " + slideH);
       ov.innerHTML = '<div class="rp-ov-head"><div><h1 class="rp-ov-title"></h1><p class="rp-ov-sub"></p></div>' +
         '<button type="button" class="rp-ov-close" title="Close the overview (Esc)">Close</button></div><div class="rp-ov-body"></div>';
+      // Lanes: the deck built in several variants; the switcher opens the same slide in another one.
+      const lanes = ((deck.getConfig().presenter || {}).lanes || []).filter((l) => l && l.name && l.file);
+      if (lanes.length > 1) {
+        const label = document.createElement("label");
+        label.className = "rp-ov-lane";
+        label.innerHTML = '<span>Lane</span><select aria-label="Lane"></select>';
+        const select = label.lastChild;
+        lanes.forEach((l) => {
+          const opt = document.createElement("option");
+          opt.value = l.file;
+          opt.textContent = l.name;
+          opt.selected = !!l.current;
+          select.appendChild(opt);
+        });
+        select.addEventListener("change", () => { location.href = select.value + location.hash; });
+        ov.firstChild.insertBefore(label, ov.querySelector(".rp-ov-close"));
+      }
       ov.addEventListener("click", (e) => {
         const th = e.target.closest(".rp-ov-th");
         if (th) { closeOverview(); goTo(slides[+th.dataset.i]); }
@@ -685,7 +785,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       slides.forEach((slide, i) => {
         const g = groupOf(slide);
         if (g || !grid) {
-          const head = g || (hasSections ? { kicker: "", title: "Opening" } : null);
+          const head = g || (hasSections ? { kicker: "", title: OPENING } : null);
           if (head) {
             groups += g ? 1 : 0;
             const h = document.createElement("h2");
@@ -755,6 +855,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       e.stopPropagation();
       if (e.key === "Escape" || e.key === "o" || e.key === "O") { e.preventDefault(); closeOverview(); return; }
+      if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // the lane switcher keeps its own keys
       const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
       let step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 0, ArrowUp: 0 }[e.key];
       if (step === undefined) return;
@@ -842,7 +943,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       cur = Math.max(0, slides.indexOf(deck.getCurrentSlide()));
       ["slidechanged", "fragmentshown", "fragmenthidden", "overviewhidden"].forEach((ev) => deck.on(ev, onNav));
       ["paused", "resumed"].forEach((ev) => deck.on(ev, () => { if (!applying) send("state"); }));
-      if (isPresenter) startPresenter();
+      if (isPresenter) startPresenter(); else renderHud();
       if (/[?&]overview(?:[=&]|$)/.test(location.search)) openOverview();
     }
 

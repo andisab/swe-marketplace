@@ -54,7 +54,7 @@ Each slide is a single `<section>` inside `<div class="slides">`. Reveal also su
   width: 1280,
   height: 720,
   hash: true,           // URL updates per slide — sharable deep links
-  controls: true,       // arrow buttons in lower-right
+  controls: false,      // the presenter plugin's navigation pill replaces the arrows
   progress: true,       // progress bar at bottom
   slideNumber: 'c/t',   // "3/12" indicator
   transition: 'fade',   // not 'slide' — fade is calmer
@@ -132,6 +132,52 @@ Each slide in the run gets an equal share of its session's length; add-back, bac
 
 Every build prints a summary: each session's length, slides in the run and time per slide, then the hidden slides by their position in `slides.js`. When asked to hide or show slides, change a session's length, or report which slides are hidden, edit `slides.js`, rebuild, and quote that summary.
 
+### Running footer and logo
+
+Two more deck-level fields next to `slides`:
+
+```js
+module.exports = {
+  footer: ["AI-native SDLC with Claude Code", "Advanced session"],   // or one string
+  // logo: "./assets/mark.svg",   // another SVG for the footer; false for none
+  slides: [ /* … */ ],
+};
+```
+
+With `footer` set, every slide but the title slide carries a running footer: the text on the left (array items dot-separated), the logo and the page number (`07 / 27`, visible slides only) on the right, in the mono caption treatment. Reveal's own slide number turns off; the progress bar stays. The builder also reserves the bottom band: slides get `padding-bottom: max(var(--margin), 40px)`, so nothing but the footer sits in the bottom 40px.
+
+The logo is the brand's: `load-style.js` copies `logo-light.svg` and `logo-dark.svg` from the brand's `assets/` folder into the deck's `./assets/` when it stages `style.md`, and the builder inlines `logo-light.svg` on a light background or `logo-dark.svg` on a dark one (by the luminance of `palette.bg`), whichever exists. The five generic styles have a mark but no logo, so a deck in a generic style gets a footer with no logo; `logo` names another SVG, and `logo: false` leaves it out. The build prints which file it used, or that it found none.
+
+Every deck also gets a tab icon: a rounded square in the style's ink, a slide in its background colour and an accent bar, as a data-URI SVG in `<head>`, so a deck tab is distinguishable from a knowledge-base tab.
+
+### Lanes
+
+A lane is the same deck worked for another audience or example (a second customer, a second industry) without a second `slides.js`. Give the slides that change a `key`, write one overlay file per lane, and list the overlays next to `slides`:
+
+```js
+// slides.js
+module.exports = {
+  lane: "Acme Corp",                                                    // the base deck's name in the switcher (default "Base")
+  lanes: ["./lanes/acme-investments.js", "./lanes/acme-life-sciences.js"],
+  slides: [
+    { key: "cover", layout: "title", title: "Platform reliability review", subtitle: "Q3 findings" },
+    { key: "drift", layout: "bigNumber", figure: "41", unit: "%", label: "Of Sev-2 incidents traced to config drift" },
+    /* … */
+  ],
+};
+
+// lanes/acme-investments.js
+module.exports = {
+  name: "Acme Investments",                                  // shown in the lane switcher; the id is the file name
+  replace: [["Acme Corp", "Acme Investments"], ["config drift", "trade-config drift"]],   // over every text field
+  slides: { drift: { figure: "37", context: "Source: the trading platform's incident ledger." } },   // fields replaced whole, by key
+};
+```
+
+One build writes `index.html` for the base deck and `index-<id>.html` per lane (the id is the overlay's file name without `.js`). An overlay's `slides` map replaces the named fields of the slide with that `key` (an unknown key fails the build, as do duplicate keys), then `replace` pairs run over every string in every slide except `layout`, `key`, `src`, `cue`, `motion` and `hidden`, so they change words, not structure. Pacing, hidden slides, the footer and the style are shared by all lanes; the page title gains the lane's name.
+
+Every output lists all of them in the overview's header: a Lane switcher before the Close button that opens the same slide (same hash) in the chosen file. The builder passes the list as `Reveal.initialize({ presenter: { lanes: [{ name, file, current }] } })`, and the plugin shows the switcher when there are two or more. Nothing marks the lane on the slides themselves. Lane outputs sit next to `index.html`, so keep them together when hosting or sharing.
+
 In the presenter, the current session's length is an editable field in the header, next to the resulting time per slide. An edit is saved in that browser and wins until the deck's own length for that session changes, so a rebuilt deck never loses to a stale edit.
 
 ### Presenting
@@ -139,6 +185,7 @@ In the presenter, the current session's length is an editable field in the heade
 | Window | What it does |
 |---|---|
 | Audience (the deck) | `S` or `P` opens the presenter window. `P` replaces Reveal's "previous slide" key; the arrows, Space and Page Up/Down still navigate. `N` toggles a notes drawer at the bottom of the deck, for rehearsal: anyone who can see the screen can read it. `O` toggles the section overview (below). `?` lists every key. |
+| Navigation pill (audience window) | A floating bar at the bottom, centred: previous, the slide number (`04 / 13`, visible slides), next, the current section's name (the nearest `section` slide's title; "Opening" before the first), the overview button and fullscreen. It appears for 2.5 s after the mouse moves or a touch, and while hovered or focused; it is hidden in print, in the presenter window and under the overview. Drawn from the deck's tokens (`--color-surface` at 92% with a blur, `--color-ink`, `--color-border`, the accent for focus), so a dark style gives a dark pill. It replaces Reveal's arrows: the builder sets `controls: false`. |
 | Overview (`O` in either window, or open the deck with `?overview`) | Every slide as a thumbnail, in a grid per section: each `section` slide heads its group with its kicker and title and a slide count, the slides before the first divider are grouped as "Opening", and a deck with no section slides is one grid. Thumbnails are fully built copies of the slides, captioned with the slide number and heading (a big number's label, a quote's text). The current slide is outlined; a click goes to that slide and closes the overview, the arrow keys move between thumbnails and Enter goes, Esc or `O` closes. The panel is drawn from the deck's own tokens (`--color-surface-alt` behind the grid, `--color-ink`, `--color-accent`, `--color-border`, the serif for headings and the mono for numbers), so it matches whatever style the deck uses. While it's open the deck behind it takes no keys or clicks. It replaces Reveal's zoomed-out overview, which the plugin turns off (`overview: false`); Reveal's `?` help still lists its own "ESC, O" line above the plugin's. Hidden slides aren't in it. |
 | Presenter (`?presenter`) | A dark header with the slide number, the session's length (editable) and time per slide, the pace line, the timer (Pause, Reset) and the clock. Below it, previous slide, current slide (the largest) and next slide across the top, with the notes full width below. Drag a sidebar's border to resize that sidebar: the other border stays put, the current slide fills the width between the sidebars, and the notes take the height it leaves. Drag the border above the notes to resize the current slide; the sidebars split the difference. Borders stop at the sidebar limits (10–30% of the window) or when the notes would get too short. Double-click a border to reset it, or focus it and use the arrow keys. Panes sit 8px apart, and no slide ever has empty space beside it. The header's Prev and Next buttons (or `[` and `]`) hide and show the sidebars; a hidden sidebar's width goes to the current slide. With both hidden, the border above the notes sets the slide's height directly, and the slide is centred. Long notes scroll, with a scrollbar that stays visible while they overflow. The previous and next slides are scaled copies shown fully built, each titled in text since body text is too small to read at sidebar size; before the first slide and after the last, the sidebar shows START or END. When the current slide still has build steps, the next sidebar says how many. `+`/`-` or A−/A+ change the notes text size. The timer starts on the first move; the pace line reads like "Plan 12 min · 2 min behind". |
 
@@ -146,7 +193,7 @@ Either window moves both. Sync uses BroadcastChannel plus `window.postMessage`, 
 
 ### Customizing
 
-Edit the deck directory's copy of `presenter.js` and rebuild: styles live in its `CSS` string (the overview's under the `.rp-ov` rules; its thumbnail width is the grid's `minmax(240px, 1fr)`), the presenter layout in `SHELL_HTML`, sidebar width limits in `SIDE`, the smallest slides row and notes pane in `ROW_MIN` and `NOTES_MIN`, the gap between panes in `GUTTER`. The overview groups on `section.layout-section`; a hand-written deck gets groups by giving its divider slides that class (and a `.kicker` for the small label). The plugin uses only Reveal's public API (`on`, `slide`, `getIndices`, `configure`, `addKeyBinding`, `getSlideBackground`), so Reveal upgrades within 5.x shouldn't break it. The slide copies in the sidebars and the overview have two limits: they always show the slide fully built, and scripts inside slides don't run in them.
+Edit the deck directory's copy of `presenter.js` and rebuild: styles live in its `CSS` string (the overview's under the `.rp-ov` rules, its thumbnail width the grid's `minmax(240px, 1fr)`; the pill's under `.rp-hud`, its markup in `HUD_HTML`), the presenter layout in `SHELL_HTML`, sidebar width limits in `SIDE`, the smallest slides row and notes pane in `ROW_MIN` and `NOTES_MIN`, the gap between panes in `GUTTER`. The overview groups on `section.layout-section`; a hand-written deck gets groups by giving its divider slides that class (and a `.kicker` for the small label). The plugin uses only Reveal's public API (`on`, `slide`, `getIndices`, `configure`, `addKeyBinding`, `getSlideBackground`), so Reveal upgrades within 5.x shouldn't break it. The slide copies in the sidebars and the overview have two limits: they always show the slide fully built, and scripts inside slides don't run in them.
 
 ## Entrance motion
 

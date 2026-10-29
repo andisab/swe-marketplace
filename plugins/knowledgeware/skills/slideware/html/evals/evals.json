@@ -17,7 +17,8 @@
         { "text": "Google Fonts <link> with display=swap present" },
         { "text": "Reveal.js 5.0.5 is inlined (no CDN <script> or <link>), so the deck runs offline" },
         { "text": "Output HTML does NOT reference ./style.md (grep for 'style.md' returns 0 matches)" },
-        { "text": "The inlined presenter plugin gives the deck a section overview: index.html contains the rp-ov markup, and pressing O (or opening with ?overview) shows every slide as a thumbnail grouped under the deck's section slides, styled from the deck's own tokens" }
+        { "text": "The inlined presenter plugin gives the deck a section overview: index.html contains the rp-ov markup, and pressing O (or opening with ?overview) shows every slide as a thumbnail grouped under the deck's section slides, styled from the deck's own tokens" },
+        { "text": "Reveal is initialized with controls: false and the presenter plugin's navigation pill (rp-hud) carries previous/next, the slide number, the section name, the overview and fullscreen" }
       ],
       "files": []
     },
@@ -58,8 +59,8 @@
     {
       "id": 3,
       "name": "workshop-deck-with-speaker-notes",
-      "prompt": "Build an 8-slide HTML deck for a two-session workshop on secrets management, 4 slides per session; each session runs 45 minutes. I'll present it from a second screen, so I need speaker notes on every slide and a pace plan. Mark one slide per session as cut-first if I'm running behind, and add a backup slide at the end for Q&A. I've decided to drop the second session's third slide for now, but keep it in the file, hidden, so I can bring it back. Save it to ./secrets-workshop.html and tell me the time per slide in each session.",
-      "expected_output": "9-slide HTML deck (8 + backup) at ./secrets-workshop.html with notes and cues on every slide, session lengths of 45 minutes each in Reveal's presenter config, one cut-first slide per session, a backup slide, the second session's third slide hidden, and a reply giving 11:15 per slide for session 1 and 15:00 for session 2.",
+      "prompt": "Build an 8-slide HTML deck for a two-session workshop on secrets management, 4 slides per session; each session runs 45 minutes. I'll present it from a second screen, so I need speaker notes on every slide and a pace plan. Mark one slide per session as cut-first if I'm running behind, and add a backup slide at the end for Q&A. I've decided to drop the second session's third slide for now, but keep it in the file, hidden, so I can bring it back. Put 'Secrets management workshop' in a footer on every slide. Save it to ./secrets-workshop.html and tell me the time per slide in each session.",
+      "expected_output": "9-slide HTML deck (8 + backup) at ./secrets-workshop.html with notes and cues on every slide, a running footer on every slide but the title, session lengths of 45 minutes each in Reveal's presenter config, one cut-first slide per session, a backup slide, the second session's third slide hidden, and a reply giving 11:15 per slide for session 1 and 15:00 for session 2.",
       "assertions": [
         { "text": "secrets-workshop.html exists and contains 9 <section class=\"layout-*\"> elements, exactly one with data-visibility=\"hidden\" (the second session's third slide)" },
         { "text": "Every <section> contains an <aside class=\"notes\"> with non-empty text" },
@@ -69,7 +70,8 @@
         { "text": "Reveal's own notes plugin (RevealNotes / plugin/notes) is NOT loaded" },
         { "text": "The reply gives the time per slide from the build's pacing summary: 11:15 for session 1 (4 slides in the run) and 15:00 for session 2 (3 slides in the run, since the hidden slide and the backup don't count), and names the hidden slide" },
         { "text": "The reply tells the user to press S for the presenter view" },
-        { "text": "polish-deck.py reports no [high] flags" }
+        { "text": "polish-deck.py reports no [high] flags" },
+        { "text": "slides.js sets a deck-level footer, and every slide but the title slide carries a chrome-bot footer with 'Secrets management workshop' and a page number counting visible slides only; the hidden slide has no number, Reveal's slideNumber is false, and the footer has no logo since no brand was designated" }
       ],
       "files": []
     }

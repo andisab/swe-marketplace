@@ -25,6 +25,8 @@ node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js <name|pat
 
 The renderer (`build-deck.js`) reads `./style.md` and extracts tokens from its YAML frontmatter. There is no separate tokens.json file — the tokens live in the .md.
 
+The loader also stages the brand's logo: when the style is a brand with `logo-light.svg` / `logo-dark.svg` in its `assets/` folder, it copies them to `./assets/` beside `style.md`, and the deck's running footer (deck-level `footer` in `slides.js`) inlines the one that suits the background. The generic styles have no logo, so their decks get a footer without one. See [references/reveal.md](references/reveal.md) §Running footer and logo.
+
 ## Token → CSS mapping
 
 The renderer converts `style.md` frontmatter to CSS variables:
@@ -72,6 +74,8 @@ Whichever tool captures the slides, the review bar is the same: inspect **every*
 - **Reveal is pinned and inlined** (`reveal.js` 5.0.5 in `package.json` and `REVEAL_VERSION` in `build-deck.js`). Run `npm install` in the deck dir before the first build; the build refuses a mismatched version. Decks then run offline; only fonts need a network. Bumping the version is a deliberate change to both pins — diff the output HTML after.
 - **Entrance motion is on by default.** Turn it off with `motion: false` in `slides.js` (deck) or on a slide. See [references/reveal.md](references/reveal.md) §Entrance motion.
 - **Copy `presenter.js` along with `build-deck.js`.** The build inlines it (presenter view, section overview, notes drawer) and exits with an error if it's missing. Speaker notes go in each slide's `notes` and `cue` fields, never in the slide markup.
+- **With a `footer`, nothing but the footer in the bottom 40px.** The builder reserves the band (`padding-bottom: max(var(--margin), 40px)` on every slide), so the template layouts clear it. A custom layout or hand-placed `position: absolute` block must clear the footer's top, not just the 720px edge: measure the lowest descendant of each section against it. One way to measure every slide at once: load the deck with `?print-pdf` in a 1280×720 iframe (Reveal lays all slides out, no navigation needed; driving `Reveal.slide()` inside an iframe fails on `replaceState`), then compare each section's lowest element (skip `aside`, SVG internals and `.chrome-bot`) with the footer's top, and keep a browser-tool evaluation to about three decks so it finishes within the tool's timeout.
+- **Lanes multiply the outputs.** With `lanes` in `slides.js`, one build writes `index.html` plus `index-<id>.html` per overlay, and each file's overview has a switcher to the others. Keys on slides must be unique and every key an overlay names must exist, or the build fails. Review every lane's output, not just the base: a `replace` pair rewrites every text field. See [references/reveal.md](references/reveal.md) §Lanes.
 - **`section` slides also structure the overview.** `O` in a deck opens a grid of thumbnails grouped under each `section` slide's kicker and title (see [references/reveal.md](references/reveal.md) §Speaker notes, Presenting). A long deck without section slides shows as one flat grid, so give a deck of more than a dozen slides dividers.
 - **Pacing and hidden slides live in `slides.js`.** Session lengths go in `sessions` (or `minutes` for a deck without sessions) next to `slides`; `hidden: true` takes a slide out of the deck and out of the time per slide. For "hide slide 12", "session 2 is 75 minutes" or "which slides are hidden?", edit `slides.js`, rebuild, and quote the pacing summary the build prints.
 - **Reveal initializes with `controls`, `progress`, `slideNumber`, and `transition: 'fade'`** by default. Override these only if you have a reason — match the medium (kiosk, walkthrough, recorded presentation).
@@ -97,7 +101,7 @@ When iterating on an existing deck, update this slide with what actually changed
 
 ## Output convention
 
-Default `<cwd>/index.html` unless the user specifies. Print the absolute path after writing. Open it in a browser via `open ./index.html` (macOS), `xdg-open` (Linux), or `start` (Windows) — Reveal works over `file://` for local preview.
+Default `<cwd>/index.html` unless the user specifies (plus `index-<id>.html` per lane, when the deck has lanes). Print the absolute path after writing. Open it in a browser via `open ./index.html` (macOS), `xdg-open` (Linux), or `start` (Windows) — Reveal works over `file://` for local preview.
 
 For sharing via link: drop the directory on any static host (GitHub Pages, Netlify, S3) — no build pipeline needed.
 
