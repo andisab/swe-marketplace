@@ -554,6 +554,9 @@ function faviconHref(palette) {
 //             every slide but the title slide carries the footer, the logo and its page number
 //   logo      path of the SVG for the footer (default ./assets/logo-light.svg or logo-dark.svg),
 //             or false for no logo
+//   lanes     paths of lane overlays (see applyLane): one build writes index.html for the base
+//             deck and index-<id>.html per lane, each with a lane switcher in its overview
+//   lane      the base deck's name in that switcher (default "Base")
 // The presenter gives every in-run slide of a session an equal share of its length.
 function readDeck(spec) {
   const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
@@ -562,6 +565,13 @@ function readDeck(spec) {
   const footer = deck.footer == null || deck.footer === "" ? [] : Array.isArray(deck.footer) ? deck.footer : [deck.footer];
   if (!footer.every(t => typeof t === "string" && t.trim())) throw new Error("footer must be a string or an array of strings");
   if (deck.logo != null && deck.logo !== false && typeof deck.logo !== "string") throw new Error(`logo must be a file path or false, got "${deck.logo}"`);
+  const lanes = deck.lanes == null ? [] : deck.lanes;
+  if (!Array.isArray(lanes) || !lanes.every(p => typeof p === "string" && p.trim())) throw new Error("lanes must be an array of overlay file paths");
+  if (deck.lane != null && (typeof deck.lane !== "string" || !deck.lane.trim())) throw new Error("lane must be the base deck's name, a string");
+  const keys = deck.slides.map(s => s.key).filter(k => k != null);
+  if (keys.some(k => typeof k !== "string" || !k)) throw new Error("a slide's key must be a non-empty string");
+  const dup = keys.find((k, i) => keys.indexOf(k) !== i);
+  if (dup) throw new Error(`two slides have the key "${dup}"`);
   const labels = new Set(deck.slides.map(s => (s.cue && s.cue.session) || ""));
   const sessions = Object.assign(deck.minutes != null ? { "": deck.minutes } : {}, deck.sessions);
   for (const [label, minutes] of Object.entries(sessions)) {
@@ -570,8 +580,39 @@ function readDeck(spec) {
     if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
     sessions[label] = Number(minutes);
   }
-  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo };
+  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo, lanes, lane: deck.lane || "Base" };
 }
+
+// ── Lanes ──────────────────────────────────────────────────────────
+// A lane is the same deck worked for another audience or example: one overlay file per lane,
+// listed in `lanes`, applied to a copy of the slides. The overlay exports
+//   { name: "Acme Investments",                       // shown in the lane switcher
+//     replace: [["Acme Corp", "Acme Investments"]],   // string replacements over every text field
+//     slides: { "s1-07": { right: "…", notes: "…" } } }   // fields replaced whole, by the slide's `key`
+// The lane's id is the overlay's file name without .js, and its output is index-<id>.html.
+// Replacements skip `layout`, `key`, `src`, `cue` and `motion`, so they change words, not structure.
+const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden"]);
+function applyLane(slides, overlay, id) {
+  if (!overlay || typeof overlay !== "object") throw new Error(`lane ${id}: the overlay must export an object`);
+  const out = structuredClone(slides);
+  const byKey = new Map(out.filter(s => s.key).map(s => [s.key, s]));
+  for (const [key, fields] of Object.entries(overlay.slides || {})) {
+    const slide = byKey.get(key);
+    if (!slide) throw new Error(`lane ${id}: no slide has key "${key}"`);
+    if (!fields || typeof fields !== "object") throw new Error(`lane ${id}: slides["${key}"] must be an object of fields`);
+    Object.assign(slide, structuredClone(fields));
+  }
+  const reps = overlay.replace || [];
+  if (!Array.isArray(reps) || !reps.every(r => Array.isArray(r) && r.length === 2 && r.every(x => typeof x === "string") && r[0])) {
+    throw new Error(`lane ${id}: replace must be an array of [from, to] string pairs`);
+  }
+  const walk = (v) => typeof v === "string" ? reps.reduce((t, [a, b]) => t.split(a).join(b), v)
+    : Array.isArray(v) ? v.map(walk)
+    : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, REPLACE_SKIP.has(k) ? x : walk(x)]))
+    : v;
+  return reps.length ? out.map(walk) : out;
+}
+function laneId(file) { return path.basename(file).replace(/\.js$/i, ""); }
 
 // ── Reveal, inlined ────────────────────────────────────────────────
 // Read from the deck dir's node_modules (npm install), so the page needs no CDN. The
@@ -624,7 +665,8 @@ function minSec(minutes) {
 }
 
 // ── HTML page assembly ─────────────────────────────────────────────
-function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false }) {
+function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false, lanes = [] }) {
+  const presenterConfig = { sessions, ...(lanes.length > 1 ? { lanes } : {}) };
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -658,12 +700,12 @@ ${inlineScript(reveal.js)}
       height: ${SLIDE_H_PX},
       hash: true,
       display: 'flex',
-      controls: true,
+      controls: false,   // the presenter plugin's navigation pill replaces Reveal's arrows
       progress: true,
       slideNumber: ${footer ? "false" : "'c/t'"},${footer ? "   // the running footer carries the page number" : ""}
       transition: 'fade',${presenterJs ? `
       plugins: [RevealPresenter],
-      presenter: { sessions: ${JSON.stringify(sessions).replace(/</g, "\\u003c")} },` : ""}
+      presenter: ${JSON.stringify(presenterConfig).replace(/</g, "\\u003c")},` : ""}
     });
   </script>
 </body>
@@ -699,20 +741,38 @@ function main() {
   // With a footer, every slide keeps its bottom band clear for it: nothing but the footer in the bottom 40px.
   const css = themeCss(styleSpec) + (footer.length ? "\n.reveal .slides section { padding-bottom: max(var(--margin), 40px); }" : "");
   const logo = footer.length ? logoSvg(cwd, deck, palette) : "";
-  const visible = slides.filter(s => !s.hidden);
-  const slidesHtml = slides.map((s) => renderSlide(s, motion, footer.length
-    ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null)).join("\n");
-  const title = styleSpec.name ? `${styleSpec.name} deck` : "deck";
+  const baseTitle = styleSpec.name ? `${styleSpec.name} deck` : "deck";
 
-  const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0 });
-  const outPath = path.join(cwd, "index.html");
-  fs.writeFileSync(outPath, html);
+  // The outputs: the base deck, then one per lane. Every output lists all of them in its lane switcher.
+  const overlays = deck.lanes.map(file => {
+    const abs = path.resolve(cwd, file);
+    if (!fs.existsSync(abs)) throw new Error(`lanes: ${file} not found`);
+    delete require.cache[abs];
+    const overlay = require(abs), id = laneId(file);
+    if (!overlay || typeof overlay.name !== "string" || !overlay.name.trim()) throw new Error(`lane ${id}: the overlay needs a name`);
+    return { id, name: overlay.name.trim(), file: `index-${id}.html`, overlay };
+  });
+  const ids = overlays.map(l => l.id);
+  const dupLane = ids.find((id, i) => ids.indexOf(id) !== i);
+  if (dupLane) throw new Error(`two lanes have the id "${dupLane}" (the overlay's file name)`);
+  const outputs = [{ id: null, name: deck.lane, file: "index.html", slides }, ...overlays.map(l => ({ ...l, slides: applyLane(slides, l.overlay, l.id) }))];
+  const switcher = outputs.map(o => ({ name: o.name, file: o.file }));
 
-  console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${slides.length} slides, ${styleSpec.name || "unnamed style"})`);
-  if (footer.length) console.log(`Footer on every slide but the title: ${footer.join(" · ")} · ${logo ? `logo ${logo.file}` : "no logo (no ./assets/logo-*.svg; a brand's style stages one)"} · page n / ${visible.length}`);
+  for (const out of outputs) {
+    const visible = out.slides.filter(s => !s.hidden);
+    const slidesHtml = out.slides.map((s) => renderSlide(s, motion, footer.length
+      ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null)).join("\n");
+    const title = out.id ? `${baseTitle} · ${out.name}` : baseTitle;
+    const lanes = switcher.map(l => ({ ...l, current: l.file === out.file }));
+    const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes });
+    const outPath = path.join(cwd, out.file);
+    fs.writeFileSync(outPath, html);
+    console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${out.slides.length} slides, ${styleSpec.name || "unnamed style"}${out.id ? `, lane ${out.name}` : overlays.length ? `, lane ${out.name} of ${outputs.length}` : ""})`);
+    if (footer.length && !out.id) console.log(`Footer on every slide but the title: ${footer.join(" · ")} · ${logo ? `logo ${logo.file}` : "no logo (no ./assets/logo-*.svg; a brand's style stages one)"} · page n / ${visible.length}`);
+  }
   const summary = pacingSummary(slides, sessions);
   if (summary) console.log(summary);
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane };

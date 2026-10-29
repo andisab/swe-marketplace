@@ -28,6 +28,10 @@
 //    load-style.js into ./assets/ when the style is a brand; none for a generic style)
 //    and the page number. `logo` names another SVG; `logo: false` leaves it out.
 //    See references/reveal.md §Running footer and logo.
+// 10. Lanes: the same deck worked for another audience. Give the slides that change a
+//    `key`, list overlay files in `lanes` (each exports { name, replace, slides: { key:
+//    { fields } } }), and one build writes index.html plus index-<id>.html per lane, each
+//    with a lane switcher in its overview. See references/reveal.md §Lanes.
 
 module.exports = [
   {
