@@ -3,9 +3,7 @@
 //
 // Setup (one-time per deck dir):
 //   npm install pptxgenjs react react-dom react-icons sharp
-//   node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json
-//   # Or for bundled brandbooks, copy the pre-built tokens (no parse needed):
-//   cp $PLUGIN/styles/brands/<name>/tokens.json style-tokens.json
+//   node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json   # a registry name or a file; see SKILL.md §Style / brandbook resolution
 //
 // ── PRE-RENDER ALIGNMENT CHECKLIST (run mentally per slide before building) ──
 // 1. Title at y=0.5, h=0.6. Content starts at y≥1.4 (gives the title room to wrap).

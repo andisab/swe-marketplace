@@ -82,7 +82,7 @@ Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brand
 ### Add / import a brandbook
 
 Filesystem-driven — no code edits. **Destination**: `$KNOWLEDGEWARE_BRANDS_DIR/` when the env var is set (survives plugin updates — preferred), else `styles/brands/` (warn: wiped on update). `<dest>` below means that directory:
-- **From scratch or by hand**: write `<dest>/<name>/brand.md` following `references/brandbook-spec.md`; copy `styles/style-1/README.md` as the README template and fill in provenance.
+- **From scratch or by hand**: copy the checked-in `styles/brands/acmecorp/` folder to `<dest>/<name>/` (it is the template: a spec-complete `brand.md`, a `README.md` with the provenance lines to fill in, and `assets/` with the logo files decks look for), then rewrite `brand.md` for the brand per `references/brandbook-spec.md`, replace the logos and delete `tokens.json` so the loader rebuilds it.
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it to `<dest>/<name>/brand.md`, then normalize toward the spec if role tables are missing.
 - **From a design kit or brand plugin** the user already has (a folder with its own brandbook, tokens, CSS and logos): copy the brandbook to `brand.md`, the logos and marks into `assets/`, the stylesheet into `css/`, and write the README's provenance line (source path, version, date). Keep that kit as the owner of its runtime; the registry copy is for the knowledgeware consumers.
 - **From Google Drive**: `python3 scripts/fetch-resource.py <share-url> <dest>/<name>/brand.md` (file must be "Anyone with the link").
@@ -140,4 +140,4 @@ On request ("audit the brandbooks"), check each brand for: token cache staleness
 
 ## Registered brands
 
-Run `node scripts/list-styles.js --brands` for the live list. **acmecorp** is a checked-in fictional example demonstrating the folder layout (`acmecorp/brand.md`, `tokens.json`, `assets/`); real brands are installed either by pointing `KNOWLEDGEWARE_BRANDS_DIR` at a user-owned brands directory (preferred — survives updates) or by copying into `styles/brands/` from a private source repo. The five default styles under `styles/` use the same folder shape, each with a generic mark in `assets/` and a stylesheet in `css/`.
+Run `node scripts/list-styles.js --brands` for the live list. **acmecorp** is a checked-in fictional brand that doubles as the template for a new one: copy its folder (`brand.md`, `README.md`, `tokens.json`, `assets/`) and rewrite it (§Add / import). Real brands are installed either by pointing `KNOWLEDGEWARE_BRANDS_DIR` at a user-owned brands directory (preferred — survives updates) or by copying into `styles/brands/` from a private source repo. The five default styles under `styles/` use the same folder shape, each with a generic mark in `assets/` and a stylesheet in `css/`.

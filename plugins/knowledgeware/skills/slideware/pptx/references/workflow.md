@@ -24,7 +24,7 @@ Target time: 3-8 min. Skip visual review if the deck is throwaway or polish-deck
 ### 1. Gather inputs
 
 - **Content** — outline, brief, source doc. If vague, propose an outline first and confirm.
-- **Style / brandbook** — explicit path, Google Drive URL, or bundled name. Bundled names are discovered at runtime from `$PLUGIN/styles/<name>/brand.md` (defaults) and `$PLUGIN/styles/brands/<name>/brand.md` (brandbooks — see the brandware skill); list them with `node $PLUGIN/scripts/list-styles.js`. **Default to `style-1` if unspecified** and tell the user. Don't auto-pick a brandbook.
+- **Style / brandbook** — a registry name, an explicit path, a website or a Google Drive URL; resolution per SKILL.md §Style / brandbook resolution (the brandware contract: user brands directory, plugin brands, the five styles; the markers when nothing is named). List names with `node $PLUGIN/scripts/list-styles.js`. With no name and no marker, `style-1`, and tell the user.
 - **Sample deck** (optional) — `.pptx` whose style to mimic.
 - **Output path** — default `./<sanitized-title>.pptx`.
 - **Length** — 6-10 is typical default.
@@ -33,8 +33,7 @@ Target time: 3-8 min. Skip visual review if the deck is throwaway or polish-deck
 
 | Input | Action |
 |---|---|
-| Default style (fast) | `cp $PLUGIN/styles/style-N/tokens.json style-tokens.json` |
-| Brandbook (fast) | `cp $PLUGIN/styles/brands/<name>/tokens.json style-tokens.json` (or `node $PLUGIN/scripts/load-style.js <name> -o style-tokens.json`, which also works for the flat layout) |
+| Registry name (a style or a brand) | `node $PLUGIN/scripts/load-style.js <name> -o style-tokens.json` (serves the entry's cache when it's fresh, rebuilds it otherwise; never copy a cache by path) |
 | Local `.md`/`.css` | `node $PLUGIN/scripts/load-style.js <path> -o style-tokens.json` |
 | Google Drive URL | `python3 $PLUGIN/scripts/fetch-resource.py <url> ./brand.md` then load |
 | Website URL | `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load |

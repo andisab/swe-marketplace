@@ -1,6 +1,6 @@
 # styles/brands/ — brand registry
 
-Brandbooks, their token caches, and per-brand assets (logos, wordmarks) are **brand-specific / proprietary content** and are excluded from this repository (see `.gitignore` here) — with one exception: **`acmecorp`**, a fictional checked-in example that demonstrates the layout. Only the 5 generic styles one level up (`styles/style-1.md` … `style-5.md`) plus acmecorp ship with the plugin.
+Brandbooks, their token caches, and per-brand assets (logos, wordmarks) are **brand-specific / proprietary content** and are excluded from this repository (see `.gitignore` here) — with one exception: **`acmecorp`**, a fictional checked-in brand that is also the template for a new one: copy its folder, rename it, rewrite `brand.md` and replace the assets (the brandware skill's §Add / import). Only the five generic style folders one level up (`style-1` … `style-5`) plus acmecorp ship with the plugin.
 
 Layout (one brand = one folder, the same shape as the five default styles one level up; see `../README.md`):
 

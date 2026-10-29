@@ -55,7 +55,7 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/polish-deck.py ./inde
 
 ## Choosing a style
 
-If the user names one (`style-2`, a brandbook like `acmecorp`, etc.), use it — names resolve from the plugin registry (`styles/` + `styles/brands/`).
+If the user names one (`style-2`, a brandbook like `acmecorp`, etc.), use it — names resolve through the plugin registry per SKILL.md §Style / brandbook resolution (the user's brands directory, the plugin's brands, the five styles).
 
 If they describe an aesthetic ("warm, editorial, serif headings") or point to a website, run:
 
@@ -63,7 +63,7 @@ If they describe an aesthetic ("warm, editorial, serif headings") or point to a 
 node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js <path-or-name> -o ./style.md
 ```
 
-If they say nothing, default to `style-1` (Editorial Light) and tell them so. Offer to switch.
+If they say nothing, the markers decide first (`.knowledgeware` in the project, then `DEFAULT`); with neither, `style-1` (Editorial Light), and tell them so. Offer to switch.
 
 ## Mid-build style swap
 

@@ -203,6 +203,8 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 
 **Changing a deck after delivery.** Ask for the change, and slideware rebuilds the deck from its source. If you edited the delivered file by hand in the meantime, slideware compares it with its last build first and carries your edits into the rebuild. Text and notes edits made in review mode are folded in by every build, and Claude reads the comments you left.
 
+**For maintainers.** The skill's own [README](./skills/slideware/README.md) has the six ways people prompt it, what it won't do, and the file map.
+
 **Optional tooling.** None of these tools blocks a build. When one is missing, the skill still delivers and tells you which check it skipped.
 
 | Tool | Used for | Without it | Install |
