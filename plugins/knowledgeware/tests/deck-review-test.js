@@ -402,6 +402,33 @@ ok("applyEdits layers hidden flags, the order and deletions", () => {
   assert.throws(() => b.applyEdits(slides, [], { order: ["zz"] }), /deck.order names "zz"/);
 });
 
+// ── Spec and teaches ──
+ok("a deck's spec is embedded and printed; teaches is validated, ignored by the renderer and safe from lane replacements", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('lane: "Acme Corp",', 'lane: "Acme Corp",\n  spec: "./unit.html",')
+    .replace('{ key: "cols", layout: "two-column",', '{ key: "cols", teaches: "Acme Corp-structure", layout: "two-column",'));
+  let r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.match(r.out, /Spec: \.\/unit\.html \(NOT FOUND next to the deck; the librarian can't follow it\) · 1 of 5 slides name the section they teach/);
+  fs.writeFileSync(path.join(deck, "unit.html"), "<html></html>");
+  r = build();
+  assert.match(r.out, /Spec: \.\/unit\.html · 1 of 5/);
+  assert.ok(read("index.html").includes('<meta name="knowledgeware-spec" content="./unit.html"/>'));
+  assert.ok(read("index-acme-life.html").includes('<meta name="knowledgeware-spec" content="./unit.html"/>'), "lanes carry the same spec");
+  assert.ok(!read("index.html").includes("teaches"), "teaches never renders");
+  const laneObj = fresh(path.join(deck, "build-deck.js")).applyLane(fresh(path.join(deck, "slides.js")).slides, { name: "x", replace: [["Acme Corp", "Acme Life"]] }, "x");
+  assert.strictEqual(laneObj[2].teaches, "Acme Corp-structure", "a replace pair never rewrites a section id");
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", teaches: 7, layout: "two-column",'));
+  r = build();
+  assert.notStrictEqual(r.code, 0);
+  assert.match(r.out, /slide 3: teaches must name a section id in the spec/);
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('lane: "Acme Corp",', 'lane: "Acme Corp",\n  spec: "",'));
+  r = build();
+  assert.notStrictEqual(r.code, 0);
+  assert.match(r.out, /spec must be the path of the deck's spec page/);
+  reset();
+});
+
 // ── Literal helpers ──
 ok("stringLiterals and literal round-trip every quote style", () => {
   const b = require(path.join(deck, "build-deck.js"));

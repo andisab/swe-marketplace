@@ -1,6 +1,6 @@
-# Knowledgebase Skill — Maintenance Spec
+# Maintenance spec: sites and decks
 
-The contract between a site's **builder** (this skill) and its **maintainer** (a human on a sweep, or the `librarian` agent on a schedule). A site that follows this spec can be maintained by pointing the agent at its folder with zero extra briefing: the maintenance page IS the work order. Field-tested across two production field guides (July–August 2026).
+The contract between a deliverable's **builder** (the knowledgebase skill for sites, the slideware skill for decks) and its **maintainer** (a human on a sweep, or the `librarian` agent on a schedule). A site that follows this spec can be maintained by pointing the agent at its folder with zero extra briefing: the maintenance page IS the work order. §1–6 are the site contract; §7 says how a deck is kept current, which is through a spec page that follows §1–6 whenever the deck has one. Field-tested across two production field guides (July–August 2026) and the three-session Enterprise Enablement program (October 2026).
 
 ## 1. Freshness model
 
@@ -15,7 +15,7 @@ The contract between a site's **builder** (this skill) and its **maintainer** (a
 | `quarterly` | Slow-moving judgment material | Decision frameworks, architecture patterns, comparison verdicts |
 | `on-event` | Checked only when a trigger fires | Facts covered by a subscribed feed; things a customer contradicts |
 
-A row may append named event triggers to its base value — `monthly + on-event: model launch` — and is then due when *either* the interval elapses *or* the trigger is observed. Field lesson: prose cadences like "monthly, and immediately on any announced release" hide exactly these triggers; name them explicitly so an agent can watch for them.
+The intervals in days, which the librarian reads literally: `weekly` is due at 7 days since Last checked, `monthly` at 30, `quarterly` at 90; `on-event` has no interval. A row may append named event triggers to its base value — `monthly + on-event: model launch` — and is then due when *either* the interval elapses *or* the trigger is observed. Field lesson: prose cadences like "monthly, and immediately on any announced release" hide exactly these triggers; name them explicitly so an agent can watch for them.
 
 **Due computation.** A row is *due* when `(today − Last checked) ≥ cadence`, reading the master table's **Last checked column directly** — no inference. (Legacy sites without the column: fall back to the most recent changelog row covering the data class, then the freshest stamp on a table where the class appears — workable but imprecise, which is why the column exists.) This is what makes scheduled maintenance non-wasteful: a weekly job touches only due rows, and a quarterly row gets looked at four times a year, not fifty-two.
 
@@ -93,3 +93,23 @@ Before declaring a site done, verify alongside the build-process suite:
 - [ ] Every volatile table site-wide has a stamp; stable conceptual tables have none
 - [ ] Changelog is seeded with the build row (date, "initial build", scope)
 - [ ] `research/` files carry URLs, dates, and unverified sections per §4
+
+## 7. Decks
+
+A deck decays like a site, but a deck is presented, not read, and its source (`slides.js`, or a pptx `build-deck.js`) is the slideware skill's to edit. So the librarian **never edits a deck**: it keeps a deck current through the deck's **spec**, and where there is no spec it reports what it can. A deck's maintenance record is whatever is available, best first:
+
+| Rung | Record | What the librarian does |
+|---|---|---|
+| 1 | **A spec page** beside the deck: a one-page knowledgebase site that follows §1–6 (a `master` table whose rows are the deck's volatile facts, `changelog`, `upcoming`, `open-conflicts`, `outstanding-questions`) | The full contract: the spec is swept on cadence, an audit is written beside it, and `--apply` lands it. The plan names the slides each stale row feeds. |
+| 2 | **Inline stamps** in the deck: the HTML deck's sources slide (`Last verified`, and a volatility list on long-lived decks) or the pptx notes' `Sources:` / `Last verified:` blocks | `status` and `plan` only: the oldest stamp, every stamp over 90 days, and the slides to re-verify with the slideware skill. |
+| 3 | **Planning notes** beside the deck (`notes.md` or similar): a Markdown outline of how the deck flows, with `Update at:` / `Verified at:` lines | Read as context and reported as a weak record, with the offer to build a spec (rung 4). |
+| 4 | **Nothing** | In an interactive session: ask whether a record exists elsewhere, then offer to build a spec from the deck itself (below). In a headless run: report the deck as untracked and move on; never ask. |
+
+**How a deck names its spec.** In `slides.js`, a deck-level `spec: "../<unit>.html"` (a path relative to the deck folder) names the page; the builder embeds it as `<meta name="knowledgeware-spec">` so the deck leads to its spec and the spec's folder leads to the deck. The spec is a page the deck teaches from, so its content sections are what slides' `teaches` values point at. A slide's `teaches: "<section-id>"` names the spec section it teaches, so a stale row maps to the slides that show it. Neither field renders. Without a declaration, a file named `spec.html` in the deck folder or its parent counts. A pptx deck has no descriptor file to declare in, so it relies on the sibling file.
+
+**Planning notes stay separate.** A deck's Markdown outline (how it flows, what to cut, when to update what) is a working file beside the deck, not part of the spec: the spec holds facts and their ledger, the notes hold intent. A deck can have both. The librarian reads the notes for context and never edits them; slideware reads them when asked to restructure a deck.
+
+**Spec from a deck.** When a deck has no spec and the user wants one, the knowledgebase skill builds the spec page from the deck itself: the `master` table seeded from the deck's `Sources:` and `Last verified:` lines (one row per volatile fact, the slide it appears on in the fan-out column, cadence guessed from the fact class and marked for review) and an empty changelog with one row recording the spec's creation. The page follows the deck's style. The deck then gets its `spec` field and, slide by slide, `teaches`.
+
+**What a deck's own stamps still mean.** Rung 2 stays valid on every deck, spec or not: the sources slide and the notes blocks are what the audience and the presenter see, and slideware keeps writing them. A spec adds the cadence and the ledger; it doesn't replace the stamps.
+

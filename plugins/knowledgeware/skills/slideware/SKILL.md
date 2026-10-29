@@ -60,6 +60,8 @@ Decks decay like any deliverable: prices, versions, GA statuses, and quoted figu
 
 The stamp means the same thing it means in a knowledgebase site: *these facts were checked against their sources on that date*. When iterating on an existing deck, bump a stamp only for facts you actually re-verified; treat stamps older than 90 days as stale before any external presentation.
 
+A deck built from research gets a **spec**: a one-page knowledgebase site beside it that carries the deck's volatility table, so the librarian can keep the deck current on cadence without editing the deck (the contract is the maintenance spec's §7, [../knowledgebase/references/maintenance.md](../knowledgebase/references/maintenance.md)). An HTML deck names it with `spec: "../<unit>.html"` next to `slides` and, per slide, `teaches: "<section-id>"`; a pptx deck relies on a `spec.html` beside it. When the user asks to keep a deck maintainable, or the deck's facts come from a research folder, build the spec with the knowledgebase skill and wire the fields. A planning outline of the deck (`notes.md` beside it, how it flows and what to cut) stays a separate file; read it when asked to restructure the deck, and never fold it into the spec.
+
 ## Speaker notes, pacing and hidden slides (shared)
 
 Both formats carry the same presenter information, so a deck can move between them without losing it:

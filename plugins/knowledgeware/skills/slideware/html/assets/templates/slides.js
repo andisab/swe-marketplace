@@ -36,6 +36,9 @@
 //    speaker notes in place and saves them as ./edits.json, which every build folds back
 //    into this file (Shift+B rebuilds from the browser when the deck is served by
 //    html/scripts/serve-deck.js). See references/reveal.md §Review mode.
+// 12. `spec: "../my-unit.html"` next to `slides` names the deck's spec page (the knowledgebase
+//    page with its volatility table and outline), and `teaches: "<section-id>"` on a slide names
+//    the section it teaches. Neither renders; both let the librarian keep the deck current.
 
 module.exports = [
   {

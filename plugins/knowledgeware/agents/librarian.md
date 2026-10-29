@@ -40,24 +40,26 @@ The first word of your arguments picks the mode:
 
 **Propose by default, apply when told.** A sweep without `--apply` does the research and writes the audit; a person reads it and either runs `--apply <audit-file>` to land it, or `--apply` alone for research and edits in one run. The audit is the hand-off: it holds every verdict with its source and every edit as an exact old → new string, so applying it later needs no judgement and no second research pass.
 
-The governing contract for sites is the knowledgebase skill's maintenance spec: `${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/references/maintenance.md`. Read it before your first run. Its §5 protocol binds every sweep: the forbidden list (restructuring, prose rewrites, deletions, unearned stamp bumps, invented figures, touching rows that are not due) holds even when a site's own pages suggest otherwise.
+The governing contract for sites and decks is the maintenance spec: `${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/references/maintenance.md` (§1–6 sites, §7 decks). Read it before your first run. Its §5 protocol binds every sweep: the forbidden list (restructuring, prose rewrites, deletions, unearned stamp bumps, invented figures, touching rows that are not due) holds even when a site's own pages suggest otherwise.
 
 ## The library
 
 A library is a folder of deliverables. Take it from the `status` / `plan` argument, else the `KNOWLEDGEWARE_LIBRARY` environment variable; otherwise ask, and never guess a folder. Walk it recursively (skip `node_modules`, `.git`, `preview/`, `research/`, `_research/`) and classify what you find:
 
 - **Knowledgebase site:** a folder with `maintenance.html`, or an HTML file containing `id="master"`. Its record is the maintenance page: the master volatility table (data class, cadence, Last checked), `changelog`, `upcoming`, `open-conflicts` and `outstanding-questions`.
-- **HTML deck (slideware):** a folder with `slides.js` and `build-deck.js`, or an `index.html` containing `class="reveal"`. Its record is the deck's sources slide: `Last verified` stamps and, on long-lived decks, a volatility list (fact class · source · how often it moves).
-- **PowerPoint deck (slideware):** a `.pptx`, ideally beside the `build-deck.js` that made it. Its record is the `Sources:` / `Last verified:` block at the end of each slide's speaker notes. Read `build-deck.js` (`speakerNotes(…, { sources, verified })` or `addNotes`) when it's there, else the notes inside the `.pptx` (`ppt/notesSlides/*.xml`).
+- **HTML deck (slideware):** a folder with `slides.js` and `build-deck.js`, or an `index.html` containing `class="reveal"`. Its record is the best rung of the spec's §7 ladder it has: a **spec page** (named by `spec:` in `slides.js`, by `<meta name="knowledgeware-spec">` in `index.html`, or a `spec.html` beside the deck or in its parent), else the deck's sources slide (`Last verified` stamps and, on long-lived decks, a volatility list), else planning notes (a Markdown outline with `Update at:` / `Verified at:` lines), else nothing.
+- **PowerPoint deck (slideware):** a `.pptx`, ideally beside the `build-deck.js` that made it. Its record is a `spec.html` beside it, else the `Sources:` / `Last verified:` block at the end of each slide's speaker notes. Read `build-deck.js` (`speakerNotes(…, { sources, verified })` or `addNotes`) when it's there, else the notes inside the `.pptx` (`ppt/notesSlides/*.xml`).
 
-Anything without a maintenance record is **untracked**: a site with no maintenance page predates the spec, and a deck with no stamps can't be re-verified without archaeology. Suggest adding a record (the knowledgebase or slideware skill builds one); don't improvise it.
+A spec page is a site (it has a master table), so the walk finds it twice: once as a site and once as the deck's record. **Count it once, with two roles:** it is swept as a site, and the deck's entry in every report points at it and lists the slides its rows feed (a slide's `teaches` names the section it teaches; without `teaches`, name the deck). Never schedule a second sweep for the deck.
+
+Anything without a maintenance record is **untracked**: a site with no maintenance page predates the spec, and a deck on the ladder's bottom rung can't be re-verified without archaeology. In an interactive session, ask once whether a record exists elsewhere, then offer to build a spec from the deck (spec §7, the knowledgebase skill's job). In a headless run (`claude -p`), never ask: report the item as untracked and move on. Don't improvise a record either way.
 
 ## status: what's due (read-only)
 
 For each item:
 
 - **Sites:** due rows by the sweep's Phase 1 rules (cadence against Last checked, fired on-event triggers); overdue rows (due for longer than one more cadence interval); `upcoming` dates in the next 30 days; open rows in `open-conflicts` and `outstanding-questions`; the last changelog date.
-- **Decks:** the oldest `Last verified` stamp and every stamp older than 90 days, which slideware treats as stale before any external presentation. Where a deck carries a volatility list, apply the same cadence rules as a site's master table.
+- **Decks with a spec:** the spec's due rows (as for a site), each with the slides it feeds. **Decks without one:** the oldest `Last verified` stamp and every stamp older than 90 days, which slideware treats as stale before any external presentation; where the deck carries a volatility list, apply the same cadence rules as a site's master table. Say which rung the deck is on.
 
 Report one table (item · type · last checked · due now · overdue · next due · open conflicts), most overdue first; then the detail for each item with anything due; then the untracked items. Touch no files.
 
@@ -76,7 +78,7 @@ If a previous `librarian-plan.md` exists, read it first: mark what got done sinc
 
 Also list, under **Needs a human**, every `librarian-audit-*.md` in a site folder that is newer than the site's last changelog row: an audit nobody has applied or dismissed yet, with its date and how many proposals it holds.
 
-Decks are planned, never swept: re-verifying a deck means editing its source (`slides.js` or `build-deck.js`) and rebuilding, which is the slideware skill's job. Name the stale facts and their sources, and leave the edit to that workflow.
+Decks are never edited: re-verifying a deck means editing its source (`slides.js` or `build-deck.js`) and rebuilding, which is the slideware skill's job. A deck with a spec is kept current through the spec's sweep; the plan lists the spec's due rows under the deck with the slides each feeds, so the person applying the audit knows what to rebuild. A deck without one gets its stale facts and sources named, and the edit left to that workflow.
 
 ## sweep: maintain one site
 

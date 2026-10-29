@@ -101,6 +101,8 @@ An HTML deck is a hosted, long-lived artifact — it gets the knowledgebase skil
 
 When iterating on an existing deck, update this slide with what actually changed and bump only stamps whose facts were re-verified.
 
+The slide is the deck's own record (the maintenance spec's §7, rung 2). A deck with a **spec page** adds `spec: "../<unit>.html"` next to `slides` and `teaches: "<section-id>"` on each slide; the builder embeds the spec as `<meta name="knowledgeware-spec">`, prints it with how many slides name their section, and warns when the file isn't there. Neither field renders, and lane `replace` pairs leave both alone.
+
 ## Output convention
 
 Default `<cwd>/index.html` unless the user specifies (plus `index-<id>.html` per lane, when the deck has lanes). Print the absolute path after writing. Open it in a browser via `open ./index.html` (macOS), `xdg-open` (Linux), or `start` (Windows) — Reveal works over `file://` for local preview.

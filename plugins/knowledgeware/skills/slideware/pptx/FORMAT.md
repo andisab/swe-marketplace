@@ -70,7 +70,7 @@ What to say over this slide.
 
 Sources:
 - Anthropic pricing: https://platform.claude.com/docs/en/about-claude/pricing
-Last verified: 2026-08-18
+Last verified: 2026-08-18   (a deck kept current on cadence also gets a spec.html beside it: maintenance spec §7)
 ```
 
 - **Pacing.** Set `SESSIONS` (minutes per `cue.session`; `""` for a deck without sessions) at the top of the build script. PowerPoint has no live pace line, so the cue line carries each in-run slide's planned window for the presenter to read against PowerPoint's timer. The build prints the same pacing summary as the html format; quote it when asked about timing or hidden slides.
