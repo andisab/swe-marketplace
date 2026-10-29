@@ -17,6 +17,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const PLUGIN_ROOT = path.resolve(__dirname, "..");
 
 const registry = require("./registry");
 const { listBundled, findBundled, tokensCachePath } = registry;
@@ -308,7 +309,10 @@ function build(srcPath) {
   if (num(fmL.containerPx) !== null) layout.containerPx = fmL.containerPx;
   if (num(fmL.gutterPx) !== null) layout.gutterPx = fmL.gutterPx;
 
-  const tokens = { name, source: srcPath, palette, type, layout };
+  // `source` is for the reader of a cache: relative to the plugin for its own styles and brands,
+  // so a shipped cache names no machine; a user's own brand keeps its absolute path.
+  const inPlugin = srcPath.startsWith(PLUGIN_ROOT + path.sep);
+  const tokens = { name, source: inPlugin ? path.relative(PLUGIN_ROOT, srcPath).split(path.sep).join("/") : srcPath, palette, type, layout };
   if (paletteDark) tokens.paletteDark = paletteDark;
   if (paletteLight) tokens.paletteLight = paletteLight;
   return tokens;

@@ -6,7 +6,7 @@
   "main": "build-deck.js",
   "scripts": {
     "build": "node build-deck.js .",
-    "render": "bash scripts/render-slides.sh ./index.html ./preview/"
+    "render": "bash $CLAUDE_PLUGIN_ROOT/skills/slideware/html/scripts/render-slides.sh ./index.html ./preview/"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
