@@ -16,6 +16,8 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 ### knowledgeware 1.12.3
 
 - **The deck re-fits above the notes drawer.** With `N` open, the deck gives up the drawer's height (a `--rp-reserve-bottom` property on `<html>`, kept current as the notes change length per slide) and Reveal rescales the slide into the space above it, so long notes never cover the slide. Review mode's panel reserves its height the same way, and the drawer reclaims its own when review mode closes.
+- **The overview's structural tools exist only in review mode.** The eye, the X, drag and drop and the `h` / `del` / `shift+←→` keys appear while review mode (`e`) is on and go away when it's off, so an edit can't be made from what looks like navigation and then surface at a rebuild. Hidden and deleted slides still show their pending state, and the Rebuild deck button stays, since it's useful after the source changed by other means.
+- **One convention for the keys the deck shows:** plain keys lowercase as pressed (`e`, `n`, `o`), modifiers spelled out (`shift+b`, `shift+←→`), in the pill's legend, the button titles, the review bar and its confirm bars.
 - **Overview thumbnails no longer sit half a slide too low.** Reveal sets each live slide's inline `top` when it lays it out, and a slide it hasn't shown yet (beyond its view distance, `display: none`) keeps a stale value of half the slide height, which the thumbnail copy inherited. Copies are now re-centred from their own measured height whenever they're scaled, in the overview and in the presenter's sidebars.
 
 ### knowledgeware 1.12.2
