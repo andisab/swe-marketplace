@@ -20,12 +20,23 @@
 //           with ?overview starts in it. The overview is drawn from the deck's own style
 //           tokens (its colors, fonts and radius), so it matches whatever brand the deck
 //           uses. Also available in the presenter window, where it moves both windows.
-//           When the deck was built in lanes (presenter: { lanes: [{ name, file }] }), the
-//           overview's header holds a lane switcher that opens the same slide in another lane.
+//           When the deck was built in lanes (presenter: { lanes: [{ name, file, color }] }), the
+//           overview's header holds a lane switcher that opens the same slide in another lane,
+//           with the lane's colour beside it, and every thumbnail carries a bar along its base:
+//           ink for a slide as the base deck has it, the lane's colour for one the lane changes
+//           (the builder marks those with data-lane-changed).
+//           In a deck with review mode (review.js sets window.RevealReviewAPI) the overview
+//           also edits the deck's structure, pending a rebuild: every slide is shown, hidden
+//           ones under a mask; an eye on each thumbnail hides or shows it in this lane, an X
+//           deletes it (Undo brings it back), thumbnails drag and drop into a new order, and
+//           H, Delete and Shift+arrows do the same on the focused thumbnail. A Rebuild deck
+//           button beside Close turns solid while anything is queued.
 //   Navigation pill: a floating bar at the bottom (previous, the slide number, next, the
-//           current section's name, the overview, fullscreen), in the deck's tokens. Shown
-//           for 2.5 s after the mouse moves or on hover; hidden in print, in the presenter
-//           window and under the overview. It replaces Reveal's arrows (controls: false).
+//           current section's name, the overview, fullscreen, and an i that lists every
+//           key on hover and pins the list on click), in the deck's tokens. Shown for
+//           2.5 s after the mouse moves or on hover, above the notes drawer; hidden in
+//           print, in the presenter window and under the overview. It replaces Reveal's
+//           arrows (controls: false).
 //
 // Presenter window (the deck opened with ?presenter):
 //   previous slide | current slide | next slide across the top, notes full width below.
@@ -90,7 +101,7 @@
 .rp-drawer { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; max-height: 38vh; overflow-y: auto;
   padding: 16px 28px 22px; background: rgba(250,250,249,.97); border-top: 1px solid #E3E3DF;
   box-shadow: 0 -8px 24px rgba(26,26,24,.10); color: #1A1A18; font-family: ${SANS}; line-height: 1.55; text-align: left; }
-html.rp-drawer-on .rp-drawer { display: block; }
+html.rp-drawer-on .rp-drawer { display: block; padding-bottom: 64px; }   /* room for the navigation pill, which sits above the drawer */
 .rp-cue-text { font-family: ${MONO}; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-drawer .rp-md { margin-top: 8px; font-size: 18px; max-width: 1100px; }
 .rp-md p { margin: 0 0 .8em; }
@@ -212,8 +223,33 @@ html.rp-ov-on .rp-ov { display: block; }
 .rp-ov-body > .rp-ov-grid:first-child { margin-top: 22px; }
 .rp-ov-kick { flex: none; font-family: ${MONO}; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-ov-count { flex: none; margin-left: auto; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; color: var(--color-ink-faint, #9E9E97); }
+.rp-ov button.rp-ov-rebuild { margin-right: 8px; transition: background .15s, color .15s, border-color .15s; }
+html.rv-queued .rp-ov button.rp-ov-rebuild { background: var(--color-success, #3F8A4F); border-color: var(--color-success, #3F8A4F); color: #FFFFFF; }
+html.rv-queued .rp-ov button.rp-ov-rebuild:hover { filter: brightness(1.08); }
 .rp-ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px 16px; }
+.rp-ov-cell { position: relative; min-width: 0; }
+.rp-ov-cell[draggable] { cursor: grab; }
+.rp-ov-cell.rp-dragging { opacity: .35; }
+.rp-ov-cell.rp-drop-before .rp-ov-box { box-shadow: -8px 0 0 -4px ${ACCENT}; }
+.rp-ov-cell.rp-drop-after .rp-ov-box { box-shadow: 8px 0 0 -4px ${ACCENT}; }
 .rp-ov-th { all: unset; display: block; min-width: 0; cursor: pointer; }
+.rp-ov-cell[draggable] .rp-ov-th { cursor: grab; }
+/* A hidden slide sits under a mask in the panel's own background, so it reads as dimmed in light and dark styles alike. */
+.rp-ov-mask { display: none; position: absolute; inset: 0; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--color-surface-alt, var(--color-bg, #F4F4F2)) 74%, transparent); color: var(--color-ink-muted, #6B6B63); }
+.rp-ov-mask svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rp-ov-cell.rp-hidden .rp-ov-mask { display: flex; }
+.rp-ov-cell.rp-hidden .rp-ov-cap { color: var(--color-ink-muted, #6B6B63); }
+.rp-ov-cell.rp-deleted .rp-ov-box { opacity: .3; filter: grayscale(1); }
+.rp-ov-cell.rp-deleted .rp-ov-cap { color: var(--color-ink-muted, #6B6B63); text-decoration: line-through; }
+.rp-ov-tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s; }
+.rp-ov-cell:hover .rp-ov-tools, .rp-ov-cell:focus-within .rp-ov-tools, .rp-ov-cell.rp-hidden .rp-ov-tools, .rp-ov-cell.rp-deleted .rp-ov-tools { opacity: 1; }
+.rp-ov-tools button { all: unset; cursor: pointer; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); color: var(--color-ink, #1A1A18); box-shadow: 0 2px 8px rgba(0, 0, 0, .14); }
+.rp-ov-tools button:hover { color: ${ACCENT}; border-color: ${ACCENT}; }
+.rp-ov-tools button:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
+.rp-ov-tools button[data-ov=undo] { width: auto; padding: 0 9px; border-radius: 13px; font: 500 11px ${MONO}; letter-spacing: .06em; text-transform: uppercase; }
+.rp-ov-tools svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .rp-ov-box { position: relative; width: 100%; aspect-ratio: var(--rp-ratio, 16 / 9); overflow: hidden; border-radius: var(--radius, 6px);
   background: var(--color-bg, #FFFFFF); outline: 1px solid var(--color-border, #E3E3DF); outline-offset: 0; transition: outline-color .12s; }
 .rp-ov-box > .rp-preview { position: absolute; inset: 0; pointer-events: none; }
@@ -226,13 +262,15 @@ html.rp-ov-on .rp-ov { display: block; }
 .rp-ov-lane { display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 12px; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted, #6B6B63); }
 .rp-ov-lane select { font: 500 12px ${SANS}; color: var(--color-ink, #1A1A18); background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); border-radius: var(--radius, 8px); padding: 5px 8px; }
 .rp-ov-lane select:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
+.rp-ov-swatch { width: 12px; height: 12px; border-radius: 50%; background: var(--rp-lane, var(--color-ink, #1A1A18)); box-shadow: 0 0 0 1px var(--color-border, #E3E3DF); }
+.rp-ov-cell.rp-laned .rp-ov-box::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--rp-lane, var(--color-ink, #1A1A18)); }
 
 /* Navigation pill: the deck's surface at 92%, its ink, border and accent, so a dark style gives a dark pill. */
-.rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 4px; padding: 5px;
+.rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 4px; padding: 5px;
   border-radius: 12px; border: 1px solid var(--color-border, #E3E3DF); background: var(--color-surface, #FFFFFF);
   background: color-mix(in srgb, var(--color-surface, #FFFFFF) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   color: var(--color-ink, #1A1A18); font-family: ${SANS}; font-size: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, .18); opacity: 0; transition: opacity .3s; }
-html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within { opacity: 1; }
+html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within, .rp-hud[data-help] { opacity: 1; }
 .rp-hud button { all: unset; cursor: pointer; height: 30px; min-width: 30px; padding: 0 9px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--color-ink, #1A1A18); }
 .rp-hud button:hover { background: color-mix(in srgb, var(--color-ink, #1A1A18) 7%, transparent); }
 .rp-hud button:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
@@ -242,6 +280,18 @@ html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within { opacity: 1; }
 .rp-hud .rp-hud-sep { width: 1px; height: 18px; margin: 0 3px; background: color-mix(in srgb, var(--color-ink, #1A1A18) 14%, transparent); }
 .rp-hud .rp-hud-name { padding: 0 8px; max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink-muted, #6B6B63); }
 .rp-hud .rp-hud-name:empty, .rp-hud .rp-hud-name:empty + .rp-hud-sep { display: none; }
+/* The key list: hover or focus the i for a tooltip, click to pin it (Esc or a click elsewhere unpins). */
+.rp-hud-info { position: relative; display: inline-flex; }
+.rp-hud-help { display: none; position: absolute; right: 0; bottom: calc(100% + 6px); width: 320px; padding: 12px 14px 10px; box-sizing: border-box; cursor: default;
+  border-radius: 12px; border: 1px solid var(--color-border, #E3E3DF); background: var(--color-surface, #FFFFFF); color: var(--color-ink, #1A1A18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .18); font-size: 12px; line-height: 1.4; text-align: left; }
+.rp-hud-help::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; }   /* keeps :hover across the gap */
+.rp-hud-info:hover .rp-hud-help, .rp-hud-info:focus-within .rp-hud-help, .rp-hud[data-help] .rp-hud-help { display: block; }
+.rp-hud-help h3 { margin: 0 0 8px; font: 600 11px/1 ${SANS}; letter-spacing: .1em; text-transform: uppercase; color: var(--color-ink-muted, #6B6B63); }
+.rp-hud-help dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0; }
+.rp-hud-help dt { font-family: ${MONO}; font-size: 11px; white-space: nowrap; color: ${ACCENT}; }
+.rp-hud-help dd { margin: 0; }
+.rp-hud-help p { margin: 8px 0 0; color: var(--color-ink-muted, #6B6B63); }
 html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
 @media print { .rp-hud { display: none !important; } }
 `;
@@ -253,7 +303,27 @@ html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
 <span class="rp-hud-name"></span>
 <span class="rp-hud-sep"></span>
 <button type="button" data-hud="grid" aria-label="Slide overview (O)" title="Overview (O)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
-<button type="button" data-hud="full" aria-label="Fullscreen (F)" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>`;
+<button type="button" data-hud="full" aria-label="Fullscreen (F)" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+<span class="rp-hud-info"><button type="button" data-hud="help" aria-label="Keyboard shortcuts" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg></button><div class="rp-hud-help" role="tooltip"></div></span>`;
+  // The key list behind the pill's i. Review mode's keys are listed when the deck was built with it.
+  const KEYS = [
+    ["→ ← Space", "Next and previous slide"],
+    ["S or P", "Presenter view in a second window"],
+    ["N", "Notes drawer, for rehearsal"],
+    ["O", "Overview of every slide, by section"],
+    ["F", "Fullscreen"],
+    ["B or .", "Black out the screen"],
+    ["Esc", "Close the overview, leave a field"],
+    ["?", "Every Reveal.js key"],
+  ];
+  const REVIEW_KEYS = [
+    ["E", "Review mode: edit text and notes in place"],
+    ["⇧B", "Rebuild the deck (through serve-deck.js)"],
+    ["H · Del · ⇧←→", "In the overview: hide, delete or move the focused slide"],
+  ];
+  const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.4 10.4 0 0 1 12 5c5 0 9 4 10 7a11.7 11.7 0 0 1-3.2 4.3M6.3 6.3A11.6 11.6 0 0 0 2 12c1 3 5 7 10 7a9.7 9.7 0 0 0 4.4-1"/></svg>';
+  const EYE_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const CROSS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   const OPENING = "Opening";   // the group of slides before the first section divider
 
   const splitHtml = (name, axis, label) => `<div class="rp-split rp-split-${axis}" data-split="${name}" role="separator"
@@ -453,7 +523,13 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         else if (act === "next") deck.next();
         else if (act === "grid") toggleOverview();
         else if (act === "full") toggleFullscreen();
+        else if (act === "help") pinHelp(!hud.hasAttribute("data-help"));
       });
+      const keys = deck.getConfig().review ? KEYS.slice(0, 6).concat(REVIEW_KEYS, KEYS.slice(6)) : KEYS;
+      hud.querySelector(".rp-hud-help").innerHTML = "<h3>Keys</h3><dl>" + keys.map(([k, d]) => "<dt>" + k + "</dt><dd>" + d + "</dd>").join("") + "</dl>" +
+        "<p>Click the i to keep this open.</p>";
+      document.addEventListener("click", (e) => { if (hud.hasAttribute("data-help") && !e.target.closest(".rp-hud-info")) pinHelp(false); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && hud.hasAttribute("data-help")) pinHelp(false); }, true);
       const show = () => {
         document.documentElement.classList.add("rp-hud-on");
         clearTimeout(hudTimer);
@@ -462,6 +538,10 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       document.addEventListener("mousemove", show);
       document.addEventListener("touchstart", show, { passive: true });
       show();
+    }
+    function pinHelp(open) {
+      hud.toggleAttribute("data-help", open);
+      hud.querySelector("button[data-hud=help]").setAttribute("aria-expanded", String(open));
     }
     function toggleFullscreen() {
       const el = document.documentElement;
@@ -760,30 +840,112 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         const label = document.createElement("label");
         label.className = "rp-ov-lane";
         label.innerHTML = '<span>Lane</span><select aria-label="Lane"></select>';
-        const select = label.lastChild;
+        const select = label.lastChild, current = lanes.find((l) => l.current);
+        const swatch = document.createElement("span");
+        swatch.className = "rp-ov-swatch";
+        swatch.title = current && current.color ? "This lane's colour" : "The base deck";
+        if (current && current.color) swatch.style.setProperty("--rp-lane", current.color);
+        label.insertBefore(swatch, select);
         lanes.forEach((l) => {
           const opt = document.createElement("option");
           opt.value = l.file;
           opt.textContent = l.name;
           opt.selected = !!l.current;
+          if (l.color) opt.style.color = l.color;
           select.appendChild(opt);
         });
         select.addEventListener("change", () => { location.href = select.value + location.hash; });
         ov.firstChild.insertBefore(label, ov.querySelector(".rp-ov-close"));
       }
       ov.addEventListener("click", (e) => {
+        const tool = e.target.closest("button[data-ov]");
+        if (tool) { structural(tool.dataset.ov, tool.closest(".rp-ov-cell").dataset.key); return; }
         const th = e.target.closest(".rp-ov-th");
-        if (th) { closeOverview(); goTo(slides[+th.dataset.i]); }
+        if (th) { if (+th.dataset.i >= 0) { closeOverview(); goTo(slides[+th.dataset.i]); } }
+        else if (e.target.closest(".rp-ov-rebuild")) { if (root.RevealReviewAPI) root.RevealReviewAPI.rebuild(); }
         else if (e.target.closest(".rp-ov-close")) closeOverview();
       });
+      // Drag and drop between thumbnails: dropping on the left half of a thumbnail puts the
+      // dragged slide before it, on the right half after it. Pending until the rebuild.
+      let dragKey = null;
+      const clearDrop = () => ov.querySelectorAll(".rp-drop-before, .rp-drop-after").forEach((c) => c.classList.remove("rp-drop-before", "rp-drop-after"));
+      ov.addEventListener("dragstart", (e) => {
+        const cell = e.target.closest && e.target.closest(".rp-ov-cell[draggable]");
+        if (!cell) return;
+        dragKey = cell.dataset.key;
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragKey);
+        cell.classList.add("rp-dragging");
+      });
+      ov.addEventListener("dragover", (e) => {
+        const cell = e.target.closest && e.target.closest(".rp-ov-cell");
+        if (!dragKey || !cell || cell.dataset.key === dragKey) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const r = cell.getBoundingClientRect(), before = e.clientX < r.left + r.width / 2;
+        clearDrop();
+        cell.classList.add(before ? "rp-drop-before" : "rp-drop-after");
+      });
+      ov.addEventListener("drop", (e) => {
+        const cell = e.target.closest && e.target.closest(".rp-ov-cell");
+        if (!dragKey || !cell || cell.dataset.key === dragKey) return;
+        e.preventDefault();
+        const before = cell.classList.contains("rp-drop-before"), key = dragKey;
+        moveSlide(key, cell.dataset.key, before);
+      });
+      ov.addEventListener("dragend", () => { dragKey = null; clearDrop(); ov.querySelectorAll(".rp-dragging").forEach((c) => c.classList.remove("rp-dragging")); });
       new ResizeObserver(scaleOverview).observe(ov);   // window resizes, and the first display
+      document.addEventListener("rp-review-change", () => { if (overviewOpen()) refillOverview(null); });   // review.js restored or dropped its edits
       document.body.appendChild(ov);
     }
+    // ── Structural edits in the overview (review mode only) ──
+    function moveSlide(key, targetKey, before) {
+      const api = root.RevealReviewAPI;
+      if (!api) return;
+      const keys = api.slides().map((s) => s.key).filter((k) => k !== key);
+      const at = keys.indexOf(targetKey);
+      if (at < 0) return;
+      keys.splice(before ? at : at + 1, 0, key);
+      api.reorder(keys);
+      refillOverview(key);
+    }
+    function structural(act, key) {
+      const api = root.RevealReviewAPI;
+      if (!api || !key) return;
+      const s = api.slides().find((x) => x.key === key);
+      if (!s) return;
+      if (act === "hide") { if (api.setHidden(key, !s.hidden) === false) return; }
+      else if (act === "delete") { if (api.setDeleted(key, true) === false) return; }
+      else if (act === "undo") api.setDeleted(key, false);
+      else if (act === "earlier" || act === "later") {
+        const keys = api.slides().map((x) => x.key), i = keys.indexOf(key), j = act === "earlier" ? i - 1 : i + 1;
+        if (j < 0 || j >= keys.length) return;
+        [keys[i], keys[j]] = [keys[j], keys[i]];
+        api.reorder(keys);
+      } else return;
+      refillOverview(key);
+    }
+    function refillOverview(focusKey) {
+      ovFilled = false;
+      fillOverview();
+      markCurrent();
+      scaleOverview();
+      const th = focusKey && ov.querySelector(`.rp-ov-cell[data-key="${root.CSS.escape(focusKey)}"] .rp-ov-th`);   // root.CSS: the stylesheet string above is named CSS too
+      if (th) th.focus({ preventScroll: false });
+    }
     function fillOverview() {
-      const body = ov.querySelector(".rp-ov-body"), hasSections = slides.some((s) => s.classList.contains("layout-section"));
-      let grid = null, groups = 0;
-      slides.forEach((slide, i) => {
-        const g = groupOf(slide);
+      const api = root.RevealReviewAPI, body = ov.querySelector(".rp-ov-body");
+      body.innerHTML = "";
+      // With review mode, every slide as built (hidden ones included) in the pending order;
+      // otherwise the live slides. `i` is the live index, -1 for a slide Reveal dropped.
+      const list = api ? api.slides().map((s) => ({ ...s, i: slides.indexOf(s.el) })) : slides.map((el, i) => ({ key: null, el, i, hidden: false, deleted: false }));
+      const hasSections = list.some((s) => !s.deleted && s.el.classList.contains("layout-section"));
+      const lanesCfg = ((deck.getConfig().presenter || {}).lanes || []).filter((l) => l && l.file);
+      const currentLane = lanesCfg.find((l) => l.current);
+      const laneColor = lanesCfg.length > 1 ? (currentLane && currentLane.color) || null : undefined;   // undefined: no lanes, no bars
+      let grid = null, groups = 0, n = 0;
+      list.forEach((s) => {
+        const slide = s.el, g = s.deleted ? null : groupOf(slide);
         if (g || !grid) {
           const head = g || (hasSections ? { kicker: "", title: OPENING } : null);
           if (head) {
@@ -799,24 +961,57 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
           grid.className = "rp-ov-grid";
           body.appendChild(grid);
         }
-        const caption = captionOf(slide), th = document.createElement("button");
-        th.type = "button";
+        const caption = captionOf(slide), num = s.deleted || s.hidden ? "" : pad(++n);
+        const cell = document.createElement("div"), th = document.createElement("div");
+        cell.className = "rp-ov-cell" + (s.hidden ? " rp-hidden" : "") + (s.deleted ? " rp-deleted" : "");
+        if (s.key) cell.dataset.key = s.key;
+        if (laneColor !== undefined) {   // a deck with lanes: ink for the base deck's slide, the lane's colour for one it changes
+          cell.classList.add("rp-laned");
+          if (laneColor && slide.hasAttribute("data-lane-changed")) cell.style.setProperty("--rp-lane", laneColor);
+        }
         th.className = "rp-ov-th";
-        th.dataset.i = i;
-        th.setAttribute("aria-label", "Go to slide " + (i + 1) + (caption ? ": " + caption : ""));
+        th.setAttribute("role", "button");
+        th.tabIndex = 0;
+        th.dataset.i = s.i;
+        th.setAttribute("aria-label", (s.i >= 0 ? "Go to slide " + (s.i + 1) : "Slide not in this build") + (caption ? ": " + caption : "") +
+          (s.hidden ? " (hidden)" : "") + (s.deleted ? " (deleted)" : ""));
         th.innerHTML = '<div class="rp-ov-box"></div><div class="rp-ov-cap"><b></b><span></span></div>';
-        th.querySelector(".rp-ov-cap b").textContent = pad(i + 1);
+        th.querySelector(".rp-ov-cap b").textContent = num || "·";
         th.querySelector(".rp-ov-cap span").textContent = caption;
         th.querySelector(".rp-ov-box").appendChild(slideCopy(slide));
-        grid.appendChild(th);
+        cell.appendChild(th);
+        if (api) {
+          const mask = document.createElement("div");
+          mask.className = "rp-ov-mask";
+          mask.innerHTML = EYE_OFF;
+          th.querySelector(".rp-ov-box").appendChild(mask);
+          const lane = api.lane() ? " in this lane" : "";
+          const tools = document.createElement("div");
+          tools.className = "rp-ov-tools";
+          tools.innerHTML = s.deleted
+            ? '<button type="button" data-ov="undo" title="Bring the slide back">Undo</button>'
+            : `<button type="button" data-ov="hide" title="${s.hidden ? "Show the slide" + lane : "Hide the slide" + lane} (H)" aria-label="${s.hidden ? "Show" : "Hide"}">${s.hidden ? EYE_ON : EYE_OFF}</button>` +
+              '<button type="button" data-ov="delete" title="Delete the slide (Delete)" aria-label="Delete">' + CROSS + "</button>";
+          cell.appendChild(tools);
+          cell.draggable = true;
+        }
+        grid.appendChild(cell);
       });
       body.querySelectorAll(".rp-ov-grp").forEach((h) => {
-        const n = h.nextElementSibling.childElementCount;
-        h.querySelector(".rp-ov-count").textContent = n + (n === 1 ? " slide" : " slides");
+        const k = h.nextElementSibling.querySelectorAll(".rp-ov-cell:not(.rp-deleted):not(.rp-hidden)").length;
+        h.querySelector(".rp-ov-count").textContent = k + (k === 1 ? " slide" : " slides");
       });
       ov.querySelector(".rp-ov-title").textContent = titleOf(slides[0]) || document.title.replace(/^Presenter · /, "");
-      ov.querySelector(".rp-ov-sub").textContent = slides.length + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
-        ". Click a slide to go to it; Esc closes.";
+      ov.querySelector(".rp-ov-sub").textContent = n + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
+        ". Click a slide to go to it; Esc closes." + (api ? " Drag to reorder; the eye hides, the X deletes; changes apply at the next rebuild." : "");
+      if (api && !ov.querySelector(".rp-ov-rebuild")) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "rp-ov-close rp-ov-rebuild";
+        b.title = "Save the edits, rebuild the deck and reload (Shift+B)";
+        b.textContent = "Rebuild deck";
+        ov.firstChild.insertBefore(b, ov.querySelector(".rp-ov-close"));
+      }
       ovFilled = true;
     }
     function scaleOverview() {
@@ -832,7 +1027,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     }
     function openOverview() {
       if (overviewOpen()) return;
-      if (!ovFilled) fillOverview();
+      if (!ovFilled || root.RevealReviewAPI) fillOverview();   // with review mode, the pending state may have changed
       document.documentElement.classList.add("rp-ov-on");
       [revealEl, drawer, shell].forEach((el) => { if (el) el.inert = true; });   // the deck behind it takes no clicks or focus
       markCurrent();
@@ -857,12 +1052,19 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (e.key === "Escape" || e.key === "o" || e.key === "O") { e.preventDefault(); closeOverview(); return; }
       if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // the lane switcher keeps its own keys
       const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
+      if (at >= 0 && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ths[at].click(); return; }
+      if (at >= 0 && root.RevealReviewAPI) {   // structural edits on the focused thumbnail
+        const cell = ths[at].closest(".rp-ov-cell"), key = cell && cell.dataset.key;
+        const act = e.key === "h" || e.key === "H" ? "hide" : e.key === "Delete" || e.key === "Backspace" ? (cell.classList.contains("rp-deleted") ? "undo" : "delete")
+          : e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowUp") ? "earlier" : e.shiftKey && (e.key === "ArrowRight" || e.key === "ArrowDown") ? "later" : null;
+        if (act) { e.preventDefault(); structural(act, key); return; }
+      }
       let step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 0, ArrowUp: 0 }[e.key];
       if (step === undefined) return;
       e.preventDefault();
       if (at < 0) { if (ths.length) ths[0].focus(); return; }
       if (step === 0) {   // up or down a row: the columns per grid are the thumbnails sharing the focused one's top edge
-        const row = ths.filter((t) => t.parentNode === ths[at].parentNode && t.offsetTop === ths[at].offsetTop).length;
+        const row = ths.filter((t) => t.closest(".rp-ov-grid") === ths[at].closest(".rp-ov-grid") && t.closest(".rp-ov-cell").offsetTop === ths[at].closest(".rp-ov-cell").offsetTop).length;
         step = e.key === "ArrowDown" ? row : -row;
       }
       const next = ths[Math.min(ths.length - 1, Math.max(0, at + step))];

@@ -5,18 +5,23 @@
 //   ./slides.js     — array of slide descriptors — see slides.js for the schema
 //   ./assets/logo-light.svg, logo-dark.svg — optional; the brand's logo for the running footer.
 //                     load-style.js copies them from the brand's folder; a generic style has none.
+//   ./edits.json    — optional; text and notes edited in a deck's review mode (E in the deck,
+//                     see ./review.js). Folded into slides.js (or the lane's overlay) before
+//                     every build, then deleted; what can't be folded stays and is layered.
 //
 // Writes:
 //   ./index.html    — single self-contained HTML file: Reveal (from node_modules), theme
 //                     CSS and the presenter plugin (./presenter.js) INLINED, so the deck
 //                     runs with no network. Only the fonts load from Google Fonts (<link>);
-//                     offline they fall back to system fonts.
+//                     offline they fall back to system fonts. With `review: true` next to
+//                     `slides` (or `--review`), ./review.js is inlined too: E in the deck
+//                     edits text and notes in place, Shift+B rebuilds through serve-deck.js.
 //
 // Setup (one-time per deck dir):
-//   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
+//   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,review.js,slides.js,package.json} .
 //   npm install                     # js-yaml and the pinned reveal.js
 //   node $PLUGIN/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md
-//   node build-deck.js .
+//   node build-deck.js .            # add --review to inline the review mode for this build
 //
 // ── PRE-BUILD ALIGNMENT CHECKLIST (run mentally per slide before building) ──
 // 1. Vary layouts. The anti-monotony rule applies — see SKILL.md.
@@ -396,39 +401,43 @@ html.reveal-print .reveal [data-a] { animation: none !important; }
 }
 
 // ── Slide HTML renderers (one per layout) ──────────────────────────
+// Every text field carries data-f="<field>" (array items as "cards.1.body"), HTML-bearing fields
+// also data-html, and the section data-key: review.js edits by these, and build-deck folds the
+// edits back into slides.js by the same names. Cheap, so every deck has them.
 // `a(i, kind)` adds entrance motion to a block (data-a, stagger position i) when the slide
 // has motion on, and nothing otherwise.
+const f = (name, html = false) => ` data-f="${name}"${html ? " data-html=\"\"" : ""}`;
 const renderers = {
   title(s, a) {
     return `<section class="layout-title">
-  <h1${a(0)}>${esc(s.title)}</h1>
-  ${s.subtitle ? `<p class="subtitle"${a(1)}>${esc(s.subtitle)}</p>` : ""}
-  ${s.footer ? `<div class="footer"${a(2, "fade")}>${esc(s.footer)}</div>` : ""}
+  <h1${a(0)}${f("title")}>${esc(s.title)}</h1>
+  ${s.subtitle ? `<p class="subtitle"${a(1)}${f("subtitle")}>${esc(s.subtitle)}</p>` : ""}
+  ${s.footer ? `<div class="footer"${a(2, "fade")}${f("footer")}>${esc(s.footer)}</div>` : ""}
 </section>`;
   },
   section(s, a) {
     return `<section class="layout-section">
-  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
-  <h2${a(1)}>${esc(s.title)}</h2>
+  ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
+  <h2${a(1)}${f("title")}>${esc(s.title)}</h2>
 </section>`;
   },
   "two-column"(s, a) {
     return `<section class="layout-two-column">
-  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
-  <h3${a(1)}>${esc(s.title)}</h3>
+  ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
+  <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
   <div class="columns">
-    <div class="col-left"${a(2)}>${s.left || ""}</div>
-    <div class="col-right"${a(3)}>${s.right || ""}</div>
+    <div class="col-left"${a(2)}${f("left", true)}>${s.left || ""}</div>
+    <div class="col-right"${a(3)}${f("right", true)}>${s.right || ""}</div>
   </div>
 </section>`;
   },
   "card-row"(s, a) {
     const cards = (s.cards || []).map((c, i) =>
-      `<div class="card"${a(2 + i)}><h4>${esc(c.heading)}</h4><p>${c.body || ""}</p></div>`
+      `<div class="card"${a(2 + i)}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
     ).join("\n    ");
     return `<section class="layout-card-row" style="--card-count: ${s.cards.length};">
-  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
-  <h3${a(1)}>${esc(s.title)}</h3>
+  ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
+  <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
   <div class="cards">
     ${cards}
   </div>
@@ -436,26 +445,26 @@ const renderers = {
   },
   bigNumber(s, a) {
     return `<section class="layout-bignumber">
-  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
+  ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <div class="figure-row"${a(1, "pop")}>
-    <div class="figure">${esc(s.figure)}</div>
-    ${s.unit ? `<div class="unit">${esc(s.unit)}</div>` : ""}
+    <div class="figure"${f("figure")}>${esc(s.figure)}</div>
+    ${s.unit ? `<div class="unit"${f("unit")}>${esc(s.unit)}</div>` : ""}
   </div>
-  ${s.label ? `<div class="label"${a(2)}>${esc(s.label)}</div>` : ""}
-  ${s.context ? `<div class="context"${a(3)}>${esc(s.context)}</div>` : ""}
+  ${s.label ? `<div class="label"${a(2)}${f("label")}>${esc(s.label)}</div>` : ""}
+  ${s.context ? `<div class="context"${a(3)}${f("context")}>${esc(s.context)}</div>` : ""}
 </section>`;
   },
   quote(s, a) {
     return `<section class="layout-quote">
-  <blockquote${a(0, "fade")}>${esc(s.quote)}</blockquote>
-  ${s.attribution ? `<div class="attribution"${a(1)}>${esc(s.attribution)}</div>` : ""}
+  <blockquote${a(0, "fade")}${f("quote")}>${esc(s.quote)}</blockquote>
+  ${s.attribution ? `<div class="attribution"${a(1)}${f("attribution")}>${esc(s.attribution)}</div>` : ""}
 </section>`;
   },
   bullets(s, a) {
-    const items = (s.items || []).map((item, i) => `<li${a(2 + i)}>${item}</li>`).join("\n    ");
+    const items = (s.items || []).map((item, i) => `<li${a(2 + i)}${f(`items.${i}`, true)}>${item}</li>`).join("\n    ");
     return `<section class="layout-bullets">
-  ${s.kicker ? `<div class="kicker"${a(0)}>${esc(s.kicker)}</div>` : ""}
-  <h3${a(1)}>${esc(s.title)}</h3>
+  ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
+  <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
   <ul>
     ${items}
   </ul>
@@ -464,7 +473,7 @@ const renderers = {
   "image-caption"(s, a) {
     return `<section class="layout-image-caption">
   <img src="${s.src}" alt="${esc(s.alt || "")}"${a(0, "fade")}/>
-  ${s.caption ? `<div class="caption"${a(1)}>${esc(s.caption)}</div>` : ""}
+  ${s.caption ? `<div class="caption"${a(1)}${f("caption")}>${esc(s.caption)}</div>` : ""}
 </section>`;
   },
 };
@@ -487,7 +496,7 @@ function notesHtml(slide) {
   if (unknown.length) throw new Error(`Unknown cue field(s): ${unknown.join(", ")}. Supported: ${CUE_FIELDS.join(", ")}`);
   if (cue.run != null && !CUE_RUNS.includes(cue.run)) throw new Error(`Unknown cue.run: "${cue.run}". Supported: ${CUE_RUNS.join(", ")}. To take a slide out of the deck, set hidden: true.`);
   const attrs = CUE_FIELDS.filter(k => cue[k] != null && cue[k] !== "").map(k => ` data-${k}="${esc(cue[k])}"`).join("");
-  return `<aside class="notes"${attrs}>${esc(slide.notes || "").replace(/\r?\n/g, "&#10;")}</aside>`;
+  return `<aside class="notes" data-f="notes"${attrs}>${esc(slide.notes || "").replace(/\r?\n/g, "&#10;")}</aside>`;
 }
 
 // The running footer of one slide: the deck's footer text on the left, the logo (if the deck
@@ -500,12 +509,17 @@ function footerHtml(chrome) {
 
 // `motion` is the deck's default; a slide's own `motion` field overrides it. `chrome` is the
 // running footer for this slide ({ footer, logo, n, total }) or null; the title slide never gets it.
-function renderSlide(slide, motion = false, chrome = null) {
+// `key` is the slide's address for review edits: its own `key`, else "s<n>" by position in slides.js.
+function slideKey(slide, index) { return slide.key || `s${index + 1}`; }
+// `laneChanged` marks a slide a lane overlay changed (data-lane-changed), for the overview's lane bar.
+function renderSlide(slide, motion = false, chrome = null, key = null, laneChanged = false) {
   const fn = renderers[slide.layout];
   if (!fn) throw new Error(`Unknown layout: "${slide.layout}". Supported: ${Object.keys(renderers).join(", ")}`);
   const moving = slide.motion != null ? !!slide.motion : motion;
   const a = (i, kind = "up") => (moving ? ` data-a="${kind}" style="--i: ${i}"` : "");
   let html = fn(slide, a);
+  // data-key-auto says the key is positional (the slide has no `key` of its own), which a lane overlay can't address.
+  if (key) html = html.replace(/^(<section class="[^"]*")/, `$1 data-key="${esc(key)}"${slide.key ? "" : ' data-key-auto=""'}${laneChanged ? ' data-lane-changed=""' : ""}`);
   // Reveal removes hidden slides when the deck loads, so the presenter doesn't count them either.
   if (slide.hidden) html = html.replace(/^(<section class="[^"]*")/, '$1 data-visibility="hidden"');
   const tail = [chrome && slide.layout !== "title" ? footerHtml(chrome) : "", notesHtml(slide)].filter(Boolean);
@@ -557,6 +571,7 @@ function faviconHref(palette) {
 //   lanes     paths of lane overlays (see applyLane): one build writes index.html for the base
 //             deck and index-<id>.html per lane, each with a lane switcher in its overview
 //   lane      the base deck's name in that switcher (default "Base")
+//   review    true inlines review.js: E edits text and notes in the deck (see §Review edits)
 // The presenter gives every in-run slide of a session an equal share of its length.
 function readDeck(spec) {
   const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
@@ -568,6 +583,7 @@ function readDeck(spec) {
   const lanes = deck.lanes == null ? [] : deck.lanes;
   if (!Array.isArray(lanes) || !lanes.every(p => typeof p === "string" && p.trim())) throw new Error("lanes must be an array of overlay file paths");
   if (deck.lane != null && (typeof deck.lane !== "string" || !deck.lane.trim())) throw new Error("lane must be the base deck's name, a string");
+  if (deck.review != null && typeof deck.review !== "boolean") throw new Error(`review must be true or false, got "${deck.review}"`);
   const keys = deck.slides.map(s => s.key).filter(k => k != null);
   if (keys.some(k => typeof k !== "string" || !k)) throw new Error("a slide's key must be a non-empty string");
   const dup = keys.find((k, i) => keys.indexOf(k) !== i);
@@ -580,7 +596,7 @@ function readDeck(spec) {
     if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
     sessions[label] = Number(minutes);
   }
-  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo, lanes, lane: deck.lane || "Base" };
+  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo, lanes, lane: deck.lane || "Base", review: deck.review === true };
 }
 
 // ── Lanes ──────────────────────────────────────────────────────────
@@ -588,7 +604,8 @@ function readDeck(spec) {
 // listed in `lanes`, applied to a copy of the slides. The overlay exports
 //   { name: "Acme Investments",                       // shown in the lane switcher
 //     replace: [["Acme Corp", "Acme Investments"]],   // string replacements over every text field
-//     slides: { "s1-07": { right: "…", notes: "…" } } }   // fields replaced whole, by the slide's `key`
+//     slides: { "s1-07": { right: "…", notes: "…" } },  // fields replaced whole, by the slide's `key`
+//     color: "#2F7DE1" }                               // optional: the lane's colour in the overview
 // The lane's id is the overlay's file name without .js, and its output is index-<id>.html.
 // Replacements skip `layout`, `key`, `src`, `cue` and `motion`, so they change words, not structure.
 const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden"]);
@@ -613,6 +630,15 @@ function applyLane(slides, overlay, id) {
   return reps.length ? out.map(walk) : out;
 }
 function laneId(file) { return path.basename(file).replace(/\.js$/i, ""); }
+// Each lane's colour in the overview (its switcher and the bar under the slides it changes); the
+// base deck is drawn in ink. An overlay's `color` wins; otherwise lanes take these in turn.
+const LANE_COLORS = ["#2F7DE1", "#1FA26A", "#E0892B", "#9B5DE5", "#E2487E", "#17A2B8"];
+// Which slides of a lane differ from the base deck, by key (the overlay's fields or its replacements).
+function laneChangedKeys(base, laneSlides) {
+  const keys = new Set();
+  laneSlides.forEach((s, i) => { if (JSON.stringify(s) !== JSON.stringify(base[i])) keys.add(slideKey(s, i)); });
+  return keys;
+}
 
 // ── Reveal, inlined ────────────────────────────────────────────────
 // Read from the deck dir's node_modules (npm install), so the page needs no CDN. The
@@ -630,6 +656,13 @@ function revealAssets(fromDir) {
     }
     if (path.dirname(dir) === dir) throw new Error(`reveal.js isn't installed. Run npm install in the deck dir (package.json pins reveal.js ${REVEAL_VERSION}).`);
   }
+}
+// A module read fresh from disk. require's cache is keyed by real path, so a deck dir given
+// through a symlink (macOS /tmp) would otherwise serve the module read before a fold rewrote it.
+function loadFresh(file) {
+  const resolved = require.resolve(file);
+  delete require.cache[resolved];
+  return require(resolved);
 }
 // Keep inlined code from closing its own tag early.
 const inlineScript = (js) => js.replace(/<\/script/gi, "<\\/script");
@@ -665,8 +698,9 @@ function minSec(minutes) {
 }
 
 // ── HTML page assembly ─────────────────────────────────────────────
-function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false, lanes = [] }) {
+function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false, lanes = [], reviewJs = "", review = null }) {
   const presenterConfig = { sessions, ...(lanes.length > 1 ? { lanes } : {}) };
+  const plugins = ["RevealPresenter", ...(reviewJs ? ["RevealReview"] : [])];
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -694,6 +728,7 @@ ${slidesHtml.split("\n").map(l => "      " + l).join("\n")}
 ${inlineScript(reveal.js)}
   </script>
   ${presenterJs ? `<script>\n${inlineScript(presenterJs)}\n  </script>` : ""}
+  ${reviewJs ? `<script>\n${inlineScript(reviewJs)}\n  </script>` : ""}
   <script>
     Reveal.initialize({
       width: ${SLIDE_W_PX},
@@ -704,8 +739,9 @@ ${inlineScript(reveal.js)}
       progress: true,
       slideNumber: ${footer ? "false" : "'c/t'"},${footer ? "   // the running footer carries the page number" : ""}
       transition: 'fade',${presenterJs ? `
-      plugins: [RevealPresenter],
-      presenter: ${JSON.stringify(presenterConfig).replace(/</g, "\\u003c")},` : ""}
+      plugins: [${plugins.join(", ")}],
+      presenter: ${JSON.stringify(presenterConfig).replace(/</g, "\\u003c")},` : ""}${reviewJs ? `
+      review: ${JSON.stringify(review).replace(/</g, "\\u003c")},` : ""}
     });
   </script>
 </body>
@@ -713,9 +749,404 @@ ${inlineScript(reveal.js)}
 `;
 }
 
+// ── Review edits ───────────────────────────────────────────────────
+// review.js (E in a deck built with `review: true`) saves text and notes edits as ./edits.json:
+//   { built: "<ISO time of the build the edits were made on>", lane: null | "<lane id>", file: "index.html",
+//     keys: ["cover", "s2", …],                       // every slide's key in the built order
+//     slides: { "<key>": { title: { from: "old", to: "new" }, "cards.1.body": { from, to }, notes: { from, to },
+//                          comment: "a note for whoever edits the deck next" } },
+//     deck: { hidden: { "<key>": true | false }, deleted: ["<key>"], order: ["<key>", …] } }
+// Keys are the slides' own `key`s, else "s<n>" by position in slides.js. Before every build the
+// edits are folded into the source: each `from` is looked up as a string literal in slides.js (or
+// in the lane's overlay when the edits were made in a lane) and rewritten to `to`, with the same
+// quote style and the file's comments and layout untouched. A `from` the file doesn't hold exactly
+// once can't be placed, so it stays in edits.json and is layered over this build instead; comments
+// stay too, for whoever iterates on the deck (often Claude). edits.json is deleted when nothing is left.
+// `deck` holds the overview's structural edits: `hidden` sets or clears a slide's `hidden` field
+// (in the lane's overlay when made in a lane), `deleted` removes slide objects from slides.js (in a
+// lane it hides them there instead), and `order` rearranges them, comments riding along with each.
+// They need slides.js's list to be plain object literals in the order `keys` records; otherwise
+// they're layered and reported.
+const EDITS_FILE = "edits.json";
+
+// String literals of a JS source with their spans, skipping comments. Template literals with
+// substitutions are skipped: they aren't constants. Good enough for slides.js, which is data.
+function stringLiterals(src) {
+  const out = [];
+  let i = 0;
+  while (i < src.length) {
+    const c = src[i], n = src[i + 1];
+    if (c === "/" && n === "/") { i = src.indexOf("\n", i); if (i < 0) break; continue; }
+    if (c === "/" && n === "*") { const e = src.indexOf("*/", i + 2); i = e < 0 ? src.length : e + 2; continue; }
+    if (c === '"' || c === "'" || c === "`") {
+      const start = i++;
+      let value = "", constant = true;
+      while (i < src.length && src[i] !== c) {
+        if (src[i] === "\\") { i += 2; continue; }
+        if (c === "`" && src[i] === "$" && src[i + 1] === "{") constant = false;
+        if (c !== "`" && src[i] === "\n") break;   // unterminated; let it be
+        i++;
+      }
+      const end = i + 1;
+      if (constant && src[i] === c) {
+        try { value = new Function(`return ${src.slice(start, end)}`)(); } catch (e) { value = null; }
+        if (typeof value === "string") out.push({ start, end, quote: c, value });
+      }
+      i = end;
+      continue;
+    }
+    i++;
+  }
+  return out;
+}
+function literal(text, quote) {
+  if (quote === "`") return "`" + text.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${") + "`";
+  const json = JSON.stringify(text);
+  return quote === '"' ? json : "'" + json.slice(1, -1).replace(/\\"/g, '"').replace(/'/g, "\\'") + "'";
+}
+// Light HTML as the browser gives it back (innerHTML) vs as the source wrote it: self-closing
+// tags, attribute quotes, entities and whitespace runs may differ without a word changing.
+function looseHtml(t) {
+  return String(t).replace(/\s*\/>/g, ">").replace(/\s+/g, " ").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").trim();
+}
+function setPath(obj, dotted, value) {
+  const parts = dotted.split(".");
+  let o = obj;
+  for (const k of parts.slice(0, -1)) { if (o == null || typeof o !== "object") return false; o = o[k]; }
+  if (o == null || typeof o !== "object") return false;
+  o[parts[parts.length - 1]] = value;
+  return true;
+}
+function readEdits(cwd) {
+  const file = path.join(cwd, EDITS_FILE);
+  if (!fs.existsSync(file)) return null;
+  let edits;
+  try { edits = JSON.parse(fs.readFileSync(file, "utf8")); } catch (e) { throw new Error(`${EDITS_FILE} isn't valid JSON: ${e.message}`); }
+  if (!edits || typeof edits !== "object" || !edits.slides || typeof edits.slides !== "object") throw new Error(`${EDITS_FILE} must hold { slides: { <key>: { <field>: { from, to } } } }`);
+  return { file, edits };
+}
+// Rewrite one source file's literals. Returns the fields it couldn't place, with the reason.
+function foldInto(file, entries) {
+  const original = fs.readFileSync(file, "utf8");
+  const lits = stringLiterals(original);
+  const left = [], applied = [];
+  for (const { key, field, from, to } of entries) {
+    let hits = lits.filter(l => l.value === from);
+    if (hits.length !== 1) { const loose = looseHtml(from); hits = lits.filter(l => looseHtml(l.value) === loose); }
+    if (hits.length === 0) { left.push({ key, field, from, to, reason: `text not found in ${path.basename(file)}` }); continue; }
+    if (hits.length > 1) { left.push({ key, field, from, to, reason: `text appears ${hits.length} times in ${path.basename(file)}` }); continue; }
+    if (applied.some(a => a.start === hits[0].start)) { left.push({ key, field, from, to, reason: "two edits land on the same text" }); continue; }
+    applied.push({ ...hits[0], to, key, field });
+  }
+  if (applied.length) {
+    let src = original;
+    for (const a of applied.sort((x, y) => y.start - x.start)) src = src.slice(0, a.start) + literal(a.to, a.quote) + src.slice(a.end);
+    fs.writeFileSync(file, src);
+    try { loadFresh(file); } catch (e) {
+      fs.writeFileSync(file, original);
+      throw new Error(`folding ${EDITS_FILE} into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold the edits by hand.`);
+    }
+  }
+  return { applied, left };
+}
+// ── Structural fold: slide objects in slides.js, overlay entries in a lane file ──
+// The top-level items of the array or object whose bracket opens at `open`: each item's span
+// (first to last significant character), the lead before it (whitespace and comments after
+// the previous comma) and whether a comma follows. Strings and comments are skipped.
+function splitTopLevel(src, open) {
+  const close = { "[": "]", "{": "}" }[src[open]];
+  if (!close) throw new Error("splitTopLevel: not a bracket");
+  const items = [];
+  let depth = 0, i = open + 1, itemStart = -1, lastSig = -1, leadStart = open + 1;
+  const sig = (k) => { if (itemStart < 0) itemStart = k; lastSig = k; };
+  while (i < src.length) {
+    const c = src[i], n = src[i + 1];
+    if (c === "/" && n === "/") { const e = src.indexOf("\n", i); i = e < 0 ? src.length : e; continue; }
+    if (c === "/" && n === "*") { const e = src.indexOf("*/", i + 2); i = e < 0 ? src.length : e + 2; continue; }
+    if (c === '"' || c === "'" || c === "`") {
+      sig(i); i++;
+      while (i < src.length && src[i] !== c) { if (src[i] === "\\") i++; i++; }
+      sig(i); i++; continue;
+    }
+    if (depth === 0 && (c === close)) break;
+    if (depth === 0 && c === ",") {
+      if (itemStart >= 0) items.push({ start: itemStart, end: lastSig + 1, leadStart, comma: i });
+      itemStart = -1; leadStart = i + 1; i++; continue;
+    }
+    if ("[{(".includes(c)) depth++;
+    else if ("]})".includes(c)) depth--;
+    if (!/\s/.test(c)) sig(i);
+    i++;
+  }
+  if (i >= src.length) throw new Error("splitTopLevel: unbalanced brackets");
+  if (itemStart >= 0) items.push({ start: itemStart, end: lastSig + 1, leadStart, comma: -1 });
+  return { close: i, items };
+}
+// The index of the matching bracket for the one at `open` (strings and comments skipped).
+function matchBracket(src, open) { return splitTopLevel(src, open).close; }
+function isIdent(s) { return /^[A-Za-z_$][\w$]*$/.test(s); }
+function entryKey(src, item) {   // "key:" or "'key':" at the start of an object entry, else null
+  const m = src.slice(item.start, item.end).match(/^([A-Za-z_$][\w$]*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*:/);
+  if (!m) return null;
+  const k = m[1];
+  return k[0] === '"' || k[0] === "'" ? new Function(`return ${k}`)() : k;
+}
+// The export's object (`module.exports = {`) or array (`module.exports = [`): the bracket index.
+function exportBracket(src) {
+  const lits = stringLiterals(src);
+  const inLit = (k) => lits.some(l => k >= l.start && k < l.end);
+  const re = /module\.exports\s*=\s*([\[{])/g;
+  let m;
+  while ((m = re.exec(src))) if (!inLit(m.index)) return m.index + m[0].length - 1;
+  throw new Error("no `module.exports = {` or `= [` found");
+}
+// The slides array of slides.js: its bracket index, or -1 when the file exports no plain list.
+function slidesArray(src) {
+  const open = exportBracket(src);
+  if (src[open] === "[") return open;
+  const { items } = splitTopLevel(src, open);
+  const it = items.find(x => entryKey(src, x) === "slides");
+  if (!it) return -1;
+  const b = src.indexOf("[", it.start);
+  return b > 0 && b < it.end && /^slides\s*:\s*\[/.test(src.slice(it.start, b + 1)) ? b : -1;
+}
+// Set, clear or replace `hidden` in the object literal at `open`. Returns the new source.
+function setHiddenIn(src, open, value) {   // value: true | false | null (remove)
+  const { items } = splitTopLevel(src, open);
+  const at = items.findIndex(x => entryKey(src, x) === "hidden"), it = items[at];
+  if (it) {
+    if (value === null) {   // drop the entry with its own comma, or with the comma before it when it's last
+      const prev = items[at - 1];
+      const from = it.comma >= 0 || !prev ? it.leadStart : prev.comma, to = it.comma >= 0 ? it.comma + 1 : it.end;
+      return src.slice(0, from) + src.slice(to);
+    }
+    return src.slice(0, it.start) + `hidden: ${value}` + src.slice(it.end);
+  }
+  if (value === null) return src;
+  return src.slice(0, open + 1) + ` hidden: ${value},` + src.slice(open + 1);
+}
+// Fold the structural edits into slides.js: reorder and remove slide objects, set `hidden`.
+function foldDeckInto(file, keys, ops) {
+  const original = fs.readFileSync(file, "utf8");
+  const open = slidesArray(original);
+  if (open < 0) throw new Error("slides.js doesn't export a plain `slides: [ … ]` list");
+  const { close, items } = splitTopLevel(original, open);
+  if (items.length !== keys.length) throw new Error(`slides.js lists ${items.length} slides, the edits were made on ${keys.length}`);
+  for (const it of items) {
+    if (original[it.start] !== "{" || matchBracket(original, it.start) !== it.end - 1) throw new Error("a slide in slides.js isn't a plain object literal");
+  }
+  // Each slide's text, with its lead (comments above it travel with it) and `hidden` applied.
+  const texts = new Map();
+  keys.forEach((key, i) => {
+    const it = items[i];
+    let text = original.slice(it.start, it.end);
+    if (key in ops.hidden) text = setHiddenIn(text, 0, ops.hidden[key] ? true : null);
+    texts.set(key, { lead: original.slice(it.leadStart, it.start), text });
+  });
+  const order = (ops.order || keys).filter(k => !ops.deleted.includes(k));
+  const last = items[items.length - 1];
+  const tail = original.slice(last.comma >= 0 ? last.comma + 1 : last.end, close);
+  const body = order.map(k => texts.get(k).lead + texts.get(k).text + ",").join("");
+  const src = original.slice(0, open + 1) + body + (tail.trim() ? tail : tail || "\n") + original.slice(close);
+  fs.writeFileSync(file, src);
+  // Auto keys are positional, so they shift with the order: `want` is each kept slide's key after
+  // the fold (its own `key` if it has one, else its new position), and the returned map says
+  // which old key became which, for whatever still refers to the old ones.
+  const ownKey = (text) => splitTopLevel(text, 0).items.some(it => entryKey(text, it) === "key");
+  const want = order.map((k, i) => ownKey(texts.get(k).text) ? k : `s${i + 1}`);
+  try {
+    const deck = readDeck(loadFresh(file));
+    const got = deck.slides.map((s, i) => slideKey(s, i));
+    if (got.join("\n") !== want.join("\n")) throw new Error("the folded list doesn't match the edits");
+    for (const [k, h] of Object.entries(ops.hidden)) {
+      const at = order.indexOf(k);
+      if (at >= 0 && !!deck.slides[at].hidden !== !!h) throw new Error(`hidden didn't take on ${k}`);
+    }
+  } catch (e) {
+    fs.writeFileSync(file, original);
+    throw new Error(`folding the slide list into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold it by hand.`);
+  }
+  return new Map(order.map((k, i) => [k, want[i]]));
+}
+// Fold a lane's `hidden` edits into its overlay: slides: { <key>: { hidden: <bool> } }.
+function foldLaneHidden(file, hidden) {
+  const original = fs.readFileSync(file, "utf8");
+  let src = original;
+  for (const [key, value] of Object.entries(hidden)) {
+    const open = exportBracket(src);
+    if (src[open] !== "{") throw new Error("the overlay must export an object");
+    let { items } = splitTopLevel(src, open);
+    let slidesIt = items.find(x => entryKey(src, x) === "slides");
+    if (!slidesIt) {
+      src = src.slice(0, open + 1) + "\n  slides: {},".replace(/^\n/, src[open + 1] === "\n" ? "\n" : " ") + src.slice(open + 1);
+      items = splitTopLevel(src, open).items;
+      slidesIt = items.find(x => entryKey(src, x) === "slides");
+    }
+    const sOpen = src.indexOf("{", slidesIt.start);
+    if (sOpen < 0 || sOpen > slidesIt.end) throw new Error("the overlay's `slides` isn't an object");
+    const entries = splitTopLevel(src, sOpen).items;
+    const it = entries.find(x => entryKey(src, x) === key);
+    if (it) {
+      const oOpen = src.indexOf("{", it.start);
+      if (oOpen < 0 || oOpen > it.end) throw new Error(`the overlay's slides["${key}"] isn't an object`);
+      src = setHiddenIn(src, oOpen, value);
+    } else {
+      const k = isIdent(key) ? key : JSON.stringify(key);
+      src = src.slice(0, sOpen + 1) + ` ${k}: { hidden: ${value} },` + src.slice(sOpen + 1);
+    }
+  }
+  fs.writeFileSync(file, src);
+  try {
+    const o = loadFresh(file);
+    for (const [key, value] of Object.entries(hidden)) if (!o.slides || !o.slides[key] || o.slides[key].hidden !== value) throw new Error(`hidden didn't take on ${key}`);
+  } catch (e) {
+    fs.writeFileSync(file, original);
+    throw new Error(`folding hidden slides into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold it by hand.`);
+  }
+}
+// The deck ops of edits.json, checked. Returns { hidden: {key: bool}, deleted: [key], order: [key] | null }.
+function readDeckOps(edits) {
+  const d = edits.deck;
+  if (d == null) return null;
+  if (typeof d !== "object") throw new Error(`${EDITS_FILE}: deck must be an object`);
+  const ops = { hidden: {}, deleted: [], order: null };
+  for (const [k, v] of Object.entries(d.hidden || {})) { if (typeof v !== "boolean") throw new Error(`${EDITS_FILE}: deck.hidden.${k} must be true or false`); ops.hidden[k] = v; }
+  if (d.deleted != null) { if (!Array.isArray(d.deleted) || !d.deleted.every(k => typeof k === "string")) throw new Error(`${EDITS_FILE}: deck.deleted must be a list of keys`); ops.deleted = d.deleted; }
+  if (d.order != null) { if (!Array.isArray(d.order) || !d.order.every(k => typeof k === "string")) throw new Error(`${EDITS_FILE}: deck.order must be a list of keys`); ops.order = d.order; }
+  return Object.keys(ops.hidden).length || ops.deleted.length || ops.order ? ops : null;
+}
+
+// Fold ./edits.json into slides.js or the lane's overlay. Returns what to layer over this build:
+// { lane, fields: [{ key, field, to }] }, plus the comments, or null when there was no file.
+function foldEdits(cwd, deckLanes) {
+  const found = readEdits(cwd);
+  if (!found) return null;
+  const { file, edits } = found;
+  const laneFile = edits.lane ? deckLanes.find(l => laneId(l) === edits.lane) : null;
+  if (edits.lane && !laneFile) throw new Error(`${EDITS_FILE} was saved in lane "${edits.lane}", which slides.js no longer lists`);
+  const target = edits.lane ? path.resolve(cwd, laneFile) : path.join(cwd, "slides.js");
+  const entries = [];
+  let comments = [];
+  for (const [key, fields] of Object.entries(edits.slides)) {
+    if (!fields || typeof fields !== "object") continue;
+    for (const [field, v] of Object.entries(fields)) {
+      if (field === "comment") { if (typeof v === "string" && v.trim()) comments.push({ key, comment: v.trim() }); continue; }
+      if (!v || typeof v.from !== "string" || typeof v.to !== "string") throw new Error(`${EDITS_FILE}: ${key}.${field} must be { from, to }`);
+      if (v.from !== v.to) entries.push({ key, field, from: v.from, to: v.to });
+    }
+  }
+  let { applied, left } = entries.length ? foldInto(target, entries) : { applied: [], left: [] };
+  const rel = path.relative(process.cwd(), target) || path.basename(target);
+  if (applied.length) console.log(`Folded ${applied.length} edit${applied.length === 1 ? "" : "s"} from ${EDITS_FILE} into ${rel} (${new Set(applied.map(a => a.key)).size} slide${new Set(applied.map(a => a.key)).size === 1 ? "" : "s"}).`);
+  for (const l of left) console.log(`  kept in ${EDITS_FILE}: ${l.key}.${l.field} (${l.reason}); layered over this build. Fold it by hand.`);
+  for (const c of comments) console.log(`  comment on ${c.key}: ${c.comment}`);
+
+  // Structural edits: the slide list in slides.js, `hidden` in a lane's overlay.
+  const ops = readDeckOps(edits);
+  let deckLeft = null, remap = null;   // remap: old key → new key, once the slide list was reordered
+  if (ops) {
+    const slidesPath = path.join(cwd, "slides.js");
+    const current = readDeck(loadFresh(slidesPath)).slides.map((s, i) => slideKey(s, i));
+    const keys = Array.isArray(edits.keys) ? edits.keys : null;
+    const keep = (reason, layerOrder = true) => { deckLeft = { ...ops, reason, layerOrder }; console.log(`  kept in ${EDITS_FILE}: the hidden / deleted / order edits (${reason}); layered over this build. Fold them by hand.`); };
+    const n = (o) => `${Object.keys(o.hidden).length} hidden or shown, ${o.deleted.length} deleted${o.order ? ", reordered" : ""}`;
+    const permutation = (order, of) => order.length === of.length && new Set(order).size === of.length && order.every(k => of.includes(k));
+    if (!keys) keep("the file doesn't record the built slide order");
+    else if (keys.join("\n") !== current.join("\n")) keep("slides.js's slide list changed since the edits were made");
+    else if (ops.order && !permutation(ops.order, keys)) keep("the order doesn't list every slide exactly once", false);   // kept for the record, but an order like that can't be layered either
+    else if (!edits.lane) {
+      try { remap = foldDeckInto(slidesPath, keys, ops); console.log(`Folded the slide list into slides.js (${n(ops)}).`); }
+      catch (e) { keep(e.message); }
+    } else {
+      // In a lane: hidden (and deleted, which means hidden there) go to the overlay by key; the
+      // order is the base deck's and shared by every lane, so it goes to slides.js.
+      const laneHidden = { ...ops.hidden };
+      for (const k of ops.deleted) laneHidden[k] = true;
+      const unkeyed = Object.keys(laneHidden).filter(k => /^s\d+$/.test(k) && !deckLanesKeyed(cwd, k));
+      const keyed = Object.fromEntries(Object.entries(laneHidden).filter(([k]) => !unkeyed.includes(k)));
+      const laneOps = { hidden: {}, deleted: [], order: null };
+      let hiddenDone = !Object.keys(keyed).length;
+      try {
+        if (!hiddenDone) { foldLaneHidden(target, keyed); hiddenDone = true; console.log(`Folded ${Object.keys(keyed).length} hidden / deleted slide${Object.keys(keyed).length === 1 ? "" : "s"} into ${rel} (deleted in a lane means hidden there).`); }
+        if (ops.order) { remap = foldDeckInto(slidesPath, keys, { hidden: {}, deleted: [], order: ops.order }); console.log("Folded the slide order into slides.js (the order is shared by every lane)."); }
+      } catch (e) {
+        if (!hiddenDone) laneOps.hidden = keyed;
+        laneOps.order = ops.order;
+        deckLeft = { ...laneOps, reason: e.message };
+        console.log(`  kept in ${EDITS_FILE}: the lane's ${hiddenDone ? "order" : "hidden / order"} edits (${e.message}); layered over this build.`);
+      }
+      if (unkeyed.length) {
+        for (const k of unkeyed) laneOps.hidden[k] = laneHidden[k];
+        deckLeft = { ...(deckLeft || laneOps), hidden: { ...(deckLeft ? deckLeft.hidden : {}), ...Object.fromEntries(unkeyed.map(k => [k, laneHidden[k]])) }, reason: (deckLeft && deckLeft.reason) || "unkeyed slides" };
+        console.log(`  kept in ${EDITS_FILE}: hidden for ${unkeyed.join(", ")} (a lane overlay needs the slide's own \`key\`; give the slide one in slides.js); layered over this build.`);
+      }
+    }
+  }
+
+  // The slide list was reordered: everything still keyed by the old positions follows the
+  // slides to their new keys, and an edit on a deleted slide has nowhere to go.
+  if (remap) {
+    const follow = (what, key) => {
+      if (remap.has(key)) return remap.get(key);
+      console.log(`  dropped ${what} on ${key}: the slide was deleted.`);
+      return null;
+    };
+    for (const l of left) l.key = follow(`${l.field}`, l.key);
+    left = left.filter(l => l.key);
+    for (const c of comments) c.key = follow("the comment", c.key);
+    comments = comments.filter(c => c.key);
+    if (deckLeft) deckLeft.hidden = Object.fromEntries(Object.entries(deckLeft.hidden).map(([k, v]) => [remap.get(k) || k, v]));
+    edits.keys = [...remap.values()];
+  }
+
+  if (left.length || comments.length || deckLeft) {
+    const slides = {};
+    for (const l of left) (slides[l.key] = slides[l.key] || {})[l.field] = { from: l.from, to: l.to };
+    for (const c of comments) (slides[c.key] = slides[c.key] || {}).comment = c.comment;
+    const out = { ...edits, slides };
+    if (deckLeft) out.deck = { ...(Object.keys(deckLeft.hidden).length ? { hidden: deckLeft.hidden } : {}), ...(deckLeft.deleted.length ? { deleted: deckLeft.deleted } : {}), ...(deckLeft.order ? { order: deckLeft.order } : {}) };
+    else delete out.deck;
+    fs.writeFileSync(file, JSON.stringify(out, null, 2) + "\n");
+  } else {
+    fs.unlinkSync(file);
+    console.log(`${EDITS_FILE} folded and removed.`);
+  }
+  return { lane: edits.lane || null, fields: left.map(l => ({ key: l.key, field: l.field, to: l.to })), comments,
+    deck: deckLeft ? { hidden: deckLeft.hidden, deleted: deckLeft.deleted, order: deckLeft.layerOrder === false ? null : deckLeft.order } : null };
+}
+// Whether slides.js gives the slide at auto key s<n> an own key (then the auto key isn't its key).
+function deckLanesKeyed(cwd, autoKey) {
+  const slides = readDeck(loadFresh(path.join(cwd, "slides.js"))).slides;
+  const i = Number(autoKey.slice(1)) - 1;
+  return !!(slides[i] && slides[i].key);
+}
+// Layer the edits that couldn't be folded over the slides of one output: field values, then
+// hidden flags, deletions and the order (keys are read against the slides' built positions).
+function applyEdits(slides, fields, deck = null) {
+  if (!fields.length && !deck) return slides;
+  let out = structuredClone(slides);
+  const keyed = out.map((s, i) => [slideKey(s, i), s]);
+  const byKey = new Map(keyed);
+  for (const { key, field, to } of fields) {
+    const slide = byKey.get(key);
+    if (!slide) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`);
+    if (!setPath(slide, field, to)) throw new Error(`${EDITS_FILE}: slide ${key} has no field "${field}"`);
+  }
+  if (deck) {
+    for (const [key, h] of Object.entries(deck.hidden || {})) { const s = byKey.get(key); if (!s) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`); if (h) s.hidden = true; else delete s.hidden; }
+    if (deck.order) { const missing = deck.order.find(k => !byKey.has(k)); if (missing) throw new Error(`${EDITS_FILE}: deck.order names "${missing}", which no slide has`); out = deck.order.map(k => byKey.get(k)).concat(keyed.filter(([k]) => !deck.order.includes(k)).map(([, s]) => s)); }
+    if (deck.deleted && deck.deleted.length) out = out.filter(s => !deck.deleted.includes(keyed.find(([, x]) => x === s)[0]));
+  }
+  return out;
+}
+
 // ── Main ───────────────────────────────────────────────────────────
 function main() {
-  const cwd = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();
+  const args = process.argv.slice(2);
+  const flags = new Set(args.filter(a => a.startsWith("--")));
+  const dirArg = args.find(a => !a.startsWith("--"));
+  const cwd = dirArg ? path.resolve(dirArg) : process.cwd();
   const styleSpec = loadStyleSpec(cwd);
 
   const slidesPath = path.join(cwd, "slides.js");
@@ -723,10 +1154,12 @@ function main() {
     console.error(`slides.js not found in ${cwd}`);
     process.exit(1);
   }
-  delete require.cache[slidesPath];
-  const deck = readDeck(require(slidesPath));
+  // Review edits first, so the deck read below is the folded one.
+  const edits = foldEdits(cwd, readDeck(loadFresh(slidesPath)).lanes);
+  const deck = readDeck(loadFresh(slidesPath));
   const { slides, sessions, motion, footer } = deck;
   const reveal = revealAssets(__dirname);
+  const review = deck.review || flags.has("--review");
 
   const presenterPath = path.join(__dirname, "presenter.js");
   if (!fs.existsSync(presenterPath)) {
@@ -735,6 +1168,14 @@ function main() {
     process.exit(1);
   }
   const presenterJs = fs.readFileSync(presenterPath, "utf8");
+  const reviewPath = path.join(__dirname, "review.js");
+  if (review && !fs.existsSync(reviewPath)) {
+    console.error(`review.js not found next to build-deck.js (the deck asks for review mode). Copy it from the templates:`);
+    console.error("  cp $PLUGIN/skills/slideware/html/assets/templates/review.js .");
+    process.exit(1);
+  }
+  const reviewJs = review ? fs.readFileSync(reviewPath, "utf8") : "";
+  const built = new Date().toISOString();
 
   const fontsUrl = googleFontsUrl(styleSpec.type || {});
   const palette = styleSpec.palette || {};
@@ -744,30 +1185,35 @@ function main() {
   const baseTitle = styleSpec.name ? `${styleSpec.name} deck` : "deck";
 
   // The outputs: the base deck, then one per lane. Every output lists all of them in its lane switcher.
-  const overlays = deck.lanes.map(file => {
+  const overlays = deck.lanes.map((file, i) => {
     const abs = path.resolve(cwd, file);
     if (!fs.existsSync(abs)) throw new Error(`lanes: ${file} not found`);
-    delete require.cache[abs];
-    const overlay = require(abs), id = laneId(file);
+    const overlay = loadFresh(abs), id = laneId(file);
     if (!overlay || typeof overlay.name !== "string" || !overlay.name.trim()) throw new Error(`lane ${id}: the overlay needs a name`);
-    return { id, name: overlay.name.trim(), file: `index-${id}.html`, overlay };
+    if (overlay.color != null && !/^#[0-9a-f]{6}$/i.test(overlay.color)) throw new Error(`lane ${id}: color must be a #rrggbb hex, got "${overlay.color}"`);
+    return { id, name: overlay.name.trim(), file: `index-${id}.html`, overlay, color: overlay.color || LANE_COLORS[i % LANE_COLORS.length] };
   });
   const ids = overlays.map(l => l.id);
   const dupLane = ids.find((id, i) => ids.indexOf(id) !== i);
   if (dupLane) throw new Error(`two lanes have the id "${dupLane}" (the overlay's file name)`);
-  const outputs = [{ id: null, name: deck.lane, file: "index.html", slides }, ...overlays.map(l => ({ ...l, slides: applyLane(slides, l.overlay, l.id) }))];
-  const switcher = outputs.map(o => ({ name: o.name, file: o.file }));
+  const outputs = [{ id: null, name: deck.lane, file: "index.html", slides, color: null, changed: new Set() },
+    ...overlays.map(l => { const laneSlides = applyLane(slides, l.overlay, l.id); return { ...l, slides: laneSlides, changed: laneChangedKeys(slides, laneSlides) }; })];
+  const switcher = outputs.map(o => ({ name: o.name, file: o.file, color: o.color }));
 
   for (const out of outputs) {
+    // Edits that couldn't be folded are layered over the output they were made in.
+    if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck);
     const visible = out.slides.filter(s => !s.hidden);
-    const slidesHtml = out.slides.map((s) => renderSlide(s, motion, footer.length
-      ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null)).join("\n");
+    const slidesHtml = out.slides.map((s, i) => renderSlide(s, motion, footer.length
+      ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i), out.changed.has(slideKey(s, i)))).join("\n");
     const title = out.id ? `${baseTitle} · ${out.name}` : baseTitle;
     const lanes = switcher.map(l => ({ ...l, current: l.file === out.file }));
-    const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes });
+    const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes,
+      reviewJs, review: reviewJs ? { built, lane: out.id, file: out.file } : null });
     const outPath = path.join(cwd, out.file);
     fs.writeFileSync(outPath, html);
     console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${out.slides.length} slides, ${styleSpec.name || "unnamed style"}${out.id ? `, lane ${out.name}` : overlays.length ? `, lane ${out.name} of ${outputs.length}` : ""})`);
+    if (reviewJs && !out.id) console.log(`Review mode inlined (${deck.review ? "review: true in slides.js" : "--review"}): E in the deck edits text and notes, Shift+B rebuilds via serve-deck.js.`);
     if (footer.length && !out.id) console.log(`Footer on every slide but the title: ${footer.join(" · ")} · ${logo ? `logo ${logo.file}` : "no logo (no ./assets/logo-*.svg; a brand's style stages one)"} · page n / ${visible.length}`);
   }
   const summary = pacingSummary(slides, sessions);
@@ -775,4 +1221,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits, splitTopLevel, slidesArray, setHiddenIn };

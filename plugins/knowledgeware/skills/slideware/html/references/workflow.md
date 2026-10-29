@@ -7,7 +7,7 @@ Two paths — pick by deck stakes.
 ```bash
 mkdir my-deck && cd my-deck
 node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js style-1 -o ./style.md
-cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
+cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,review.js,slides.js,package.json} .
 npm install
 # Edit slides.js — replace placeholder content with yours
 node build-deck.js .
@@ -22,7 +22,7 @@ Ship after `polish-deck.py` (or a visual scan) reports clean. No iteration loop.
 # 1. Scaffold
 mkdir my-deck && cd my-deck
 node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js style-N -o ./style.md
-cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,slides.js,package.json} .
+cp ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,review.js,slides.js,package.json} .
 npm install
 
 # 2. Plan layouts — pick from references/layout-patterns.md, vary across the deck
@@ -45,6 +45,12 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/polish-deck.py ./inde
 
 # 8. Iterate: edit slides.js or style.md, rebuild, re-render, re-inspect.
 #    Stop when an inspection finds zero meaningful issues — typically 2-3 cycles.
+
+# 9. Hand-over for the user's own text and notes edits (optional): build with review mode and serve it.
+#    node build-deck.js . --review        # or review: true next to slides in slides.js
+#    node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/serve-deck.js .   # http://127.0.0.1:8010/
+#    E in the deck edits text and notes, Shift+B saves edits.json and rebuilds; every build folds
+#    edits.json into slides.js. See reveal.md §Review mode.
 ```
 
 ## Choosing a style

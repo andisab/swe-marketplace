@@ -82,6 +82,10 @@ Both formats carry the same presenter information, so a deck can move between th
 
 Mechanics: [html/references/reveal.md](html/references/reveal.md) §Speaker notes (`notes`, `cue`, `hidden` slide fields; `sessions` / `minutes` in `slides.js`) · [pptx/FORMAT.md](pptx/FORMAT.md) §Speaker notes (`speakerNotes()`, `s.hidden`, `SESSIONS`).
 
+## Review mode (html)
+
+An HTML deck built with `review: true` (or `--review`) lets the user edit text and speaker notes in the browser (`E`), and hide, delete and reorder slides in the overview (`O`), and save it all as `edits.json` next to the deck; `Shift+B` rebuilds from the browser when the deck is served by `html/scripts/serve-deck.js`. **Every build folds `edits.json` into `slides.js` first** and prints what it folded, what it couldn't place, and the user's comments. So when asked to "apply my edits" or "rebuild the deck", or whenever a deck folder holds an `edits.json`: run the build, then act on what it prints (fold a leftover by hand, answer each comment by editing the slide, rebuild again). Build with review mode when the user says they'll review or edit the text themselves. Mechanics: [html/references/reveal.md](html/references/reveal.md) §Review mode.
+
 ## Sample mimicry (shared principle: style only, never content)
 
 When the user provides a sample deck, derive palette, type pairing, layout patterns, motif, and density — then author **new** content in that visual language. **Mimicry overrides anti-monotony**: if the sample has a distinctive non-standard layout, echoing it matters more than the canonical archetypes. Extraction mechanics are per-format (pptx: render + markitdown; html: DevTools/CSS) — see the format guides.
