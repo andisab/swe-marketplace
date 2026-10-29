@@ -15,7 +15,9 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ### knowledgeware 1.12.1
 
-Consolidation after a three-reviewer pass over the plugin; no behaviour changes.
+Consolidation after a three-reviewer pass over the plugin, plus one change to how the librarian works.
+
+- **Sweeps propose by default and apply when told.** `librarian sweep <site>` now does its research and writes `librarian-audit-<date>.md` in the site's folder (every verdict with its source, every proposed edit as an exact old → new string, the stamps to bump, the changelog row to add) and leaves the site untouched. `sweep <site> --apply <audit-file>` lands a reviewed audit without new research, skipping proposals marked `skip` and stopping if the site changed under it; `sweep <site> --apply` keeps the old one-run behaviour for sites maintained unattended; `--dry-run` still writes nothing. `plan` lists the audits nobody has applied yet. Existing scheduled sweeps keep running and now leave audits instead of edits; add `--apply` to a schedule that should keep editing.
 
 - **One brandbook parser.** slideware's HTML style converter (`html/scripts/load-style.js`) imports the plugin loader's `build` instead of carrying a 190-line copy that had drifted (it lacked the frontmatter precision layer, the name override and the paletteDark passthrough), so a brandbook without frontmatter now reads the same in both deck formats.
 - **Style resolution is stated once.** The brandware skill's resolution contract is the one statement; slideware, knowledgebase and chartware keep a sentence, a link and their own fallback. The pptx and HTML workflow references and the pptx starter no longer say "default to style-1 if unspecified" or copy a token cache by path, which bypassed the user's brands directory and the `.knowledgeware` / `DEFAULT` markers. `acmecorp` is named as the template to copy for a new brand, and gains the README that role needs.

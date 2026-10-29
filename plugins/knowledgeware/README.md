@@ -47,7 +47,7 @@ Facts such as prices, quotas, versions and release status go out of date. A know
 
 - **`/knowledgeware:librarian status [library]`** reports what's due, what's overdue and what's coming up, plus open conflicts. It writes nothing.
 - **`/knowledgeware:librarian plan [library]`** writes `librarian-plan.md` at the library root. The plan lists this week's sweeps, the sources shared across items (so each is checked once), what's coming up, the backlog, and what needs a person. Each plan picks up where the last one stopped.
-- **`/knowledgeware:librarian sweep <site-dir> [--dry-run]`** maintains one site. It re-checks only the facts whose check interval has passed, sends research subagents to the primary sources, and applies the changes they confirm. Then it updates the `Last verified` stamps it earned and adds a changelog row. It reports structural problems as suggestions and never restructures the site.
+- **`/knowledgeware:librarian sweep <site-dir>`** checks one site. It re-checks only the facts whose check interval has passed, sends research subagents to the primary sources, and writes what it found to `librarian-audit-<date>.md` in the site's folder: each verdict with its source, and each proposed edit as the exact old and new text. The site itself is untouched. Read the audit, mark any proposal you don't want as `skip`, then run **`sweep <site-dir> --apply <audit-file>`** to land the rest, with the `Last verified` stamps it earned and a changelog row. **`sweep <site-dir> --apply`** without a file does the research and the edits in one run, for a site you're happy to have maintained unattended. Either way it reports structural problems as suggestions and never restructures the site.
 
 The library is the folder you pass, or else the folder in the `KNOWLEDGEWARE_LIBRARY` environment variable. The librarian reports on decks and plans their updates but doesn't edit them, because re-checking a deck means editing its source and rebuilding it, which slideware does.
 
@@ -58,7 +58,7 @@ claude -p "/knowledgeware:librarian sweep '/path/to/site'" --permission-mode acc
 claude -p "/knowledgeware:librarian plan '/path/to/library'" --permission-mode acceptEdits --model opus
 ```
 
-Add `--dry-run` inside the quoted sweep command for a first run, so the sweep reports what it would change and writes nothing. Sites follow the contract in `skills/knowledgebase/references/maintenance.md`. For a site built before that contract existed, the librarian matches the sections by their content and reports where they differ. A site with no maintenance page at all can't be swept, and the librarian offers to generate one. `/knowledgeware:kb-maintain` still runs a sweep, so existing scheduled jobs keep working.
+Each weekly sweep leaves an audit to review, and the plan lists the audits still waiting. Add `--dry-run` inside the quoted sweep command for a first run, so the sweep reports what it would change and writes nothing at all. Sites follow the contract in `skills/knowledgebase/references/maintenance.md`. For a site built before that contract existed, the librarian matches the sections by their content and reports where they differ. A site with no maintenance page at all can't be swept, and the librarian offers to generate one. `/knowledgeware:kb-maintain` still runs a sweep, so existing scheduled jobs keep working.
 
 ## **brandware**: the registry the other skills read
 

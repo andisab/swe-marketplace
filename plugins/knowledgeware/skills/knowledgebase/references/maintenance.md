@@ -74,7 +74,9 @@ If a changed fact's data class is missing from the master table, add a row — a
 
 What a scheduled agent (see the plugin's `librarian` agent, `sweep` mode) may and may not do. A site's `protocol` section may tighten these; it may not loosen the forbidden list.
 
-**Allowed:** verify due rows and apply confirmed deltas through the §3 ordering · bump earned stamps · write the changelog row · add rows to `upcoming`, `open-conflicts`, `outstanding-questions` · append dated drift observations to `outstanding-questions`.
+**Two modes.** By default a sweep writes nothing into the site: its verdicts and proposed edits go to `librarian-audit-<date>.md` in the site folder, for a person to read and then apply (`--apply <audit-file>`), and the allowed list below describes what that application does. Only `sweep --apply` edits the site in the same run as the research. Either way, the audit or the changelog is the record that someone looked.
+
+**Allowed (when applying):** verify due rows and apply confirmed deltas through the §3 ordering · bump earned stamps · write the changelog row · add rows to `upcoming`, `open-conflicts`, `outstanding-questions` · append dated drift observations to `outstanding-questions`.
 
 **Forbidden:** restructuring nav, page order, or section order · rewriting prose for style or voice · deleting content (supersede and annotate instead) · bumping a stamp without checking the table · inventing or extrapolating figures · converting an `(unverified)` marker to a claim without a primary source · touching rows that are not due.
 
