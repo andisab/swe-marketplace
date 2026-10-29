@@ -23,9 +23,11 @@
 //           When the deck was built in lanes (presenter: { lanes: [{ name, file }] }), the
 //           overview's header holds a lane switcher that opens the same slide in another lane.
 //   Navigation pill: a floating bar at the bottom (previous, the slide number, next, the
-//           current section's name, the overview, fullscreen), in the deck's tokens. Shown
-//           for 2.5 s after the mouse moves or on hover; hidden in print, in the presenter
-//           window and under the overview. It replaces Reveal's arrows (controls: false).
+//           current section's name, the overview, fullscreen, and an i that lists every
+//           key on hover and pins the list on click), in the deck's tokens. Shown for
+//           2.5 s after the mouse moves or on hover, above the notes drawer; hidden in
+//           print, in the presenter window and under the overview. It replaces Reveal's
+//           arrows (controls: false).
 //
 // Presenter window (the deck opened with ?presenter):
 //   previous slide | current slide | next slide across the top, notes full width below.
@@ -90,7 +92,7 @@
 .rp-drawer { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; max-height: 38vh; overflow-y: auto;
   padding: 16px 28px 22px; background: rgba(250,250,249,.97); border-top: 1px solid #E3E3DF;
   box-shadow: 0 -8px 24px rgba(26,26,24,.10); color: #1A1A18; font-family: ${SANS}; line-height: 1.55; text-align: left; }
-html.rp-drawer-on .rp-drawer { display: block; }
+html.rp-drawer-on .rp-drawer { display: block; padding-bottom: 64px; }   /* room for the navigation pill, which sits above the drawer */
 .rp-cue-text { font-family: ${MONO}; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-drawer .rp-md { margin-top: 8px; font-size: 18px; max-width: 1100px; }
 .rp-md p { margin: 0 0 .8em; }
@@ -228,11 +230,11 @@ html.rp-ov-on .rp-ov { display: block; }
 .rp-ov-lane select:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
 
 /* Navigation pill: the deck's surface at 92%, its ink, border and accent, so a dark style gives a dark pill. */
-.rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 4px; padding: 5px;
+.rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 4px; padding: 5px;
   border-radius: 12px; border: 1px solid var(--color-border, #E3E3DF); background: var(--color-surface, #FFFFFF);
   background: color-mix(in srgb, var(--color-surface, #FFFFFF) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   color: var(--color-ink, #1A1A18); font-family: ${SANS}; font-size: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, .18); opacity: 0; transition: opacity .3s; }
-html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within { opacity: 1; }
+html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within, .rp-hud[data-help] { opacity: 1; }
 .rp-hud button { all: unset; cursor: pointer; height: 30px; min-width: 30px; padding: 0 9px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--color-ink, #1A1A18); }
 .rp-hud button:hover { background: color-mix(in srgb, var(--color-ink, #1A1A18) 7%, transparent); }
 .rp-hud button:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
@@ -242,6 +244,18 @@ html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within { opacity: 1; }
 .rp-hud .rp-hud-sep { width: 1px; height: 18px; margin: 0 3px; background: color-mix(in srgb, var(--color-ink, #1A1A18) 14%, transparent); }
 .rp-hud .rp-hud-name { padding: 0 8px; max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink-muted, #6B6B63); }
 .rp-hud .rp-hud-name:empty, .rp-hud .rp-hud-name:empty + .rp-hud-sep { display: none; }
+/* The key list: hover or focus the i for a tooltip, click to pin it (Esc or a click elsewhere unpins). */
+.rp-hud-info { position: relative; display: inline-flex; }
+.rp-hud-help { display: none; position: absolute; right: 0; bottom: calc(100% + 6px); width: 320px; padding: 12px 14px 10px; box-sizing: border-box; cursor: default;
+  border-radius: 12px; border: 1px solid var(--color-border, #E3E3DF); background: var(--color-surface, #FFFFFF); color: var(--color-ink, #1A1A18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .18); font-size: 12px; line-height: 1.4; text-align: left; }
+.rp-hud-help::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; }   /* keeps :hover across the gap */
+.rp-hud-info:hover .rp-hud-help, .rp-hud-info:focus-within .rp-hud-help, .rp-hud[data-help] .rp-hud-help { display: block; }
+.rp-hud-help h3 { margin: 0 0 8px; font: 600 11px/1 ${SANS}; letter-spacing: .1em; text-transform: uppercase; color: var(--color-ink-muted, #6B6B63); }
+.rp-hud-help dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0; }
+.rp-hud-help dt { font-family: ${MONO}; font-size: 11px; white-space: nowrap; color: ${ACCENT}; }
+.rp-hud-help dd { margin: 0; }
+.rp-hud-help p { margin: 8px 0 0; color: var(--color-ink-muted, #6B6B63); }
 html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
 @media print { .rp-hud { display: none !important; } }
 `;
@@ -253,7 +267,23 @@ html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
 <span class="rp-hud-name"></span>
 <span class="rp-hud-sep"></span>
 <button type="button" data-hud="grid" aria-label="Slide overview (O)" title="Overview (O)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
-<button type="button" data-hud="full" aria-label="Fullscreen (F)" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>`;
+<button type="button" data-hud="full" aria-label="Fullscreen (F)" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+<span class="rp-hud-info"><button type="button" data-hud="help" aria-label="Keyboard shortcuts" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg></button><div class="rp-hud-help" role="tooltip"></div></span>`;
+  // The key list behind the pill's i. Review mode's keys are listed when the deck was built with it.
+  const KEYS = [
+    ["→ ← Space", "Next and previous slide"],
+    ["S or P", "Presenter view in a second window"],
+    ["N", "Notes drawer, for rehearsal"],
+    ["O", "Overview of every slide, by section"],
+    ["F", "Fullscreen"],
+    ["B or .", "Black out the screen"],
+    ["Esc", "Close the overview, leave a field"],
+    ["?", "Every Reveal.js key"],
+  ];
+  const REVIEW_KEYS = [
+    ["E", "Review mode: edit text and notes in place"],
+    ["⇧B", "Rebuild the deck (through serve-deck.js)"],
+  ];
   const OPENING = "Opening";   // the group of slides before the first section divider
 
   const splitHtml = (name, axis, label) => `<div class="rp-split rp-split-${axis}" data-split="${name}" role="separator"
@@ -453,7 +483,13 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         else if (act === "next") deck.next();
         else if (act === "grid") toggleOverview();
         else if (act === "full") toggleFullscreen();
+        else if (act === "help") pinHelp(!hud.hasAttribute("data-help"));
       });
+      const keys = deck.getConfig().review ? KEYS.slice(0, 6).concat(REVIEW_KEYS, KEYS.slice(6)) : KEYS;
+      hud.querySelector(".rp-hud-help").innerHTML = "<h3>Keys</h3><dl>" + keys.map(([k, d]) => "<dt>" + k + "</dt><dd>" + d + "</dd>").join("") + "</dl>" +
+        "<p>Click the i to keep this open.</p>";
+      document.addEventListener("click", (e) => { if (hud.hasAttribute("data-help") && !e.target.closest(".rp-hud-info")) pinHelp(false); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && hud.hasAttribute("data-help")) pinHelp(false); }, true);
       const show = () => {
         document.documentElement.classList.add("rp-hud-on");
         clearTimeout(hudTimer);
@@ -462,6 +498,10 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       document.addEventListener("mousemove", show);
       document.addEventListener("touchstart", show, { passive: true });
       show();
+    }
+    function pinHelp(open) {
+      hud.toggleAttribute("data-help", open);
+      hud.querySelector("button[data-hud=help]").setAttribute("aria-expanded", String(open));
     }
     function toggleFullscreen() {
       const el = document.documentElement;

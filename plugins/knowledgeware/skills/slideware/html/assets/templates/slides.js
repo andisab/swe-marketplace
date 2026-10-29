@@ -32,6 +32,10 @@
 //    `key`, list overlay files in `lanes` (each exports { name, replace, slides: { key:
 //    { fields } } }), and one build writes index.html plus index-<id>.html per lane, each
 //    with a lane switcher in its overview. See references/reveal.md §Lanes.
+// 11. `review: true` next to `slides` inlines review mode: E in the deck edits text and
+//    speaker notes in place and saves them as ./edits.json, which every build folds back
+//    into this file (Shift+B rebuilds from the browser when the deck is served by
+//    html/scripts/serve-deck.js). See references/reveal.md §Review mode.
 
 module.exports = [
   {

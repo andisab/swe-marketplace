@@ -60,6 +60,11 @@ if ! bash plugins/knowledgeware/tests/diagram-digest-test.sh; then
   failed=1
 fi
 
+# slideware's HTML review flow: addressable markup, edits.json folded into slides.js, serve-deck.js
+if ! node plugins/knowledgeware/tests/deck-review-test.js; then
+  failed=1
+fi
+
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue
   run_validate "$dir" "$(basename "$dir")"

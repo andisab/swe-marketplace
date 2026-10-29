@@ -193,13 +193,15 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 
 **Lanes.** One deck can be worked for several audiences, such as two example customers, without a second copy of the slides. Ask for lanes and say what changes in each; slideware writes one file per lane next to the main deck, and the overview in any of them has a switcher that opens the same slide in another lane.
 
-**The overview.** Press `O` in the deck or the presenter view to see every slide as a thumbnail, grouped under the deck's section slides, with the current slide outlined. Click a slide to go to it, or move with the arrow keys and press Enter; Esc closes. The overview takes its colors and fonts from the deck's style, so a dark deck has a dark overview. Opening the deck with `?overview` after its address starts in it.
+**The overview.** Press `O` in the deck or the presenter view to see every slide as a thumbnail, grouped under the deck's section slides, with the current slide outlined. Click a slide to go to it, or move with the arrow keys and press Enter; Esc closes. The overview takes its colors and fonts from the deck's style, so a dark deck has a dark overview. Opening the deck with `?overview` after its address starts in it. The `i` at the end of the navigation bar lists every key.
+
+**Editing the words yourself.** Ask for the deck "with review mode" (or ask Claude to turn it on for an existing deck) and press `E` in the browser: every heading, body and card becomes editable in place, and a panel at the bottom holds the slide's speaker notes and a box for a comment to Claude. Your edits stay in the browser until you save them, then land in a small `edits.json` file next to the deck, and the next build folds them into the deck's source, so they survive every later change. To rebuild without leaving the browser, have Claude start the deck's local server (`serve-deck.js`) and press `Shift+B`; otherwise press Save, or Copy and paste the edits to Claude with "apply my edits". Review mode is for text and notes. Layout, images and style changes still go through Claude.
 
 **A PDF of an HTML deck.** Open the deck in Chrome with `?print-pdf` added to the end of its address, then choose **File → Print → Save as PDF**. Print mode can misplace the footer on title slides. If the footers matter, ask Claude to render the slides as images instead.
 
 **The fonts look wrong.** A PowerPoint file names its fonts but doesn't embed them, so it shows substitutes on any computer that lacks them. Before a build, slideware installs the style's missing Google Fonts and tells you which other fonts to install by hand. An HTML deck loads its fonts from Google Fonts, so without a connection it shows the fallback fonts the style names.
 
-**Changing a deck after delivery.** Ask for the change, and slideware rebuilds the deck from its source. If you edited the delivered file by hand in the meantime, slideware compares it with its last build first and carries your edits into the rebuild.
+**Changing a deck after delivery.** Ask for the change, and slideware rebuilds the deck from its source. If you edited the delivered file by hand in the meantime, slideware compares it with its last build first and carries your edits into the rebuild. Text and notes edits made in review mode are folded in by every build, and Claude reads the comments you left.
 
 **Optional tooling.** None of these tools blocks a build. When one is missing, the skill still delivers and tells you which check it skipped.
 

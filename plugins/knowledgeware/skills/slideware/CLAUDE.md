@@ -7,7 +7,7 @@ Deep-dive companion to `SKILL.md`: what the skill ships with, the five default s
 Generates slide decks in **two output formats**, chosen per request (the skill asks if the request doesn't make it clear):
 
 - **pptx** (`pptx/`): real PowerPoint `.pptx` files via **pptxgenjs** (Node.js) with React-rendered icons via **react-icons + sharp**. Opens cleanly in PowerPoint, Keynote, and Google Slides. Speaker notes open with a cue line holding each slide's planned time.
-- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** (inlined, so they run offline) — run in any browser, host statically, share by link. Ships a presenter view (previous / current / next slides, notes, live pacing), a section overview (`O`: every slide as a thumbnail, grouped under the deck's section slides, in the deck's own style), a navigation pill (previous, slide number, next, section name, overview, fullscreen; replaces Reveal's arrows), an optional running footer (deck-level `footer`: text, the brand's logo when the style is a brand, page numbers), lanes (deck-level `lanes`: overlay files merged by slide `key`, one output per lane with a switcher in the overview), a tab icon in the style's colours, and entrance motion (on by default).
+- **html** (`html/`): single self-contained `index.html` decks via **Reveal.js** (inlined, so they run offline) — run in any browser, host statically, share by link. Ships a presenter view (previous / current / next slides, notes, live pacing), a section overview (`O`: every slide as a thumbnail, grouped under the deck's section slides, in the deck's own style), a navigation pill (previous, slide number, next, section name, overview, fullscreen; replaces Reveal's arrows), an optional running footer (deck-level `footer`: text, the brand's logo when the style is a brand, page numbers), lanes (deck-level `lanes`: overlay files merged by slide `key`, one output per lane with a switcher in the overview), a tab icon in the style's colours, entrance motion (on by default), and an optional review mode (`review: true`): `E` edits text and speaker notes in the browser, `Shift+B` rebuilds through `html/scripts/serve-deck.js`, and every build folds the saved `edits.json` back into `slides.js`.
 
 Both formats share one set of speaker-note conventions (cues, session pacing, hidden slides) — see `SKILL.md` §Speaker notes, pacing and hidden slides.
 
@@ -228,7 +228,9 @@ For **polished decks (≥4 slides)**, the full path with 2-3 iteration cycles is
 | `pptx/assets/samples/<bb>/` | Canonical sample decks (build script + rendered PNGs) |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with checklist + pitfalls inline |
 | `html/assets/templates/{build-deck,slides}.js` | HTML renderer + slide-descriptor scaffold |
-| `html/assets/templates/presenter.js` | Reveal plugin inlined into every HTML deck: presenter view with resizable panes, pacing timer, notes drawer, section overview (`O`) |
+| `html/assets/templates/presenter.js` | Reveal plugin inlined into every HTML deck: presenter view with resizable panes, pacing timer, notes drawer, section overview (`O`), navigation pill with a key list |
+| `html/assets/templates/review.js` | Reveal plugin inlined only into decks with `review: true`: edit text and notes in place (`E`), save `edits.json`, rebuild from the browser (`Shift+B`) |
+| `html/scripts/serve-deck.js` | Local server for a deck: static files plus the save and rebuild calls review mode uses; binds 127.0.0.1 only |
 | `html/scripts/load-style.js` | Registry/brandbook → YAML-frontmatter style.md converter |
 | `<plugin>/scripts/list-styles.js` | List discovered styles + brandbooks |
 | `<plugin>/scripts/load-style.js` | Style/brandbook → tokens parser |
