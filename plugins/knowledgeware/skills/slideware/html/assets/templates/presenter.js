@@ -11,7 +11,9 @@
 //   S or P  open the presenter view in a second window; the two windows stay in sync
 //           (BroadcastChannel plus window.postMessage, so it also works from file://)
 //   N       toggle a notes drawer along the bottom of the deck, for rehearsal. Anyone
-//           who can see the screen can read it.
+//           who can see the screen can read it. The deck shrinks to the space above the
+//           drawer (the --rp-reserve-bottom custom property on <html>, which review.js's
+//           panel uses too), so long notes never cover the slide.
 //   O       toggle the overview: every slide as a thumbnail, in a grid per section. A
 //           section-divider slide (layout-section) heads its group with its kicker and
 //           title; the slides before the first divider are the opening; a deck with no
@@ -102,6 +104,8 @@
   padding: 16px 28px 22px; background: rgba(250,250,249,.97); border-top: 1px solid #E3E3DF;
   box-shadow: 0 -8px 24px rgba(26,26,24,.10); color: #1A1A18; font-family: ${SANS}; line-height: 1.55; text-align: left; }
 html.rp-drawer-on .rp-drawer { display: block; padding-bottom: 64px; }   /* room for the navigation pill, which sits above the drawer */
+/* The deck gives up the bottom of the viewport to whatever sits there (the notes drawer, review mode's panel) and Reveal re-fits the slide. */
+html.rp-drawer-on body > .reveal, html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); }
 .rp-cue-text { font-family: ${MONO}; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-drawer .rp-md { margin-top: 8px; font-size: 18px; max-width: 1100px; }
 .rp-md p { margin: 0 0 .8em; }
@@ -302,24 +306,25 @@ html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
 <span class="rp-hud-sep"></span>
 <span class="rp-hud-name"></span>
 <span class="rp-hud-sep"></span>
-<button type="button" data-hud="grid" aria-label="Slide overview (O)" title="Overview (O)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
-<button type="button" data-hud="full" aria-label="Fullscreen (F)" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+<button type="button" data-hud="grid" aria-label="Slide overview (o)" title="Overview (o)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+<button type="button" data-hud="full" aria-label="Fullscreen (f)" title="Fullscreen (f)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
 <span class="rp-hud-info"><button type="button" data-hud="help" aria-label="Keyboard shortcuts" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg></button><div class="rp-hud-help" role="tooltip"></div></span>`;
   // The key list behind the pill's i. Review mode's keys are listed when the deck was built with it.
+  // One convention for every key the plugins show: plain keys lowercase, as pressed; modifiers spelled out.
   const KEYS = [
-    ["→ ← Space", "Next and previous slide"],
-    ["S or P", "Presenter view in a second window"],
-    ["N", "Notes drawer, for rehearsal"],
-    ["O", "Overview of every slide, by section"],
-    ["F", "Fullscreen"],
-    ["B or .", "Black out the screen"],
-    ["Esc", "Close the overview, leave a field"],
+    ["→ ← space", "Next and previous slide"],
+    ["s or p", "Presenter view in a second window"],
+    ["n", "Notes drawer, for rehearsal"],
+    ["o", "Overview of every slide, by section"],
+    ["f", "Fullscreen"],
+    ["b or .", "Black out the screen"],
+    ["esc", "Close the overview, leave a field"],
     ["?", "Every Reveal.js key"],
   ];
   const REVIEW_KEYS = [
-    ["E", "Review mode: edit text and notes in place"],
-    ["⇧B", "Rebuild the deck (through serve-deck.js)"],
-    ["H · Del · ⇧←→", "In the overview: hide, delete or move the focused slide"],
+    ["e", "Review mode: edit text, notes and the deck's shape"],
+    ["shift+b", "Rebuild the deck (through serve-deck.js)"],
+    ["h · del · shift+←→", "In the overview, with review mode on: hide, delete or move the focused slide"],
   ];
   const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.4 10.4 0 0 1 12 5c5 0 9 4 10 7a11.7 11.7 0 0 1-3.2 4.3M6.3 6.3A11.6 11.6 0 0 0 2 12c1 3 5 7 10 7a9.7 9.7 0 0 0 4.4-1"/></svg>';
   const EYE_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -488,6 +493,16 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     function toggleDrawer() {
       document.documentElement.classList.toggle("rp-drawer-on");
       renderDrawer();
+      reserveBottom();
+    }
+    // How much of the viewport's bottom the deck gives up: the drawer's height while it's shown
+    // (review mode's panel sets the same property itself and hides the drawer). Reveal re-fits.
+    function reserveBottom() {
+      if (document.documentElement.classList.contains("rv-on")) return;   // review.js owns it then
+      const on = document.documentElement.classList.contains("rp-drawer-on");
+      if (on) document.documentElement.style.setProperty("--rp-reserve-bottom", drawer.offsetHeight + "px");
+      else document.documentElement.style.removeProperty("--rp-reserve-bottom");
+      deck.layout();
     }
     function renderDrawer() {
       if (!document.documentElement.classList.contains("rp-drawer-on")) return;
@@ -501,6 +516,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       drawer.setAttribute("aria-live", "polite");
       drawer.innerHTML = '<div class="rp-cue-text"></div><div class="rp-md"></div>';
       document.body.appendChild(drawer);
+      new ResizeObserver(() => { if (document.documentElement.classList.contains("rp-drawer-on")) reserveBottom(); }).observe(drawer);   // notes change length per slide
+      document.addEventListener("rp-reserve-recompute", reserveBottom);   // review mode closed; the drawer's claim applies again
       deck.addKeyBinding({ keyCode: 83, key: "S", description: "Open presenter view" }, openPresenter);
       deck.addKeyBinding({ keyCode: 80, key: "P", description: "Open presenter view" }, openPresenter);
       deck.addKeyBinding({ keyCode: 78, key: "N", description: "Notes drawer (the audience can see it)" }, toggleDrawer);
@@ -804,8 +821,14 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       return node;
     }
     // Scale a copy's slide to a frame w px wide; the copy's .slides sits centred in the frame.
+    // The copy is also re-centred from its own height: Reveal sets each live slide's inline
+    // `top` when it lays the slide out, and a slide it hasn't shown yet (display: none, beyond
+    // the view distance) keeps a stale value, typically half the slide height, which the clone
+    // would inherit and show as content shifted down. scrollHeight ignores the scale transform.
     function scaleCopy(frame, w) {
       frame.querySelector(".slides").style.transform = "translate(-50%, -50%) scale(" + w / slideW + ")";
+      const sec = frame.querySelector(".slides > section");
+      if (sec && sec.offsetParent !== null) sec.style.top = Math.max((slideH - sec.scrollHeight) / 2, 0) + "px";
     }
 
     // ── Overview: every slide as a thumbnail, grouped by section ───
@@ -833,7 +856,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       ov.setAttribute("aria-label", "Slide overview");
       ov.style.setProperty("--rp-ratio", slideW + " / " + slideH);
       ov.innerHTML = '<div class="rp-ov-head"><div><h1 class="rp-ov-title"></h1><p class="rp-ov-sub"></p></div>' +
-        '<button type="button" class="rp-ov-close" title="Close the overview (Esc)">Close</button></div><div class="rp-ov-body"></div>';
+        '<button type="button" class="rp-ov-close" title="Close the overview (esc)">Close</button></div><div class="rp-ov-body"></div>';
       // Lanes: the deck built in several variants; the switcher opens the same slide in another one.
       const lanes = ((deck.getConfig().presenter || {}).lanes || []).filter((l) => l && l.name && l.file);
       if (lanes.length > 1) {
@@ -901,7 +924,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     // ── Structural edits in the overview (review mode only) ──
     function moveSlide(key, targetKey, before) {
       const api = root.RevealReviewAPI;
-      if (!api) return;
+      if (!api || !editing()) return;
       const keys = api.slides().map((s) => s.key).filter((k) => k !== key);
       const at = keys.indexOf(targetKey);
       if (at < 0) return;
@@ -911,7 +934,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     }
     function structural(act, key) {
       const api = root.RevealReviewAPI;
-      if (!api || !key) return;
+      if (!api || !key || !editing()) return;
       const s = api.slides().find((x) => x.key === key);
       if (!s) return;
       if (act === "hide") { if (api.setHidden(key, !s.hidden) === false) return; }
@@ -933,8 +956,11 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       const th = focusKey && ov.querySelector(`.rp-ov-cell[data-key="${root.CSS.escape(focusKey)}"] .rp-ov-th`);   // root.CSS: the stylesheet string above is named CSS too
       if (th) th.focus({ preventScroll: false });
     }
+    // Structural edits (the tools, drag and drop, the keys) exist only while review mode is on: an
+    // edit made outside it would look like navigation and only show up at the next rebuild.
+    function editing() { return !!root.RevealReviewAPI && document.documentElement.classList.contains("rv-on"); }
     function fillOverview() {
-      const api = root.RevealReviewAPI, body = ov.querySelector(".rp-ov-body");
+      const api = root.RevealReviewAPI, body = ov.querySelector(".rp-ov-body"), edit = editing();
       body.innerHTML = "";
       // With review mode, every slide as built (hidden ones included) in the pending order;
       // otherwise the live slides. `i` is the live index, -1 for a slide Reveal dropped.
@@ -985,13 +1011,15 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
           mask.className = "rp-ov-mask";
           mask.innerHTML = EYE_OFF;
           th.querySelector(".rp-ov-box").appendChild(mask);
+        }
+        if (edit) {
           const lane = api.lane() ? " in this lane" : "";
           const tools = document.createElement("div");
           tools.className = "rp-ov-tools";
           tools.innerHTML = s.deleted
-            ? '<button type="button" data-ov="undo" title="Bring the slide back">Undo</button>'
-            : `<button type="button" data-ov="hide" title="${s.hidden ? "Show the slide" + lane : "Hide the slide" + lane} (H)" aria-label="${s.hidden ? "Show" : "Hide"}">${s.hidden ? EYE_ON : EYE_OFF}</button>` +
-              '<button type="button" data-ov="delete" title="Delete the slide (Delete)" aria-label="Delete">' + CROSS + "</button>";
+            ? '<button type="button" data-ov="undo" title="Bring the slide back (del)">Undo</button>'
+            : `<button type="button" data-ov="hide" title="${s.hidden ? "Show the slide" + lane : "Hide the slide" + lane} (h)" aria-label="${s.hidden ? "Show" : "Hide"}">${s.hidden ? EYE_ON : EYE_OFF}</button>` +
+              '<button type="button" data-ov="delete" title="Delete the slide (del)" aria-label="Delete">' + CROSS + "</button>";
           cell.appendChild(tools);
           cell.draggable = true;
         }
@@ -1003,12 +1031,12 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       });
       ov.querySelector(".rp-ov-title").textContent = titleOf(slides[0]) || document.title.replace(/^Presenter · /, "");
       ov.querySelector(".rp-ov-sub").textContent = n + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
-        ". Click a slide to go to it; Esc closes." + (api ? " Drag to reorder; the eye hides, the X deletes; changes apply at the next rebuild." : "");
+        ". Click a slide to go to it; esc closes." + (edit ? " Drag to reorder; the eye hides, the X deletes; changes apply at the next rebuild." : api ? " Press e to reorder, hide or delete slides." : "");
       if (api && !ov.querySelector(".rp-ov-rebuild")) {
         const b = document.createElement("button");
         b.type = "button";
         b.className = "rp-ov-close rp-ov-rebuild";
-        b.title = "Save the edits, rebuild the deck and reload (Shift+B)";
+        b.title = "Save the edits, rebuild the deck and reload (shift+b)";
         b.textContent = "Rebuild deck";
         ov.firstChild.insertBefore(b, ov.querySelector(".rp-ov-close"));
       }
@@ -1053,7 +1081,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // the lane switcher keeps its own keys
       const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
       if (at >= 0 && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ths[at].click(); return; }
-      if (at >= 0 && root.RevealReviewAPI) {   // structural edits on the focused thumbnail
+      if (at >= 0 && editing()) {   // structural edits on the focused thumbnail, in review mode only
         const cell = ths[at].closest(".rp-ov-cell"), key = cell && cell.dataset.key;
         const act = e.key === "h" || e.key === "H" ? "hide" : e.key === "Delete" || e.key === "Backspace" ? (cell.classList.contains("rp-deleted") ? "undo" : "delete")
           : e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowUp") ? "earlier" : e.shiftKey && (e.key === "ArrowRight" || e.key === "ArrowDown") ? "later" : null;
