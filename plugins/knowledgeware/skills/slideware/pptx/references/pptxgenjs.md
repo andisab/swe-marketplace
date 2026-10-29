@@ -145,3 +145,45 @@ async function buildDeck() {
 }
 buildDeck().catch(console.error);
 ```
+
+## Brand tokens → pptxgenjs
+
+How this format renders a registry style or brandbook (resolution and the rules every consumer follows: brandware's `references/consumer-contract.md`). The loader (`scripts/load-style.js`) emits:
+
+```javascript
+{
+  "name": "acmecorp",
+  "source": "styles/brands/acmecorp/brand.md",
+  "palette": { "bg": "FAFAF7", "bgDark": null, "surface": "FFFFFF", "surfaceAlt": null,
+               "ink": "16211C", "inkBody": null, "inkMuted": "5A6B63", "inkFaint": null,
+               "border": "E2E6E1", "accent": "0E6B5C", "accent2": null,
+               "success": "16A34A", "warning": "D97706", "error": "DC2626" },
+  "type":    { "sans": "Inter", "serif": "Georgia", "mono": "JetBrains Mono",
+               "heroPt": 44, "sectionPt": 32, "titlePt": 28, "bodyPt": 14,
+               "subBodyPt": 12, "captionPt": 10, "codePt": 12 },
+  "layout":  { "radiusIn": 0.083, "radiusPx": 8, "shadowOpacity": 0.12, "marginIn": 0.5 }
+}
+```
+
+Hex comes bare (no `#`), sizes in points, radius in inches: pptxgenjs's units. Destructure at the top of a build script: `const { palette: P, type: T, layout: L } = require("./style-tokens.json");`. Optional keys (`paletteDark`, `type.headingTracking`, `layout.containerPx` …) pass through when the brandbook has them.
+
+Converting web-flavoured brand rules into pptxgenjs options:
+
+| CSS concept | pptxgenjs equivalent | Notes |
+|---|---|---|
+| `color: #FAF9F5` | `color: "FAF9F5"` | 6-char hex, NO `#` |
+| `background: #FAF9F5` | `slide.background = { color: "FAF9F5" }` | same |
+| `font-size: 1.25rem` (20px) | `fontSize: 15` (pt) | web px × 0.75 = pt |
+| `font-family: 'Inter', sans-serif` | `fontFace: "Inter"` | first family only |
+| `font-weight: 600` | `bold: true` (>=600) or omitted | pptx is binary bold/normal |
+| `font-weight: 510` (non-standard) | `bold: false` | non-standard weights collapse to normal |
+| `letter-spacing: -0.022em` at 64px | `charSpacing: -1.4` (pt) | LS × (size in pt) |
+| `border-radius: 8px` | `rectRadius: 0.083` (in) | px ÷ 96 dpi |
+| `box-shadow: 0 4px 16px rgba(0,0,0,0.3)` | `shadow: { type: "outer", color: "000000", blur: 8, offset: 2, angle: 135, opacity: 0.3 }` | approximations only |
+| 1px hairline border | `line: { color: "...", width: 0.5 }` | pt, not px |
+| `padding: 0` on text | `margin: 0` | counterintuitive but correct |
+
+**Web px → slide pt.** Slides are physical points, web is pixels; slides need bigger type for projection distance, so don't copy sizes 1:1: 12–14px body → 11–12pt · 16px body → 14pt · 20px subhead → 16pt · 24–28px h2 → 22–26pt · 32–48px h1 → 28–36pt · 56–80px hero → 40–48pt.
+
+**Letter-spacing.** CSS `letter-spacing` is in em (or px at a size); pptxgenjs `charSpacing` is in points: `charSpacing = letterSpacing_em × fontSize_pt`, so `-0.022em` at 40pt → `charSpacing: -0.88` (round to `-1`).
+

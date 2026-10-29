@@ -33,17 +33,7 @@ Then read **exactly one** format guide (`pptx/FORMAT.md` or `html/FORMAT.md`) an
 
 "Style" and "brandbook" mean the same thing — .md files describing a visual identity (palette + type + layout). Path convention: `$PLUGIN` = the knowledgeware plugin root, two directories above this skill (`../../`).
 
-1. **Explicit local path** — read directly.
-2. **Bundled name** — discovered at runtime from the registry (shadow order: default &lt; plugin brand &lt; user brand):
-   - `$PLUGIN/styles/<name>/brand.md` — 5 default generic styles (`style-1` through `style-5`), each with a mark in `assets/`
-   - `$PLUGIN/styles/brands/<name>/brand.md` — brandbooks (managed by the **brandware** skill)
-   - `$KNOWLEDGEWARE_BRANDS_DIR/<name>/brand.md` — the user's own brands directory, if that env var is set (survives plugin updates)
-   - the older flat `<name>.md` files are still read; `scripts/registry.js` searches both layouts
-
-   Run `node $PLUGIN/scripts/list-styles.js` for the current list (`--default` / `--brands` / `--names` / `--json`).
-3. **Website URL** — `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` then load. Heuristic; verify against the live site.
-4. **Google Drive URL** — `python3 $PLUGIN/scripts/fetch-resource.py <url> <dest>`.
-5. **No style given** — if a marker exists (`.knowledgeware` in the project or a parent, then a `DEFAULT` file: a one-line file naming a registry entry; `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` wins over `$PLUGIN/styles/brands/DEFAULT`), use that brand and tell the user; otherwise pick `style-1` (Editorial Light) and tell the user. Don't otherwise fall back to brandbooks unless the user names one.
+A style is a **name resolved through the registry**, never a path to a token cache: the brandware skill's resolution contract ([../brandware/SKILL.md](../brandware/SKILL.md) §Resolution contract) says where names are looked up (the user's `$KNOWLEDGEWARE_BRANDS_DIR`, then `$PLUGIN/styles/brands/`, then the five generic styles in `$PLUGIN/styles/`) and which markers decide when no name is given (`.knowledgeware` in the project, then `DEFAULT`). `node $PLUGIN/scripts/list-styles.js` lists what's installed. Slideware's own fallback, when nothing is named and no marker resolves: `style-1` (Editorial Light), and tell the user. Other inputs are staged first, then loaded by name or path: an explicit local `.md`/`.css` is read directly; a website is derived with `node $PLUGIN/scripts/derive-style.js <url> -o ./brand.md` (heuristic; verify against the live site); a Google Drive link is fetched with `python3 $PLUGIN/scripts/fetch-resource.py <url> <dest>`.
 
 **Staging differs per format** (each guide shows the exact command):
 - pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (serves the `tokens.json` cache next to each `brand.md` when it's fresh, and rebuilds it otherwise).
@@ -69,6 +59,8 @@ Decks decay like any deliverable: prices, versions, GA statuses, and quoted figu
 - **html**: the deck ends with a maintenance/sources slide following the knowledgebase skill's conventions scaled to a deck — mechanics in [html/FORMAT.md](html/FORMAT.md) §Maintenance section.
 
 The stamp means the same thing it means in a knowledgebase site: *these facts were checked against their sources on that date*. When iterating on an existing deck, bump a stamp only for facts you actually re-verified; treat stamps older than 90 days as stale before any external presentation.
+
+A deck built from research gets a **spec**: a one-page knowledgebase site beside it that carries the deck's volatility table, so the librarian can keep the deck current on cadence without editing the deck (the contract is the maintenance spec's §7, [../knowledgebase/references/maintenance.md](../knowledgebase/references/maintenance.md)). An HTML deck names it with `spec: "../<unit>.html"` next to `slides` and, per slide, `teaches: "<section-id>"`; a pptx deck relies on a `spec.html` beside it. When the user asks to keep a deck maintainable, or the deck's facts come from a research folder, build the spec with the knowledgebase skill and wire the fields. A planning outline of the deck (`notes.md` beside it, how it flows and what to cut) stays a separate file; read it when asked to restructure the deck, and never fold it into the spec.
 
 ## Speaker notes, pacing and hidden slides (shared)
 

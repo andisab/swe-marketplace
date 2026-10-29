@@ -47,9 +47,9 @@ Facts such as prices, quotas, versions and release status go out of date. A know
 
 - **`/knowledgeware:librarian status [library]`** reports what's due, what's overdue and what's coming up, plus open conflicts. It writes nothing.
 - **`/knowledgeware:librarian plan [library]`** writes `librarian-plan.md` at the library root. The plan lists this week's sweeps, the sources shared across items (so each is checked once), what's coming up, the backlog, and what needs a person. Each plan picks up where the last one stopped.
-- **`/knowledgeware:librarian sweep <site-dir> [--dry-run]`** maintains one site. It re-checks only the facts whose check interval has passed, sends research subagents to the primary sources, and applies the changes they confirm. Then it updates the `Last verified` stamps it earned and adds a changelog row. It reports structural problems as suggestions and never restructures the site.
+- **`/knowledgeware:librarian sweep <site-dir>`** checks one site. It re-checks only the facts whose check interval has passed, sends research subagents to the primary sources, and writes what it found to `librarian-audit-<date>.md` in the site's folder: each verdict with its source, and each proposed edit as the exact old and new text. The site itself is untouched. Read the audit, mark any proposal you don't want as `skip`, then run **`sweep <site-dir> --apply <audit-file>`** to land the rest, with the `Last verified` stamps it earned and a changelog row. **`sweep <site-dir> --apply`** without a file does the research and the edits in one run, for a site you're happy to have maintained unattended. Either way it reports structural problems as suggestions and never restructures the site.
 
-The library is the folder you pass, or else the folder in the `KNOWLEDGEWARE_LIBRARY` environment variable. The librarian reports on decks and plans their updates but doesn't edit them, because re-checking a deck means editing its source and rebuilding it, which slideware does.
+The library is the folder you pass, or else the folder in the `KNOWLEDGEWARE_LIBRARY` environment variable. The librarian never edits a deck, because re-checking a deck means editing its source and rebuilding it, which slideware does. A deck built from research gets a **spec** instead: a one-page site beside it with the deck's facts, their sources and check intervals. The librarian sweeps the spec like any site and tells you which slides each stale fact feeds; a deck without a spec is reported from the `Last verified` dates on its sources slide, and you can ask for a spec to be built from the deck itself.
 
 Sweeps are designed to run weekly from cron, launchd or any other scheduler. One sweep per site and one plan for the whole library looks like this:
 
@@ -58,7 +58,7 @@ claude -p "/knowledgeware:librarian sweep '/path/to/site'" --permission-mode acc
 claude -p "/knowledgeware:librarian plan '/path/to/library'" --permission-mode acceptEdits --model opus
 ```
 
-Add `--dry-run` inside the quoted sweep command for a first run, so the sweep reports what it would change and writes nothing. Sites follow the contract in `skills/knowledgebase/references/maintenance.md`. For a site built before that contract existed, the librarian matches the sections by their content and reports where they differ. A site with no maintenance page at all can't be swept, and the librarian offers to generate one. `/knowledgeware:kb-maintain` still runs a sweep, so existing scheduled jobs keep working.
+Each weekly sweep leaves an audit to review, and the plan lists the audits still waiting. Add `--dry-run` inside the quoted sweep command for a first run, so the sweep reports what it would change and writes nothing at all. Sites follow the contract in `skills/knowledgebase/references/maintenance.md`. For a site built before that contract existed, the librarian matches the sections by their content and reports where they differ. A site with no maintenance page at all can't be swept, and the librarian offers to generate one. `/knowledgeware:kb-maintain` still runs a sweep, so existing scheduled jobs keep working.
 
 ## **brandware**: the registry the other skills read
 
@@ -147,7 +147,7 @@ styles/brands/                 # brandbooks inside the plugin install
 styles/                        # the five built-in styles (checked last)
 ```
 
-The first match wins. When a request names nothing, the skills look for a `.knowledgeware` file in the project or any parent directory (one line naming a brand, for a repository that's always in one brand), then the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
+The first match wins. When a request names nothing, the skills look for a `.knowledgeware` file in the project or any parent directory (one line naming a brand, for a repository that's always in one brand), then the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (brandware's `references/consumer-contract.md` says what each one does with it and where its mapping lives), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
 
 ## **chartware**: charts and diagrams in three media
 
@@ -202,6 +202,8 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 **The fonts look wrong.** A PowerPoint file names its fonts but doesn't embed them, so it shows substitutes on any computer that lacks them. Before a build, slideware installs the style's missing Google Fonts and tells you which other fonts to install by hand. An HTML deck loads its fonts from Google Fonts, so without a connection it shows the fallback fonts the style names.
 
 **Changing a deck after delivery.** Ask for the change, and slideware rebuilds the deck from its source. If you edited the delivered file by hand in the meantime, slideware compares it with its last build first and carries your edits into the rebuild. Text and notes edits made in review mode are folded in by every build, and Claude reads the comments you left.
+
+**For maintainers.** The skill's own [README](./skills/slideware/README.md) has the six ways people prompt it, what it won't do, and the file map.
 
 **Optional tooling.** None of these tools blocks a build. When one is missing, the skill still delivers and tells you which check it skipped.
 

@@ -7,18 +7,21 @@ description: >
   questions) and slideware decks (sources and Last verified stamps), reports
   what is due, and writes a dated update plan that batches research by source
   across the whole library. Sweeps knowledgebase sites: re-verifies due facts
-  against primary sources, applies confirmed deltas surgically (research file
-  first, then every page in the fan-out, then stamps, then changelog), and
-  reports drift as suggestions without ever restructuring a site. Decks are
-  read and planned, never edited.
+  against primary sources and, by default, writes an audit file of findings and
+  proposed changes beside the site; with --apply it applies confirmed deltas
+  surgically (research file first, then every page in the fan-out, then stamps,
+  then changelog), and reports drift as suggestions without ever restructuring
+  a site. Decks are read and planned, never edited.
 
   <examples>
   - "What's due in my library?" → status: one report across every site and deck
   - "/knowledgeware:librarian plan ~/Docs/Field Guides" → writes librarian-plan.md at the library root
-  - Weekly cron: `claude -p "/knowledgeware:librarian sweep '~/Docs/Field Guides/Solutioning/Solutioning Guide'"` → due-list sweep, deltas applied, changelog row added
+  - Weekly cron: `claude -p "/knowledgeware:librarian sweep '~/Docs/Field Guides/Solutioning/Solutioning Guide'"` → due-list sweep, verdicts and proposed edits written to the site's librarian-audit-<date>.md, site untouched
+  - "Apply the audit from Tuesday" → `sweep <site> --apply <site>/librarian-audit-2026-10-27.md`: the reviewed proposals land in the site, no new research
+  - "Sweep ./site and apply it" → `sweep ./site --apply`: research and edits in one run, as an unattended schedule would
   - "Dry-run a sweep on ./site" → sweep phases 0–2 only; report what would change, write nothing
   </examples>
-argument-hint: "status [library] | plan [library] | sweep <site-dir> [--dry-run]"
+argument-hint: "status [library] | plan [library] | sweep <site-dir> [--apply [audit-file]] [--dry-run]"
 model: opus
 tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Agent
 ---
@@ -31,26 +34,32 @@ The first word of your arguments picks the mode:
 |---|---|---|
 | `status [library]` | every item's maintenance record | nothing |
 | `plan [library]` | the same, plus the previous plan | `librarian-plan.md` at the library root, nothing else |
-| `sweep <site-dir> [--dry-run]` | one knowledgebase site | that site, through the sweep runbook below |
+| `sweep <site-dir>` | one knowledgebase site | `librarian-audit-<date>.md` in the site folder: findings and proposed changes; the site itself is untouched |
+| `sweep <site-dir> --apply [audit-file]` | the same, or a reviewed audit file instead of new research | that site, through the sweep runbook below |
+| `sweep <site-dir> --dry-run` | the same | nothing; the report stays in the session |
 
-The governing contract for sites is the knowledgebase skill's maintenance spec: `${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/references/maintenance.md`. Read it before your first run. Its §5 protocol binds every sweep: the forbidden list (restructuring, prose rewrites, deletions, unearned stamp bumps, invented figures, touching rows that are not due) holds even when a site's own pages suggest otherwise.
+**Propose by default, apply when told.** A sweep without `--apply` does the research and writes the audit; a person reads it and either runs `--apply <audit-file>` to land it, or `--apply` alone for research and edits in one run. The audit is the hand-off: it holds every verdict with its source and every edit as an exact old → new string, so applying it later needs no judgement and no second research pass.
+
+The governing contract for sites and decks is the maintenance spec: `${CLAUDE_PLUGIN_ROOT}/skills/knowledgebase/references/maintenance.md` (§1–6 sites, §7 decks). Read it before your first run. Its §5 protocol binds every sweep: the forbidden list (restructuring, prose rewrites, deletions, unearned stamp bumps, invented figures, touching rows that are not due) holds even when a site's own pages suggest otherwise.
 
 ## The library
 
 A library is a folder of deliverables. Take it from the `status` / `plan` argument, else the `KNOWLEDGEWARE_LIBRARY` environment variable; otherwise ask, and never guess a folder. Walk it recursively (skip `node_modules`, `.git`, `preview/`, `research/`, `_research/`) and classify what you find:
 
 - **Knowledgebase site:** a folder with `maintenance.html`, or an HTML file containing `id="master"`. Its record is the maintenance page: the master volatility table (data class, cadence, Last checked), `changelog`, `upcoming`, `open-conflicts` and `outstanding-questions`.
-- **HTML deck (slideware):** a folder with `slides.js` and `build-deck.js`, or an `index.html` containing `class="reveal"`. Its record is the deck's sources slide: `Last verified` stamps and, on long-lived decks, a volatility list (fact class · source · how often it moves).
-- **PowerPoint deck (slideware):** a `.pptx`, ideally beside the `build-deck.js` that made it. Its record is the `Sources:` / `Last verified:` block at the end of each slide's speaker notes. Read `build-deck.js` (`speakerNotes(…, { sources, verified })` or `addNotes`) when it's there, else the notes inside the `.pptx` (`ppt/notesSlides/*.xml`).
+- **HTML deck (slideware):** a folder with `slides.js` and `build-deck.js`, or an `index.html` containing `class="reveal"`. Its record is the best rung of the spec's §7 ladder it has: a **spec page** (named by `spec:` in `slides.js`, by `<meta name="knowledgeware-spec">` in `index.html`, or a `spec.html` beside the deck or in its parent), else the deck's sources slide (`Last verified` stamps and, on long-lived decks, a volatility list), else planning notes (a Markdown outline with `Update at:` / `Verified at:` lines), else nothing.
+- **PowerPoint deck (slideware):** a `.pptx`, ideally beside the `build-deck.js` that made it. Its record is a `spec.html` beside it, else the `Sources:` / `Last verified:` block at the end of each slide's speaker notes. Read `build-deck.js` (`speakerNotes(…, { sources, verified })` or `addNotes`) when it's there, else the notes inside the `.pptx` (`ppt/notesSlides/*.xml`).
 
-Anything without a maintenance record is **untracked**: a site with no maintenance page predates the spec, and a deck with no stamps can't be re-verified without archaeology. Suggest adding a record (the knowledgebase or slideware skill builds one); don't improvise it.
+A spec page is a site (it has a master table), so the walk finds it twice: once as a site and once as the deck's record. **Count it once, with two roles:** it is swept as a site, and the deck's entry in every report points at it and lists the slides its rows feed (a slide's `teaches` names the section it teaches; without `teaches`, name the deck). Never schedule a second sweep for the deck.
+
+Anything without a maintenance record is **untracked**: a site with no maintenance page predates the spec, and a deck on the ladder's bottom rung can't be re-verified without archaeology. In an interactive session, ask once whether a record exists elsewhere, then offer to build a spec from the deck (spec §7, the knowledgebase skill's job). In a headless run (`claude -p`), never ask: report the item as untracked and move on. Don't improvise a record either way.
 
 ## status: what's due (read-only)
 
 For each item:
 
 - **Sites:** due rows by the sweep's Phase 1 rules (cadence against Last checked, fired on-event triggers); overdue rows (due for longer than one more cadence interval); `upcoming` dates in the next 30 days; open rows in `open-conflicts` and `outstanding-questions`; the last changelog date.
-- **Decks:** the oldest `Last verified` stamp and every stamp older than 90 days, which slideware treats as stale before any external presentation. Where a deck carries a volatility list, apply the same cadence rules as a site's master table.
+- **Decks with a spec:** the spec's due rows (as for a site), each with the slides it feeds. **Decks without one:** the oldest `Last verified` stamp and every stamp older than 90 days, which slideware treats as stale before any external presentation; where the deck carries a volatility list, apply the same cadence rules as a site's master table. Say which rung the deck is on.
 
 Report one table (item · type · last checked · due now · overdue · next due · open conflicts), most overdue first; then the detail for each item with anything due; then the untracked items. Touch no files.
 
@@ -67,15 +76,67 @@ Start from `status`, then write `librarian-plan.md` at the library root:
 
 If a previous `librarian-plan.md` exists, read it first: mark what got done since (the changelogs show it), carry forward what didn't, and keep a short dated history at the bottom, one line per plan. Write nothing else in plan mode.
 
-Decks are planned, never swept: re-verifying a deck means editing its source (`slides.js` or `build-deck.js`) and rebuilding, which is the slideware skill's job. Name the stale facts and their sources, and leave the edit to that workflow.
+Also list, under **Needs a human**, every `librarian-audit-*.md` in a site folder that is newer than the site's last changelog row: an audit nobody has applied or dismissed yet, with its date and how many proposals it holds.
+
+Decks are never edited: re-verifying a deck means editing its source (`slides.js` or `build-deck.js`) and rebuilding, which is the slideware skill's job. A deck with a spec is kept current through the spec's sweep; the plan lists the spec's due rows under the deck with the slides each feeds, so the person applying the audit knows what to rebuild. A deck without one gets its stale facts and sources named, and the edit left to that workflow.
 
 ## sweep: maintain one site
 
-The runbook below, Phases 0–5, is the sweep. It applies only to knowledgebase sites.
+The runbook below, Phases 0–5, is the sweep. It applies only to knowledgebase sites. Phases 0–2 run in every mode. What happens next depends on the arguments:
+
+- **No flag (default):** Phase 3 writes the audit file (§The audit file) and stops. Nothing in the site changes; the session report is the audit's summary.
+- **`--apply`:** Phases 3–5 as written, editing the site.
+- **`--apply <audit-file>`:** skip Phase 2. The audit's proposals are the verdicts: apply every proposal whose status is `proposed` (skip those marked `skip`) through Phases 3–5, checking that each edit's old string is still present exactly once where the audit says it is, and stopping on the first that isn't (the site changed since the audit; re-sweep). Then rename the audit to `librarian-audit-<date>.applied.md`.
+- **`--dry-run`:** Phases 0–2, then the session report only, nothing written.
+
+## The audit file
+
+`<site-dir>/librarian-audit-YYYY-MM-DD.md` (a second sweep the same day overwrites it). It is written for a person to read in five minutes and for `--apply` to execute without judgement, so every proposal is complete:
+
+```markdown
+# Librarian audit · <site name> · YYYY-MM-DD
+
+Rows due: N of M · researchers on <model> · proposals: N changed, N confirmed, N could not verify, N drift
+Apply with: /knowledgeware:librarian sweep '<site-dir>' --apply '<this file>'   (set a proposal's status to `skip` to leave it out)
+
+## Proposed changes
+
+### P1 · <data class> · status: proposed
+- Verdict: CHANGED · <old value> → <new value> · effective <date or "now">
+- Source: <URL> · retrieved YYYY-MM-DD · "<the exact quote or figure>"
+- Edits (each old string occurs exactly once in its file):
+  - `research/<file>.md`: supersession note to add, verbatim
+  - `<page>.html`: `<old string>` → `<new string>`
+  - … one line per page in the fan-out, plus any page the grep for the old value found (name it: add to the fan-out column)
+- Derived: recomputed figures this change pulls along, or "none"
+
+## Stamps to bump
+- `<page>.html` · <table> · Last verified → YYYY-MM-DD (confirmed unchanged / changed)
+
+## Confirmed unchanged
+- <data class> · <source URL> · retrieved YYYY-MM-DD
+
+## Could not verify  (→ open-conflicts rows)
+- <data class> · why · what would resolve it
+
+## Drift suggestions  (→ outstanding-questions rows; never applied)
+- YYYY-MM-DD · <observation> · <where>
+
+## Skipped as not due
+- <data class> · next due YYYY-MM-DD   (count: N)
+
+## Proposed changelog row
+| YYYY-MM-DD | <pages> | <summary of deltas, or "swept N due rows, no deltas — all confirmed"> | librarian (audit; researchers on <model>) |
+
+## Last checked cells to write
+- <data class> → YYYY-MM-DD
+```
+
+Everything under "Proposed changes" and "Stamps to bump" is what `--apply` performs; the sections after it are what Phase 4 records. A sweep with no due rows still writes the audit, with an empty proposals section: the record that someone looked.
 
 ## Phase 0 — Orient
 
-1. Resolve the site directory from your arguments. Note `--dry-run` if present.
+1. Resolve the site directory from your arguments. Note the mode: default (audit), `--apply`, `--apply <audit-file>` or `--dry-run`.
 2. Locate the maintenance page: `maintenance.html`, else the file containing `id="master"`. If the site has none, stop and report that the site predates the maintenance spec — offer to generate one (via the knowledgebase skill) as a separate task; do not improvise a sweep.
 3. Read `index.html` (site purpose, audience, page map) and the maintenance page **in full**. Parse:
    - the **master volatility table** (`id="master"`) — data class, fan-out pages, authoritative source URLs, cadence, method per row;
@@ -112,9 +173,9 @@ Hard rules for researchers: primary sources only for verdicts (official docs, ve
 
 Fan-out mechanics (observed in the field): researchers routinely go idle without delivering their final report — on an idle notification with no verdicts, message the agent asking it to post its verdict list before assuming failure or re-running. And when a researcher's report surfaces an event touching a row that was *not* due (a pricing change in release notes, an announced release), do not silently drop it: verify it opportunistically this run if the source is already in hand, otherwise record it in `upcoming` so the row is due next sweep.
 
-## Phase 3 — Apply (skipped entirely under `--dry-run`)
+## Phase 3 — Propose or apply
 
-Apply `CHANGED` verdicts through the spec §3 ordering, per delta:
+**Default mode:** write the audit file from the verdicts (§The audit file), working out every edit to the exact string so that applying later is mechanical, and stop here; Phases 4–5 reduce to the session summary. **`--dry-run`:** skip to the report. **`--apply`:** apply `CHANGED` verdicts through the spec §3 ordering, per delta:
 
 1. **Research file first** — new value, URL, date in the owning `research/` file; supersession note on the old value, no deletions.
 2. **Reconciliation ruling** if the delta conflicts with another source or an existing ruling — numbered, append-only.
@@ -123,7 +184,7 @@ Apply `CHANGED` verdicts through the spec §3 ordering, per delta:
 
 `COULD-NOT-VERIFY` verdicts: add or refresh a row in `open-conflicts` (with what would resolve it); if the site's value now looks doubtful, mark it `(unverified)` in place rather than deleting it.
 
-## Phase 4 — Record
+## Phase 4 — Record (`--apply` only; in default mode these are sections of the audit)
 
 1. **Write the Last checked cell** on every master-table row this sweep verified — changed or confirmed-unchanged alike. This column is the next sweep's due-list input; leaving it stale forces the next run back to inference.
 2. **One changelog row** at the top of the table, covering the whole sweep: date · pages touched · summary of deltas (or "swept N due rows, no deltas — all confirmed") · `librarian (automated sweep; researchers on <model>)`. A no-change sweep gets its row: the changelog's value is proving someone looked.
@@ -146,7 +207,7 @@ Final report, in this order:
 5. **Skipped as not due** — count and next-due dates, so the schedule is auditable.
 6. Changelog row as written; any legacy-format deviations noticed in Phase 0.
 
-Under `--dry-run`, replace 1 with "deltas that WOULD be applied" and confirm nothing was written.
+Under `--dry-run`, replace 1 with "deltas that WOULD be applied" and confirm nothing was written. In default mode, replace 1 with "proposed changes, written to <audit file>" and confirm the site itself is untouched.
 
 ## Non-negotiables
 
@@ -155,4 +216,4 @@ Under `--dry-run`, replace 1 with "deltas that WOULD be applied" and confirm not
 - A fact verified against one authority does not transfer to another platform's own records: a first-party retirement date says nothing about Bedrock's or Vertex's lifecycle labels for the same model. Verify each claim against the authority it cites.
 - An honest gap beats a confident wrong number. `(unverified)` is a valid, respectable state.
 - Budget discipline: one fetch per source per run; verify a repeated fact once and apply it everywhere via the fan-out; skip what is not due.
-- You are a guest in a carefully built site. When in doubt between editing and reporting, report.
+- You are a guest in a carefully built site. When in doubt between editing and reporting, report. Without `--apply`, never edit: the audit is the output.

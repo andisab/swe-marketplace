@@ -107,7 +107,7 @@ The two plugins I use daily and keep current. Both carry scripts, templates and 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.12.0 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.12.2 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
 | [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
 
 ### Experimental plugins
@@ -162,7 +162,7 @@ Claude loads a skill when your request matches the skill's description. You can 
 
 | Command | What it does |
 |---|---|
-| `/knowledgeware:librarian status \| plan \| sweep` | Reports what's due across a library of sites and decks, writes an update plan, or fact-checks one knowledgebase site against primary sources. Built for weekly scheduled runs. |
+| `/knowledgeware:librarian status \| plan \| sweep` | Reports what's due across a library of sites and decks, writes an update plan, or fact-checks one knowledgebase site against primary sources and writes an audit of proposed changes (`--apply` to edit the site). Built for weekly scheduled runs. |
 | `/knowledgeware:kb-maintain <site>` | Deprecated alias for `librarian sweep`, kept so existing scheduled jobs keep working. |
 | `/adv:adv-codex <prompt>` | Sends a prompt to Codex CLI and returns its answer. |
 | `/adv:adv-gemini <prompt>` | Sends a prompt to Gemini CLI and returns its answer. |
@@ -181,7 +181,7 @@ An agent is a specialist with its own instructions and its own context window. C
 | context-engineering | `context-engineer` | Designing and building Claude Code resources with the context-engineering skills. |
 | research-team | `research-specialist` | Researching one subtopic through web search and saving a short, cited note. |
 | research-team | `research-report-writer` | Synthesizing the research notes into a structured report. |
-| knowledgeware | `librarian` | What's due across sites and decks, update plans, and fact-check sweeps of knowledgebase sites. |
+| knowledgeware | `librarian` | What's due across sites and decks, update plans, and fact-check sweeps of knowledgebase sites that propose changes in an audit file, or apply them when asked. |
 | dev | `python-expert` | Modern Python: async, type safety, FastAPI / Pydantic / SQLAlchemy patterns. |
 | dev | `fastapi-architect` | Production FastAPI services: Pydantic v2, async SQLAlchemy 2.0, auth, API design. |
 | dev | `typescript-expert` | TypeScript 5.7+: strict typing, generics, type-level programming. |

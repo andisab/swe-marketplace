@@ -93,12 +93,8 @@ plugins/temp/
 plugins/knowledgeware/styles/brands/*
 !plugins/knowledgeware/styles/brands/README.md
 !plugins/knowledgeware/styles/brands/.gitignore
-!plugins/knowledgeware/styles/brands/acmecorp.md
 !plugins/knowledgeware/styles/brands/acmecorp/
 !plugins/knowledgeware/styles/brands/acmecorp/**
-!plugins/knowledgeware/styles/brands/tokens/
-plugins/knowledgeware/styles/brands/tokens/*
-!plugins/knowledgeware/styles/brands/tokens/acmecorp.json
 
 # plugin eval runs write results beside the suite; keep them local
 plugins/*/evals/results/

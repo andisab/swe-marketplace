@@ -1,6 +1,6 @@
 # AcmeCorp — Brandbook
 
-> **Checked-in example brand.** AcmeCorp is fictional; this file demonstrates the brand-folder layout and the brandbook format every real (private) brand follows: one `<name>.md` (this file, canonical), a derived token cache at `tokens/<name>.json`, and per-brand assets at `<name>/assets/`. Spec: `skills/brandware/references/brandbook-spec.md`.
+> **Checked-in example brand, and the template for a new one.** AcmeCorp is fictional; its folder shows the layout every real (private) brand follows: `brand.md` (this file, canonical), `tokens.json` (a derived cache), `assets/` (the logos) and a `README.md` with provenance. Copy the folder to start a brand (see its README). Spec: `skills/brandware/references/brandbook-spec.md`.
 
 Grounded, technical, quietly confident. Warm paper canvas, deep teal as the single working accent, rust reserved for contrast moments. Reads like an engineering company that ships.
 

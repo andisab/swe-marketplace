@@ -11,7 +11,7 @@ Format guide for `.pptx` output. Read [../SKILL.md](../SKILL.md) first for forma
 | 12 layout archetypes | [references/layout-patterns.md](references/layout-patterns.md) |
 | Visual principles (hierarchy, color, type, spacing) | [references/visual-principles.md](references/visual-principles.md) |
 | pptxgenjs API patterns | [references/pptxgenjs.md](references/pptxgenjs.md) |
-| Brandbook → token mapping | [../../brandware/references/brandbook-spec.md](../../brandware/references/brandbook-spec.md) |
+| Brandbook → token mapping | [references/pptxgenjs.md](references/pptxgenjs.md) §Brand tokens (the brandbook itself: brandware's `references/brandbook-spec.md`) |
 
 **Recommended order**: canonical-samples (concrete > abstract) → layout-patterns → visual-principles → pptxgenjs (when you hit a specific API question).
 
@@ -70,7 +70,7 @@ What to say over this slide.
 
 Sources:
 - Anthropic pricing: https://platform.claude.com/docs/en/about-claude/pricing
-Last verified: 2026-08-18
+Last verified: 2026-08-18   (a deck kept current on cadence also gets a spec.html beside it: maintenance spec §7)
 ```
 
 - **Pacing.** Set `SESSIONS` (minutes per `cue.session`; `""` for a deck without sessions) at the top of the build script. PowerPoint has no live pace line, so the cue line carries each in-run slide's planned window for the presenter to read against PowerPoint's timer. The build prints the same pacing summary as the html format; quote it when asked about timing or hidden slides.

@@ -1,7 +1,7 @@
 // build-deck.js — Reveal.js deck builder for the slideware/html skill.
 //
 // Reads:
-//   ./style.md      — design styleSpec (YAML frontmatter) — see references/brandbook-spec.md
+//   ./style.md      — design styleSpec (YAML frontmatter) — the brandbook, written out by html/scripts/load-style.js (spec: brandware references/brandbook-spec.md)
 //   ./slides.js     — array of slide descriptors — see slides.js for the schema
 //   ./assets/logo-light.svg, logo-dark.svg — optional; the brand's logo for the running footer.
 //                     load-style.js copies them from the brand's folder; a generic style has none.
@@ -572,6 +572,10 @@ function faviconHref(palette) {
 //             deck and index-<id>.html per lane, each with a lane switcher in its overview
 //   lane      the base deck's name in that switcher (default "Base")
 //   review    true inlines review.js: E edits text and notes in the deck (see §Review edits)
+//   spec      path (relative to the deck dir) of the deck's spec page: the knowledgebase page that
+//             carries its volatility table and outline. Embedded as <meta name="knowledgeware-spec">
+//             so the librarian finds the spec from the deck. A slide's `teaches` names the spec
+//             section it teaches (ignored here; the librarian maps a stale row to its slides).
 // The presenter gives every in-run slide of a session an equal share of its length.
 function readDeck(spec) {
   const deck = Array.isArray(spec) ? { slides: spec } : (spec || {});
@@ -584,6 +588,8 @@ function readDeck(spec) {
   if (!Array.isArray(lanes) || !lanes.every(p => typeof p === "string" && p.trim())) throw new Error("lanes must be an array of overlay file paths");
   if (deck.lane != null && (typeof deck.lane !== "string" || !deck.lane.trim())) throw new Error("lane must be the base deck's name, a string");
   if (deck.review != null && typeof deck.review !== "boolean") throw new Error(`review must be true or false, got "${deck.review}"`);
+  if (deck.spec != null && (typeof deck.spec !== "string" || !deck.spec.trim())) throw new Error(`spec must be the path of the deck's spec page, got "${deck.spec}"`);
+  for (const [i, s] of deck.slides.entries()) if (s.teaches != null && (typeof s.teaches !== "string" || !s.teaches.trim())) throw new Error(`slide ${i + 1}: teaches must name a section id in the spec, got "${s.teaches}"`);
   const keys = deck.slides.map(s => s.key).filter(k => k != null);
   if (keys.some(k => typeof k !== "string" || !k)) throw new Error("a slide's key must be a non-empty string");
   const dup = keys.find((k, i) => keys.indexOf(k) !== i);
@@ -596,7 +602,7 @@ function readDeck(spec) {
     if (!(Number(minutes) > 0)) throw new Error(`${name} must be a number of minutes, got "${minutes}"`);
     sessions[label] = Number(minutes);
   }
-  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo, lanes, lane: deck.lane || "Base", review: deck.review === true };
+  return { slides: deck.slides, sessions, motion: deck.motion !== false, footer: footer.map(t => t.trim()), logo: deck.logo, lanes, lane: deck.lane || "Base", review: deck.review === true, spec: deck.spec ? deck.spec.trim() : null };
 }
 
 // ── Lanes ──────────────────────────────────────────────────────────
@@ -608,7 +614,7 @@ function readDeck(spec) {
 //     color: "#2F7DE1" }                               // optional: the lane's colour in the overview
 // The lane's id is the overlay's file name without .js, and its output is index-<id>.html.
 // Replacements skip `layout`, `key`, `src`, `cue` and `motion`, so they change words, not structure.
-const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden"]);
+const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden", "teaches", "spec"]);
 function applyLane(slides, overlay, id) {
   if (!overlay || typeof overlay !== "object") throw new Error(`lane ${id}: the overlay must export an object`);
   const out = structuredClone(slides);
@@ -698,7 +704,7 @@ function minSec(minutes) {
 }
 
 // ── HTML page assembly ─────────────────────────────────────────────
-function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false, lanes = [], reviewJs = "", review = null }) {
+function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions = {}, favicon = "", footer = false, lanes = [], reviewJs = "", review = null, spec = null }) {
   const presenterConfig = { sessions, ...(lanes.length > 1 ? { lanes } : {}) };
   const plugins = ["RevealPresenter", ...(reviewJs ? ["RevealReview"] : [])];
   return `<!DOCTYPE html>
@@ -708,6 +714,7 @@ function pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessi
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>${esc(title)}</title>
   ${favicon ? `<link rel="icon" href="${favicon.replace(/"/g, "%22")}"/>` : ""}
+  ${spec ? `<meta name="knowledgeware-spec" content="${esc(spec)}"/>` : ""}
   ${fontsUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="${fontsUrl}" rel="stylesheet"/>` : ""}
@@ -1209,7 +1216,7 @@ function main() {
     const title = out.id ? `${baseTitle} · ${out.name}` : baseTitle;
     const lanes = switcher.map(l => ({ ...l, current: l.file === out.file }));
     const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes,
-      reviewJs, review: reviewJs ? { built, lane: out.id, file: out.file } : null });
+      reviewJs, review: reviewJs ? { built, lane: out.id, file: out.file } : null, spec: deck.spec });
     const outPath = path.join(cwd, out.file);
     fs.writeFileSync(outPath, html);
     console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${out.slides.length} slides, ${styleSpec.name || "unnamed style"}${out.id ? `, lane ${out.name}` : overlays.length ? `, lane ${out.name} of ${outputs.length}` : ""})`);
@@ -1218,6 +1225,11 @@ function main() {
   }
   const summary = pacingSummary(slides, sessions);
   if (summary) console.log(summary);
+  if (deck.spec) {
+    const specPath = path.resolve(cwd, deck.spec);
+    const taught = slides.filter(s => s.teaches).length;
+    console.log(`Spec: ${deck.spec}${fs.existsSync(specPath) ? "" : " (NOT FOUND next to the deck; the librarian can't follow it)"} · ${taught} of ${slides.length} slides name the section they teach`);
+  }
 }
 
 if (require.main === module) main();

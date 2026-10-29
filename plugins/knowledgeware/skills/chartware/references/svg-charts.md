@@ -2,7 +2,7 @@
 
 How to draw data charts and diagrams as raw inline SVG for HTML embedding — no JavaScript, no chart libraries. Templates in `templates/svg/` demonstrate every rule here; adapt a template rather than starting blank.
 
-Brand colors come from the registry: chrome/series mapping per **brandware `references/chart-styling.md`** (data charts) and **`consumer-mappings.md` §chartware** (diagrams). This file is the *mechanics* layer: coordinates, paths, text, theming, and the failure modes.
+Brand colors come from the registry: chrome/series mapping per **brandware `references/chart-styling.md`** (data charts) and this skill's **`references/brand-mapping.md`** (diagrams). This file is the *mechanics* layer: coordinates, paths, text, theming, and the failure modes.
 
 ## 1. Setup: viewBox, margins, embedding
 
