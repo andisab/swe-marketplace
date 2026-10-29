@@ -98,7 +98,8 @@ function createServer(dir) {
         try { edits = JSON.parse(body); } catch (e) { return json(res, 400, { ok: false, error: "the body isn't JSON" }); }
         if (!edits || typeof edits !== "object" || !edits.slides || typeof edits.slides !== "object") return json(res, 400, { ok: false, error: "expected { slides: { … } }" });
         fs.writeFileSync(editsPath, JSON.stringify(edits, null, 2) + "\n");
-        const n = Object.values(edits.slides).reduce((t, s) => t + Object.keys(s || {}).length, 0);
+        const d = edits.deck || {};
+        const n = Object.values(edits.slides).reduce((t, s) => t + Object.keys(s || {}).length, 0) + Object.keys(d.hidden || {}).length + (d.deleted || []).length + (d.order ? 1 : 0);
         console.log(`${new Date().toLocaleTimeString()}  saved edits.json (${n} ${n === 1 ? "entry" : "entries"})`);
         return json(res, 200, { ok: true, path: "edits.json", entries: n });
       }

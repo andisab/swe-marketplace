@@ -16,6 +16,13 @@
 //            `node build-deck.js .` runs, and the page reloads on the same slide. Over file://
 //            or a plain static server there is nothing to run, so the bar says how to save.
 //
+// The overview (O) gains structural edits while the deck has review mode: an eye on each
+// thumbnail hides or shows the slide (in the lane being viewed), an X deletes it (Undo brings it
+// back), thumbnails drag and drop into a new order, and a Rebuild deck button beside Close turns
+// solid when anything is queued. Keys on a focused thumbnail: H, Delete, Shift+arrows. The deck
+// itself doesn't change until the rebuild; the overview shows the pending state. presenter.js
+// draws all of it through window.RevealReviewAPI, which this plugin provides.
+//
 // Edits live in this browser (localStorage, per deck file and per build) until saved, so a
 // closed tab loses nothing; a draft from an older build is dropped, since its text may be gone.
 // Save writes edits.json next to the deck: through serve-deck.js when the deck is served by
@@ -23,7 +30,9 @@
 // session), else as a download. Copy puts the same JSON on the clipboard, to paste to Claude.
 //
 // The file (see build-deck.js §Review edits for how it is folded):
-//   { built, lane, file, saved, slides: { "<key>": { "<field>": { from, to }, comment } } }
+//   { built, lane, file, saved, keys: [every key, built order],
+//     slides: { "<key>": { "<field>": { from, to }, comment } },
+//     deck: { hidden: { "<key>": bool }, deleted: ["<key>"], order: ["<key>"] } }
 // A field's `from` is the text as built, so the fold can find and replace the exact literal.
 
 (function (root) {
@@ -42,7 +51,7 @@
   const PANEL_H = "min(34vh, 320px)";
 
   const CSS = `
-.rv-bar, .rv-confirm, .rv-toast { position: fixed; left: 50%; transform: translateX(-50%); z-index: 46; font-family: ${SANS}; font-size: 12px; color: ${INK};
+.rv-bar, .rv-confirm, .rv-toast { position: fixed; left: 50%; transform: translateX(-50%); z-index: 60; font-family: ${SANS}; font-size: 12px; color: ${INK};
   border: 1px solid ${BORDER}; border-radius: 12px; background: ${SURFACE}; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, .18); text-align: left; }
 .rv-bar { display: none; top: 14px; align-items: center; gap: 4px; padding: 5px 5px 5px 12px; white-space: nowrap; }
@@ -147,6 +156,8 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
     let server = null, handle = null, toastTimer = 0, confirmAction = null;
     const edits = {};                 // key → { <field>: { from, to }, comment }
     const originals = new Map();      // element → the text as built
+    let all = [];                     // every slide as built, in order: { key, el, hidden } (hidden ones leave the DOM at start-up)
+    const ops = { hidden: {}, deleted: [], order: null };   // the overview's structural edits, by key
     const STORE = () => NS + ":" + location.pathname;
     const q = (el, sel) => el.querySelector(sel);
 
@@ -154,7 +165,15 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
     function count() {
       let n = 0, c = 0;
       for (const s of Object.values(edits)) for (const k of Object.keys(s)) k === "comment" ? c++ : n++;
-      return { n, c };
+      const d = Object.keys(ops.hidden).length + ops.deleted.length + (ops.order ? 1 : 0);
+      return { n, c, d, any: n + c + d > 0 };
+    }
+    function opsOut() {   // the deck section of the file, or null when nothing structural is queued
+      const o = {};
+      if (Object.keys(ops.hidden).length) o.hidden = { ...ops.hidden };
+      if (ops.deleted.length) o.deleted = ops.deleted.slice();
+      if (ops.order) o.order = ops.order.slice();
+      return Object.keys(o).length ? o : null;
     }
     function keyOf(el) { const s = el.closest("section[data-key]"); return s ? s.dataset.key : null; }
     function fieldEl(key, field) { return deck.getSlidesElement().querySelector(`section[data-key="${cssEscape(key)}"] [data-f="${cssEscape(field)}"]`); }
@@ -176,7 +195,8 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
     }
     function persist() {
       try {
-        if (Object.keys(edits).length) localStorage.setItem(STORE(), JSON.stringify({ built: cfg.built, slides: edits }));
+        const deck = opsOut();
+        if (Object.keys(edits).length || deck) localStorage.setItem(STORE(), JSON.stringify({ built: cfg.built, slides: edits, deck }));
         else localStorage.removeItem(STORE());
       } catch (e) { /* storage blocked: the edits live in the page until saved */ }
     }
@@ -185,7 +205,13 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       try { saved = JSON.parse(localStorage.getItem(STORE())); } catch (e) { saved = null; }
       if (!saved || !saved.slides) return;
       if (saved.built !== cfg.built) { try { localStorage.removeItem(STORE()); } catch (e) { /* ignore */ } console.warn("RevealReview: dropped a draft made on an earlier build of this deck."); return; }
-      for (const [key, fields] of Object.entries(saved.slides)) {
+      const known = new Set(all.map((s) => s.key));
+      if (saved.deck) {
+        for (const [k, v] of Object.entries(saved.deck.hidden || {})) if (known.has(k) && typeof v === "boolean") ops.hidden[k] = v;
+        ops.deleted = (saved.deck.deleted || []).filter((k) => known.has(k));
+        if (Array.isArray(saved.deck.order) && saved.deck.order.length === all.length && saved.deck.order.every((k) => known.has(k))) ops.order = saved.deck.order.slice();
+      }
+      for (const [key, fields] of Object.entries(saved.slides || {})) {
         for (const [field, v] of Object.entries(fields)) {
           if (field === "comment") { (edits[key] = edits[key] || {}).comment = v; continue; }
           const el = fieldEl(key, field);
@@ -197,17 +223,54 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       }
     }
     function payload() {
+      const deck = opsOut();
       return JSON.stringify({ built: cfg.built, lane: cfg.lane || null, file: cfg.file || location.pathname.split("/").pop() || "index.html",
-        saved: new Date().toISOString(), slides: edits }, null, 2) + "\n";
+        saved: new Date().toISOString(), keys: all.map((s) => s.key), slides: edits, ...(deck ? { deck } : {}) }, null, 2) + "\n";
     }
     function discard() {
       for (const [el, from] of originals) { if (valueOf(el) !== from) setValue(el, from); el.classList.remove("rv-edited"); }
       for (const k of Object.keys(edits)) delete edits[k];
+      for (const k of Object.keys(ops.hidden)) delete ops.hidden[k];
+      ops.deleted = [];
+      ops.order = null;
       persist();
       renderBar();
       renderPanel();
       toast("Edits dropped");
     }
+
+    // ── The overview's structural edits (drawn by presenter.js through this API) ──
+    function builtOrder() { return all.map((s) => s.key); }
+    function pending() {   // every slide in the pending order, with its pending state
+      const byKey = new Map(all.map((s) => [s.key, s]));
+      return (ops.order || builtOrder()).map((key) => {
+        const s = byKey.get(key);
+        return { key, el: s.el, builtHidden: s.hidden, hidden: key in ops.hidden ? ops.hidden[key] : s.hidden, deleted: ops.deleted.includes(key) };
+      });
+    }
+    const api = {
+      lane: () => cfg.lane || null,
+      slides: pending,
+      setHidden(key, hidden) {
+        const s = all.find((x) => x.key === key);
+        if (!s) return;
+        if (hidden === s.hidden) delete ops.hidden[key]; else ops.hidden[key] = hidden;
+        persist(); renderBar();
+      },
+      setDeleted(key, deleted) {
+        ops.deleted = ops.deleted.filter((k) => k !== key);
+        if (deleted) ops.deleted.push(key);
+        persist(); renderBar();
+      },
+      reorder(keys) {
+        const built = builtOrder();
+        if (keys.length !== built.length || keys.some((k) => !built.includes(k))) return;
+        ops.order = keys.join("\n") === built.join("\n") ? null : keys.slice();
+        persist(); renderBar();
+      },
+      queued: () => count().any,
+      rebuild: askRebuild,
+    };
 
     // ── Saving ─────────────────────────────────────────────────────
     async function detectServer() {
@@ -219,8 +282,7 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       } catch (e) { server = null; }
     }
     async function save(quiet) {
-      const { n, c } = count();
-      if (!n && !c) { if (!quiet) toast("Nothing to save"); return true; }
+      if (!count().any) { if (!quiet) toast("Nothing to save"); return true; }
       const json = payload();
       try {
         if (server) {
@@ -258,8 +320,8 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
 
     // ── Rebuild (Shift+B) ──────────────────────────────────────────
     function askRebuild() {
-      const { n, c } = count();
-      const what = [n ? `${n} edit${n === 1 ? "" : "s"}` : "", c ? `${c} comment${c === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ") || "no edits";
+      const { n, c, d } = count();
+      const what = [n ? `${n} edit${n === 1 ? "" : "s"}` : "", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ") || "no edits";
       if (server) {
         showConfirm(`<h2>Rebuild the deck?</h2><p>Saves ${what} to edits.json, folds them into slides.js, runs <code>node build-deck.js .</code> and reloads this page on the same slide.</p>`,
           [["go", "Rebuild", "Enter"], ["cancel", "Cancel", "Esc"]], doRebuild);
@@ -307,8 +369,9 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       toastTimer = setTimeout(() => toastEl.classList.remove("rv-show"), 3200);
     }
     function renderBar() {
-      const { n, c } = count();
-      q(bar, ".rv-count").textContent = [n ? `${n} edit${n === 1 ? "" : "s"}` : "no edits", c ? `${c} comment${c === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
+      const { n, c, d } = count();
+      q(bar, ".rv-count").textContent = [n ? `${n} edit${n === 1 ? "" : "s"}` : d ? "" : "no edits", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
+      document.documentElement.classList.toggle("rv-queued", count().any);
     }
     function current() { return deck.getCurrentSlide(); }
     function renderPanel() {
@@ -415,6 +478,10 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       deck = reveal;
       if (/print-pdf/i.test(location.search) || /[?&]presenter(?:[=&]|$)/.test(location.search)) return;
       cfg = deck.getConfig().review || {};
+      // Every section as built, before Reveal drops the hidden ones at start-up: the overview
+      // draws hidden slides from these elements, which stay usable once detached.
+      all = Array.from(deck.getSlidesElement().querySelectorAll("section[data-key]")).map((el) => ({ key: el.dataset.key, el, hidden: el.getAttribute("data-visibility") === "hidden" }));
+      root.RevealReviewAPI = api;
       build();
       deck.addKeyBinding({ keyCode: 69, key: "E", description: "Review mode: edit text and notes" }, toggle);
       if (deck.isReady()) onReady(); else deck.on("ready", onReady);

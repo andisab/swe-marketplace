@@ -92,6 +92,7 @@ function build(...args) {
   catch (e) { return { out: e.stdout.toString() + e.stderr.toString(), code: e.status }; }
 }
 const read = (f) => fs.readFileSync(path.join(deck, f), "utf8");
+const fresh = (f) => { delete require.cache[require.resolve(f)]; return require(f); };
 const edits = (slides, extra = {}) => fs.writeFileSync(path.join(deck, "edits.json"), JSON.stringify({ built: "2026-10-29T00:00:00Z", lane: null, file: "index.html", slides, ...extra }, null, 2));
 
 // ── Markup ──
@@ -112,7 +113,7 @@ ok("text fields carry data-f, light-HTML fields also data-html, the notes aside 
 });
 ok("without review, the deck carries no review plugin or config", () => {
   const html = read("index.html");
-  assert.ok(!html.includes("RevealReview"));
+  assert.ok(!html.includes("root.RevealReview = function"));
   assert.ok(!/review: \{/.test(html));
   assert.match(html, /plugins: \[RevealPresenter\],/);
 });
@@ -234,6 +235,91 @@ ok("a malformed edits.json fails the build and leaves slides.js alone", () => {
   assert.notStrictEqual(r.code, 0);
   assert.match(r.out, /cover.title must be \{ from, to \}/);
   assert.strictEqual(read("slides.js"), SLIDES);
+});
+
+// ── Structural fold: hidden, deleted, order ──
+const KEYS = ["cover", "s2", "cols", "s4", "s5"];
+ok("hidden, deleted and order fold into slides.js, comments travelling with their slides", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('    { layout: "section",', '    // The first divider.\n    { layout: "section",'));
+  edits({ cover: { title: { from: "Deck title", to: "Deck title, edited" } } }, { keys: KEYS, deck: { hidden: { s2: true }, deleted: ["s5"], order: ["cols", "cover", "s2", "s4", "s5"] } });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const src = read("slides.js");
+  const at = (t) => src.indexOf(t);
+  assert.ok(at('key: "cols"') < at('key: "cover"'), "cols now comes before cover:\n" + src);
+  assert.ok(src.includes('{ hidden: true, layout: "section", kicker: "PART ONE"'), src);
+  assert.ok(src.includes("// The first divider.\n    { hidden: true, layout: \"section\""), "the comment stays above its slide:\n" + src);
+  assert.ok(!src.includes("The medium is the message."), "the quote slide is gone:\n" + src);
+  assert.ok(src.includes('title: "Deck title, edited"'), "text edits fold too");
+  assert.ok(src.startsWith("// slides.js — test deck."), "the header comment survives");
+  assert.match(r.out, /Folded the slide list into slides.js \(1 hidden or shown, 1 deleted, reordered\)\./);
+  assert.ok(!fs.existsSync(path.join(deck, "edits.json")));
+  const folded = fresh(path.join(deck, "slides.js"));
+  assert.deepStrictEqual(folded.slides.map((x) => x.key || x.layout), ["cols", "cover", "section", "card-row"]);
+  assert.strictEqual(folded.slides[2].hidden, true);
+  const html = read("index.html");
+  assert.ok(html.indexOf('data-key="cols"') < html.indexOf('data-key="cover"'));
+  assert.ok(!html.includes("The medium is the message."));
+});
+ok("showing a slide removes its hidden field; the list is re-read to prove the fold", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ layout: "section", kicker: "PART ONE", title: "Section heading" }', '{ layout: "section", hidden: true, kicker: "PART ONE", title: "Section heading" }'));
+  edits({}, { keys: KEYS, deck: { hidden: { s2: false } } });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const src = read("slides.js");
+  assert.ok(src.includes('{ layout: "section", kicker: "PART ONE", title: "Section heading" }'), src);
+  assert.ok(!src.includes("hidden"), src);
+  // hidden as the last entry: the comma before it goes with it
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('attribution: "— Someone" }', 'attribution: "— Someone", hidden: true }'));
+  edits({}, { keys: KEYS, deck: { hidden: { s5: false } } });
+  assert.strictEqual(build().code, 0);
+  assert.ok(read("slides.js").includes('attribution: "— Someone" }'), read("slides.js"));
+});
+ok("structural edits made on a different slide list are kept and layered, not folded", () => {
+  reset();
+  edits({}, { keys: ["cover", "s2", "cols", "s4"], deck: { deleted: ["s4"], order: ["s4", "cover", "s2", "cols"] } });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.strictEqual(read("slides.js"), SLIDES, "slides.js is untouched");
+  assert.match(r.out, /kept in edits.json: the hidden \/ deleted \/ order edits \(slides.js's slide list changed since the edits were made\)/);
+  const left = JSON.parse(read("edits.json"));
+  assert.deepStrictEqual(left.deck, { deleted: ["s4"], order: ["s4", "cover", "s2", "cols"] });
+  const html = read("index.html");   // auto keys are positional, so look for the slides' content
+  assert.ok(!html.includes('data-f="title">Cards<'), "the deleted card-row slide is layered out");
+  assert.ok(html.includes("The medium is the message."), "the quote slide, left out of the order, is kept at the end");
+  assert.ok(html.indexOf('data-key="cover"') < html.indexOf('data-key="s2"'));
+});
+ok("in a lane, hidden and deleted go to the overlay by key, the order to slides.js, unkeyed slides are kept", () => {
+  reset();
+  edits({}, { lane: "acme-life", file: "index-acme-life.html", keys: KEYS, deck: { hidden: { cover: true }, deleted: ["cols", "s4"], order: ["s2", "cover", "cols", "s4", "s5"] } });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const lane = read("lanes/acme-life.js");
+  assert.ok(lane.includes('cols: { right: "Lane text", hidden: true }') || lane.includes('cols: { right: "Lane text",hidden: true }') || /cols: \{[^}]*hidden: true/.test(lane), lane);
+  assert.ok(/cover: \{ hidden: true \}/.test(lane), lane);
+  const laneObj = fresh(path.join(deck, "lanes", "acme-life.js"));
+  assert.strictEqual(laneObj.slides.cover.hidden, true);
+  assert.strictEqual(laneObj.slides.cols.hidden, true);
+  assert.strictEqual(laneObj.slides.cols.right, "Lane text");
+  const src = read("slides.js");
+  assert.ok(src.indexOf('layout: "section"') < src.indexOf('key: "cover"'), "the order went to slides.js:\n" + src);
+  assert.match(r.out, /kept in edits.json: hidden for s4 \(a lane overlay needs the slide's own `key`/);
+  const left = JSON.parse(read("edits.json"));
+  assert.deepStrictEqual(left.deck, { hidden: { s4: true } });
+  const laneHtml = read("index-acme-life.html");
+  assert.match(laneHtml, /<section class="layout-card-row"[^>]*data-visibility="hidden"/);
+  assert.ok(!/<section class="layout-card-row"[^>]*data-visibility="hidden"/.test(read("index.html")), "the base deck still shows it");
+});
+ok("applyEdits layers hidden flags, the order and deletions", () => {
+  const b = require(path.join(deck, "build-deck.js"));
+  const slides = [{ key: "a", layout: "title", title: "A" }, { layout: "section", title: "B" }, { key: "c", layout: "quote", quote: "C", hidden: true }];
+  const out = b.applyEdits(slides, [], { hidden: { c: false, a: true }, deleted: ["s2"], order: ["c", "s2", "a"] });
+  assert.deepStrictEqual(out.map((x) => x.key || x.layout), ["c", "a"]);
+  assert.strictEqual(out[0].hidden, undefined);
+  assert.strictEqual(out[1].hidden, true);
+  assert.throws(() => b.applyEdits(slides, [], { order: ["zz"] }), /deck.order names "zz"/);
 });
 
 // ── Literal helpers ──

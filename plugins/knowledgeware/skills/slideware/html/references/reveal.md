@@ -200,20 +200,28 @@ A deck built with `review: true` next to `slides` in `slides.js` (or with `node 
 | `E` | Toggle review mode. Every marked field becomes editable in place: plain text for the escaped fields, light HTML (`<strong>`, `<em>`, `<code>`, `<br>`, `<a>`, lists) for `left`, `right`, card bodies and bullet items, which are cleaned on save (`<b>` becomes `<strong>`, a browser's `<div>` becomes `<br>`, anything else unwraps). A panel along the bottom holds the slide's speaker notes as plain text and a comment box for whoever edits the deck next. The arrows still move slides while no field has focus; Enter or Esc leaves a field. A bar at the top counts the edits and holds Save, Copy, Rebuild, Discard and Done. |
 | `Shift+B` | Rebuild: a confirm bar, then the edits are saved, `node build-deck.js .` runs and the page reloads on the same slide. This needs the deck served by `serve-deck.js` (below); over `file://` or a plain static server the bar says so and offers Save instead. `B` alone is still Reveal's blackout. |
 
+**The overview edits the deck's structure** while the deck has review mode. `O` shows every slide as built, hidden ones included under a mask in the panel's background colour, in the pending order. On each thumbnail an eye hides or shows the slide in the lane being viewed and an X deletes it (the thumbnail stays, struck through, with Undo); thumbnails drag and drop into a new order (drop on the left half of a thumbnail to go before it, the right half to go after). On a focused thumbnail `H`, `Delete` and `Shift+arrows` do the same. A Rebuild deck button beside Close is outlined while nothing is queued and solid (`--color-success`) when anything is, and it opens the same confirm bar as `Shift+B`. The deck itself doesn't change until the rebuild, so a hidden or deleted slide still presents until then; the overview numbers the slides as the next build will.
+
 Edits are kept in the browser (`localStorage`, per deck file and per build) until saved, so a closed tab loses nothing; a draft made on an earlier build is dropped, since its text may be gone. **Save** writes `edits.json` next to the deck: through `serve-deck.js` when the deck is served by it, else with the browser's save dialog (Chrome and Edge remember the file for the session), else as a download to move next to the deck. **Copy** puts the same JSON on the clipboard, to paste to Claude. The file holds only what changed, keyed by slide and field, with the text as built so the fold can find it:
 
 ```json
 { "built": "2026-10-29T16:25:13.218Z", "lane": null, "file": "index.html",
+  "keys": ["cover", "s2", "s3", "s4", "s5"],
   "slides": { "s4": { "cards.0.heading": { "from": "Card 1", "to": "Card one" },
                       "notes": { "from": "What to say.", "to": "What to say, shorter." },
-                      "comment": "Card 3 needs a stronger verb" } } }
+                      "comment": "Card 3 needs a stronger verb" } },
+  "deck": { "hidden": { "s3": true }, "deleted": ["s5"], "order": ["s2", "cover", "s3", "s4", "s5"] } }
 ```
+
+`keys` is every slide's key in the built order, and `deck` the overview's structural edits, present only when there are any.
 
 **Every build folds `edits.json` first**, before it reads `slides.js`: each `from` is looked up as a string literal in `slides.js` (or in the lane's overlay when the edits were made in a lane) and rewritten to `to` in the same quote style, leaving the file's comments and layout alone; the build prints what it folded. A `from` the file doesn't hold exactly once (the same text on two slides, text already changed, a light-HTML field the browser rewrote beyond recognition, notes on a slide that had none) can't be placed, so it stays in `edits.json`, is layered over that build so the deck still shows it, and is printed with its reason for folding by hand. Comments stay in the file too, printed on every build. `edits.json` is deleted when nothing is left. Edits made in a lane's output go to that lane's overlay only; text a lane inherits from the base deck can't be folded from the lane, so it's layered and reported.
 
+The `deck` section folds into the slide list itself: the builder splits `slides.js`'s `slides: [ … ]` into its slide objects (each must be a plain object literal, and `keys` must still match the file), rewrites them in the new order without the deleted ones, each with the comments above it, and sets or clears `hidden` on the ones toggled, then re-reads the file to prove the result before keeping it. In a lane, hidden and deleted both become `hidden: true` or `false` in that lane's overlay under the slide's own `key` (a slide without one is reported: give it a key), and the order goes to `slides.js`, since every lane shares it. Whatever can't be folded is layered over that build and reported.
+
 **`serve-deck.js`** (`node $PLUGIN/skills/slideware/html/scripts/serve-deck.js [deck-dir] [--port 8010]`) serves the deck on `127.0.0.1` only and answers `POST /__edits` (writes `edits.json`) and `POST /__build` (runs the build; `{ "review": true }` in the body adds `--review`, which review.js sends so a deck built that way keeps its review mode). It is what makes `Shift+B` a one-key loop: edit, rebuild, see the result on the same slide. It is also a fine way to serve a deck for Claude in Chrome.
 
-Three ways a rebuild happens: ask Claude to "apply my edits" or "rebuild the deck" (it runs the build, which folds the file, then reads any comments and leftovers the build printed and acts on them); any build at all, since the fold runs every time; or `Shift+B` in the deck.
+Three ways a rebuild happens: ask Claude to "apply my edits" or "rebuild the deck" (it runs the build, which folds the file, then reads any comments and leftovers the build printed and acts on them); any build at all, since the fold runs every time; or `Shift+B` in the deck (the Rebuild deck button in the overview does the same).
 
 ### Customizing
 

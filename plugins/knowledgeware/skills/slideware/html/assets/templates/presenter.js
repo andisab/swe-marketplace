@@ -22,6 +22,12 @@
 //           uses. Also available in the presenter window, where it moves both windows.
 //           When the deck was built in lanes (presenter: { lanes: [{ name, file }] }), the
 //           overview's header holds a lane switcher that opens the same slide in another lane.
+//           In a deck with review mode (review.js sets window.RevealReviewAPI) the overview
+//           also edits the deck's structure, pending a rebuild: every slide is shown, hidden
+//           ones under a mask; an eye on each thumbnail hides or shows it in this lane, an X
+//           deletes it (Undo brings it back), thumbnails drag and drop into a new order, and
+//           H, Delete and Shift+arrows do the same on the focused thumbnail. A Rebuild deck
+//           button beside Close turns solid while anything is queued.
 //   Navigation pill: a floating bar at the bottom (previous, the slide number, next, the
 //           current section's name, the overview, fullscreen, and an i that lists every
 //           key on hover and pins the list on click), in the deck's tokens. Shown for
@@ -214,8 +220,33 @@ html.rp-ov-on .rp-ov { display: block; }
 .rp-ov-body > .rp-ov-grid:first-child { margin-top: 22px; }
 .rp-ov-kick { flex: none; font-family: ${MONO}; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-ov-count { flex: none; margin-left: auto; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; color: var(--color-ink-faint, #9E9E97); }
+.rp-ov button.rp-ov-rebuild { margin-right: 8px; transition: background .15s, color .15s, border-color .15s; }
+html.rv-queued .rp-ov button.rp-ov-rebuild { background: var(--color-success, #3F8A4F); border-color: var(--color-success, #3F8A4F); color: #FFFFFF; }
+html.rv-queued .rp-ov button.rp-ov-rebuild:hover { filter: brightness(1.08); }
 .rp-ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px 16px; }
+.rp-ov-cell { position: relative; min-width: 0; }
+.rp-ov-cell[draggable] { cursor: grab; }
+.rp-ov-cell.rp-dragging { opacity: .35; }
+.rp-ov-cell.rp-drop-before .rp-ov-box { box-shadow: -8px 0 0 -4px ${ACCENT}; }
+.rp-ov-cell.rp-drop-after .rp-ov-box { box-shadow: 8px 0 0 -4px ${ACCENT}; }
 .rp-ov-th { all: unset; display: block; min-width: 0; cursor: pointer; }
+.rp-ov-cell[draggable] .rp-ov-th { cursor: grab; }
+/* A hidden slide sits under a mask in the panel's own background, so it reads as dimmed in light and dark styles alike. */
+.rp-ov-mask { display: none; position: absolute; inset: 0; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--color-surface-alt, var(--color-bg, #F4F4F2)) 74%, transparent); color: var(--color-ink-muted, #6B6B63); }
+.rp-ov-mask svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rp-ov-cell.rp-hidden .rp-ov-mask { display: flex; }
+.rp-ov-cell.rp-hidden .rp-ov-cap { color: var(--color-ink-muted, #6B6B63); }
+.rp-ov-cell.rp-deleted .rp-ov-box { opacity: .3; filter: grayscale(1); }
+.rp-ov-cell.rp-deleted .rp-ov-cap { color: var(--color-ink-muted, #6B6B63); text-decoration: line-through; }
+.rp-ov-tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s; }
+.rp-ov-cell:hover .rp-ov-tools, .rp-ov-cell:focus-within .rp-ov-tools, .rp-ov-cell.rp-hidden .rp-ov-tools, .rp-ov-cell.rp-deleted .rp-ov-tools { opacity: 1; }
+.rp-ov-tools button { all: unset; cursor: pointer; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); color: var(--color-ink, #1A1A18); box-shadow: 0 2px 8px rgba(0, 0, 0, .14); }
+.rp-ov-tools button:hover { color: ${ACCENT}; border-color: ${ACCENT}; }
+.rp-ov-tools button:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
+.rp-ov-tools button[data-ov=undo] { width: auto; padding: 0 9px; border-radius: 13px; font: 500 11px ${MONO}; letter-spacing: .06em; text-transform: uppercase; }
+.rp-ov-tools svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .rp-ov-box { position: relative; width: 100%; aspect-ratio: var(--rp-ratio, 16 / 9); overflow: hidden; border-radius: var(--radius, 6px);
   background: var(--color-bg, #FFFFFF); outline: 1px solid var(--color-border, #E3E3DF); outline-offset: 0; transition: outline-color .12s; }
 .rp-ov-box > .rp-preview { position: absolute; inset: 0; pointer-events: none; }
@@ -283,7 +314,11 @@ html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
   const REVIEW_KEYS = [
     ["E", "Review mode: edit text and notes in place"],
     ["⇧B", "Rebuild the deck (through serve-deck.js)"],
+    ["H · Del · ⇧←→", "In the overview: hide, delete or move the focused slide"],
   ];
+  const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.4 10.4 0 0 1 12 5c5 0 9 4 10 7a11.7 11.7 0 0 1-3.2 4.3M6.3 6.3A11.6 11.6 0 0 0 2 12c1 3 5 7 10 7a9.7 9.7 0 0 0 4.4-1"/></svg>';
+  const EYE_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const CROSS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   const OPENING = "Opening";   // the group of slides before the first section divider
 
   const splitHtml = (name, axis, label) => `<div class="rp-split rp-split-${axis}" data-split="${name}" role="separator"
@@ -812,18 +847,90 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         ov.firstChild.insertBefore(label, ov.querySelector(".rp-ov-close"));
       }
       ov.addEventListener("click", (e) => {
+        const tool = e.target.closest("button[data-ov]");
+        if (tool) { structural(tool.dataset.ov, tool.closest(".rp-ov-cell").dataset.key); return; }
         const th = e.target.closest(".rp-ov-th");
-        if (th) { closeOverview(); goTo(slides[+th.dataset.i]); }
+        if (th) { if (+th.dataset.i >= 0) { closeOverview(); goTo(slides[+th.dataset.i]); } }
+        else if (e.target.closest(".rp-ov-rebuild")) { if (root.RevealReviewAPI) root.RevealReviewAPI.rebuild(); }
         else if (e.target.closest(".rp-ov-close")) closeOverview();
       });
+      // Drag and drop between thumbnails: dropping on the left half of a thumbnail puts the
+      // dragged slide before it, on the right half after it. Pending until the rebuild.
+      let dragKey = null;
+      const clearDrop = () => ov.querySelectorAll(".rp-drop-before, .rp-drop-after").forEach((c) => c.classList.remove("rp-drop-before", "rp-drop-after"));
+      ov.addEventListener("dragstart", (e) => {
+        const cell = e.target.closest && e.target.closest(".rp-ov-cell[draggable]");
+        if (!cell) return;
+        dragKey = cell.dataset.key;
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragKey);
+        cell.classList.add("rp-dragging");
+      });
+      ov.addEventListener("dragover", (e) => {
+        const cell = e.target.closest && e.target.closest(".rp-ov-cell");
+        if (!dragKey || !cell || cell.dataset.key === dragKey) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const r = cell.getBoundingClientRect(), before = e.clientX < r.left + r.width / 2;
+        clearDrop();
+        cell.classList.add(before ? "rp-drop-before" : "rp-drop-after");
+      });
+      ov.addEventListener("drop", (e) => {
+        const cell = e.target.closest && e.target.closest(".rp-ov-cell");
+        if (!dragKey || !cell || cell.dataset.key === dragKey) return;
+        e.preventDefault();
+        const before = cell.classList.contains("rp-drop-before"), key = dragKey;
+        moveSlide(key, cell.dataset.key, before);
+      });
+      ov.addEventListener("dragend", () => { dragKey = null; clearDrop(); ov.querySelectorAll(".rp-dragging").forEach((c) => c.classList.remove("rp-dragging")); });
       new ResizeObserver(scaleOverview).observe(ov);   // window resizes, and the first display
       document.body.appendChild(ov);
     }
+    // ── Structural edits in the overview (review mode only) ──
+    function moveSlide(key, targetKey, before) {
+      const api = root.RevealReviewAPI;
+      if (!api) return;
+      const keys = api.slides().map((s) => s.key).filter((k) => k !== key);
+      const at = keys.indexOf(targetKey);
+      if (at < 0) return;
+      keys.splice(before ? at : at + 1, 0, key);
+      api.reorder(keys);
+      refillOverview(key);
+    }
+    function structural(act, key) {
+      const api = root.RevealReviewAPI;
+      if (!api || !key) return;
+      const s = api.slides().find((x) => x.key === key);
+      if (!s) return;
+      if (act === "hide") api.setHidden(key, !s.hidden);
+      else if (act === "delete") api.setDeleted(key, true);
+      else if (act === "undo") api.setDeleted(key, false);
+      else if (act === "earlier" || act === "later") {
+        const keys = api.slides().map((x) => x.key), i = keys.indexOf(key), j = act === "earlier" ? i - 1 : i + 1;
+        if (j < 0 || j >= keys.length) return;
+        [keys[i], keys[j]] = [keys[j], keys[i]];
+        api.reorder(keys);
+      } else return;
+      refillOverview(key);
+    }
+    function refillOverview(focusKey) {
+      ovFilled = false;
+      fillOverview();
+      markCurrent();
+      scaleOverview();
+      const th = focusKey && ov.querySelector(`.rp-ov-cell[data-key="${CSS.escape(focusKey)}"] .rp-ov-th`);
+      if (th) th.focus({ preventScroll: false });
+    }
     function fillOverview() {
-      const body = ov.querySelector(".rp-ov-body"), hasSections = slides.some((s) => s.classList.contains("layout-section"));
-      let grid = null, groups = 0;
-      slides.forEach((slide, i) => {
-        const g = groupOf(slide);
+      const api = root.RevealReviewAPI, body = ov.querySelector(".rp-ov-body");
+      body.innerHTML = "";
+      // With review mode, every slide as built (hidden ones included) in the pending order;
+      // otherwise the live slides. `i` is the live index, -1 for a slide Reveal dropped.
+      const list = api ? api.slides().map((s) => ({ ...s, i: slides.indexOf(s.el) })) : slides.map((el, i) => ({ key: null, el, i, hidden: false, deleted: false }));
+      const hasSections = list.some((s) => !s.deleted && s.el.classList.contains("layout-section"));
+      let grid = null, groups = 0, n = 0;
+      list.forEach((s) => {
+        const slide = s.el, g = s.deleted ? null : groupOf(slide);
         if (g || !grid) {
           const head = g || (hasSections ? { kicker: "", title: OPENING } : null);
           if (head) {
@@ -839,24 +946,53 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
           grid.className = "rp-ov-grid";
           body.appendChild(grid);
         }
-        const caption = captionOf(slide), th = document.createElement("button");
-        th.type = "button";
+        const caption = captionOf(slide), num = s.deleted || s.hidden ? "" : pad(++n);
+        const cell = document.createElement("div"), th = document.createElement("div");
+        cell.className = "rp-ov-cell" + (s.hidden ? " rp-hidden" : "") + (s.deleted ? " rp-deleted" : "");
+        if (s.key) cell.dataset.key = s.key;
         th.className = "rp-ov-th";
-        th.dataset.i = i;
-        th.setAttribute("aria-label", "Go to slide " + (i + 1) + (caption ? ": " + caption : ""));
+        th.setAttribute("role", "button");
+        th.tabIndex = 0;
+        th.dataset.i = s.i;
+        th.setAttribute("aria-label", (s.i >= 0 ? "Go to slide " + (s.i + 1) : "Slide not in this build") + (caption ? ": " + caption : "") +
+          (s.hidden ? " (hidden)" : "") + (s.deleted ? " (deleted)" : ""));
         th.innerHTML = '<div class="rp-ov-box"></div><div class="rp-ov-cap"><b></b><span></span></div>';
-        th.querySelector(".rp-ov-cap b").textContent = pad(i + 1);
+        th.querySelector(".rp-ov-cap b").textContent = num || "·";
         th.querySelector(".rp-ov-cap span").textContent = caption;
         th.querySelector(".rp-ov-box").appendChild(slideCopy(slide));
-        grid.appendChild(th);
+        cell.appendChild(th);
+        if (api) {
+          const mask = document.createElement("div");
+          mask.className = "rp-ov-mask";
+          mask.innerHTML = EYE_OFF;
+          th.querySelector(".rp-ov-box").appendChild(mask);
+          const lane = api.lane() ? " in this lane" : "";
+          const tools = document.createElement("div");
+          tools.className = "rp-ov-tools";
+          tools.innerHTML = s.deleted
+            ? '<button type="button" data-ov="undo" title="Bring the slide back">Undo</button>'
+            : `<button type="button" data-ov="hide" title="${s.hidden ? "Show the slide" + lane : "Hide the slide" + lane} (H)" aria-label="${s.hidden ? "Show" : "Hide"}">${s.hidden ? EYE_ON : EYE_OFF}</button>` +
+              '<button type="button" data-ov="delete" title="Delete the slide (Delete)" aria-label="Delete">' + CROSS + "</button>";
+          cell.appendChild(tools);
+          cell.draggable = true;
+        }
+        grid.appendChild(cell);
       });
       body.querySelectorAll(".rp-ov-grp").forEach((h) => {
-        const n = h.nextElementSibling.childElementCount;
-        h.querySelector(".rp-ov-count").textContent = n + (n === 1 ? " slide" : " slides");
+        const k = h.nextElementSibling.querySelectorAll(".rp-ov-cell:not(.rp-deleted):not(.rp-hidden)").length;
+        h.querySelector(".rp-ov-count").textContent = k + (k === 1 ? " slide" : " slides");
       });
       ov.querySelector(".rp-ov-title").textContent = titleOf(slides[0]) || document.title.replace(/^Presenter · /, "");
-      ov.querySelector(".rp-ov-sub").textContent = slides.length + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
-        ". Click a slide to go to it; Esc closes.";
+      ov.querySelector(".rp-ov-sub").textContent = n + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
+        ". Click a slide to go to it; Esc closes." + (api ? " Drag to reorder; the eye hides, the X deletes; changes apply at the next rebuild." : "");
+      if (api && !ov.querySelector(".rp-ov-rebuild")) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "rp-ov-close rp-ov-rebuild";
+        b.title = "Save the edits, rebuild the deck and reload (Shift+B)";
+        b.textContent = "Rebuild deck";
+        ov.firstChild.insertBefore(b, ov.querySelector(".rp-ov-close"));
+      }
       ovFilled = true;
     }
     function scaleOverview() {
@@ -872,7 +1008,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     }
     function openOverview() {
       if (overviewOpen()) return;
-      if (!ovFilled) fillOverview();
+      if (!ovFilled || root.RevealReviewAPI) fillOverview();   // with review mode, the pending state may have changed
       document.documentElement.classList.add("rp-ov-on");
       [revealEl, drawer, shell].forEach((el) => { if (el) el.inert = true; });   // the deck behind it takes no clicks or focus
       markCurrent();
@@ -897,12 +1033,19 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (e.key === "Escape" || e.key === "o" || e.key === "O") { e.preventDefault(); closeOverview(); return; }
       if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // the lane switcher keeps its own keys
       const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
+      if (at >= 0 && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ths[at].click(); return; }
+      if (at >= 0 && root.RevealReviewAPI) {   // structural edits on the focused thumbnail
+        const cell = ths[at].closest(".rp-ov-cell"), key = cell && cell.dataset.key;
+        const act = e.key === "h" || e.key === "H" ? "hide" : e.key === "Delete" || e.key === "Backspace" ? (cell.classList.contains("rp-deleted") ? "undo" : "delete")
+          : e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowUp") ? "earlier" : e.shiftKey && (e.key === "ArrowRight" || e.key === "ArrowDown") ? "later" : null;
+        if (act) { e.preventDefault(); structural(act, key); return; }
+      }
       let step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 0, ArrowUp: 0 }[e.key];
       if (step === undefined) return;
       e.preventDefault();
       if (at < 0) { if (ths.length) ths[0].focus(); return; }
       if (step === 0) {   // up or down a row: the columns per grid are the thumbnails sharing the focused one's top edge
-        const row = ths.filter((t) => t.parentNode === ths[at].parentNode && t.offsetTop === ths[at].offsetTop).length;
+        const row = ths.filter((t) => t.closest(".rp-ov-grid") === ths[at].closest(".rp-ov-grid") && t.closest(".rp-ov-cell").offsetTop === ths[at].closest(".rp-ov-cell").offsetTop).length;
         step = e.key === "ArrowDown" ? row : -row;
       }
       const next = ths[Math.min(ths.length - 1, Math.max(0, at + step))];

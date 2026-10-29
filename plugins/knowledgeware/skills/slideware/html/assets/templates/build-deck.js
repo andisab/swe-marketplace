@@ -733,14 +733,21 @@ ${inlineScript(reveal.js)}
 // ── Review edits ───────────────────────────────────────────────────
 // review.js (E in a deck built with `review: true`) saves text and notes edits as ./edits.json:
 //   { built: "<ISO time of the build the edits were made on>", lane: null | "<lane id>", file: "index.html",
+//     keys: ["cover", "s2", …],                       // every slide's key in the built order
 //     slides: { "<key>": { title: { from: "old", to: "new" }, "cards.1.body": { from, to }, notes: { from, to },
-//                          comment: "a note for whoever edits the deck next" } } }
+//                          comment: "a note for whoever edits the deck next" } },
+//     deck: { hidden: { "<key>": true | false }, deleted: ["<key>"], order: ["<key>", …] } }
 // Keys are the slides' own `key`s, else "s<n>" by position in slides.js. Before every build the
 // edits are folded into the source: each `from` is looked up as a string literal in slides.js (or
 // in the lane's overlay when the edits were made in a lane) and rewritten to `to`, with the same
 // quote style and the file's comments and layout untouched. A `from` the file doesn't hold exactly
 // once can't be placed, so it stays in edits.json and is layered over this build instead; comments
 // stay too, for whoever iterates on the deck (often Claude). edits.json is deleted when nothing is left.
+// `deck` holds the overview's structural edits: `hidden` sets or clears a slide's `hidden` field
+// (in the lane's overlay when made in a lane), `deleted` removes slide objects from slides.js (in a
+// lane it hides them there instead), and `order` rearranges them, comments riding along with each.
+// They need slides.js's list to be plain object literals in the order `keys` records; otherwise
+// they're layered and reported.
 const EDITS_FILE = "edits.json";
 
 // String literals of a JS source with their spans, skipping comments. Template literals with
@@ -824,6 +831,171 @@ function foldInto(file, entries) {
   }
   return { applied, left };
 }
+// ── Structural fold: slide objects in slides.js, overlay entries in a lane file ──
+// The top-level items of the array or object whose bracket opens at `open`: each item's span
+// (first to last significant character), the lead before it (whitespace and comments after
+// the previous comma) and whether a comma follows. Strings and comments are skipped.
+function splitTopLevel(src, open) {
+  const close = { "[": "]", "{": "}" }[src[open]];
+  if (!close) throw new Error("splitTopLevel: not a bracket");
+  const items = [];
+  let depth = 0, i = open + 1, itemStart = -1, lastSig = -1, leadStart = open + 1;
+  const sig = (k) => { if (itemStart < 0) itemStart = k; lastSig = k; };
+  while (i < src.length) {
+    const c = src[i], n = src[i + 1];
+    if (c === "/" && n === "/") { const e = src.indexOf("\n", i); i = e < 0 ? src.length : e; continue; }
+    if (c === "/" && n === "*") { const e = src.indexOf("*/", i + 2); i = e < 0 ? src.length : e + 2; continue; }
+    if (c === '"' || c === "'" || c === "`") {
+      sig(i); i++;
+      while (i < src.length && src[i] !== c) { if (src[i] === "\\") i++; i++; }
+      sig(i); i++; continue;
+    }
+    if (depth === 0 && (c === close)) break;
+    if (depth === 0 && c === ",") {
+      if (itemStart >= 0) items.push({ start: itemStart, end: lastSig + 1, leadStart, comma: i });
+      itemStart = -1; leadStart = i + 1; i++; continue;
+    }
+    if ("[{(".includes(c)) depth++;
+    else if ("]})".includes(c)) depth--;
+    if (!/\s/.test(c)) sig(i);
+    i++;
+  }
+  if (i >= src.length) throw new Error("splitTopLevel: unbalanced brackets");
+  if (itemStart >= 0) items.push({ start: itemStart, end: lastSig + 1, leadStart, comma: -1 });
+  return { close: i, items };
+}
+// The index of the matching bracket for the one at `open` (strings and comments skipped).
+function matchBracket(src, open) { return splitTopLevel(src, open).close; }
+function isIdent(s) { return /^[A-Za-z_$][\w$]*$/.test(s); }
+function entryKey(src, item) {   // "key:" or "'key':" at the start of an object entry, else null
+  const m = src.slice(item.start, item.end).match(/^([A-Za-z_$][\w$]*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*:/);
+  if (!m) return null;
+  const k = m[1];
+  return k[0] === '"' || k[0] === "'" ? new Function(`return ${k}`)() : k;
+}
+// The export's object (`module.exports = {`) or array (`module.exports = [`): the bracket index.
+function exportBracket(src) {
+  const lits = stringLiterals(src);
+  const inLit = (k) => lits.some(l => k >= l.start && k < l.end);
+  const re = /module\.exports\s*=\s*([\[{])/g;
+  let m;
+  while ((m = re.exec(src))) if (!inLit(m.index)) return m.index + m[0].length - 1;
+  throw new Error("no `module.exports = {` or `= [` found");
+}
+// The slides array of slides.js: its bracket index, or -1 when the file exports no plain list.
+function slidesArray(src) {
+  const open = exportBracket(src);
+  if (src[open] === "[") return open;
+  const { items } = splitTopLevel(src, open);
+  const it = items.find(x => entryKey(src, x) === "slides");
+  if (!it) return -1;
+  const b = src.indexOf("[", it.start);
+  return b > 0 && b < it.end && /^slides\s*:\s*\[/.test(src.slice(it.start, b + 1)) ? b : -1;
+}
+// Set, clear or replace `hidden` in the object literal at `open`. Returns the new source.
+function setHiddenIn(src, open, value) {   // value: true | false | null (remove)
+  const { items } = splitTopLevel(src, open);
+  const at = items.findIndex(x => entryKey(src, x) === "hidden"), it = items[at];
+  if (it) {
+    if (value === null) {   // drop the entry with its own comma, or with the comma before it when it's last
+      const prev = items[at - 1];
+      const from = it.comma >= 0 || !prev ? it.leadStart : prev.comma, to = it.comma >= 0 ? it.comma + 1 : it.end;
+      return src.slice(0, from) + src.slice(to);
+    }
+    return src.slice(0, it.start) + `hidden: ${value}` + src.slice(it.end);
+  }
+  if (value === null) return src;
+  return src.slice(0, open + 1) + ` hidden: ${value},` + src.slice(open + 1);
+}
+// Fold the structural edits into slides.js: reorder and remove slide objects, set `hidden`.
+function foldDeckInto(file, keys, ops) {
+  const original = fs.readFileSync(file, "utf8");
+  const open = slidesArray(original);
+  if (open < 0) throw new Error("slides.js doesn't export a plain `slides: [ … ]` list");
+  const { close, items } = splitTopLevel(original, open);
+  if (items.length !== keys.length) throw new Error(`slides.js lists ${items.length} slides, the edits were made on ${keys.length}`);
+  for (const it of items) {
+    if (original[it.start] !== "{" || matchBracket(original, it.start) !== it.end - 1) throw new Error("a slide in slides.js isn't a plain object literal");
+  }
+  // Each slide's text, with its lead (comments above it travel with it) and `hidden` applied.
+  const texts = new Map();
+  keys.forEach((key, i) => {
+    const it = items[i];
+    let text = original.slice(it.start, it.end);
+    if (key in ops.hidden) text = setHiddenIn(text, 0, ops.hidden[key] ? true : null);
+    texts.set(key, { lead: original.slice(it.leadStart, it.start), text });
+  });
+  const order = (ops.order || keys).filter(k => !ops.deleted.includes(k));
+  const last = items[items.length - 1];
+  const tail = original.slice(last.comma >= 0 ? last.comma + 1 : last.end, close);
+  const body = order.map(k => texts.get(k).lead + texts.get(k).text + ",").join("");
+  const src = original.slice(0, open + 1) + body + (tail.trim() ? tail : tail || "\n") + original.slice(close);
+  fs.writeFileSync(file, src);
+  try {
+    delete require.cache[file];
+    const deck = readDeck(require(file));
+    const got = deck.slides.map((s, i) => slideKey(s, i));
+    // Auto keys shift with the order; compare by the slides' own keys where they have them.
+    const want = order.map((k, i) => texts.get(k).text.match(/\bkey\s*:/) ? k : `s${i + 1}`);
+    if (got.join("\n") !== want.join("\n")) throw new Error("the folded list doesn't match the edits");
+    for (const [k, h] of Object.entries(ops.hidden)) {
+      const at = order.indexOf(k);
+      if (at >= 0 && !!deck.slides[at].hidden !== !!h) throw new Error(`hidden didn't take on ${k}`);
+    }
+  } catch (e) {
+    fs.writeFileSync(file, original);
+    throw new Error(`folding the slide list into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold it by hand.`);
+  }
+}
+// Fold a lane's `hidden` edits into its overlay: slides: { <key>: { hidden: <bool> } }.
+function foldLaneHidden(file, hidden) {
+  const original = fs.readFileSync(file, "utf8");
+  let src = original;
+  for (const [key, value] of Object.entries(hidden)) {
+    const open = exportBracket(src);
+    if (src[open] !== "{") throw new Error("the overlay must export an object");
+    let { items } = splitTopLevel(src, open);
+    let slidesIt = items.find(x => entryKey(src, x) === "slides");
+    if (!slidesIt) {
+      src = src.slice(0, open + 1) + "\n  slides: {},".replace(/^\n/, src[open + 1] === "\n" ? "\n" : " ") + src.slice(open + 1);
+      items = splitTopLevel(src, open).items;
+      slidesIt = items.find(x => entryKey(src, x) === "slides");
+    }
+    const sOpen = src.indexOf("{", slidesIt.start);
+    if (sOpen < 0 || sOpen > slidesIt.end) throw new Error("the overlay's `slides` isn't an object");
+    const entries = splitTopLevel(src, sOpen).items;
+    const it = entries.find(x => entryKey(src, x) === key);
+    if (it) {
+      const oOpen = src.indexOf("{", it.start);
+      if (oOpen < 0 || oOpen > it.end) throw new Error(`the overlay's slides["${key}"] isn't an object`);
+      src = setHiddenIn(src, oOpen, value);
+    } else {
+      const k = isIdent(key) ? key : JSON.stringify(key);
+      src = src.slice(0, sOpen + 1) + ` ${k}: { hidden: ${value} },` + src.slice(sOpen + 1);
+    }
+  }
+  fs.writeFileSync(file, src);
+  try {
+    delete require.cache[file];
+    const o = require(file);
+    for (const [key, value] of Object.entries(hidden)) if (!o.slides || !o.slides[key] || o.slides[key].hidden !== value) throw new Error(`hidden didn't take on ${key}`);
+  } catch (e) {
+    fs.writeFileSync(file, original);
+    throw new Error(`folding hidden slides into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold it by hand.`);
+  }
+}
+// The deck ops of edits.json, checked. Returns { hidden: {key: bool}, deleted: [key], order: [key] | null }.
+function readDeckOps(edits) {
+  const d = edits.deck;
+  if (d == null) return null;
+  if (typeof d !== "object") throw new Error(`${EDITS_FILE}: deck must be an object`);
+  const ops = { hidden: {}, deleted: [], order: null };
+  for (const [k, v] of Object.entries(d.hidden || {})) { if (typeof v !== "boolean") throw new Error(`${EDITS_FILE}: deck.hidden.${k} must be true or false`); ops.hidden[k] = v; }
+  if (d.deleted != null) { if (!Array.isArray(d.deleted) || !d.deleted.every(k => typeof k === "string")) throw new Error(`${EDITS_FILE}: deck.deleted must be a list of keys`); ops.deleted = d.deleted; }
+  if (d.order != null) { if (!Array.isArray(d.order) || !d.order.every(k => typeof k === "string")) throw new Error(`${EDITS_FILE}: deck.order must be a list of keys`); ops.order = d.order; }
+  return Object.keys(ops.hidden).length || ops.deleted.length || ops.order ? ops : null;
+}
+
 // Fold ./edits.json into slides.js or the lane's overlay. Returns what to layer over this build:
 // { lane, fields: [{ key, field, to }] }, plus the comments, or null when there was no file.
 function foldEdits(cwd, deckLanes) {
@@ -847,25 +1019,81 @@ function foldEdits(cwd, deckLanes) {
   if (applied.length) console.log(`Folded ${applied.length} edit${applied.length === 1 ? "" : "s"} from ${EDITS_FILE} into ${rel} (${new Set(applied.map(a => a.key)).size} slide${new Set(applied.map(a => a.key)).size === 1 ? "" : "s"}).`);
   for (const l of left) console.log(`  kept in ${EDITS_FILE}: ${l.key}.${l.field} (${l.reason}); layered over this build. Fold it by hand.`);
   for (const c of comments) console.log(`  comment on ${c.key}: ${c.comment}`);
-  if (left.length || comments.length) {
+
+  // Structural edits: the slide list in slides.js, `hidden` in a lane's overlay.
+  const ops = readDeckOps(edits);
+  let deckLeft = null;
+  if (ops) {
+    const slidesPath = path.join(cwd, "slides.js");
+    delete require.cache[slidesPath];
+    const current = readDeck(require(slidesPath)).slides.map((s, i) => slideKey(s, i));
+    const keys = Array.isArray(edits.keys) ? edits.keys : null;
+    const keep = (reason) => { deckLeft = { ...ops, reason }; console.log(`  kept in ${EDITS_FILE}: the hidden / deleted / order edits (${reason}); layered over this build. Fold them by hand.`); };
+    const n = (o) => `${Object.keys(o.hidden).length} hidden or shown, ${o.deleted.length} deleted${o.order ? ", reordered" : ""}`;
+    if (!keys) keep("the file doesn't record the built slide order");
+    else if (keys.join("\n") !== current.join("\n")) keep("slides.js's slide list changed since the edits were made");
+    else if (!edits.lane) {
+      try { foldDeckInto(slidesPath, keys, ops); console.log(`Folded the slide list into slides.js (${n(ops)}).`); }
+      catch (e) { keep(e.message); }
+    } else {
+      // In a lane: hidden (and deleted, which means hidden there) go to the overlay by key; the
+      // order is the base deck's and shared by every lane, so it goes to slides.js.
+      const laneHidden = { ...ops.hidden };
+      for (const k of ops.deleted) laneHidden[k] = true;
+      const unkeyed = Object.keys(laneHidden).filter(k => /^s\d+$/.test(k) && !deckLanesKeyed(cwd, k));
+      const keyed = Object.fromEntries(Object.entries(laneHidden).filter(([k]) => !unkeyed.includes(k)));
+      const laneOps = { hidden: {}, deleted: [], order: null };
+      try {
+        if (Object.keys(keyed).length) { foldLaneHidden(target, keyed); console.log(`Folded ${Object.keys(keyed).length} hidden / deleted slide${Object.keys(keyed).length === 1 ? "" : "s"} into ${rel} (deleted in a lane means hidden there).`); }
+        if (ops.order) { foldDeckInto(slidesPath, keys, { hidden: {}, deleted: [], order: ops.order }); console.log("Folded the slide order into slides.js (the order is shared by every lane)."); }
+      } catch (e) { laneOps.hidden = keyed; laneOps.order = ops.order; deckLeft = { ...laneOps, reason: e.message }; console.log(`  kept in ${EDITS_FILE}: the lane's hidden / order edits (${e.message}); layered over this build.`); }
+      if (unkeyed.length) {
+        for (const k of unkeyed) laneOps.hidden[k] = laneHidden[k];
+        deckLeft = { ...(deckLeft || laneOps), hidden: { ...(deckLeft ? deckLeft.hidden : {}), ...Object.fromEntries(unkeyed.map(k => [k, laneHidden[k]])) }, reason: (deckLeft && deckLeft.reason) || "unkeyed slides" };
+        console.log(`  kept in ${EDITS_FILE}: hidden for ${unkeyed.join(", ")} (a lane overlay needs the slide's own \`key\`; give the slide one in slides.js); layered over this build.`);
+      }
+    }
+  }
+
+  if (left.length || comments.length || deckLeft) {
     const slides = {};
     for (const l of left) (slides[l.key] = slides[l.key] || {})[l.field] = { from: l.from, to: l.to };
     for (const c of comments) (slides[c.key] = slides[c.key] || {}).comment = c.comment;
-    fs.writeFileSync(file, JSON.stringify({ ...edits, slides }, null, 2) + "\n");
+    const out = { ...edits, slides };
+    if (deckLeft) out.deck = { ...(Object.keys(deckLeft.hidden).length ? { hidden: deckLeft.hidden } : {}), ...(deckLeft.deleted.length ? { deleted: deckLeft.deleted } : {}), ...(deckLeft.order ? { order: deckLeft.order } : {}) };
+    else delete out.deck;
+    fs.writeFileSync(file, JSON.stringify(out, null, 2) + "\n");
   } else {
     fs.unlinkSync(file);
     console.log(`${EDITS_FILE} folded and removed.`);
   }
-  return { lane: edits.lane || null, fields: left.map(l => ({ key: l.key, field: l.field, to: l.to })), comments };
+  return { lane: edits.lane || null, fields: left.map(l => ({ key: l.key, field: l.field, to: l.to })), comments,
+    deck: deckLeft ? { hidden: deckLeft.hidden, deleted: deckLeft.deleted, order: deckLeft.order } : null };
 }
-// Layer the edits that couldn't be folded over the slides of one output.
-function applyEdits(slides, fields) {
-  if (!fields.length) return slides;
-  const out = structuredClone(slides);
+// Whether slides.js gives the slide at auto key s<n> an own key (then the auto key isn't its key).
+function deckLanesKeyed(cwd, autoKey) {
+  const slidesPath = path.join(cwd, "slides.js");
+  delete require.cache[slidesPath];
+  const slides = readDeck(require(slidesPath)).slides;
+  const i = Number(autoKey.slice(1)) - 1;
+  return !!(slides[i] && slides[i].key);
+}
+// Layer the edits that couldn't be folded over the slides of one output: field values, then
+// hidden flags, deletions and the order (keys are read against the slides' built positions).
+function applyEdits(slides, fields, deck = null) {
+  if (!fields.length && !deck) return slides;
+  let out = structuredClone(slides);
+  const keyed = out.map((s, i) => [slideKey(s, i), s]);
+  const byKey = new Map(keyed);
   for (const { key, field, to } of fields) {
-    const slide = out.find((s, i) => slideKey(s, i) === key);
+    const slide = byKey.get(key);
     if (!slide) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`);
     if (!setPath(slide, field, to)) throw new Error(`${EDITS_FILE}: slide ${key} has no field "${field}"`);
+  }
+  if (deck) {
+    for (const [key, h] of Object.entries(deck.hidden || {})) { const s = byKey.get(key); if (!s) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`); if (h) s.hidden = true; else delete s.hidden; }
+    if (deck.order) { const missing = deck.order.find(k => !byKey.has(k)); if (missing) throw new Error(`${EDITS_FILE}: deck.order names "${missing}", which no slide has`); out = deck.order.map(k => byKey.get(k)).concat(keyed.filter(([k]) => !deck.order.includes(k)).map(([, s]) => s)); }
+    if (deck.deleted && deck.deleted.length) out = out.filter(s => !deck.deleted.includes(keyed.find(([, x]) => x === s)[0]));
   }
   return out;
 }
@@ -932,7 +1160,7 @@ function main() {
 
   for (const out of outputs) {
     // Edits that couldn't be folded are layered over the output they were made in.
-    if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields);
+    if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck);
     const visible = out.slides.filter(s => !s.hidden);
     const slidesHtml = out.slides.map((s, i) => renderSlide(s, motion, footer.length
       ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i))).join("\n");
@@ -951,4 +1179,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits, splitTopLevel, slidesArray, setHiddenIn };
