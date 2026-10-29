@@ -12,7 +12,7 @@ Format guide for HTML output. Read [../SKILL.md](../SKILL.md) first for format c
 | Reveal.js API + theme conventions | [references/reveal.md](references/reveal.md) |
 | Speaker notes, pacing, hidden slides, presenter view | [references/reveal.md](references/reveal.md) §Speaker notes |
 | Review mode: edit text and notes in the browser, `edits.json`, `serve-deck.js` | [references/reveal.md](references/reveal.md) §Review mode |
-| Brandbook → CSS-variable mapping | [references/brandbook-spec.md](references/brandbook-spec.md) |
+| Brandbook → CSS-variable mapping | this guide, §Token → CSS mapping (the brandbook itself: brandware's `references/brandbook-spec.md`) |
 
 **Recommended order**: layout-patterns → visual-principles → reveal (when you hit a specific API question).
 
@@ -46,6 +46,8 @@ The renderer converts `style.md` frontmatter to CSS variables:
 | `layout.marginIn` | `--margin` | Inches (CSS supports `in`) |
 
 **Critical**: unlike pptxgenjs (which needs hex *without* `#`), CSS expects the `#`. The build-deck.js does NOT strip it.
+
+**Google Fonts.** The build inspects `type.sans/serif/mono` and emits one `<link>` URL (`fonts.googleapis.com/css2?family=…&display=swap`); weight ranges are fixed (sans 400/500/600/700 · serif 400/700 · mono 400/500). A non-Google font still emits the URL (it 404s silently) and falls back to the system stack — verify in DevTools if fidelity matters. This table and the paragraph are the html format's brand mapping; resolution and the rules every consumer follows are brandware's `references/consumer-contract.md`.
 
 ## Two paths
 

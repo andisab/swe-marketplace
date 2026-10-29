@@ -1,7 +1,7 @@
 // build-deck.js — Reveal.js deck builder for the slideware/html skill.
 //
 // Reads:
-//   ./style.md      — design styleSpec (YAML frontmatter) — see references/brandbook-spec.md
+//   ./style.md      — design styleSpec (YAML frontmatter) — the brandbook, written out by html/scripts/load-style.js (spec: brandware references/brandbook-spec.md)
 //   ./slides.js     — array of slide descriptors — see slides.js for the schema
 //   ./assets/logo-light.svg, logo-dark.svg — optional; the brand's logo for the running footer.
 //                     load-style.js copies them from the brand's folder; a generic style has none.

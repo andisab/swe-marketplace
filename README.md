@@ -107,7 +107,7 @@ The two plugins I use daily and keep current. Both carry scripts, templates and 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.12.1 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.12.2 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
 | [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
 
 ### Experimental plugins

@@ -40,7 +40,7 @@ Both formats follow the same path: gather inputs, resolve the style, plan layout
 | `SKILL.md` | Activation, format choice, the shared rules (style resolution, notes and pacing, citations, provenance, review mode) |
 | `pptx/FORMAT.md`, `html/FORMAT.md` | What Claude follows after choosing a format: mechanics, pitfalls, output convention |
 | `pptx/references/{workflow,layout-patterns,visual-principles,pptxgenjs,canonical-samples}.md` | pptx build path, 12 archetypes, design principles, API gotchas, how to use the sample decks |
-| `html/references/{workflow,layout-patterns,visual-principles,reveal,brandbook-spec}.md` | HTML build path, 8 archetypes, design principles, Reveal.js conventions (presenter, overview, lanes, review mode, motion), a pointer to the brandbook spec |
+| `html/references/{workflow,layout-patterns,visual-principles,reveal}.md` | HTML build path, 8 archetypes, design principles, Reveal.js conventions (presenter, overview, lanes, review mode, motion) |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with the checklist and pitfalls inline |
 | `pptx/assets/samples/<name>/` | Three sample decks: build script, token file, rendered previews |
 | `html/assets/templates/{build-deck,presenter,review,slides}.js`, `package.json` | The HTML deck builder, the presenter plugin inlined into every deck, the review-mode plugin inlined on request, the slide-descriptor scaffold, the pinned Reveal dependency |

@@ -11,7 +11,7 @@ Format guide for `.pptx` output. Read [../SKILL.md](../SKILL.md) first for forma
 | 12 layout archetypes | [references/layout-patterns.md](references/layout-patterns.md) |
 | Visual principles (hierarchy, color, type, spacing) | [references/visual-principles.md](references/visual-principles.md) |
 | pptxgenjs API patterns | [references/pptxgenjs.md](references/pptxgenjs.md) |
-| Brandbook → token mapping | [../../brandware/references/brandbook-spec.md](../../brandware/references/brandbook-spec.md) |
+| Brandbook → token mapping | [references/pptxgenjs.md](references/pptxgenjs.md) §Brand tokens (the brandbook itself: brandware's `references/brandbook-spec.md`) |
 
 **Recommended order**: canonical-samples (concrete > abstract) → layout-patterns → visual-principles → pptxgenjs (when you hit a specific API question).
 

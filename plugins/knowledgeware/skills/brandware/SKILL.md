@@ -42,7 +42,7 @@ scripts/                   # shared tooling (plugin root)
 └── fetch-resource.py      # Google Drive URL → local file
 skills/brandware/references/
 ├── brandbook-spec.md      # the .md format every style/brandbook follows (prose layer + optional frontmatter)
-├── consumer-mappings.md   # how each consumer skill maps tokens onto its medium
+├── consumer-contract.md   # what every consumer (adapter) owes, the intent per medium, and where each one's mapping lives
 └── chart-styling.md       # how to style data charts (bar/line/pie/KPI) from a brandbook
 ```
 
@@ -67,15 +67,7 @@ Given a brand/style name, look for `<name>/brand.md` (or the flat `<name>.md`) i
 
 `scripts/registry.js` implements this order, and `load-style.js`, `list-styles.js` and slideware html's converter all go through it — pass a name and they search all three locations and both layouts. `node scripts/list-styles.js --json` prints each entry's `source`, `layout`, `hasAssets` and the cache state.
 
-Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brands` / `--names` / `--json`). Consumers read the brandbook `.md` (or the token cache when fresh) and map it onto their medium per `references/consumer-mappings.md`:
-
-| Consumer | What it consumes | Mapping |
-|---|---|---|
-| **slideware** (pptx format) | tokens JSON natively (`scripts/load-style.js` understands the registry) | built-in |
-| **slideware** (html format) | YAML-frontmatter `style.md` via its converter (`skills/slideware/html/scripts/load-style.js`) | built-in |
-| **knowledgebase** | palette + type → template CSS variables + Mermaid themeVariables | consumer-mappings §knowledgebase |
-| **chartware** | palette + diagram strokes + type → mxGraph style strings | consumer-mappings §chartware |
-| **data charts** (any medium) | palette → categorical/sequential chart colors | references/chart-styling.md |
+Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brands` / `--names` / `--json`). Every skill that renders a brand is a **consumer**, an adapter from this standard into its medium: what each one owes (resolve by name, honour the markers, load through the loader, use the brandbook's extras, degrade gracefully, keep its mapping next to its code), the intent each medium must honour, and the index of where each mapping lives are in `references/consumer-contract.md`.
 
 ## Authoring workflows
 

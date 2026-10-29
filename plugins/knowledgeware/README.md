@@ -147,7 +147,7 @@ styles/brands/                 # brandbooks inside the plugin install
 styles/                        # the five built-in styles (checked last)
 ```
 
-The first match wins. When a request names nothing, the skills look for a `.knowledgeware` file in the project or any parent directory (one line naming a brand, for a repository that's always in one brand), then the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (`skills/brandware/references/consumer-mappings.md`), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
+The first match wins. When a request names nothing, the skills look for a `.knowledgeware` file in the project or any parent directory (one line naming a brand, for a repository that's always in one brand), then the brand in the `DEFAULT` file, with your directory's file winning over the plugin's. With no `DEFAULT` file, each skill uses its own fallback: `style-1` for decks, the template's palette for knowledge bases, and the default styling for diagrams. Each skill maps the same brandbook onto its own medium (brandware's `references/consumer-contract.md` says what each one does with it and where its mapping lives), so a deck, a site and a diagram in one brand look like parts of one set. To list what's installed, run `node scripts/list-styles.js` (with `--brands`, `--names` or `--json`).
 
 ## **chartware**: charts and diagrams in three media
 
