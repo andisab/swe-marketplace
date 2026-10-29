@@ -20,8 +20,11 @@
 //           with ?overview starts in it. The overview is drawn from the deck's own style
 //           tokens (its colors, fonts and radius), so it matches whatever brand the deck
 //           uses. Also available in the presenter window, where it moves both windows.
-//           When the deck was built in lanes (presenter: { lanes: [{ name, file }] }), the
-//           overview's header holds a lane switcher that opens the same slide in another lane.
+//           When the deck was built in lanes (presenter: { lanes: [{ name, file, color }] }), the
+//           overview's header holds a lane switcher that opens the same slide in another lane,
+//           with the lane's colour beside it, and every thumbnail carries a bar along its base:
+//           ink for a slide as the base deck has it, the lane's colour for one the lane changes
+//           (the builder marks those with data-lane-changed).
 //           In a deck with review mode (review.js sets window.RevealReviewAPI) the overview
 //           also edits the deck's structure, pending a rebuild: every slide is shown, hidden
 //           ones under a mask; an eye on each thumbnail hides or shows it in this lane, an X
@@ -259,6 +262,8 @@ html.rv-queued .rp-ov button.rp-ov-rebuild:hover { filter: brightness(1.08); }
 .rp-ov-lane { display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 12px; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted, #6B6B63); }
 .rp-ov-lane select { font: 500 12px ${SANS}; color: var(--color-ink, #1A1A18); background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); border-radius: var(--radius, 8px); padding: 5px 8px; }
 .rp-ov-lane select:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
+.rp-ov-swatch { width: 12px; height: 12px; border-radius: 50%; background: var(--rp-lane, var(--color-ink, #1A1A18)); box-shadow: 0 0 0 1px var(--color-border, #E3E3DF); }
+.rp-ov-cell.rp-laned .rp-ov-box::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--rp-lane, var(--color-ink, #1A1A18)); }
 
 /* Navigation pill: the deck's surface at 92%, its ink, border and accent, so a dark style gives a dark pill. */
 .rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 4px; padding: 5px;
@@ -835,12 +840,18 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         const label = document.createElement("label");
         label.className = "rp-ov-lane";
         label.innerHTML = '<span>Lane</span><select aria-label="Lane"></select>';
-        const select = label.lastChild;
+        const select = label.lastChild, current = lanes.find((l) => l.current);
+        const swatch = document.createElement("span");
+        swatch.className = "rp-ov-swatch";
+        swatch.title = current && current.color ? "This lane's colour" : "The base deck";
+        if (current && current.color) swatch.style.setProperty("--rp-lane", current.color);
+        label.insertBefore(swatch, select);
         lanes.forEach((l) => {
           const opt = document.createElement("option");
           opt.value = l.file;
           opt.textContent = l.name;
           opt.selected = !!l.current;
+          if (l.color) opt.style.color = l.color;
           select.appendChild(opt);
         });
         select.addEventListener("change", () => { location.href = select.value + location.hash; });
@@ -884,6 +895,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       });
       ov.addEventListener("dragend", () => { dragKey = null; clearDrop(); ov.querySelectorAll(".rp-dragging").forEach((c) => c.classList.remove("rp-dragging")); });
       new ResizeObserver(scaleOverview).observe(ov);   // window resizes, and the first display
+      document.addEventListener("rp-review-change", () => { if (overviewOpen()) refillOverview(null); });   // review.js restored or dropped its edits
       document.body.appendChild(ov);
     }
     // ── Structural edits in the overview (review mode only) ──
@@ -902,8 +914,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (!api || !key) return;
       const s = api.slides().find((x) => x.key === key);
       if (!s) return;
-      if (act === "hide") api.setHidden(key, !s.hidden);
-      else if (act === "delete") api.setDeleted(key, true);
+      if (act === "hide") { if (api.setHidden(key, !s.hidden) === false) return; }
+      else if (act === "delete") { if (api.setDeleted(key, true) === false) return; }
       else if (act === "undo") api.setDeleted(key, false);
       else if (act === "earlier" || act === "later") {
         const keys = api.slides().map((x) => x.key), i = keys.indexOf(key), j = act === "earlier" ? i - 1 : i + 1;
@@ -928,6 +940,9 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       // otherwise the live slides. `i` is the live index, -1 for a slide Reveal dropped.
       const list = api ? api.slides().map((s) => ({ ...s, i: slides.indexOf(s.el) })) : slides.map((el, i) => ({ key: null, el, i, hidden: false, deleted: false }));
       const hasSections = list.some((s) => !s.deleted && s.el.classList.contains("layout-section"));
+      const lanesCfg = ((deck.getConfig().presenter || {}).lanes || []).filter((l) => l && l.file);
+      const currentLane = lanesCfg.find((l) => l.current);
+      const laneColor = lanesCfg.length > 1 ? (currentLane && currentLane.color) || null : undefined;   // undefined: no lanes, no bars
       let grid = null, groups = 0, n = 0;
       list.forEach((s) => {
         const slide = s.el, g = s.deleted ? null : groupOf(slide);
@@ -950,6 +965,10 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         const cell = document.createElement("div"), th = document.createElement("div");
         cell.className = "rp-ov-cell" + (s.hidden ? " rp-hidden" : "") + (s.deleted ? " rp-deleted" : "");
         if (s.key) cell.dataset.key = s.key;
+        if (laneColor !== undefined) {   // a deck with lanes: ink for the base deck's slide, the lane's colour for one it changes
+          cell.classList.add("rp-laned");
+          if (laneColor && slide.hasAttribute("data-lane-changed")) cell.style.setProperty("--rp-lane", laneColor);
+        }
         th.className = "rp-ov-th";
         th.setAttribute("role", "button");
         th.tabIndex = 0;

@@ -236,6 +236,7 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       persist();
       renderBar();
       renderPanel();
+      changed();
       toast("Edits dropped");
     }
 
@@ -248,19 +249,33 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
         return { key, el: s.el, builtHidden: s.hidden, hidden: key in ops.hidden ? ops.hidden[key] : s.hidden, deleted: ops.deleted.includes(key) };
       });
     }
+    // A lane overlay addresses slides by their own `key`; a slide with a positional key can't be
+    // hidden from a lane. Refuse, and say what to do.
+    function laneNeedsKey(key) {
+      const s = all.find((x) => x.key === key);
+      if (!cfg.lane || !s || !s.el.hasAttribute("data-key-auto")) return false;
+      const n = all.indexOf(s) + 1;
+      showConfirm(`<h2>Slide ${n} has no key</h2><p>A lane hides or deletes a slide through its overlay, which names slides by their own <code>key</code>, and slide ${n} has none in slides.js. Add <code>key: "…"</code> to that slide (or ask Claude to key the slides), rebuild, then try again. Reordering still works, and so does hiding it in the base deck.</p>`,
+        [["cancel", "Close", "Esc"]], null);
+      return true;
+    }
     const api = {
       lane: () => cfg.lane || null,
       slides: pending,
       setHidden(key, hidden) {
         const s = all.find((x) => x.key === key);
-        if (!s) return;
+        if (!s) return false;
+        if (laneNeedsKey(key)) return false;
         if (hidden === s.hidden) delete ops.hidden[key]; else ops.hidden[key] = hidden;
         persist(); renderBar();
+        return true;
       },
       setDeleted(key, deleted) {
+        if (deleted && laneNeedsKey(key)) return false;
         ops.deleted = ops.deleted.filter((k) => k !== key);
         if (deleted) ops.deleted.push(key);
         persist(); renderBar();
+        return true;
       },
       reorder(keys) {
         const built = builtOrder();
@@ -410,7 +425,13 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       persist();
       renderBar();
     }
+    let stale = false;   // the deck's slides carry no keys: built before review mode, or hand-written
+    function staleDeck() {
+      showConfirm(`<h2>Rebuild this deck first</h2><p>Its slides carry no keys, so review mode has nothing to address: it was built before review mode, or by hand. Run <code>node build-deck.js . --review</code> in the deck folder (or ask Claude to rebuild the deck), then reload.</p>`,
+        [["cancel", "Close", "Esc"]], null);
+    }
     function toggle() {
+      if (stale) { staleDeck(); return; }
       on = !on;
       document.documentElement.classList.toggle("rv-on", on);
       for (const el of originals.keys()) {
@@ -467,12 +488,15 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
 
     function onReady() {
       slides = Array.from(deck.getSlidesElement().querySelectorAll("section")).filter((s) => !s.querySelector("section"));
+      if (stale) { staleDeck(); return; }
       for (const el of deck.getSlidesElement().querySelectorAll("section[data-key] [data-f]")) originals.set(el, valueOf(el));
       restore();
       renderBar();
       deck.on("slidechanged", renderPanel);
       detectServer();
+      changed();   // an overview opened before the draft was restored redraws
     }
+    function changed() { document.dispatchEvent(new CustomEvent("rp-review-change")); }
 
     function init(reveal) {
       deck = reveal;
@@ -480,8 +504,10 @@ html.rv-on .reveal .progress { bottom: ${PANEL_H}; }
       cfg = deck.getConfig().review || {};
       // Every section as built, before Reveal drops the hidden ones at start-up: the overview
       // draws hidden slides from these elements, which stay usable once detached.
-      all = Array.from(deck.getSlidesElement().querySelectorAll("section[data-key]")).map((el) => ({ key: el.dataset.key, el, hidden: el.getAttribute("data-visibility") === "hidden" }));
-      root.RevealReviewAPI = api;
+      const sections = Array.from(deck.getSlidesElement().querySelectorAll("section")).filter((s) => !s.querySelector("section"));
+      all = sections.filter((el) => el.dataset.key).map((el) => ({ key: el.dataset.key, el, hidden: el.getAttribute("data-visibility") === "hidden" }));
+      stale = sections.length > 0 && all.length < sections.length;
+      if (!stale) root.RevealReviewAPI = api;   // before the presenter's overview can fill (?overview opens it at ready)
       build();
       deck.addKeyBinding({ keyCode: 69, key: "E", description: "Review mode: edit text and notes" }, toggle);
       if (deck.isReady()) onReady(); else deck.on("ready", onReady);

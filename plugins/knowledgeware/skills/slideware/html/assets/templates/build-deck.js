@@ -511,13 +511,15 @@ function footerHtml(chrome) {
 // running footer for this slide ({ footer, logo, n, total }) or null; the title slide never gets it.
 // `key` is the slide's address for review edits: its own `key`, else "s<n>" by position in slides.js.
 function slideKey(slide, index) { return slide.key || `s${index + 1}`; }
-function renderSlide(slide, motion = false, chrome = null, key = null) {
+// `laneChanged` marks a slide a lane overlay changed (data-lane-changed), for the overview's lane bar.
+function renderSlide(slide, motion = false, chrome = null, key = null, laneChanged = false) {
   const fn = renderers[slide.layout];
   if (!fn) throw new Error(`Unknown layout: "${slide.layout}". Supported: ${Object.keys(renderers).join(", ")}`);
   const moving = slide.motion != null ? !!slide.motion : motion;
   const a = (i, kind = "up") => (moving ? ` data-a="${kind}" style="--i: ${i}"` : "");
   let html = fn(slide, a);
-  if (key) html = html.replace(/^(<section class="[^"]*")/, `$1 data-key="${esc(key)}"`);
+  // data-key-auto says the key is positional (the slide has no `key` of its own), which a lane overlay can't address.
+  if (key) html = html.replace(/^(<section class="[^"]*")/, `$1 data-key="${esc(key)}"${slide.key ? "" : ' data-key-auto=""'}${laneChanged ? ' data-lane-changed=""' : ""}`);
   // Reveal removes hidden slides when the deck loads, so the presenter doesn't count them either.
   if (slide.hidden) html = html.replace(/^(<section class="[^"]*")/, '$1 data-visibility="hidden"');
   const tail = [chrome && slide.layout !== "title" ? footerHtml(chrome) : "", notesHtml(slide)].filter(Boolean);
@@ -602,7 +604,8 @@ function readDeck(spec) {
 // listed in `lanes`, applied to a copy of the slides. The overlay exports
 //   { name: "Acme Investments",                       // shown in the lane switcher
 //     replace: [["Acme Corp", "Acme Investments"]],   // string replacements over every text field
-//     slides: { "s1-07": { right: "…", notes: "…" } } }   // fields replaced whole, by the slide's `key`
+//     slides: { "s1-07": { right: "…", notes: "…" } },  // fields replaced whole, by the slide's `key`
+//     color: "#2F7DE1" }                               // optional: the lane's colour in the overview
 // The lane's id is the overlay's file name without .js, and its output is index-<id>.html.
 // Replacements skip `layout`, `key`, `src`, `cue` and `motion`, so they change words, not structure.
 const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden"]);
@@ -627,6 +630,15 @@ function applyLane(slides, overlay, id) {
   return reps.length ? out.map(walk) : out;
 }
 function laneId(file) { return path.basename(file).replace(/\.js$/i, ""); }
+// Each lane's colour in the overview (its switcher and the bar under the slides it changes); the
+// base deck is drawn in ink. An overlay's `color` wins; otherwise lanes take these in turn.
+const LANE_COLORS = ["#2F7DE1", "#1FA26A", "#E0892B", "#9B5DE5", "#E2487E", "#17A2B8"];
+// Which slides of a lane differ from the base deck, by key (the overlay's fields or its replacements).
+function laneChangedKeys(base, laneSlides) {
+  const keys = new Set();
+  laneSlides.forEach((s, i) => { if (JSON.stringify(s) !== JSON.stringify(base[i])) keys.add(slideKey(s, i)); });
+  return keys;
+}
 
 // ── Reveal, inlined ────────────────────────────────────────────────
 // Read from the deck dir's node_modules (npm install), so the page needs no CDN. The
@@ -1144,26 +1156,28 @@ function main() {
   const baseTitle = styleSpec.name ? `${styleSpec.name} deck` : "deck";
 
   // The outputs: the base deck, then one per lane. Every output lists all of them in its lane switcher.
-  const overlays = deck.lanes.map(file => {
+  const overlays = deck.lanes.map((file, i) => {
     const abs = path.resolve(cwd, file);
     if (!fs.existsSync(abs)) throw new Error(`lanes: ${file} not found`);
     delete require.cache[abs];
     const overlay = require(abs), id = laneId(file);
     if (!overlay || typeof overlay.name !== "string" || !overlay.name.trim()) throw new Error(`lane ${id}: the overlay needs a name`);
-    return { id, name: overlay.name.trim(), file: `index-${id}.html`, overlay };
+    if (overlay.color != null && !/^#[0-9a-f]{6}$/i.test(overlay.color)) throw new Error(`lane ${id}: color must be a #rrggbb hex, got "${overlay.color}"`);
+    return { id, name: overlay.name.trim(), file: `index-${id}.html`, overlay, color: overlay.color || LANE_COLORS[i % LANE_COLORS.length] };
   });
   const ids = overlays.map(l => l.id);
   const dupLane = ids.find((id, i) => ids.indexOf(id) !== i);
   if (dupLane) throw new Error(`two lanes have the id "${dupLane}" (the overlay's file name)`);
-  const outputs = [{ id: null, name: deck.lane, file: "index.html", slides }, ...overlays.map(l => ({ ...l, slides: applyLane(slides, l.overlay, l.id) }))];
-  const switcher = outputs.map(o => ({ name: o.name, file: o.file }));
+  const outputs = [{ id: null, name: deck.lane, file: "index.html", slides, color: null, changed: new Set() },
+    ...overlays.map(l => { const laneSlides = applyLane(slides, l.overlay, l.id); return { ...l, slides: laneSlides, changed: laneChangedKeys(slides, laneSlides) }; })];
+  const switcher = outputs.map(o => ({ name: o.name, file: o.file, color: o.color }));
 
   for (const out of outputs) {
     // Edits that couldn't be folded are layered over the output they were made in.
     if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck);
     const visible = out.slides.filter(s => !s.hidden);
     const slidesHtml = out.slides.map((s, i) => renderSlide(s, motion, footer.length
-      ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i))).join("\n");
+      ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i), out.changed.has(slideKey(s, i)))).join("\n");
     const title = out.id ? `${baseTitle} · ${out.name}` : baseTitle;
     const lanes = switcher.map(l => ({ ...l, current: l.file === out.file }));
     const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes,

@@ -111,6 +111,27 @@ ok("text fields carry data-f, light-HTML fields also data-html, the notes aside 
   assert.match(html, /<aside class="notes" data-f="notes" data-module="Part one" data-run="default">What to say\.&#10;&#10;- One/);
   assert.match(html, /<blockquote[^>]* data-f="quote">/);
 });
+ok("unkeyed slides are marked data-key-auto; a lane marks the slides it changes and carries a colour", () => {
+  const html = read("index.html"), lane = read("index-acme-life.html");
+  assert.match(html, /data-key="s2" data-key-auto=""/);
+  assert.ok(!/data-key="cover" data-key-auto/.test(html));
+  assert.ok(!/<section[^>]*data-lane-changed/.test(html), "the base deck changes nothing");
+  assert.match(lane, /data-key="cols"[^>]* data-lane-changed=""/, "the overlay replaces cols.right");
+  assert.ok(!/data-key="cover"[^>]* data-lane-changed/.test(lane), "nothing in the cover changes in the lane");
+  assert.match(html, /presenter: \{"sessions":\{\},"lanes":\[\{"name":"Acme Corp","file":"index.html","color":null,"current":true\},\{"name":"Acme Life","file":"index-acme-life.html","color":"#2F7DE1","current":false\}\]\}/);
+});
+ok("an overlay's own color is used and checked", () => {
+  fs.writeFileSync(path.join(deck, "lanes", "acme-life.js"), LANE.replace('name: "Acme Life",', 'name: "Acme Life",\n  color: "#AA00FF",'));
+  let r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.ok(read("index.html").includes('"color":"#AA00FF"'));
+  fs.writeFileSync(path.join(deck, "lanes", "acme-life.js"), LANE.replace('name: "Acme Life",', 'name: "Acme Life",\n  color: "blue",'));
+  r = build();
+  assert.notStrictEqual(r.code, 0);
+  assert.match(r.out, /lane acme-life: color must be a #rrggbb hex/);
+  reset();
+  build();
+});
 ok("without review, the deck carries no review plugin or config", () => {
   const html = read("index.html");
   assert.ok(!html.includes("root.RevealReview = function"));
