@@ -27,9 +27,13 @@
 //
 // Edits live in this browser (localStorage, per deck file and per build) until saved, so a
 // closed tab loses nothing; a draft from an older build is dropped, since its text may be gone.
-// Save writes edits.json next to the deck: through serve-deck.js when the deck is served by
-// it, else with the browser's save dialog (Chrome, Edge; the file is remembered for the
-// session), else as a download. Copy puts the same JSON on the clipboard, to paste to Claude.
+// How edits reach disk, in order of preference:
+//   1. The connected deck folder (Chrome's directory picker, once per deck; the handle is kept
+//      in IndexedDB and needs one "Allow" click per browser session). Then edits.json saves
+//      itself after every change, and the page reloads on the same slide when a rebuild lands
+//      (it watches its own file's modification time), so "Claude, rebuild the deck" is the loop.
+//   2. serve-deck.js, when the deck is served by it: Save posts edits.json, Shift+B rebuilds.
+//   3. The browser's save dialog, then a download, and Copy for the clipboard.
 //
 // The file (see build-deck.js §Review edits for how it is folded):
 //   { built, lane, file, saved, keys: [every key, built order],
@@ -60,6 +64,10 @@
 html.rv-on .rv-bar { display: flex; }
 .rv-bar .rv-label { font-family: ${MONO}; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; margin-right: 6px; }
 .rv-bar .rv-count { color: ${MUTED}; margin-right: 8px; min-width: 60px; }
+.rv-bar .rv-folder { color: ${MUTED}; margin: 0 6px 0 2px; }
+.rv-bar .rv-folder:empty { display: none; }
+.rv-bar button[data-rv=folder] { color: ${ACCENT}; font-weight: 600; }
+.rv-bar button[data-rv=folder][hidden] { display: none; }
 .rv-bar button, .rv-confirm button { all: unset; cursor: pointer; height: 30px; padding: 0 10px; border-radius: 8px; display: inline-flex; align-items: center; color: ${INK}; }
 .rv-bar button:hover, .rv-confirm button:hover { background: color-mix(in srgb, ${INK} 7%, transparent); }
 .rv-bar button:focus-visible, .rv-confirm button:focus-visible, .rv-panel :focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
@@ -104,6 +112,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
 `;
 
   const BAR_HTML = `<span class="rv-label">Review</span><span class="rv-count"></span>
+<span class="rv-folder"></span><button type="button" data-rv="folder" title="Connect the deck folder once: edits then save themselves and the page reloads when a rebuild lands">Connect folder</button>
 <button type="button" data-rv="save" title="Save edits.json">Save</button>
 <button type="button" data-rv="copy" title="Copy the edits as JSON">Copy</button>
 <button type="button" data-rv="build" title="Save, rebuild the deck and reload (Shift+B)">Rebuild<kbd>Shift+B</kbd></button>
@@ -156,6 +165,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
   root.RevealReview = function () {
     let deck, cfg = {}, slides = [], bar, panel, confirmEl, toastEl, on = false;
     let server = null, handle = null, toastTimer = 0, confirmAction = null;
+    let folder = null, folderState = "none", saveTimer = 0, lastSaved = null, watchTimer = 0, builtStamp = null;   // the connected deck folder
     const edits = {};                 // key → { <field>: { from, to }, comment }
     const originals = new Map();      // element → the text as built
     let all = [];                     // every slide as built, in order: { key, el, hidden } (hidden ones leave the DOM at start-up)
@@ -203,6 +213,101 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         if (Object.keys(edits).length || deck) localStorage.setItem(STORE(), JSON.stringify({ built: cfg.built, slides: edits, deck }));
         else localStorage.removeItem(STORE());
       } catch (e) { /* storage blocked: the edits live in the page until saved */ }
+      scheduleSave();
+    }
+
+    // ── The connected deck folder ──────────────────────────────────
+    const FOLDER_DB = NS + ":folders", FOLDER_KEY = () => location.pathname;
+    function idb() {
+      return new Promise((res, rej) => {
+        const r = indexedDB.open(FOLDER_DB, 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("handles");
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+    }
+    async function idbGet(key) { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction("handles").objectStore("handles").get(key); t.onsuccess = () => res(t.result || null); t.onerror = () => rej(t.error); }); }
+    async function idbSet(key, val) { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction("handles", "readwrite").objectStore("handles").put(val, key); t.onsuccess = () => res(); t.onerror = () => rej(t.error); }); }
+    const canPick = () => typeof root.showDirectoryPicker === "function" && typeof indexedDB !== "undefined";
+    const reviewFile = () => cfg.file || location.pathname.split("/").pop() || "index.review.html";
+    async function hasFile(h, name) { try { await h.getFileHandle(name); return true; } catch (e) { return false; } }
+    async function readJson(h, name) { try { return JSON.parse(await (await (await h.getFileHandle(name)).getFile()).text()); } catch (e) { return null; } }
+    async function reviewMtime() { try { return (await (await folder.getFileHandle(reviewFile())).getFile()).lastModified; } catch (e) { return null; } }
+    async function connectFolder() {   // from a click: the picker needs a user gesture
+      if (!canPick()) { toast("This browser can't connect a folder: use Save, or serve the deck with serve-deck.js"); return; }
+      try {
+        const h = await root.showDirectoryPicker({ mode: "readwrite", id: "slideware-deck" });
+        if (!(await hasFile(h, "slides.js")) || !(await hasFile(h, reviewFile()))) {
+          showConfirm(`<h2>That isn't this deck's folder</h2><p>Pick the folder that holds <code>slides.js</code> and <code>${esc(reviewFile())}</code>.</p>`, [["cancel", "Close", "Esc"]], null);
+          return;
+        }
+        folder = h; folderState = "ok";
+        try { await idbSet(FOLDER_KEY(), h); } catch (e) { /* not remembered; still connected for this page */ }
+        await startWatch();
+        scheduleSave(0);
+        renderBar();
+        toast("Deck folder connected: edits save themselves, and the page reloads when a rebuild lands");
+      } catch (e) { if (!e || e.name !== "AbortError") toast("Couldn't connect the folder: " + (e && e.message ? e.message : e)); }
+    }
+    async function restoreFolder() {   // on load: the handle survives, the permission may need a click
+      if (!canPick()) { folderState = "unsupported"; renderBar(); return; }
+      let h = null;
+      try { h = await idbGet(FOLDER_KEY()); } catch (e) { h = null; }
+      if (!h) { folderState = "none"; renderBar(); return; }
+      folder = h;
+      let perm = "prompt";
+      try { perm = await h.queryPermission({ mode: "readwrite" }); } catch (e) { perm = "prompt"; }
+      folderState = perm === "granted" ? "ok" : "prompt";
+      if (folderState === "ok") { await startWatch(); scheduleSave(0); }
+      renderBar();
+    }
+    async function allowFolder() {   // from a click
+      if (!folder) return connectFolder();
+      let perm = "denied";
+      try { perm = await folder.requestPermission({ mode: "readwrite" }); } catch (e) { perm = "denied"; }
+      if (perm !== "granted") { toast("Folder access wasn't granted; edits stay in this browser until you Save"); return; }
+      folderState = "ok";
+      await startWatch();
+      scheduleSave(0);
+      renderBar();
+      toast("Folder access restored");
+    }
+    async function startWatch() {   // reload when a rebuild replaces this page's file
+      if (watchTimer) return;
+      builtStamp = await reviewMtime();
+      watchTimer = setInterval(async () => {
+        if (await buildChanged()) { clearInterval(watchTimer); watchTimer = 0; toast("Rebuilt: reloading"); setTimeout(() => location.reload(), 300); }
+      }, 1500);
+    }
+    async function buildChanged() { const m = await reviewMtime(); return !!(m && builtStamp && m !== builtStamp); }
+    function scheduleSave(delay = 600) { if (folderState !== "ok") return; clearTimeout(saveTimer); saveTimer = setTimeout(writeEdits, delay); }
+    // Write edits.json into the folder. Never over a newer build (reload instead), and never
+    // over another build's leftovers without keeping them: comments and unfoldable edits the
+    // build left for Claude stay in the file beside this page's edits.
+    async function writeEdits() {
+      if (folderState !== "ok") return false;
+      try {
+        if (await buildChanged()) { location.reload(); return false; }
+        const existing = await readJson(folder, "edits.json");
+        const ours = existing && existing.built === cfg.built;
+        if (!count().any) {
+          if (ours) { try { await folder.removeEntry("edits.json"); } catch (e) { /* already gone */ } }
+          lastSaved = new Date(); renderBar();
+          return true;
+        }
+        let out = JSON.parse(payload());
+        if (existing && !ours && existing.slides) {   // another build's leftovers: keep them under ours
+          const merged = { ...existing.slides };
+          for (const [k, v] of Object.entries(out.slides)) merged[k] = { ...(merged[k] || {}), ...v };
+          out = { ...out, slides: merged, ...(existing.deck && !out.deck ? { deck: existing.deck } : {}) };
+        }
+        const fh = await folder.getFileHandle("edits.json", { create: true });
+        const w = await fh.createWritable();
+        await w.write(JSON.stringify(out, null, 2) + "\n");
+        await w.close();
+        lastSaved = new Date(); renderBar();
+        return true;
+      } catch (e) { toast("Autosave failed: " + (e && e.message ? e.message : e)); return false; }
     }
     function restore() {
       let saved = null;
@@ -320,6 +425,12 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       if (!count().any) { if (!quiet) toast("Nothing to save"); return true; }
       const json = payload();
       try {
+        if (folderState === "ok") {
+          clearTimeout(saveTimer);
+          const ok = await writeEdits();
+          if (ok && !quiet) toast("Saved edits.json in the deck folder");
+          return ok;
+        }
         if (server) {
           const r = await fetch("/__edits", { method: "POST", headers: { "Content-Type": "application/json" }, body: json });
           const j = await r.json().catch(() => ({}));
@@ -357,12 +468,17 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     function askRebuild() {
       const { n, c, d } = count();
       const what = [n ? `${n} edit${n === 1 ? "" : "s"}` : "", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ") || "no edits";
+      if (!server && folderState === "ok") {
+        showConfirm(`<h2>Ask Claude to rebuild</h2><p>${what.charAt(0).toUpperCase() + what.slice(1)} ${n + c + d === 1 ? "is" : "are"} saved in <code>edits.json</code>. Say "rebuild the deck"; every build folds the file into slides.js, and this page reloads on the same slide when the new build lands. For a one-key rebuild, serve the deck with <code>serve-deck.js</code> and press Shift+B there.</p>`,
+          [["cancel", "Close", "Esc"]], null);
+        return;
+      }
       if (server) {
         showConfirm(`<h2>Rebuild the deck?</h2><p>Saves ${what} to edits.json, folds them into slides.js, runs <code>node build-deck.js .</code> and reloads this page on the same slide.</p>`,
           [["go", "Rebuild", "Enter"], ["cancel", "Cancel", "Esc"]], doRebuild);
       } else {
         showConfirm(`<h2>No local server to rebuild with</h2><p>Shift+B rebuilds through <code>serve-deck.js</code> (in the slideware skill's <code>html/scripts/</code> folder). Start it in the deck folder, then open the address it prints:</p>
-<pre>node &lt;plugin&gt;/skills/slideware/html/scripts/serve-deck.js .</pre><p>For now, save ${what} as edits.json next to the deck and run <code>node build-deck.js .</code>, or ask Claude to apply your edits.</p>`,
+<pre>node &lt;plugin&gt;/skills/slideware/html/scripts/serve-deck.js .</pre><p>Or connect the deck folder (the button in the review bar): edits then save themselves and this page reloads when Claude rebuilds. For now, save ${what} as edits.json next to the deck and run <code>node build-deck.js .</code>, or ask Claude to apply your edits.</p>`,
           [["save", "Save edits.json", "Enter"], ["cancel", "Close", "Esc"]], () => { closeConfirm(); save(); });
       }
     }
@@ -407,6 +523,12 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       const { n, c, d } = count();
       q(bar, ".rv-count").textContent = [n ? `${n} edit${n === 1 ? "" : "s"}` : d ? "" : "no edits", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
       document.documentElement.classList.toggle("rv-queued", count().any);
+      const fb = q(bar, "button[data-rv=folder]"), fs = q(bar, ".rv-folder"), sv = q(bar, "button[data-rv=save]");
+      fb.hidden = folderState === "ok" || folderState === "unsupported";
+      fb.textContent = folderState === "prompt" ? "Allow folder access" : "Connect folder";
+      fs.textContent = folderState === "ok" ? "Folder connected" + (lastSaved ? " · autosaved " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")
+        : folderState === "prompt" ? "Edits stay in this browser until you allow folder access" : "";
+      sv.textContent = folderState === "ok" ? "Save now" : "Save";
     }
     function current() { return deck.getCurrentSlide(); }
     function renderPanel() {
@@ -482,6 +604,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         b.blur();
         const act = b.dataset.rv;
         if (act === "save") save(); else if (act === "copy") copy(); else if (act === "build") askRebuild();
+        else if (act === "folder") { if (folderState === "prompt") allowFolder(); else connectFolder(); }
         else if (act === "discard") discard(); else if (act === "done") toggle();
       });
       confirmEl.addEventListener("click", (e) => {
@@ -521,6 +644,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       renderBar();
       deck.on("slidechanged", renderPanel);
       detectServer();
+      restoreFolder();
       document.addEventListener("rp-review-toggle", toggle);   // the overview's Edit button and its e key
       changed();   // an overview opened before the draft was restored redraws
     }
