@@ -542,6 +542,42 @@ ok("setEntryIn and keepArrayItems edit object and array literals in place", () =
   assert.throws(() => b.keepArrayItems(obj, 0, "b", [3]), /out of range/);
 });
 
+// ── Builds (steps) and deck-plan.md ──
+ok("steps makes bullets and cards fragments that play their entrance on the click", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES
+    .replace('{ layout: "card-row", title: "Cards", cards: [', '{ layout: "card-row", title: "Cards", steps: "rest", cards: [')
+    .replace('{ layout: "quote", quote: "The medium is the message.", attribution: "— Someone" },', '{ layout: "quote", quote: "The medium is the message.", attribution: "— Someone" },\n    { layout: "bullets", title: "Steps", steps: true, items: ["One", "Two"] },'));
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const html = read("index.html");
+  assert.match(html, /<li class="fragment" data-fragment-index="0" data-a="up" data-b="items.0" data-bk="item" style="--i: 2" data-f="items.0" data-html="">One<\/li>/);
+  assert.match(html, /<li class="fragment" data-fragment-index="1" data-a="up" data-b="items.1" data-bk="item" style="--i: 3"/);
+  assert.match(html, /<div class="card" data-a="up" data-b="cards.0" data-bk="item" style="--i: 2">/, "with steps: \"rest\" the first card shows at once");
+  assert.match(html, /<div class="card fragment" data-fragment-index="0" data-a="up" data-b="cards.1" data-bk="item" style="--i: 3">/);
+  assert.ok(html.includes(".reveal .slides section.present .fragment[data-a]:not(.visible) { animation-name: none; }"));
+  assert.ok(html.includes("html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { animation-delay: 0s; }"));
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", steps: true, layout: "two-column",'));
+  assert.match(build().out, /slide 3: steps works on bullets and card-row, not two-column/);
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ layout: "card-row", title: "Cards", cards: [', '{ layout: "card-row", title: "Cards", steps: "all", cards: ['));
+  assert.match(build().out, /steps must be true, "rest" or false/);
+  reset();
+});
+ok("deck-plan.md is read for information: rows done without a slide, slides not in the plan", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "deck-plan.md"), `# Deck plan\n\n## Sources\n\n- **DV7** — v7.pptx\n\n## Intro\n\n| # | Slide | Source | Builds | Status |\n|---|---|---|---|---|\n| 1 | \`cover\` Title | DCUR | — | done |\n| 2 | \`gone\` Was cut | DV7.S4 | 2 | done · raw port |\n| 3 | \`cols\` Two columns | DV7.S9 | — | to do · steps |\n\n## Notes\n\nFree text with | a pipe that isn't a table.\n`);
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.match(r.out, /deck-plan\.md: 3 rows, 2 done, 1 to do/);
+  assert.match(r.out, /done in the plan but not in slides\.js: gone/);
+  assert.match(r.out, /in slides\.js but not in the plan: s2, s4, s5/);
+  const b = fresh(path.join(deck, "build-deck.js"));
+  assert.deepStrictEqual(b.readDeckPlan("| Key | Status |\n|---|---|\n| a | done |\n| b | to do |").map((x) => x.key + ":" + x.status), ["a:done", "b:to do"]);
+  fs.writeFileSync(path.join(deck, "deck-plan.md"), "# Plan\n\nNothing but prose.\n");
+  assert.match(build().out, /deck-plan\.md: no slide tables found/);
+  fs.unlinkSync(path.join(deck, "deck-plan.md"));
+});
+
 // ── Literal helpers ──
 ok("stringLiterals and literal round-trip every quote style", () => {
   const b = require(path.join(deck, "build-deck.js"));

@@ -43,7 +43,7 @@ Both formats follow the same path: gather inputs, resolve the style, plan layout
 | `html/references/{workflow,layout-patterns,visual-principles,reveal}.md` | HTML build path, 8 archetypes, design principles, Reveal.js conventions (presenter, overview, lanes, review mode, motion) |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with the checklist and pitfalls inline |
 | `pptx/assets/samples/<name>/` | Three sample decks: build script, token file, rendered previews |
-| `html/assets/templates/{build-deck,presenter,review,slides}.js`, `package.json` | The HTML deck builder, the presenter plugin inlined into every deck, the review-mode plugin inlined on request, the slide-descriptor scaffold, the pinned Reveal dependency |
+| `html/assets/templates/{build-deck,presenter,review,slides}.js`, `package.json`, `deck-plan.md` | The HTML deck builder, the presenter plugin inlined into every deck, the review-mode plugin inlined on request, the slide-descriptor scaffold, the pinned Reveal dependency, the planning-record template for a deck assembled from several sources |
 | `pptx/scripts/{polish-deck.py,render-slides.sh,text-fit.js}` | pptx pre-render checks, LibreOffice previews, text-capacity estimates |
 | `html/scripts/{load-style.js,polish-deck.py,render-slides.sh,serve-deck.js}` | The `style.md` converter (it imports the plugin's parser), HTML checks, headless-Chromium previews, the local server review mode rebuilds through |
 | `pptx/evals/`, `html/evals/` | Eval fixtures for the skill; no test runs them |

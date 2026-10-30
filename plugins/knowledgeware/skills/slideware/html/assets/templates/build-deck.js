@@ -405,6 +405,12 @@ function themeCss({ palette: P, type: T, layout: L }) {
 @keyframes a-draw   { from { stroke-dashoffset: 1; } }
 html.reveal-print .reveal [data-a] { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .reveal [data-a] { animation: none !important; } }
+/* Builds: a .fragment that also carries entrance motion waits for its click, then plays it
+   (otherwise the animation would run while the fragment is still hidden and it would just pop in).
+   The presenter plugin sets html.rp-builds while builds are live (a presenter window connected);
+   otherwise every fragment is shown and the normal stagger applies. */
+.reveal .slides section.present .fragment[data-a]:not(.visible) { animation-name: none; }
+html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { animation-delay: 0s; }
 `.trim();
 }
 
@@ -417,6 +423,12 @@ html.reveal-print .reveal [data-a] { animation: none !important; }
 // `a(i, kind)` adds entrance motion to a block (data-a, stagger position i) when the slide
 // has motion on, and nothing otherwise.
 const f = (name, html = false) => ` data-f="${name}"${html ? " data-html=\"\"" : ""}`;
+// Builds (PowerPoint-style click reveals) on bullets and card-row: `steps: true` makes every item
+// a Reveal fragment in order; `steps: "rest"` shows the first at once and the rest on clicks. They
+// play only while a presenter window is connected (presenter.js); otherwise the slide shows
+// complete, with its normal stagger. On a click, a stepped item's entrance motion plays at once.
+const stepped = (s, i) => s.steps === true || (s.steps === "rest" && i > 0);
+const step = (s, i) => stepped(s, i) ? ` class="fragment" data-fragment-index="${s.steps === "rest" ? i - 1 : i}"` : "";
 const renderers = {
   title(s, a, b) {
     return `<section class="layout-title">
@@ -443,7 +455,7 @@ const renderers = {
   },
   "card-row"(s, a, b) {
     const cards = (s.cards || []).map((c, i) =>
-      `<div class="card"${a(2 + i, "up", `cards.${i}`, "item")}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
+      `<div class="card${stepped(s, i) ? " fragment" : ""}"${stepped(s, i) ? ` data-fragment-index="${s.steps === "rest" ? i - 1 : i}"` : ""}${a(2 + i, "up", `cards.${i}`, "item")}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
     ).join("\n    ");
     return `<section class="layout-card-row" style="--card-count: ${s.cards.length};">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
@@ -471,7 +483,7 @@ const renderers = {
 </section>`;
   },
   bullets(s, a, b) {
-    const items = (s.items || []).map((item, i) => `<li${a(2 + i, "up", `items.${i}`, "item")}${f(`items.${i}`, true)}>${item}</li>`).join("\n    ");
+    const items = (s.items || []).map((item, i) => `<li${step(s, i)}${a(2 + i, "up", `items.${i}`, "item")}${f(`items.${i}`, true)}>${item}</li>`).join("\n    ");
     return `<section class="layout-bullets">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
@@ -637,6 +649,8 @@ function readDeck(spec) {
   for (const [i, s] of deck.slides.entries()) {
     if (s.teaches != null && (typeof s.teaches !== "string" || !s.teaches.trim())) throw new Error(`slide ${i + 1}: teaches must name a section id in the spec, got "${s.teaches}"`);
     if (s.ratio != null && !/^\d+\/\d+$/.test(String(s.ratio))) throw new Error(`slide ${i + 1}: ratio must look like "40/60", got "${s.ratio}"`);
+    if (s.steps != null && s.steps !== false && s.steps !== true && s.steps !== "rest") throw new Error(`slide ${i + 1}: steps must be true, "rest" or false, got "${s.steps}"`);
+    if (s.steps && !["bullets", "card-row"].includes(s.layout)) throw new Error(`slide ${i + 1}: steps works on bullets and card-row, not ${s.layout}`);
     for (const k of ["gap", "pad", "scale"]) if (s[k] != null && !(typeof s[k] === "number" && s[k] >= 0)) throw new Error(`slide ${i + 1}: ${k} must be a number, got "${s[k]}"`);
     if (s.tweaks != null) {
       if (typeof s.tweaks !== "object" || Array.isArray(s.tweaks)) throw new Error(`slide ${i + 1}: tweaks must be an object of blocks`);
@@ -670,7 +684,7 @@ function readDeck(spec) {
 //     color: "#2F7DE1" }                               // optional: the lane's colour in the overview
 // The lane's id is the overlay's file name without .js, and its output is index-<id>.html.
 // Replacements skip `layout`, `key`, `src`, `cue` and `motion`, so they change words, not structure.
-const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden", "teaches", "spec", "tweaks", "ratio"]);
+const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden", "teaches", "spec", "tweaks", "ratio", "steps"]);
 function applyLane(slides, overlay, id) {
   if (!overlay || typeof overlay !== "object") throw new Error(`lane ${id}: the overlay must export an object`);
   const out = structuredClone(slides);
@@ -1390,6 +1404,45 @@ function applyEdits(slides, fields, deck = null, layout = null) {
   return out;
 }
 
+// ── deck-plan.md ───────────────────────────────────────────────────
+// An optional planning record beside slides.js (SKILL.md §Planning a deck): one markdown table per
+// section with columns like # · Slide · Source · Builds · Status, a row naming its slide by key
+// in a `Key` column or as a backticked key in the Slide cell. The build reads it and reports, as
+// information only, how the plan and the deck line up: rows marked done whose key isn't in the
+// deck, and slides the plan doesn't mention.
+function readDeckPlan(text) {
+  const rows = [];
+  let cols = null;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line.startsWith("|")) { cols = null; continue; }
+    const cells = line.replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+    if (!cols) { cols = cells.map(c => c.toLowerCase()); continue; }
+    if (cells.every(c => /^:?-{2,}:?$/.test(c))) continue;
+    const row = {};
+    cols.forEach((c, i) => { row[c] = cells[i] || ""; });
+    const key = (row.key || "").replace(/`/g, "") || ((row.slide || "").match(/`([^`]+)`/) || [])[1] || "";
+    if (!("status" in row) && !("slide" in row)) continue;
+    rows.push({ key, status: (row.status || "").toLowerCase(), slide: row.slide || "" });
+  }
+  return rows;
+}
+function deckPlanSummary(cwd, slides) {
+  const file = path.join(cwd, "deck-plan.md");
+  if (!fs.existsSync(file)) return "";
+  const rows = readDeckPlan(fs.readFileSync(file, "utf8"));
+  if (!rows.length) return "deck-plan.md: no slide tables found (a table needs a Status column; see SKILL.md §Planning a deck).";
+  const keys = new Set(slides.map((s, i) => slideKey(s, i)));
+  const done = rows.filter(r => /^done/.test(r.status)), todo = rows.filter(r => !/^done/.test(r.status));
+  const missing = done.filter(r => r.key && !keys.has(r.key)).map(r => r.key);
+  const planned = new Set(rows.map(r => r.key).filter(Boolean));
+  const unplanned = [...keys].filter(k => !planned.has(k));
+  const lines = [`deck-plan.md: ${rows.length} rows, ${done.length} done, ${todo.length} to do`];
+  if (missing.length) lines.push(`  done in the plan but not in slides.js: ${missing.join(", ")}`);
+  if (planned.size && unplanned.length) lines.push(`  in slides.js but not in the plan: ${unplanned.join(", ")}`);
+  return lines.join("\n");
+}
+
 // ── Main ───────────────────────────────────────────────────────────
 function main() {
   const args = process.argv.slice(2);
@@ -1479,6 +1532,8 @@ function main() {
   if (review) console.log(`Review mode (${deck.review ? "review: true in slides.js" : "--review"}) is in the .review files only: E edits text, notes and the slide order, Shift+B rebuilds via serve-deck.js. Share: index.html and index-*.html, not the .review files.`);
   const summary = pacingSummary(slides, sessions);
   if (summary) console.log(summary);
+  const planNote = deckPlanSummary(cwd, slides);
+  if (planNote) console.log(planNote);
   if (deck.spec) {
     const specPath = path.resolve(cwd, deck.spec);
     const taught = slides.filter(s => s.teaches).length;
@@ -1487,4 +1542,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits, splitTopLevel, slidesArray, setHiddenIn, setEntryIn, keepArrayItems };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits, splitTopLevel, slidesArray, setHiddenIn, setEntryIn, keepArrayItems, readDeckPlan, deckPlanSummary };

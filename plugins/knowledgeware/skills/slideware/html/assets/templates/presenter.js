@@ -9,7 +9,10 @@
 //
 // Audience window (the deck itself):
 //   S or P  open the presenter view in a second window; the two windows stay in sync
-//           (BroadcastChannel plus window.postMessage, so it also works from file://)
+//           (BroadcastChannel plus window.postMessage, so it also works from file://).
+//           Builds (Reveal fragments, from `steps` or hand-written .fragment elements) play
+//           only while a presenter window is connected: on its own, or in review mode, the
+//           deck shows every slide complete, so reading and editing never stop at a click.
 //   N       toggle a notes drawer along the bottom of the deck, for rehearsal. Anyone
 //           who can see the screen can read it. The deck shrinks to the space above the
 //           drawer (the --rp-reserve-bottom custom property on <html>, which review.js's
@@ -450,10 +453,18 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (bc) try { bc.postMessage(msg); } catch (e) { /* channel closed */ }
       if (peer && !peer.closed) try { peer.postMessage(msg, "*"); } catch (e) { /* window gone */ }
     }
+    // Builds play in the presenter window, and in the audience window only while a presenter
+    // window is connected and review mode is off; otherwise every fragment is shown.
+    function syncBuilds() {
+      const builds = isPresenter || (connected && !document.documentElement.classList.contains("rv-on"));
+      deck.configure({ fragments: builds });
+      document.documentElement.classList.toggle("rp-builds", builds);
+    }
     function receive(msg) {
       if (!msg || msg.ns !== NS || msg.deck !== key) return;
       const initial = !connected;
       connected = true;
+      if (initial) syncBuilds();
       if (isPresenter) q(".rp-sync").textContent = "Synced · either window moves both";
       if (msg.type === "hello") { if (!isPresenter) send("state"); return; }
       if (msg.type !== "state" || typeof msg.h !== "number") return;
@@ -929,6 +940,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       // review.js changed the live deck (an edit applied, a draft restored or dropped, the mode
       // toggled): re-read the slides, renumber the running footer, redraw the overview if open.
       document.addEventListener("rp-review-change", (e) => {
+        syncBuilds();
         refreshSlides();
         if (overviewOpen()) refillOverview(e.detail && e.detail.key);
       });
@@ -1202,6 +1214,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       notes = slides.map(readNote);
       cur = Math.max(0, slides.indexOf(deck.getCurrentSlide()));
       ["slidechanged", "fragmentshown", "fragmenthidden", "overviewhidden"].forEach((ev) => deck.on(ev, onNav));
+      syncBuilds();
       ["paused", "resumed"].forEach((ev) => deck.on(ev, () => { if (!applying) send("state"); }));
       if (isPresenter) startPresenter(); else renderHud();
       if (/[?&]overview(?:[=&]|$)/.test(location.search)) openOverview();
