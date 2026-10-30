@@ -554,13 +554,47 @@ ok("steps makes bullets and cards fragments that play their entrance on the clic
   assert.match(html, /<li class="fragment" data-fragment-index="0" data-a="up" data-b="items.0" data-bk="item" style="--i: 2" data-f="items.0" data-html="">One<\/li>/);
   assert.match(html, /<li class="fragment" data-fragment-index="1" data-a="up" data-b="items.1" data-bk="item" style="--i: 3"/);
   assert.match(html, /<div class="card" data-a="up" data-b="cards.0" data-bk="item" style="--i: 2">/, "with steps: \"rest\" the first card shows at once");
-  assert.match(html, /<div class="card fragment" data-fragment-index="0" data-a="up" data-b="cards.1" data-bk="item" style="--i: 3">/);
+  assert.match(html, /<div class="fragment card" data-fragment-index="0" data-a="up" data-b="cards.1" data-bk="item" style="--i: 3">/);
   assert.ok(html.includes(".reveal .slides section.present .fragment[data-a]:not(.visible) { animation-name: none; }"));
-  assert.ok(html.includes("html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { animation-delay: 0s; }"));
-  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", steps: true, layout: "two-column",'));
-  assert.match(build().out, /slide 3: steps works on bullets and card-row, not two-column/);
+  assert.ok(html.includes("html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { animation-delay: calc(var(--k, 0) * 70ms); }"));
+  assert.ok(html.includes(".reveal .slides section svg .fragment { will-change: auto; }"));
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cover", layout: "title",', '{ key: "cover", steps: true, layout: "title",'));
+  assert.match(build().out, /slide 1: steps works on bullets, card-row, two-column, image-caption, quote, not title/);
   fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ layout: "card-row", title: "Cards", cards: [', '{ layout: "card-row", title: "Cards", steps: "all", cards: ['));
-  assert.match(build().out, /steps must be true, "rest" or false/);
+  assert.match(build().out, /steps must be true, "rest", an array of clicks \(item indices or element ids, an array for several on one click\) or false, got "all"/);
+  reset();
+});
+ok("steps as an array groups items per click by index or element id, and two-item layouts take it", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES
+    .replace('{ key: "cols", layout: "two-column", title: "Two columns", left: "Left <strong>bold</strong><br/>line", right: "Shared text" }',
+      `{ key: "cols", layout: "two-column", steps: ["g-bars", [1, "g-axes"]], title: "Two columns", left: '<svg viewBox="0 0 10 10"><g id="g-axes"><path d="M0 0"/></g><g id="g-bars"><rect/></g></svg>', right: "Shared text" }`)
+    .replace('{ layout: "quote", quote: "The medium is the message.", attribution: "— Someone" },',
+      '{ layout: "quote", steps: "rest", quote: "The medium is the message.", attribution: "— Someone" },\n    { layout: "bullets", title: "Groups", steps: [[0, 2], 1], items: ["One", "Two", "Three"] },'));
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const html = read("index.html");
+  // bullets: items 0 and 2 arrive on the first click (2 staggers second within it, --k), item 1 on the second
+  assert.match(html, /<li class="fragment" data-fragment-index="0" data-a="up" data-b="items.0" data-bk="item" style="--i: 2" data-f="items.0"/);
+  assert.match(html, /<li class="fragment" data-fragment-index="1" data-a="up" data-b="items.1" data-bk="item" style="--i: 3" data-f="items.1"/);
+  assert.match(html, /<li class="fragment" data-fragment-index="0" data-a="up" data-b="items.2" data-bk="item" style="--k: 1; --i: 4" data-f="items.2"/);
+  // two-column: ids inside the left column's SVG; the right column joins the second click, after the axes group
+  assert.match(html, /<g class="fragment" data-fragment-index="0" id="g-bars">/);
+  assert.match(html, /<g class="fragment" data-fragment-index="1" id="g-axes">/);
+  assert.match(html, /<div class="fragment col-right" data-fragment-index="1" data-a="up" data-b="right" data-bk="block" style="--k: 1; --i: 3"/);
+  assert.doesNotMatch(html, /col-left"[^>]*data-fragment-index/, "the left column (item 0) isn't named, so it shows at once");
+  // quote with "rest": the quote shows at once, the attribution on the click
+  assert.match(html, /<blockquote data-a="fade" data-b="quote" data-bk="block" style="--i: 0" data-f="quote">/);
+  assert.match(html, /<div class="fragment attribution" data-fragment-index="0" data-a="up" style="--i: 1" data-f="attribution">/);
+  // an id no element has is a note; an index past the slide's items is an error
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", steps: ["nope"], layout: "two-column",'));
+  const r2 = build();
+  assert.strictEqual(r2.code, 0, r2.out);
+  assert.match(r2.out, /note: slide cols: steps names id "nope", but no element on the slide has it/);
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ layout: "card-row", title: "Cards", cards: [', '{ layout: "card-row", title: "Cards", steps: [0, [1, 2]], cards: ['));
+  assert.match(build().out, /slide 4: steps names item 2, but the slide has 2 items \(0 to 1\)/);
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ layout: "card-row", title: "Cards", cards: [', '{ layout: "card-row", title: "Cards", steps: [0, -1], cards: ['));
+  assert.match(build().out, /slide 4: steps must be true, .* got "-1"/);
   reset();
 });
 ok("deck-plan.md is read for information: rows done without a slide, slides not in the plan", () => {

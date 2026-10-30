@@ -408,9 +408,13 @@ html.reveal-print .reveal [data-a] { animation: none !important; }
 /* Builds: a .fragment that also carries entrance motion waits for its click, then plays it
    (otherwise the animation would run while the fragment is still hidden and it would just pop in).
    The presenter plugin sets html.rp-builds while builds are live (a presenter window connected);
-   otherwise every fragment is shown and the normal stagger applies. */
+   otherwise every fragment is shown and the normal stagger applies. Elements that arrive on the
+   same click stagger from zero among themselves (--k, set by the builder's applySteps). */
 .reveal .slides section.present .fragment[data-a]:not(.visible) { animation-name: none; }
-html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { animation-delay: 0s; }
+html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { animation-delay: calc(var(--k, 0) * 70ms); }
+/* Reveal gives .fragment will-change: opacity. On an SVG group Chrome then paints the group into a
+   layer sized before any later viewBox change, which clips its text once the figure is refitted. */
+.reveal .slides section svg .fragment { will-change: auto; }
 `.trim();
 }
 
@@ -423,12 +427,38 @@ html.rp-builds .reveal .slides section.present .fragment.visible[data-a] { anima
 // `a(i, kind)` adds entrance motion to a block (data-a, stagger position i) when the slide
 // has motion on, and nothing otherwise.
 const f = (name, html = false) => ` data-f="${name}"${html ? " data-html=\"\"" : ""}`;
-// Builds (PowerPoint-style click reveals) on bullets and card-row: `steps: true` makes every item
-// a Reveal fragment in order; `steps: "rest"` shows the first at once and the rest on clicks. They
-// play only while a presenter window is connected (presenter.js); otherwise the slide shows
-// complete, with its normal stagger. On a click, a stepped item's entrance motion plays at once.
-const stepped = (s, i) => s.steps === true || (s.steps === "rest" && i > 0);
-const step = (s, i) => stepped(s, i) ? ` class="fragment" data-fragment-index="${s.steps === "rest" ? i - 1 : i}"` : "";
+// Builds (PowerPoint-style click reveals). A slide's `steps` makes its items Reveal fragments:
+//   true          every item on its own click, in order
+//   "rest"        the first item shows at once, the rest on clicks
+//   [[0, 1], 2]   one entry per click, in any order of arrival: item indices, or the `id` of an
+//                 element anywhere in the slide's HTML (a group in an inline SVG, a <span> in a
+//                 body string); an array groups several onto one click
+// The items of each layout, by index, are in STEP_ITEMS. Builds play only while a presenter window
+// is connected (presenter.js); otherwise the slide shows complete, with its normal stagger. On a
+// click, a stepped item's entrance motion plays at once; items that share a click stagger among
+// themselves. Renderers only mark items with `step(s, i)` (data-step="<click>"); applySteps turns
+// the marks into fragments after the slide is rendered, so an element joins a step with no special
+// case in its renderer.
+const STEP_ITEMS = { bullets: s => (s.items || []).length, "card-row": s => (s.cards || []).length, "two-column": () => 2, "image-caption": () => 2, quote: () => 2 };
+const stepOf = (s, i) => s.steps === true ? i : s.steps === "rest" ? i - 1 : Array.isArray(s.steps) ? s.steps.findIndex(g => [].concat(g).includes(i)) : -1;
+const step = (s, i) => { const n = stepOf(s, i); return n >= 0 ? ` data-step="${n}"` : ""; };
+function applySteps(html, s, key) {
+  if (Array.isArray(s.steps)) {
+    s.steps.forEach((g, n) => [].concat(g).filter(x => typeof x === "string").forEach(id => {
+      const re = new RegExp(`<([a-zA-Z][\\w-]*)(?=[^>]*\\sid="${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}")`);
+      if (re.test(html)) html = html.replace(re, `<$1 data-step="${n}"`);
+      else console.log(`  note: slide ${key}: steps names id "${id}", but no element on the slide has it`);
+    }));
+  }
+  const seen = {};
+  return html.replace(/<([a-zA-Z][\w-]*)([^>]*?) data-step="(\d+)"([^>]*)>/g, (m, tag, pre, n, post) => {
+    const k = (seen[n] = (seen[n] || 0) + 1) - 1;   // the element's ordinal within its click
+    let attrs = `${pre} data-fragment-index="${n}"${post}`;
+    attrs = /\sclass="/.test(attrs) ? attrs.replace(/\sclass="/, ' class="fragment ') : ` class="fragment"${attrs}`;
+    if (k > 0) attrs = /\sstyle="/.test(attrs) ? attrs.replace(/\sstyle="/, ` style="--k: ${k}; `) : `${attrs} style="--k: ${k}"`;
+    return `<${tag}${attrs}>`;
+  });
+}
 const renderers = {
   title(s, a, b) {
     return `<section class="layout-title">
@@ -448,14 +478,14 @@ const renderers = {
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
   <div class="columns"${b("columns", "block")}>
-    <div class="col-left"${a(2, "up", "left", "block")}${f("left", true)}>${s.left || ""}</div>
-    <div class="col-right"${a(3, "up", "right", "block")}${f("right", true)}>${s.right || ""}</div>
+    <div class="col-left"${step(s, 0)}${a(2, "up", "left", "block")}${f("left", true)}>${s.left || ""}</div>
+    <div class="col-right"${step(s, 1)}${a(3, "up", "right", "block")}${f("right", true)}>${s.right || ""}</div>
   </div>
 </section>`;
   },
   "card-row"(s, a, b) {
     const cards = (s.cards || []).map((c, i) =>
-      `<div class="card${stepped(s, i) ? " fragment" : ""}"${stepped(s, i) ? ` data-fragment-index="${s.steps === "rest" ? i - 1 : i}"` : ""}${a(2 + i, "up", `cards.${i}`, "item")}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
+      `<div class="card"${step(s, i)}${a(2 + i, "up", `cards.${i}`, "item")}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
     ).join("\n    ");
     return `<section class="layout-card-row" style="--card-count: ${s.cards.length};">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
@@ -478,8 +508,8 @@ const renderers = {
   },
   quote(s, a, b) {
     return `<section class="layout-quote">
-  <blockquote${a(0, "fade", "quote", "block")}${f("quote")}>${esc(s.quote)}</blockquote>
-  ${s.attribution ? `<div class="attribution"${a(1)}${f("attribution")}>${esc(s.attribution)}</div>` : ""}
+  <blockquote${step(s, 0)}${a(0, "fade", "quote", "block")}${f("quote")}>${esc(s.quote)}</blockquote>
+  ${s.attribution ? `<div class="attribution"${step(s, 1)}${a(1)}${f("attribution")}>${esc(s.attribution)}</div>` : ""}
 </section>`;
   },
   bullets(s, a, b) {
@@ -494,8 +524,8 @@ const renderers = {
   },
   "image-caption"(s, a, b) {
     return `<section class="layout-image-caption">
-  <img src="${s.src}" alt="${esc(s.alt || "")}"${a(0, "fade", "image", "media")}/>
-  ${s.caption ? `<div class="caption"${a(1)}${f("caption")}>${esc(s.caption)}</div>` : ""}
+  <img src="${s.src}" alt="${esc(s.alt || "")}"${step(s, 0)}${a(0, "fade", "image", "media")}/>
+  ${s.caption ? `<div class="caption"${step(s, 1)}${a(1)}${f("caption")}>${esc(s.caption)}</div>` : ""}
 </section>`;
   },
 };
@@ -572,6 +602,7 @@ function renderSlide(slide, motion = false, chrome = null, key = null, laneChang
     return `${motionAttr}${block}${styles ? ` style="${styles}"` : ""}`;
   };
   let html = fn(slide, a, b);
+  if (slide.steps) html = applySteps(html, slide, key || slide.key || "?");
   // The knobs ride on the section as custom properties, merged into any style the layout set.
   const knobs = knobStyle(slide);
   if (knobs) html = /^<section class="[^"]*" style="/.test(html) ? html.replace(/^(<section class="[^"]*" style=")/, `$1${knobs}; `) : html.replace(/^(<section class="[^"]*")/, `$1 style="${knobs}"`);
@@ -649,8 +680,19 @@ function readDeck(spec) {
   for (const [i, s] of deck.slides.entries()) {
     if (s.teaches != null && (typeof s.teaches !== "string" || !s.teaches.trim())) throw new Error(`slide ${i + 1}: teaches must name a section id in the spec, got "${s.teaches}"`);
     if (s.ratio != null && !/^\d+\/\d+$/.test(String(s.ratio))) throw new Error(`slide ${i + 1}: ratio must look like "40/60", got "${s.ratio}"`);
-    if (s.steps != null && s.steps !== false && s.steps !== true && s.steps !== "rest") throw new Error(`slide ${i + 1}: steps must be true, "rest" or false, got "${s.steps}"`);
-    if (s.steps && !["bullets", "card-row"].includes(s.layout)) throw new Error(`slide ${i + 1}: steps works on bullets and card-row, not ${s.layout}`);
+    if (s.steps != null && s.steps !== false) {
+      const form = `steps must be true, "rest", an array of clicks (item indices or element ids, an array for several on one click) or false`;
+      if (!(s.steps === true || s.steps === "rest" || Array.isArray(s.steps))) throw new Error(`slide ${i + 1}: ${form}, got "${s.steps}"`);
+      if (!STEP_ITEMS[s.layout]) throw new Error(`slide ${i + 1}: steps works on ${Object.keys(STEP_ITEMS).join(", ")}, not ${s.layout}`);
+      if (Array.isArray(s.steps)) {
+        const count = STEP_ITEMS[s.layout](s);
+        for (const g of s.steps) for (const x of [].concat(g)) {
+          if (typeof x === "string") { if (!x.trim()) throw new Error(`slide ${i + 1}: steps has an empty element id`); continue; }
+          if (!Number.isInteger(x) || x < 0) throw new Error(`slide ${i + 1}: ${form}, got "${x}"`);
+          if (x >= count) throw new Error(`slide ${i + 1}: steps names item ${x}, but the slide has ${count} item${count === 1 ? "" : "s"} (0 to ${count - 1})`);
+        }
+      }
+    }
     for (const k of ["gap", "pad", "scale"]) if (s[k] != null && !(typeof s[k] === "number" && s[k] >= 0)) throw new Error(`slide ${i + 1}: ${k} must be a number, got "${s[k]}"`);
     if (s.tweaks != null) {
       if (typeof s.tweaks !== "object" || Array.isArray(s.tweaks)) throw new Error(`slide ${i + 1}: tweaks must be an object of blocks`);

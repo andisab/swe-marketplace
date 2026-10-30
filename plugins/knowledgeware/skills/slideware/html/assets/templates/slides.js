@@ -41,8 +41,11 @@
 //    `gap` and `pad` in px, `scale` in percent of the slide width (image-caption), and
 //    `tweaks: { "cards.1": { dx: 12, dy: -8 }, image: { w: 60 } }` to nudge a block (dx, dy in px)
 //    or size media (w in percent). Leave them out for the layout's defaults.
-// 13. Builds: `steps: true` on a bullets or card-row slide reveals its items one click at a time
-//    (`steps: "rest"` shows the first at once); each item's entrance motion plays on its click.
+// 13. Builds: `steps: true` on a bullets, card-row, two-column, image-caption or quote slide
+//    reveals its items one click at a time (`steps: "rest"` shows the first at once); an array
+//    gives one entry per click in any order of arrival: item indices, or the `id` of an element in
+//    the slide's HTML (an SVG group, a span), grouped in an array when several arrive together:
+//    `steps: [[0, 1], 2, ["chart-g2", 3]]`. Each item's entrance motion plays on its click.
 //    Mark the clicks in the notes as [click 1], [click 2]. A deck assembled from several sources
 //    can carry a deck-plan.md beside this file (SKILL.md §Planning a deck); the build reads it.
 // 12. `spec: "../my-unit.html"` next to `slides` names the deck's spec page (the knowledgebase
