@@ -13,7 +13,7 @@ Format guide for HTML output. Read [../SKILL.md](../SKILL.md) first for format c
 | Speaker notes, pacing, hidden slides, presenter view | [references/reveal.md](references/reveal.md) §Speaker notes |
 | Review mode: the `.review` flavour, editing text, notes and layout in the browser, the connected folder, `edits.json`, `serve-deck.js` | [references/reveal.md](references/reveal.md) §Review mode |
 | Layout knobs (`ratio`, `gap`, `pad`, `scale`) and block `tweaks` on a slide | [references/reveal.md](references/reveal.md) §Review mode, and the `slides.js` checklist |
-| Builds (`steps` on bullets and card-row, fragments with entrance motion) | [references/reveal.md](references/reveal.md) §Entrance motion |
+| Builds (`steps` on bullets, card-row, two-column, image-caption and quote: every item, the rest, or groups per click by index or element id; fragments with entrance motion) | [references/reveal.md](references/reveal.md) §Entrance motion |
 | Planning a deck from several sources (`deck-plan.md`) | [../SKILL.md](../SKILL.md) §Planning a deck, template in `assets/templates/deck-plan.md` |
 | Brandbook → CSS-variable mapping | this guide, §Token → CSS mapping (the brandbook itself: brandware's `references/brandbook-spec.md`) |
 
