@@ -25,6 +25,16 @@
 // catches up at the rebuild. presenter.js draws the overview through window.RevealReviewAPI,
 // which this plugin provides, and learns of changes through the rp-review-change event.
 //
+// Layout mode (L, inside review mode) edits the shape of a slide within what its layout allows:
+// blocks the builder marked (data-b) get dotted outlines by kind (blocks muted ink, list and card
+// items green, media the second accent; text fields keep the accent); a click selects; dragging
+// nudges a block or media (--dx / --dy, written as the slide's `tweaks`) and reorders a card or
+// bullet among its siblings (the slide's `arrays`); Del removes a card or bullet; the panel holds
+// the slide's knobs (gap, padding, the column ratio, the image's scale) and the selection's nudge
+// and size. Everything applies live and records a delta against the built value. The text
+// formatter is a small bar over a focused light-HTML field: bold, italic, code, link, clear,
+// colour (the brand's roles) and size.
+//
 // Edits live in this browser (localStorage, per deck file and per build) until saved, so a
 // closed tab loses nothing; a draft from an older build is dropped, since its text may be gone.
 // How edits reach disk, in order of preference:
@@ -103,6 +113,48 @@ html.rv-on .rp-drawer { display: none !important; }   /* the panel holds the not
 .rv-panel ::placeholder { color: ${MUTED}; }
 
 html.rv-on .reveal [data-f]:not(aside) { cursor: text; outline: 1px dashed color-mix(in srgb, ${ACCENT} 45%, transparent); outline-offset: 3px; border-radius: 2px; min-width: 1ch; }
+/* Layout mode: blocks by kind, the selection solid, handles on what resizes. */
+html.rv-layout .reveal [data-f]:not(aside) { cursor: default; outline-color: color-mix(in srgb, ${ACCENT} 30%, transparent); }
+html.rv-layout .reveal [data-b] { cursor: grab; outline: 1px dotted color-mix(in srgb, ${MUTED} 70%, transparent); outline-offset: 4px; }
+html.rv-layout .reveal [data-bk=item] { outline-color: color-mix(in srgb, var(--color-success, #3F8A4F) 75%, transparent); }
+html.rv-layout .reveal [data-bk=media] { outline-color: color-mix(in srgb, var(--color-accent2, ${ACCENT}) 80%, transparent); }
+html.rv-layout .reveal [data-b]:hover { outline-style: dashed; }
+html.rv-layout .reveal [data-b].rv-selected { outline: 2px solid ${ACCENT}; outline-offset: 4px; cursor: move; }
+html.rv-layout .reveal [data-bk=item].rv-selected { cursor: grab; }
+html.rv-layout .reveal [data-b].rv-dragging { opacity: .6; }
+html.rv-layout .reveal [data-b].rv-drop-before { box-shadow: -6px 0 0 -3px var(--color-success, #3F8A4F); }
+html.rv-layout .reveal [data-b].rv-drop-after { box-shadow: 6px 0 0 -3px var(--color-success, #3F8A4F); }
+.rv-handle { position: fixed; z-index: 47; width: 14px; height: 14px; border-radius: 3px; background: ${ACCENT}; border: 2px solid var(--color-bg, #FFFFFF); box-shadow: 0 1px 4px rgba(0,0,0,.3); cursor: nwse-resize; display: none; }
+.rv-handle.rv-show { display: block; }
+.rv-gutter { position: fixed; z-index: 47; width: 10px; border-radius: 5px; background: color-mix(in srgb, ${ACCENT} 85%, transparent); cursor: col-resize; display: none; }
+.rv-gutter.rv-show { display: block; }
+html.rv-layout .rv-panel .rv-notes, html.rv-layout .rv-panel .rv-comment, html.rv-layout .rv-panel .rv-panel-head { display: none; }
+.rv-layout-panel { display: none; grid-template-columns: 1fr 1fr; gap: 10px 28px; align-content: start; overflow: auto; }
+html.rv-layout .rv-panel { grid-template-rows: minmax(0, 1fr); }
+html.rv-layout .rv-layout-panel { display: grid; }
+.rv-layout-panel h3 { grid-column: 1 / -1; margin: 0; font-family: ${MONO}; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
+.rv-layout-panel h3 span { color: ${MUTED}; letter-spacing: 0; text-transform: none; font-family: ${SANS}; font-size: 12px; margin-left: 10px; }
+.rv-layout-panel label { display: grid; grid-template-columns: 90px 1fr 52px auto; align-items: center; gap: 10px; font-size: 13px; color: ${INK}; }
+.rv-layout-panel input[type=range] { width: 100%; accent-color: ${ACCENT}; }
+.rv-layout-panel output { font-family: ${MONO}; font-size: 12px; color: ${MUTED}; text-align: right; }
+.rv-layout-panel button { all: unset; cursor: pointer; padding: 4px 9px; border-radius: 6px; font-size: 12px; color: ${INK}; border: 1px solid ${BORDER}; background: var(--color-surface, #FFFFFF); }
+.rv-layout-panel button:hover { border-color: ${ACCENT}; color: ${ACCENT}; }
+.rv-layout-panel button[data-lp=delete] { color: var(--color-error, #B42318); }
+.rv-layout-panel .rv-lp-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.rv-layout-panel .rv-lp-hint { grid-column: 1 / -1; color: ${MUTED}; font-size: 12px; }
+/* The text formatter, over a focused light-HTML field. */
+.rv-fmt { position: fixed; z-index: 47; display: none; align-items: center; gap: 2px; padding: 4px; border-radius: 10px; border: 1px solid ${BORDER}; background: ${SURFACE};
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 30px rgba(0, 0, 0, .18); font-family: ${SANS}; font-size: 12px; color: ${INK}; }
+.rv-fmt.rv-show { display: flex; }
+.rv-fmt button, .rv-fmt select { all: unset; cursor: pointer; height: 26px; min-width: 26px; padding: 0 7px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: ${INK}; }
+.rv-fmt button:hover, .rv-fmt select:hover { background: color-mix(in srgb, ${INK} 8%, transparent); }
+.rv-fmt button[data-fmt=bold] { font-weight: 700; }
+.rv-fmt button[data-fmt=italic] { font-style: italic; }
+.rv-fmt button[data-fmt=code] { font-family: ${MONO}; font-size: 11px; }
+.rv-fmt .rv-fmt-sep { width: 1px; height: 16px; background: ${BORDER}; margin: 0 3px; }
+.rv-fmt select { font-size: 12px; appearance: auto; -webkit-appearance: menulist; padding-right: 2px; }
+.rv-fmt input { all: unset; width: 180px; padding: 0 8px; height: 26px; font-size: 12px; border-radius: 6px; border: 1px solid ${BORDER}; background: var(--color-surface, #FFFFFF); color: ${INK}; }
+.rv-fmt .rv-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid ${BORDER}; vertical-align: -2px; }
 html.rv-on .reveal [data-f]:hover { outline-color: ${ACCENT}; }
 html.rv-on .reveal [data-f]:focus { outline: 2px solid ${ACCENT}; background: color-mix(in srgb, ${ACCENT} 6%, transparent); }
 html.rv-on .reveal [data-f].rv-edited { outline-style: solid; outline-color: color-mix(in srgb, ${ACCENT} 70%, transparent); }
@@ -117,10 +169,15 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
 <button type="button" data-rv="copy" title="Copy the edits as JSON">Copy</button>
 <button type="button" data-rv="build" title="Save, rebuild the deck and reload (Shift+B)">Rebuild<kbd>Shift+B</kbd></button>
 <button type="button" data-rv="discard" title="Drop every unsaved edit">Discard</button>
+<button type="button" data-rv="layout" title="Layout mode: select, move, resize, delete and reorder blocks (L)">Layout<kbd>L</kbd></button>
 <button type="button" data-rv="done" title="Leave review mode (E)">Done<kbd>E</kbd></button>`;
+  const FMT_HTML = `<button type="button" data-fmt="bold" title="Bold (Cmd+B)">B</button><button type="button" data-fmt="italic" title="Italic (Cmd+I)">I</button><button type="button" data-fmt="code" title="Code">&lt;/&gt;</button><button type="button" data-fmt="link" title="Link (Cmd+K)">Link</button><span class="rv-fmt-sep"></span>
+<select data-fmt="color" title="Text colour, from the brand's roles"><option value="">Colour</option><option value="accent">Accent</option><option value="accent2">Accent 2</option><option value="ink">Ink</option><option value="ink-muted">Muted</option><option value="success">Success</option><option value="warning">Warning</option><option value="error">Error</option><option value="none">Default</option></select>
+<select data-fmt="size" title="Text size"><option value="">Size</option><option value="0.85em">Small</option><option value="1em">Normal</option><option value="1.15em">Large</option><option value="1.3em">Larger</option></select><span class="rv-fmt-sep"></span><button type="button" data-fmt="clear" title="Clear formatting">Clear</button>`;
   const PANEL_HTML = `<div class="rv-panel-head"><span class="rv-panel-num"></span><span>Speaker notes</span><span class="rv-panel-title"></span></div>
 <textarea class="rv-notes" aria-label="Speaker notes" placeholder="Notes for this slide. A blank line splits paragraphs, lines starting with - form a list, **bold**, *italic*, [pause]."></textarea>
-<input class="rv-comment" aria-label="Comment" placeholder="Comment for whoever edits the deck next (optional)"/>`;
+<input class="rv-comment" aria-label="Comment" placeholder="Comment for whoever edits the deck next (optional)"/>
+<div class="rv-layout-panel"></div>`;
 
   function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   function isHtml(el) { return el.hasAttribute("data-html"); }
@@ -167,6 +224,9 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     let server = null, handle = null, toastTimer = 0, confirmAction = null;
     let folder = null, folderState = "none", saveTimer = 0, lastSaved = null, watchTimer = 0, builtStamp = null;   // the connected deck folder
     const edits = {};                 // key → { <field>: { from, to }, comment }
+    const layoutEdits = {};           // key → { knobs: { name: { from, to } }, tweaks: { from, to }, arrays: { name: [kept original indices] } }
+    const builtLayout = new Map();    // key → { knobs: { name: value | null }, tweaks: object | null, arrays: { name: count } } as built
+    let layout = false, selected = null, sizeHandle, gutter, fmt;   // layout mode, its selection and its handles; the formatter bar
     const originals = new Map();      // element → the text as built
     let all = [];                     // every slide as built, in order: { key, el, hidden } (hidden ones leave the DOM at start-up)
     const ops = { hidden: {}, deleted: [], order: null };   // the overview's structural edits, by key
@@ -178,7 +238,14 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       let n = 0, c = 0;
       for (const s of Object.values(edits)) for (const k of Object.keys(s)) k === "comment" ? c++ : n++;
       const d = Object.keys(ops.hidden).length + ops.deleted.length + (ops.order ? 1 : 0);
-      return { n, c, d, any: n + c + d > 0 };
+      let l = 0;
+      for (const o of Object.values(layoutEdits)) l += Object.keys(o.knobs || {}).length + (o.tweaks ? 1 : 0) + Object.keys(o.arrays || {}).length;
+      return { n, c, d, l, any: n + c + d + l > 0 };
+    }
+    function slidesOut() {   // the per-slide section of the file: text edits, comments and layout edits together
+      const out = JSON.parse(JSON.stringify(edits));
+      for (const [k, o] of Object.entries(layoutEdits)) Object.assign(out[k] = out[k] || {}, JSON.parse(JSON.stringify(o)));
+      return out;
     }
     function opsOut() {   // the deck section of the file, or null when nothing structural is queued
       const o = {};
@@ -210,7 +277,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     function persist() {
       try {
         const deck = opsOut();
-        if (Object.keys(edits).length || deck) localStorage.setItem(STORE(), JSON.stringify({ built: cfg.built, slides: edits, deck }));
+        if (Object.keys(edits).length || Object.keys(layoutEdits).length || deck) localStorage.setItem(STORE(), JSON.stringify({ built: cfg.built, slides: slidesOut(), deck }));
         else localStorage.removeItem(STORE());
       } catch (e) { /* storage blocked: the edits live in the page until saved */ }
       scheduleSave();
@@ -323,6 +390,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       for (const [key, fields] of Object.entries(saved.slides || {})) {
         for (const [field, v] of Object.entries(fields)) {
           if (field === "comment") { (edits[key] = edits[key] || {}).comment = v; continue; }
+          if (field === "knobs" || field === "tweaks" || field === "arrays") { if (known.has(key)) { (layoutEdits[key] = layoutEdits[key] || {})[field] = v; applyLayoutLive(key); } continue; }
           const el = fieldEl(key, field);
           if (!el || originals.get(el) !== v.from) continue;   // the text changed under the draft
           setValue(el, v.to);
@@ -334,11 +402,13 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     function payload() {
       const deck = opsOut();
       return JSON.stringify({ built: cfg.built, lane: cfg.lane || null, file: cfg.file || location.pathname.split("/").pop() || "index.html",
-        saved: new Date().toISOString(), keys: all.map((s) => s.key), slides: edits, ...(deck ? { deck } : {}) }, null, 2) + "\n";
+        saved: new Date().toISOString(), keys: all.map((s) => s.key), slides: slidesOut(), ...(deck ? { deck } : {}) }, null, 2) + "\n";
     }
     function discard() {
       for (const [el, from] of originals) { if (valueOf(el) !== from) setValue(el, from); el.classList.remove("rv-edited"); }
       for (const k of Object.keys(edits)) delete edits[k];
+      for (const k of Object.keys(layoutEdits)) { delete layoutEdits[k]; applyLayoutLive(k); }
+      select(null);
       for (const k of Object.keys(ops.hidden)) delete ops.hidden[k];
       ops.deleted = [];
       ops.order = null;
@@ -467,9 +537,10 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     // ── Rebuild (Shift+B) ──────────────────────────────────────────
     function askRebuild() {
       const { n, c, d } = count();
-      const what = [n ? `${n} edit${n === 1 ? "" : "s"}` : "", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ") || "no edits";
+      const { l } = count();
+      const what = [n ? `${n} edit${n === 1 ? "" : "s"}` : "", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : "", l ? `${l} layout change${l === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ") || "no edits";
       if (!server && folderState === "ok") {
-        showConfirm(`<h2>Ask Claude to rebuild</h2><p>${what.charAt(0).toUpperCase() + what.slice(1)} ${n + c + d === 1 ? "is" : "are"} saved in <code>edits.json</code>. Say "rebuild the deck"; every build folds the file into slides.js, and this page reloads on the same slide when the new build lands. For a one-key rebuild, serve the deck with <code>serve-deck.js</code> and press Shift+B there.</p>`,
+        showConfirm(`<h2>Ask Claude to rebuild</h2><p>${what.charAt(0).toUpperCase() + what.slice(1)} ${n + c + d + l === 1 ? "is" : "are"} saved in <code>edits.json</code>. Say "rebuild the deck"; every build folds the file into slides.js, and this page reloads on the same slide when the new build lands. For a one-key rebuild, serve the deck with <code>serve-deck.js</code> and press Shift+B there.</p>`,
           [["cancel", "Close", "Esc"]], null);
         return;
       }
@@ -521,7 +592,8 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     }
     function renderBar() {
       const { n, c, d } = count();
-      q(bar, ".rv-count").textContent = [n ? `${n} edit${n === 1 ? "" : "s"}` : d ? "" : "no edits", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
+      const { l } = count();
+      q(bar, ".rv-count").textContent = [n ? `${n} edit${n === 1 ? "" : "s"}` : d || l ? "" : "no edits", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : "", l ? `${l} layout change${l === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
       document.documentElement.classList.toggle("rv-queued", count().any);
       const fb = q(bar, "button[data-rv=folder]"), fs = q(bar, ".rv-folder"), sv = q(bar, "button[data-rv=save]");
       fb.hidden = folderState === "ok" || folderState === "unsupported";
@@ -572,9 +644,333 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       showConfirm(`<h2>Rebuild this deck first</h2><p>Its slides carry no keys, so review mode has nothing to address: it was built before review mode, or by hand. Run <code>node build-deck.js . --review</code> in the deck folder (or ask Claude to rebuild the deck), then reload.</p>`,
         [["cancel", "Close", "Esc"]], null);
     }
+    // ── Layout mode ────────────────────────────────────────────────
+    const KNOB_DEFS = {   // what each knob means, its range, and which layouts have it
+      gap:   { label: "Gap",       min: 0,  max: 80,  unit: "px", layouts: ["layout-two-column", "layout-card-row", "layout-bullets"] },
+      pad:   { label: "Padding",   min: 0,  max: 120, unit: "px", layouts: null },
+      ratio: { label: "Columns",   min: 20, max: 80,  unit: "%",  layouts: ["layout-two-column"] },
+      scale: { label: "Image",     min: 20, max: 100, unit: "%",  layouts: ["layout-image-caption"] },
+    };
+    const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? n : null; };
+    function readKnobs(sec) {   // the section's current knob values, from its custom properties
+      const st = sec.style;
+      const ratio = st.getPropertyValue("--ratio").trim();
+      return { gap: num(st.getPropertyValue("--gap")), pad: num(st.getPropertyValue("--pad")), scale: num(st.getPropertyValue("--scale")),
+        ratio: ratio ? ratio.replace(/fr/g, "").trim().split(/\s+/).join("/") : null };
+    }
+    function readTweak(el) {
+      const t = {};
+      for (const k of ["dx", "dy", "w"]) { const v = num(el.style.getPropertyValue("--" + k)); if (v) t[k] = v; }
+      return Object.keys(t).length ? t : null;
+    }
+    function readTweaks(sec) {
+      const out = {};
+      for (const el of sec.querySelectorAll("[data-b]")) { const t = readTweak(el); if (t) out[el.dataset.b] = t; }
+      return Object.keys(out).length ? out : null;
+    }
+    function arraysOf(sec) {   // list name → number of items the builder emitted
+      const out = {};
+      for (const el of sec.querySelectorAll("[data-bk=item]")) { const name = el.dataset.b.split(".")[0]; out[name] = (out[name] || 0) + 1; }
+      return out;
+    }
+    function snapshotLayout() {
+      for (const s of all) builtLayout.set(s.key, { knobs: readKnobs(s.el), tweaks: readTweaks(s.el), arrays: arraysOf(s.el) });
+    }
+    const sectionOf = (el) => el.closest("section[data-key]");
+    const keyOfSec = (sec) => sec && sec.dataset.key;
+    function layoutOf(key) { return layoutEdits[key] || (layoutEdits[key] = {}); }
+    function prune(key) {
+      const o = layoutEdits[key];
+      if (!o) return;
+      if (o.knobs && !Object.keys(o.knobs).length) delete o.knobs;
+      if (o.arrays && !Object.keys(o.arrays).length) delete o.arrays;
+      if (!o.knobs && !o.tweaks && !o.arrays) delete layoutEdits[key];
+    }
+    function setKnob(sec, name, value) {   // value null = back to the layout's default
+      const key = keyOfSec(sec), built = builtLayout.get(key).knobs[name];
+      const o = layoutOf(key); o.knobs = o.knobs || {};
+      if (value === built || (value == null && built == null)) delete o.knobs[name]; else o.knobs[name] = { from: built, to: value };
+      prune(key);
+      applyKnobsLive(sec);
+      persist(); renderBar();
+    }
+    function currentKnobs(sec) {
+      const key = keyOfSec(sec), out = { ...builtLayout.get(key).knobs };
+      for (const [n, v] of Object.entries((layoutEdits[key] || {}).knobs || {})) out[n] = v.to;
+      return out;
+    }
+    function applyKnobsLive(sec) {
+      const k = currentKnobs(sec);
+      sec.style.setProperty("--gap", k.gap != null ? k.gap + "px" : ""); if (k.gap == null) sec.style.removeProperty("--gap");
+      if (k.pad != null) sec.style.setProperty("--pad", k.pad + "px"); else sec.style.removeProperty("--pad");
+      if (k.scale != null) sec.style.setProperty("--scale", k.scale + "%"); else sec.style.removeProperty("--scale");
+      if (k.ratio) { const [l, r] = k.ratio.split("/"); sec.style.setProperty("--ratio", `${l}fr ${r}fr`); } else sec.style.removeProperty("--ratio");
+      placeHandles();
+    }
+    function currentTweaks(sec) {
+      const key = keyOfSec(sec), o = layoutEdits[key];
+      return o && o.tweaks ? (o.tweaks.to || {}) : (builtLayout.get(key).tweaks || {});
+    }
+    function setTweak(el, patch) {   // patch: { dx?, dy?, w? }; a 0 removes that part
+      const sec = sectionOf(el), key = keyOfSec(sec), built = builtLayout.get(key).tweaks;
+      const next = JSON.parse(JSON.stringify(currentTweaks(sec)));
+      const t = { ...(next[el.dataset.b] || {}), ...patch };
+      for (const k of Object.keys(t)) if (!t[k]) delete t[k];
+      if (Object.keys(t).length) next[el.dataset.b] = t; else delete next[el.dataset.b];
+      const o = layoutOf(key);
+      if (JSON.stringify(Object.keys(next).length ? next : null) === JSON.stringify(built)) delete o.tweaks; else o.tweaks = { from: built, to: Object.keys(next).length ? next : null };
+      prune(key);
+      applyTweaksLive(sec);
+      persist(); renderBar();
+    }
+    function applyTweaksLive(sec) {
+      const t = currentTweaks(sec);
+      for (const el of sec.querySelectorAll("[data-b]")) {
+        const v = t[el.dataset.b] || {};
+        for (const k of ["dx", "dy", "w"]) { if (v[k]) el.style.setProperty("--" + k, v[k] + (k === "w" ? "%" : "px")); else el.style.removeProperty("--" + k); }
+        if (v.w) el.setAttribute("data-w", ""); else el.removeAttribute("data-w");
+      }
+      placeHandles();
+    }
+    function currentOrder(sec, name) {   // the kept original indices, in order
+      const key = keyOfSec(sec), o = layoutEdits[key];
+      if (o && o.arrays && o.arrays[name]) return o.arrays[name].slice();
+      return Array.from({ length: builtLayout.get(key).arrays[name] || 0 }, (_, i) => i);
+    }
+    function setOrder(sec, name, kept) {
+      const key = keyOfSec(sec), built = Array.from({ length: builtLayout.get(key).arrays[name] || 0 }, (_, i) => i);
+      const o = layoutOf(key); o.arrays = o.arrays || {};
+      if (kept.join() === built.join()) delete o.arrays[name]; else o.arrays[name] = kept;
+      prune(key);
+      applyArraysLive(sec, name);
+      persist(); renderBar();
+    }
+    const itemEls = new Map();   // "key/name" → the built item elements by original index (kept alive when removed)
+    function itemsOf(sec, name) {
+      const id = keyOfSec(sec) + "/" + name;
+      if (!itemEls.has(id)) itemEls.set(id, Array.from(sec.querySelectorAll(`[data-bk=item][data-b^="${name}."]`)).sort((a, b) => +a.dataset.b.split(".")[1] - +b.dataset.b.split(".")[1]));
+      return itemEls.get(id);
+    }
+    function applyArraysLive(sec, name) {
+      const els = itemsOf(sec, name), kept = currentOrder(sec, name);
+      const parent = els[0] && els[0].parentElement;
+      if (!parent) return;
+      for (const el of els) if (el.parentElement === parent) parent.removeChild(el);
+      for (const i of kept) if (els[i]) parent.appendChild(els[i]);
+      if (sec.classList.contains("layout-card-row")) sec.style.setProperty("--card-count", String(kept.length));
+      if (selected && !selected.isConnected) select(null);
+      placeHandles();
+    }
+    function applyLayoutLive(key) {
+      const s = all.find((x) => x.key === key);
+      if (!s) return;
+      applyKnobsLive(s.el); applyTweaksLive(s.el);
+      for (const name of Object.keys(builtLayout.get(key).arrays)) applyArraysLive(s.el, name);
+    }
+    function select(el) {
+      if (selected) selected.classList.remove("rv-selected");
+      selected = el && el.isConnected ? el : null;
+      if (selected) selected.classList.add("rv-selected");
+      renderLayoutPanel();
+      placeHandles();
+    }
+    function placeHandles() {
+      sizeHandle.classList.remove("rv-show"); gutter.classList.remove("rv-show");
+      if (!layout || !selected) return;
+      const r = selected.getBoundingClientRect();
+      if (selected.dataset.bk === "media") { sizeHandle.style.left = (r.right - 7) + "px"; sizeHandle.style.top = (r.bottom - 7) + "px"; sizeHandle.classList.add("rv-show"); }
+      const sec = sectionOf(selected);
+      if (sec && sec.classList.contains("layout-two-column") && (selected.dataset.b === "columns" || selected.dataset.b === "left" || selected.dataset.b === "right")) {
+        const cols = sec.querySelector("[data-b=columns]"), left = sec.querySelector("[data-b=left]");
+        if (cols && left) { const cr = cols.getBoundingClientRect(), lr = left.getBoundingClientRect(); gutter.style.left = (lr.right + (cr.width - lr.width - sec.querySelector("[data-b=right]").getBoundingClientRect().width) / 2 - 5) + "px"; gutter.style.top = cr.top + "px"; gutter.style.height = cr.height + "px"; gutter.classList.add("rv-show"); }
+      }
+    }
+    function renderLayoutPanel() {
+      const panelEl = q(panel, ".rv-layout-panel");
+      if (!layout) { panelEl.innerHTML = ""; return; }
+      const sec = selected ? sectionOf(selected) : current();
+      if (!sec || !sec.dataset.key) { panelEl.innerHTML = '<p class="rv-lp-hint">No slide.</p>'; return; }
+      const k = currentKnobs(sec), key = sec.dataset.key;
+      const rows = [];
+      rows.push(`<h3>Slide ${pad2(slides.indexOf(sec) + 1)}<span>${esc(titleOf(sec))}</span></h3>`);
+      for (const [name, d] of Object.entries(KNOB_DEFS)) {
+        if (d.layouts && !d.layouts.some((c) => sec.classList.contains(c))) continue;
+        const built = builtLayout.get(key).knobs[name];
+        const val = name === "ratio" ? (k.ratio ? +k.ratio.split("/")[0] : 50) : k[name] != null ? k[name] : (name === "scale" ? 80 : name === "pad" ? Math.round(num(getComputedStyle(sec).paddingLeft)) : null);
+        const shown = name === "ratio" ? `${val}/${100 - val}` : val != null ? val + d.unit : "layout";
+        rows.push(`<label><span>${d.label}</span><input type="range" data-knob="${name}" min="${d.min}" max="${d.max}" value="${val != null ? val : (d.min + d.max) / 2}"/><output>${shown}</output><button type="button" data-knob-reset="${name}" title="Back to ${built == null ? "the layout's default" : "the built value"}">Reset</button></label>`);
+      }
+      if (selected) {
+        const t = (currentTweaks(sec))[selected.dataset.b] || {};
+        const kind = selected.dataset.bk, name = selected.dataset.b;
+        rows.push(`<h3>Selected<span>${esc(name)} · ${kind}</span></h3>`);
+        rows.push(`<div class="rv-lp-row"><span>Nudge ${t.dx || 0}, ${t.dy || 0} px${t.w ? ` · width ${t.w}%` : ""}</span>${t.dx || t.dy || t.w ? '<button type="button" data-lp="reset">Reset nudge</button>' : ""}${kind === "item" ? '<button type="button" data-lp="delete">Delete (Del)</button>' : ""}</div>`);
+        rows.push(`<p class="rv-lp-hint">${kind === "item" ? "Drag to reorder among its siblings; arrows nudge (Shift ×10); Del removes it." : kind === "media" ? "Drag to nudge; the corner handle resizes; arrows nudge (Shift ×10)." : "Drag or arrows to nudge (Shift ×10)."}${selected.dataset.b === "left" || selected.dataset.b === "right" || selected.dataset.b === "columns" ? " The bar between the columns sets their ratio." : ""}</p>`);
+        const name0 = name.split(".")[0];
+        if (kind === "item" && (layoutEdits[key] || {}).arrays && layoutEdits[key].arrays[name0]) rows.push(`<div class="rv-lp-row"><button type="button" data-lp="restore" data-list="${name0}">Restore the ${name0} list as built</button></div>`);
+      } else rows.push('<p class="rv-lp-hint">Click a block to select it. Dotted outlines: blocks, green items, the second accent for media. L leaves layout mode.</p>');
+      panelEl.innerHTML = rows.join("");
+    }
+    const pad2 = (n) => String(n).padStart(2, "0");
+    function titleOf(sec) { const h = sec.querySelector("h1, h2, h3"); return h ? h.textContent.replace(/\s+/g, " ").trim() : ""; }
+    function setLayout(on_) {
+      layout = !!on_ && on;
+      document.documentElement.classList.toggle("rv-layout", layout);
+      for (const el of originals.keys()) { if (el.tagName === "ASIDE") continue; if (layout) el.removeAttribute("contenteditable"); else el.setAttribute("contenteditable", isHtml(el) ? "true" : "plaintext-only"); }
+      if (!layout) select(null); else { renderLayoutPanel(); placeHandles(); }
+      hideFmt();
+      q(bar, "button[data-rv=layout]").style.fontWeight = layout ? "700" : "";
+    }
+    function nudge(el, dx, dy) { const t = (currentTweaks(sectionOf(el)))[el.dataset.b] || {}; setTweak(el, { dx: (t.dx || 0) + dx, dy: (t.dy || 0) + dy }); }
+    function deleteItem(el) {
+      const sec = sectionOf(el), name = el.dataset.b.split(".")[0], idx = +el.dataset.b.split(".")[1];
+      setOrder(sec, name, currentOrder(sec, name).filter((i) => i !== idx));
+      select(null);
+    }
+    function moveItem(el, targetEl, before) {
+      const sec = sectionOf(el), name = el.dataset.b.split(".")[0];
+      if (targetEl.dataset.b.split(".")[0] !== name) return;
+      const idx = +el.dataset.b.split(".")[1], tIdx = +targetEl.dataset.b.split(".")[1];
+      const kept = currentOrder(sec, name).filter((i) => i !== idx);
+      const at = kept.indexOf(tIdx);
+      if (at < 0) return;
+      kept.splice(before ? at : at + 1, 0, idx);
+      setOrder(sec, name, kept);
+      select(el);
+    }
+    // Pointer handling in layout mode: a drag on an item reorders it, a drag on anything else nudges
+    // it; the corner handle resizes media; the gutter sets the column ratio. Screen pixels become
+    // slide pixels through Reveal's scale.
+    function bindLayoutPointer() {
+      const stage = deck.getSlidesElement();
+      const capture = (el, e) => { try { el.setPointerCapture(e.pointerId); } catch (err) { /* no active pointer (synthetic events); moves still arrive while over the element */ } };
+      let drag = null;
+      stage.addEventListener("pointerdown", (e) => {
+        if (!layout || e.button !== 0) return;
+        const el = e.target.closest && e.target.closest("[data-b]");
+        if (!el || !stage.contains(el)) { select(null); return; }
+        e.preventDefault();
+        select(el);
+        const t = (currentTweaks(sectionOf(el)))[el.dataset.b] || {};
+        drag = { el, x: e.clientX, y: e.clientY, dx: t.dx || 0, dy: t.dy || 0, moved: false, item: el.dataset.bk === "item" };
+        capture(el, e);
+      });
+      stage.addEventListener("pointermove", (e) => {
+        if (!drag) return;
+        const scale = deck.getScale() || 1, mx = (e.clientX - drag.x) / scale, my = (e.clientY - drag.y) / scale;
+        if (!drag.moved && Math.hypot(mx, my) < 3) return;
+        drag.moved = true;
+        if (drag.item) {
+          drag.el.classList.add("rv-dragging");
+          const under = document.elementsFromPoint(e.clientX, e.clientY).find((n) => n !== drag.el && n.matches && n.matches("[data-bk=item]") && n.dataset.b.split(".")[0] === drag.el.dataset.b.split(".")[0]);
+          stage.querySelectorAll(".rv-drop-before, .rv-drop-after").forEach((n) => n.classList.remove("rv-drop-before", "rv-drop-after"));
+          if (under) { const r = under.getBoundingClientRect(); const horizontal = r.width > r.height * 1.2 && under.parentElement && getComputedStyle(under.parentElement).display.includes("grid") === false; const before = horizontal ? e.clientY < r.top + r.height / 2 : e.clientX < r.left + r.width / 2; under.classList.add(before ? "rv-drop-before" : "rv-drop-after"); drag.target = under; drag.before = before; } else drag.target = null;
+        } else {
+          drag.el.style.setProperty("--dx", Math.round(drag.dx + mx) + "px");
+          drag.el.style.setProperty("--dy", Math.round(drag.dy + my) + "px");
+          placeHandles();
+        }
+      });
+      const finish = (e) => {
+        if (!drag) return;
+        const d = drag; drag = null;
+        stage.querySelectorAll(".rv-drop-before, .rv-drop-after").forEach((n) => n.classList.remove("rv-drop-before", "rv-drop-after"));
+        d.el.classList.remove("rv-dragging");
+        if (!d.moved) return;
+        if (d.item) { if (d.target) moveItem(d.el, d.target, d.before); }
+        else { const scale = deck.getScale() || 1; setTweak(d.el, { dx: Math.round(d.dx + (e.clientX - d.x) / scale), dy: Math.round(d.dy + (e.clientY - d.y) / scale) }); }
+      };
+      stage.addEventListener("pointerup", finish);
+      stage.addEventListener("pointercancel", finish);
+      // the corner handle: media width in percent of its container
+      let hdrag = null;
+      sizeHandle.addEventListener("pointerdown", (e) => { if (!selected) return; e.preventDefault(); capture(sizeHandle, e); hdrag = { x: e.clientX, w0: selected.getBoundingClientRect().width, pw: selected.parentElement.getBoundingClientRect().width }; });
+      sizeHandle.addEventListener("pointermove", (e) => { if (!hdrag || !selected) return; const w = Math.max(10, Math.min(100, Math.round((hdrag.w0 + (e.clientX - hdrag.x)) / hdrag.pw * 100))); selected.style.setProperty("--w", w + "%"); selected.setAttribute("data-w", ""); hdrag.w = w; placeHandles(); });
+      const hfinish = () => { if (!hdrag) return; const w = hdrag.w; hdrag = null; if (w != null && selected) setTweak(selected, { w }); };
+      sizeHandle.addEventListener("pointerup", hfinish); sizeHandle.addEventListener("pointercancel", hfinish);
+      // the gutter: the two columns' ratio
+      let gdrag = null;
+      gutter.addEventListener("pointerdown", (e) => { const sec = selected && sectionOf(selected); if (!sec) return; e.preventDefault(); capture(gutter, e); const cr = sec.querySelector("[data-b=columns]").getBoundingClientRect(); gdrag = { sec, left: cr.left, width: cr.width }; });
+      gutter.addEventListener("pointermove", (e) => { if (!gdrag) return; const l = Math.max(20, Math.min(80, Math.round((e.clientX - gdrag.left) / gdrag.width * 100))); gdrag.l = l; gdrag.sec.style.setProperty("--ratio", `${l}fr ${100 - l}fr`); placeHandles(); });
+      const gfinish = () => { if (!gdrag) return; const { sec, l } = gdrag; gdrag = null; if (l != null) setKnob(sec, "ratio", `${l}/${100 - l}`); };
+      gutter.addEventListener("pointerup", gfinish); gutter.addEventListener("pointercancel", gfinish);
+      // the panel's sliders and buttons
+      panel.addEventListener("input", (e) => {
+        const r = e.target.closest && e.target.closest("input[data-knob]");
+        if (!r) return;
+        const sec = selected ? sectionOf(selected) : current(), name = r.dataset.knob, v = +r.value;
+        if (name === "ratio") sec.style.setProperty("--ratio", `${v}fr ${100 - v}fr`); else sec.style.setProperty("--" + name, v + (KNOB_DEFS[name].unit));
+        r.parentElement.querySelector("output").textContent = name === "ratio" ? `${v}/${100 - v}` : v + KNOB_DEFS[name].unit;
+        placeHandles();
+      });
+      panel.addEventListener("change", (e) => {
+        const r = e.target.closest && e.target.closest("input[data-knob]");
+        if (!r) return;
+        const sec = selected ? sectionOf(selected) : current(), name = r.dataset.knob, v = +r.value;
+        setKnob(sec, name, name === "ratio" ? `${v}/${100 - v}` : v);
+        renderLayoutPanel();
+      });
+      panel.addEventListener("click", (e) => {
+        const b = e.target.closest && e.target.closest("button");
+        if (!b) return;
+        const sec = selected ? sectionOf(selected) : current();
+        if (b.dataset.knobReset) { setKnob(sec, b.dataset.knobReset, builtLayout.get(sec.dataset.key).knobs[b.dataset.knobReset]); renderLayoutPanel(); }
+        else if (b.dataset.lp === "reset" && selected) { setTweak(selected, { dx: 0, dy: 0, w: 0 }); renderLayoutPanel(); }
+        else if (b.dataset.lp === "delete" && selected) deleteItem(selected);
+        else if (b.dataset.lp === "restore") { setOrder(sec, b.dataset.list, Array.from({ length: builtLayout.get(sec.dataset.key).arrays[b.dataset.list] || 0 }, (_, i) => i)); renderLayoutPanel(); }
+      });
+    }
+
+    // ── The text formatter ─────────────────────────────────────────
+    let fmtField = null;
+    function showFmt(el) {
+      fmtField = el;
+      const r = el.getBoundingClientRect();
+      fmt.classList.add("rv-show");
+      const w = fmt.offsetWidth, h = fmt.offsetHeight;
+      fmt.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + "px";
+      fmt.style.top = Math.max(8, r.top - h - 8) + "px";
+    }
+    function hideFmt() { fmt.classList.remove("rv-show"); fmtField = null; }
+    function wrapSelection(tag, style) {   // wrap the selection in <tag style="…">; the sanitizer keeps span[style]
+      const sel = getSelection();
+      if (!sel || sel.rangeCount === 0 || !fmtField || !fmtField.contains(sel.anchorNode)) return;
+      const range = sel.getRangeAt(0);
+      if (range.collapsed) return;
+      const el = document.createElement(tag);
+      if (style) el.setAttribute("style", style);
+      el.appendChild(range.extractContents());
+      range.insertNode(el);
+      sel.removeAllRanges(); const nr = document.createRange(); nr.selectNodeContents(el); sel.addRange(nr);
+      fmtField.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    function unwrapSpans() {   // clear formatting: strip b/i/strong/em/code/span around the selection, keep the text
+      const sel = getSelection();
+      if (!sel || sel.rangeCount === 0 || !fmtField) return;
+      document.execCommand("removeFormat");
+      const range = sel.getRangeAt(0);
+      const walker = document.createTreeWalker(fmtField, NodeFilter.SHOW_ELEMENT, { acceptNode: (n) => /^(SPAN|CODE|STRONG|EM|B|I)$/.test(n.tagName) && range.intersectsNode(n) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP });
+      const hits = []; let n; while ((n = walker.nextNode())) hits.push(n);
+      for (const h of hits) { const frag = document.createDocumentFragment(); while (h.firstChild) frag.appendChild(h.firstChild); h.replaceWith(frag); }
+      fmtField.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    function fmtAction(act, value) {
+      if (!fmtField) return;
+      fmtField.focus();
+      if (act === "bold") document.execCommand("bold");
+      else if (act === "italic") document.execCommand("italic");
+      else if (act === "code") wrapSelection("code");
+      else if (act === "link") { const inp = fmt.querySelector("input"); if (!inp) { const i = document.createElement("input"); i.placeholder = "https://… then Enter"; i.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); const url = i.value.trim(); fmtField.focus(); if (url) document.execCommand("createLink", false, url); i.remove(); fmtField.dispatchEvent(new Event("input", { bubbles: true })); } else if (e.key === "Escape") i.remove(); e.stopPropagation(); }); fmt.appendChild(i); i.focus(); } else inp.focus(); return; }
+      else if (act === "color") { if (value === "none") unwrapSpans(); else if (value) wrapSelection("span", `color: var(--color-${value})`); }
+      else if (act === "size") { if (value === "1em") unwrapSpans(); else if (value) wrapSelection("span", `font-size: ${value}`); }
+      else if (act === "clear") unwrapSpans();
+      fmtField.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     function toggle() {
       if (stale) { staleDeck(); return; }
       on = !on;
+      if (!on && layout) setLayout(false);
       document.documentElement.classList.toggle("rv-on", on);
       for (const el of originals.keys()) {
         if (el.tagName === "ASIDE") continue;
@@ -597,7 +993,16 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       panel = document.createElement("div"); panel.className = "rv-panel"; panel.innerHTML = PANEL_HTML;
       confirmEl = document.createElement("div"); confirmEl.className = "rv-confirm"; confirmEl.setAttribute("role", "dialog");
       toastEl = document.createElement("div"); toastEl.className = "rv-toast"; toastEl.setAttribute("aria-live", "polite");
-      document.body.append(bar, panel, confirmEl, toastEl);
+      sizeHandle = document.createElement("div"); sizeHandle.className = "rv-handle"; sizeHandle.title = "Drag to resize";
+      gutter = document.createElement("div"); gutter.className = "rv-gutter"; gutter.title = "Drag to set the column ratio";
+      fmt = document.createElement("div"); fmt.className = "rv-fmt"; fmt.setAttribute("role", "toolbar"); fmt.innerHTML = FMT_HTML;
+      document.body.append(bar, panel, confirmEl, toastEl, sizeHandle, gutter, fmt);
+      fmt.addEventListener("mousedown", (e) => { if (e.target.tagName !== "INPUT" && e.target.tagName !== "SELECT") e.preventDefault(); });   // keep the field's selection
+      fmt.addEventListener("click", (e) => { const b = e.target.closest("button[data-fmt]"); if (b) fmtAction(b.dataset.fmt); });
+      fmt.addEventListener("change", (e) => { const sel = e.target.closest("select[data-fmt]"); if (sel) { fmtAction(sel.dataset.fmt, sel.value); sel.value = ""; } });
+      bindLayoutPointer();
+      window.addEventListener("resize", placeHandles);
+      deck.on("slidechanged", () => { select(null); hideFmt(); renderLayoutPanel(); });
       bar.addEventListener("click", (e) => {
         const b = e.target.closest("button[data-rv]");
         if (!b) return;
@@ -605,6 +1010,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         const act = b.dataset.rv;
         if (act === "save") save(); else if (act === "copy") copy(); else if (act === "build") askRebuild();
         else if (act === "folder") { if (folderState === "prompt") allowFolder(); else connectFolder(); }
+        else if (act === "layout") setLayout(!layout);
         else if (act === "discard") discard(); else if (act === "done") toggle();
       });
       confirmEl.addEventListener("click", (e) => {
@@ -616,11 +1022,13 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       q(panel, ".rv-comment").addEventListener("input", onCommentInput);
       const stage = deck.getSlidesElement();
       stage.addEventListener("input", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el, false); });
-      stage.addEventListener("focusout", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el, true); });
+      stage.addEventListener("focusin", (e) => { const el = e.target.closest && e.target.closest("[data-f][data-html]"); if (el && on && !layout) showFmt(el); });
+      stage.addEventListener("focusout", (e) => { const el = e.target.closest && e.target.closest("[data-f]"); if (el && on) record(el, true); setTimeout(() => { if (!fmt.contains(document.activeElement) && !(document.activeElement && document.activeElement.closest && document.activeElement.closest("[data-f][data-html]"))) hideFmt(); }, 0); });
       stage.addEventListener("keydown", (e) => {
         const el = e.target.closest && e.target.closest("[data-f]");
         if (!el || !on) return;
         if (e.key === "Escape" || (e.key === "Enter" && !isHtml(el))) { e.preventDefault(); el.blur(); }
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && isHtml(el)) { e.preventDefault(); showFmt(el); fmtAction("link"); }
         e.stopPropagation();   // Reveal ignores keys in editable fields, and so should the presenter's bindings
       });
       // Shift+B before Reveal sees it (B alone stays its blackout); Enter / Esc drive the confirm bar.
@@ -632,6 +1040,14 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         }
         if (typing(e.target)) { if (e.key === "Escape" && !e.target.closest("[data-f]")) e.target.blur(); return; }
         if (e.key === "B" && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); e.stopPropagation(); askRebuild(); }
+        if (on && !document.documentElement.classList.contains("rp-ov-on") && (e.key === "l" || e.key === "L") && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); e.stopPropagation(); setLayout(!layout); return; }
+        if (layout && selected) {   // the selection takes the arrows and Del; the deck keeps the rest
+          const step = e.shiftKey ? 10 : 1;
+          const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+          if (moves[e.key]) { e.preventDefault(); e.stopPropagation(); nudge(selected, ...moves[e.key]); renderLayoutPanel(); return; }
+          if ((e.key === "Delete" || e.key === "Backspace") && selected.dataset.bk === "item") { e.preventDefault(); e.stopPropagation(); deleteItem(selected); return; }
+          if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); select(null); return; }
+        }
       }, true);
     }
 
@@ -639,6 +1055,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       slides = Array.from(deck.getSlidesElement().querySelectorAll("section")).filter((s) => !s.querySelector("section"));
       if (stale) { staleDeck(); return; }
       for (const el of deck.getSlidesElement().querySelectorAll("section[data-key] [data-f]")) originals.set(el, valueOf(el));
+      snapshotLayout();
       restore();
       if (opsOut()) applyLive();   // the draft's hidden, deleted and reordered slides, as the deck
       renderBar();
