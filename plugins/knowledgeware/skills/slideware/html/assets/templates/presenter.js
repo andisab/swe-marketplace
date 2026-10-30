@@ -28,11 +28,14 @@
 //           ink for a slide as the base deck has it, the lane's colour for one the lane changes
 //           (the builder marks those with data-lane-changed).
 //           In a deck with review mode (review.js sets window.RevealReviewAPI) the overview
-//           also edits the deck's structure, pending a rebuild: every slide is shown, hidden
-//           ones under a mask; an eye on each thumbnail hides or shows it in this lane, an X
-//           deletes it (Undo brings it back), thumbnails drag and drop into a new order, and
-//           H, Delete and Shift+arrows do the same on the focused thumbnail. A Rebuild deck
-//           button beside Close turns solid while anything is queued.
+//           also edits the deck's structure while review mode is on (e, or the Edit button
+//           beside Close): every slide is shown, hidden ones under a mask; an eye on each
+//           thumbnail hides or shows it in this lane, an X deletes it (Undo brings it back),
+//           thumbnails drag and drop into a new order, and h, del and shift+arrows do the
+//           same on the focused thumbnail. review.js applies each edit to the live deck at
+//           once (sections re-ordered, hidden ones detached, Reveal re-synced) and the
+//           source catches up at the rebuild; a Rebuild deck button turns solid while
+//           anything is queued. The presenter window keeps the built order until then.
 //   Navigation pill: a floating bar at the bottom (previous, the slide number, next, the
 //           current section's name, the overview, fullscreen, and an i that lists every
 //           key on hover and pins the list on click), in the deck's tokens. Shown for
@@ -227,7 +230,8 @@ html.rp-ov-on .rp-ov { display: block; }
 .rp-ov-body > .rp-ov-grid:first-child { margin-top: 22px; }
 .rp-ov-kick { flex: none; font-family: ${MONO}; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-ov-count { flex: none; margin-left: auto; font-family: ${MONO}; font-size: 11px; letter-spacing: .06em; color: var(--color-ink-faint, #9E9E97); }
-.rp-ov button.rp-ov-rebuild { margin-right: 8px; transition: background .15s, color .15s, border-color .15s; }
+.rp-ov button.rp-ov-rebuild, .rp-ov button.rp-ov-edit { margin-right: 8px; transition: background .15s, color .15s, border-color .15s; }
+html.rv-on .rp-ov button.rp-ov-edit { background: var(--color-ink, #1A1A18); border-color: var(--color-ink, #1A1A18); color: var(--color-bg, #FFFFFF); }
 html.rv-queued .rp-ov button.rp-ov-rebuild { background: var(--color-success, #3F8A4F); border-color: var(--color-success, #3F8A4F); color: #FFFFFF; }
 html.rv-queued .rp-ov button.rp-ov-rebuild:hover { filter: brightness(1.08); }
 .rp-ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px 16px; }
@@ -239,14 +243,17 @@ html.rv-queued .rp-ov button.rp-ov-rebuild:hover { filter: brightness(1.08); }
 .rp-ov-th { all: unset; display: block; min-width: 0; cursor: pointer; }
 .rp-ov-cell[draggable] .rp-ov-th { cursor: grab; }
 /* A hidden slide sits under a mask in the panel's own background, so it reads as dimmed in light and dark styles alike. */
-.rp-ov-mask { display: none; position: absolute; inset: 0; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--color-surface-alt, var(--color-bg, #F4F4F2)) 74%, transparent); color: var(--color-ink-muted, #6B6B63); }
-.rp-ov-mask svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rp-ov-mask { display: none; position: absolute; inset: 0; z-index: 20; align-items: center; justify-content: center;   /* above Reveal's sections (z-index 10) in the copy */
+  background: color-mix(in srgb, var(--color-ink, #1A1A18) 42%, transparent); }   /* ink-tinted, so it dims a light slide and lifts a dark one */
+.rp-ov-mask span { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px;
+  background: var(--color-surface, #FFFFFF); color: var(--color-ink, #1A1A18); border: 1px solid var(--color-border, #E3E3DF);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .22); font: 600 11px ${MONO}; letter-spacing: .12em; text-transform: uppercase; }
+.rp-ov-mask svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .rp-ov-cell.rp-hidden .rp-ov-mask { display: flex; }
 .rp-ov-cell.rp-hidden .rp-ov-cap { color: var(--color-ink-muted, #6B6B63); }
 .rp-ov-cell.rp-deleted .rp-ov-box { opacity: .3; filter: grayscale(1); }
 .rp-ov-cell.rp-deleted .rp-ov-cap { color: var(--color-ink-muted, #6B6B63); text-decoration: line-through; }
-.rp-ov-tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s; }
+.rp-ov-tools { position: absolute; top: 6px; right: 6px; z-index: 22; display: flex; gap: 4px; opacity: 0; transition: opacity .12s; }
 .rp-ov-cell:hover .rp-ov-tools, .rp-ov-cell:focus-within .rp-ov-tools, .rp-ov-cell.rp-hidden .rp-ov-tools, .rp-ov-cell.rp-deleted .rp-ov-tools { opacity: 1; }
 .rp-ov-tools button { all: unset; cursor: pointer; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
   background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); color: var(--color-ink, #1A1A18); box-shadow: 0 2px 8px rgba(0, 0, 0, .14); }
@@ -267,7 +274,7 @@ html.rv-queued .rp-ov button.rp-ov-rebuild:hover { filter: brightness(1.08); }
 .rp-ov-lane select { font: 500 12px ${SANS}; color: var(--color-ink, #1A1A18); background: var(--color-surface, #FFFFFF); border: 1px solid var(--color-border, #E3E3DF); border-radius: var(--radius, 8px); padding: 5px 8px; }
 .rp-ov-lane select:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 1px; }
 .rp-ov-swatch { width: 12px; height: 12px; border-radius: 50%; background: var(--rp-lane, var(--color-ink, #1A1A18)); box-shadow: 0 0 0 1px var(--color-border, #E3E3DF); }
-.rp-ov-cell.rp-laned .rp-ov-box::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--rp-lane, var(--color-ink, #1A1A18)); }
+.rp-ov-cell.rp-laned .rp-ov-box::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; z-index: 21; background: var(--rp-lane, var(--color-ink, #1A1A18)); }
 
 /* Navigation pill: the deck's surface at 92%, its ink, border and accent, so a dark style gives a dark pill. */
 .rp-hud { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 4px; padding: 5px;
@@ -886,6 +893,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         const th = e.target.closest(".rp-ov-th");
         if (th) { if (+th.dataset.i >= 0) { closeOverview(); goTo(slides[+th.dataset.i]); } }
         else if (e.target.closest(".rp-ov-rebuild")) { if (root.RevealReviewAPI) root.RevealReviewAPI.rebuild(); }
+        else if (e.target.closest(".rp-ov-edit")) document.dispatchEvent(new CustomEvent("rp-review-toggle"));
         else if (e.target.closest(".rp-ov-close")) closeOverview();
       });
       // Drag and drop between thumbnails: dropping on the left half of a thumbnail puts the
@@ -918,7 +926,12 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       });
       ov.addEventListener("dragend", () => { dragKey = null; clearDrop(); ov.querySelectorAll(".rp-dragging").forEach((c) => c.classList.remove("rp-dragging")); });
       new ResizeObserver(scaleOverview).observe(ov);   // window resizes, and the first display
-      document.addEventListener("rp-review-change", () => { if (overviewOpen()) refillOverview(null); });   // review.js restored or dropped its edits
+      // review.js changed the live deck (an edit applied, a draft restored or dropped, the mode
+      // toggled): re-read the slides, renumber the running footer, redraw the overview if open.
+      document.addEventListener("rp-review-change", (e) => {
+        refreshSlides();
+        if (overviewOpen()) refillOverview(e.detail && e.detail.key);
+      });
       document.body.appendChild(ov);
     }
     // ── Structural edits in the overview (review mode only) ──
@@ -929,24 +942,33 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       const at = keys.indexOf(targetKey);
       if (at < 0) return;
       keys.splice(before ? at : at + 1, 0, key);
-      api.reorder(keys);
-      refillOverview(key);
+      api.reorder(keys);   // review.js applies it to the deck and announces the change; the overview redraws then
+    }
+    // The live slides as Reveal has them now (review.js re-orders and detaches sections), with
+    // the running footer's page counters renumbered to match.
+    function refreshSlides() {
+      slides = Array.from(deck.getSlidesElement().querySelectorAll("section")).filter((s) => !s.querySelector("section"));
+      notes = slides.map(readNote);
+      cur = Math.max(0, slides.indexOf(deck.getCurrentSlide()));
+      slides.forEach((s, i) => { const pg = s.querySelector(".chrome-bot .ch-pg"); if (pg) pg.textContent = pad(i + 1) + " / " + pad(slides.length); });
+      renderHud();
+      renderDrawer();
     }
     function structural(act, key) {
       const api = root.RevealReviewAPI;
       if (!api || !key || !editing()) return;
       const s = api.slides().find((x) => x.key === key);
       if (!s) return;
-      if (act === "hide") { if (api.setHidden(key, !s.hidden) === false) return; }
-      else if (act === "delete") { if (api.setDeleted(key, true) === false) return; }
+      if (act === "hide") api.setHidden(key, !s.hidden);
+      else if (act === "delete") api.setDeleted(key, true);
       else if (act === "undo") api.setDeleted(key, false);
       else if (act === "earlier" || act === "later") {
         const keys = api.slides().map((x) => x.key), i = keys.indexOf(key), j = act === "earlier" ? i - 1 : i + 1;
         if (j < 0 || j >= keys.length) return;
         [keys[i], keys[j]] = [keys[j], keys[i]];
         api.reorder(keys);
-      } else return;
-      refillOverview(key);
+      }
+      // review.js applies the change to the deck and announces it; the overview redraws on that event.
     }
     function refillOverview(focusKey) {
       ovFilled = false;
@@ -1009,7 +1031,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         if (api) {
           const mask = document.createElement("div");
           mask.className = "rp-ov-mask";
-          mask.innerHTML = EYE_OFF;
+          mask.innerHTML = "<span>" + EYE_OFF + "Hidden</span>";
           th.querySelector(".rp-ov-box").appendChild(mask);
         }
         if (edit) {
@@ -1033,6 +1055,11 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       ov.querySelector(".rp-ov-sub").textContent = n + " slides" + (groups ? " in " + groups + (groups === 1 ? " section" : " sections") : "") +
         ". Click a slide to go to it; esc closes." + (edit ? " Drag to reorder; the eye hides, the X deletes; changes apply at the next rebuild." : api ? " Press e to reorder, hide or delete slides." : "");
       if (api && !ov.querySelector(".rp-ov-rebuild")) {
+        const e = document.createElement("button");
+        e.type = "button";
+        e.className = "rp-ov-close rp-ov-edit";
+        e.title = "Review mode: reorder, hide and delete slides here, edit text in the deck (e)";
+        ov.firstChild.insertBefore(e, ov.querySelector(".rp-ov-close"));
         const b = document.createElement("button");
         b.type = "button";
         b.className = "rp-ov-close rp-ov-rebuild";
@@ -1040,6 +1067,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
         b.textContent = "Rebuild deck";
         ov.firstChild.insertBefore(b, ov.querySelector(".rp-ov-close"));
       }
+      const editBtn = ov.querySelector(".rp-ov-edit");
+      if (editBtn) editBtn.textContent = edit ? "Done" : "Edit";
       ovFilled = true;
     }
     function scaleOverview() {
@@ -1079,6 +1108,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       e.stopPropagation();
       if (e.key === "Escape" || e.key === "o" || e.key === "O") { e.preventDefault(); closeOverview(); return; }
       if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // the lane switcher keeps its own keys
+      if ((e.key === "e" || e.key === "E") && root.RevealReviewAPI) { e.preventDefault(); document.dispatchEvent(new CustomEvent("rp-review-toggle")); return; }   // review mode toggles here too
       const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
       if (at >= 0 && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ths[at].click(); return; }
       if (at >= 0 && editing()) {   // structural edits on the focused thumbnail, in review mode only

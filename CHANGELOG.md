@@ -13,6 +13,12 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 - Each plugin's `plugin.json` now carries the fields Anthropic's directory reads for a listing: `icon` (the `icon.png` beside the manifest), `documentationUrl` (the plugin's README), `supportUrl` (this repository's issues), `privacyPolicyUrl` (the new [PRIVACY.md](./PRIVACY.md)) and `termsOfServiceUrl` (the MIT license). The catalog can't hold them directly, since `claude plugin validate` warns on each in a marketplace entry, so they live under the entry's free-form `metadata.directory` and the generator hoists them into `plugin.json`. No plugin version changes for this: Claude Code ignores the fields, so there is nothing for an installed copy to pick up.
 - [PRIVACY.md](./PRIVACY.md) states what the plugins collect (nothing), what leaves the machine and to whom (the model providers you already use, plus knowledgeware's and research-team's documented fetches), and where output stays.
 
+### knowledgeware 1.12.4
+
+- **Structural edits apply to the live deck at once.** Hiding, deleting or reordering slides in the overview now changes the deck you're looking at (sections re-appended in the pending order, hidden and deleted ones detached, Reveal re-synced on the same slide), with the running footer's page counters renumbered, so the deck and the overview agree before the rebuild writes it into `slides.js`. Discard puts the built order back. The presenter window keeps the built order until the rebuild.
+- **Review mode toggles from the overview too:** `e` works there, and an Edit / Done button sits beside Rebuild deck.
+- **Hidden slides are unmistakable in the overview:** an ink-tinted overlay (it dims a light slide and lifts a dark one) with a centred "Hidden" pill, instead of a faint wash and an icon the slide's own content could hide.
+
 ### knowledgeware 1.12.3
 
 - **The deck re-fits above the notes drawer.** With `N` open, the deck gives up the drawer's height (a `--rp-reserve-bottom` property on `<html>`, kept current as the notes change length per slide) and Reveal rescales the slide into the space above it, so long notes never cover the slide. Review mode's panel reserves its height the same way, and the drawer reclaims its own when review mode closes.

@@ -16,12 +16,14 @@
 //            `node build-deck.js .` runs, and the page reloads on the same slide. Over file://
 //            or a plain static server there is nothing to run, so the bar says how to save.
 //
-// The overview (O) gains structural edits while the deck has review mode: an eye on each
-// thumbnail hides or shows the slide (in the lane being viewed), an X deletes it (Undo brings it
-// back), thumbnails drag and drop into a new order, and a Rebuild deck button beside Close turns
-// solid when anything is queued. Keys on a focused thumbnail: H, Delete, Shift+arrows. The deck
-// itself doesn't change until the rebuild; the overview shows the pending state. presenter.js
-// draws all of it through window.RevealReviewAPI, which this plugin provides.
+// The overview (o) gains structural edits while review mode is on: an eye on each thumbnail
+// hides or shows the slide (in the lane being viewed), an X deletes it (Undo brings it back),
+// thumbnails drag and drop into a new order, and a Rebuild deck button beside Close turns solid
+// when anything is queued. Keys on a focused thumbnail: h, del, shift+arrows. Every such edit is
+// applied to the live deck at once (applyLive: sections re-appended in the pending order, hidden
+// and deleted ones detached, Reveal re-synced), so the deck and the overview agree; slides.js
+// catches up at the rebuild. presenter.js draws the overview through window.RevealReviewAPI,
+// which this plugin provides, and learns of changes through the rp-review-change event.
 //
 // Edits live in this browser (localStorage, per deck file and per build) until saved, so a
 // closed tab loses nothing; a draft from an older build is dropped, since its text may be gone.
@@ -238,6 +240,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       persist();
       renderBar();
       renderPanel();
+      applyLive();
       changed();
       toast("Edits dropped");
     }
@@ -261,6 +264,21 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         [["cancel", "Close", "esc"]], null);
       return true;
     }
+    // Make the live deck match the pending state: the sections Reveal shows are the pending
+    // order minus hidden and deleted ones, re-appended in that order, then Reveal re-synced and
+    // kept on the same slide. The built order comes back the same way (discard), and the source
+    // is rewritten at the rebuild.
+    function applyLive() {
+      const stage = deck.getSlidesElement(), current = deck.getCurrentSlide();
+      const keep = pending().filter((s) => !s.deleted && !s.hidden).map((s) => s.el);
+      for (const s of all) { if (s.el.parentNode === stage) stage.removeChild(s.el); }
+      for (const el of keep) { el.removeAttribute("data-visibility"); stage.appendChild(el); }
+      for (const s of all) if (!keep.includes(s.el)) s.el.setAttribute("data-visibility", "hidden");
+      deck.sync();
+      const at = keep.indexOf(current);
+      deck.slide(at >= 0 ? at : Math.min(deck.getIndices().h, Math.max(keep.length - 1, 0)));
+    }
+    function mutated(key) { persist(); renderBar(); applyLive(); changed(key); }
     const api = {
       lane: () => cfg.lane || null,
       slides: pending,
@@ -269,21 +287,21 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         if (!s) return false;
         if (laneNeedsKey(key)) return false;
         if (hidden === s.hidden) delete ops.hidden[key]; else ops.hidden[key] = hidden;
-        persist(); renderBar();
+        mutated(key);
         return true;
       },
       setDeleted(key, deleted) {
         if (deleted && laneNeedsKey(key)) return false;
         ops.deleted = ops.deleted.filter((k) => k !== key);
         if (deleted) ops.deleted.push(key);
-        persist(); renderBar();
+        mutated(key);
         return true;
       },
       reorder(keys) {
         const built = builtOrder();
-        if (keys.length !== built.length || keys.some((k) => !built.includes(k))) return;
+        if (keys.length !== built.length || new Set(keys).size !== built.length || keys.some((k) => !built.includes(k))) return;
         ops.order = keys.join("\n") === built.join("\n") ? null : keys.slice();
-        persist(); renderBar();
+        mutated(keys.find((k, i) => (ops.order || built)[i] !== built[i]) || null);
       },
       queued: () => count().any,
       rebuild: askRebuild,
@@ -499,12 +517,14 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       if (stale) { staleDeck(); return; }
       for (const el of deck.getSlidesElement().querySelectorAll("section[data-key] [data-f]")) originals.set(el, valueOf(el));
       restore();
+      if (opsOut()) applyLive();   // the draft's hidden, deleted and reordered slides, as the deck
       renderBar();
       deck.on("slidechanged", renderPanel);
       detectServer();
+      document.addEventListener("rp-review-toggle", toggle);   // the overview's Edit button and its e key
       changed();   // an overview opened before the draft was restored redraws
     }
-    function changed() { document.dispatchEvent(new CustomEvent("rp-review-change")); }
+    function changed(key) { document.dispatchEvent(new CustomEvent("rp-review-change", { detail: { key: key || null } })); }
 
     function init(reveal) {
       deck = reveal;
