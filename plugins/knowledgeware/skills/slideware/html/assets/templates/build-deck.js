@@ -144,7 +144,7 @@ function themeCss({ palette: P, type: T, layout: L }) {
 /* Reveal shows the current slide with an inline display taken from its display
    option, set to flex in Reveal.initialize so layouts can center vertically. */
 .reveal .slides section {
-  padding: var(--margin);
+  padding: var(--pad, var(--margin));
   box-sizing: border-box;
   height: 100%;
   flex-direction: column;
@@ -239,8 +239,8 @@ function themeCss({ palette: P, type: T, layout: L }) {
 /* ── Layout: two-column ─────────────────────────────────────── */
 .reveal section.layout-two-column .columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2em;
+  grid-template-columns: var(--ratio, 1fr 1fr);
+  gap: var(--gap, 2em);
   margin-top: 1em;
 }
 
@@ -248,7 +248,7 @@ function themeCss({ palette: P, type: T, layout: L }) {
 .reveal section.layout-card-row .cards {
   display: grid;
   grid-template-columns: repeat(var(--card-count, 3), 1fr);
-  gap: 1.2em;
+  gap: var(--gap, 1.2em);
   margin-top: 1em;
 }
 .reveal section.layout-card-row .card {
@@ -335,7 +335,7 @@ function themeCss({ palette: P, type: T, layout: L }) {
   padding-left: 1.5em;
 }
 .reveal section.layout-bullets li {
-  margin-bottom: 0.6em;
+  margin-bottom: var(--gap, 0.6em);
 }
 
 /* ── Layout: image-caption ─────────────────────────────────── */
@@ -346,7 +346,7 @@ function themeCss({ palette: P, type: T, layout: L }) {
   justify-content: center;
 }
 .reveal section.layout-image-caption img {
-  max-width: 80%;
+  max-width: var(--scale, 80%);
   max-height: 75%;
   object-fit: contain;
   border-radius: var(--radius);
@@ -375,6 +375,11 @@ function themeCss({ palette: P, type: T, layout: L }) {
 .reveal .chrome-bot .ch-logo { height: 13px; width: auto; opacity: 0.85; }
 .reveal .chrome-bot .ch-logo + .ch-pg { margin-left: 14px; }
 .reveal .chrome-bot .ch-pg { letter-spacing: 0.08em; color: var(--color-ink-body); font-variant-numeric: tabular-nums; }
+
+/* Blocks (data-b) take a nudge from a slide's tweaks: --dx / --dy as a relative offset (not a
+   transform, which the entrance motion owns) and, on media, a width. Review mode's layout mode writes them. */
+.reveal .slides section [data-b] { position: relative; left: var(--dx, 0px); top: var(--dy, 0px); }
+.reveal .slides section [data-b][data-w] { width: var(--w); max-width: var(--w); }
 
 /* Entrance motion: [data-a] elements animate in each time their slide becomes current,
    staggered by --i. Off in print, for reduced-motion viewers, and in the presenter view. */
@@ -406,50 +411,52 @@ html.reveal-print .reveal [data-a] { animation: none !important; }
 // ── Slide HTML renderers (one per layout) ──────────────────────────
 // Every text field carries data-f="<field>" (array items as "cards.1.body"), HTML-bearing fields
 // also data-html, and the section data-key: review.js edits by these, and build-deck folds the
-// edits back into slides.js by the same names. Cheap, so every deck has them.
+// edits back into slides.js by the same names. Structural blocks carry data-b="<block>" with
+// data-bk = block | item | media, and a slide's `tweaks` land on them as --dx / --dy / --w (see
+// `b` below). Cheap, so every deck has them.
 // `a(i, kind)` adds entrance motion to a block (data-a, stagger position i) when the slide
 // has motion on, and nothing otherwise.
 const f = (name, html = false) => ` data-f="${name}"${html ? " data-html=\"\"" : ""}`;
 const renderers = {
-  title(s, a) {
+  title(s, a, b) {
     return `<section class="layout-title">
   <h1${a(0)}${f("title")}>${esc(s.title)}</h1>
   ${s.subtitle ? `<p class="subtitle"${a(1)}${f("subtitle")}>${esc(s.subtitle)}</p>` : ""}
   ${s.footer ? `<div class="footer"${a(2, "fade")}${f("footer")}>${esc(s.footer)}</div>` : ""}
 </section>`;
   },
-  section(s, a) {
+  section(s, a, b) {
     return `<section class="layout-section">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <h2${a(1)}${f("title")}>${esc(s.title)}</h2>
 </section>`;
   },
-  "two-column"(s, a) {
+  "two-column"(s, a, b) {
     return `<section class="layout-two-column">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
-  <div class="columns">
-    <div class="col-left"${a(2)}${f("left", true)}>${s.left || ""}</div>
-    <div class="col-right"${a(3)}${f("right", true)}>${s.right || ""}</div>
+  <div class="columns"${b("columns", "block")}>
+    <div class="col-left"${a(2, "up", "left", "block")}${f("left", true)}>${s.left || ""}</div>
+    <div class="col-right"${a(3, "up", "right", "block")}${f("right", true)}>${s.right || ""}</div>
   </div>
 </section>`;
   },
-  "card-row"(s, a) {
+  "card-row"(s, a, b) {
     const cards = (s.cards || []).map((c, i) =>
-      `<div class="card"${a(2 + i)}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
+      `<div class="card"${a(2 + i, "up", `cards.${i}`, "item")}><h4${f(`cards.${i}.heading`)}>${esc(c.heading)}</h4><p${f(`cards.${i}.body`, true)}>${c.body || ""}</p></div>`
     ).join("\n    ");
     return `<section class="layout-card-row" style="--card-count: ${s.cards.length};">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
-  <div class="cards">
+  <div class="cards"${b("cards", "block")}>
     ${cards}
   </div>
 </section>`;
   },
-  bigNumber(s, a) {
+  bigNumber(s, a, b) {
     return `<section class="layout-bignumber">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
-  <div class="figure-row"${a(1, "pop")}>
+  <div class="figure-row"${a(1, "pop", "figure", "block")}>
     <div class="figure"${f("figure")}>${esc(s.figure)}</div>
     ${s.unit ? `<div class="unit"${f("unit")}>${esc(s.unit)}</div>` : ""}
   </div>
@@ -457,25 +464,25 @@ const renderers = {
   ${s.context ? `<div class="context"${a(3)}${f("context")}>${esc(s.context)}</div>` : ""}
 </section>`;
   },
-  quote(s, a) {
+  quote(s, a, b) {
     return `<section class="layout-quote">
-  <blockquote${a(0, "fade")}${f("quote")}>${esc(s.quote)}</blockquote>
+  <blockquote${a(0, "fade", "quote", "block")}${f("quote")}>${esc(s.quote)}</blockquote>
   ${s.attribution ? `<div class="attribution"${a(1)}${f("attribution")}>${esc(s.attribution)}</div>` : ""}
 </section>`;
   },
-  bullets(s, a) {
-    const items = (s.items || []).map((item, i) => `<li${a(2 + i)}${f(`items.${i}`, true)}>${item}</li>`).join("\n    ");
+  bullets(s, a, b) {
+    const items = (s.items || []).map((item, i) => `<li${a(2 + i, "up", `items.${i}`, "item")}${f(`items.${i}`, true)}>${item}</li>`).join("\n    ");
     return `<section class="layout-bullets">
   ${s.kicker ? `<div class="kicker"${a(0)}${f("kicker")}>${esc(s.kicker)}</div>` : ""}
   <h3${a(1)}${f("title")}>${esc(s.title)}</h3>
-  <ul>
+  <ul${b("items", "block")}>
     ${items}
   </ul>
 </section>`;
   },
-  "image-caption"(s, a) {
+  "image-caption"(s, a, b) {
     return `<section class="layout-image-caption">
-  <img src="${s.src}" alt="${esc(s.alt || "")}"${a(0, "fade")}/>
+  <img src="${s.src}" alt="${esc(s.alt || "")}"${a(0, "fade", "image", "media")}/>
   ${s.caption ? `<div class="caption"${a(1)}${f("caption")}>${esc(s.caption)}</div>` : ""}
 </section>`;
   },
@@ -515,12 +522,47 @@ function footerHtml(chrome) {
 // `key` is the slide's address for review edits: its own `key`, else "s<n>" by position in slides.js.
 function slideKey(slide, index) { return slide.key || `s${index + 1}`; }
 // `laneChanged` marks a slide a lane overlay changed (data-lane-changed), for the overview's lane bar.
+// The layout knobs a slide may set (review mode's layout mode writes them): `ratio` "40/60" for the
+// two columns, `gap` and `pad` in px, `scale` in percent of the slide width for the image. They
+// become custom properties on the section that the layout CSS reads, with its own defaults.
+const KNOBS = ["ratio", "gap", "pad", "scale"];
+function knobStyle(slide) {
+  const parts = [];
+  if (slide.ratio) { const [l, r] = slide.ratio.split("/"); parts.push(`--ratio: ${l}fr ${r}fr`); }
+  if (slide.gap != null) parts.push(`--gap: ${slide.gap}px`);
+  if (slide.pad != null) parts.push(`--pad: ${slide.pad}px`);
+  if (slide.scale != null) parts.push(`--scale: ${slide.scale}%`);
+  return parts.join("; ");
+}
+// A block's tweak as inline custom properties: dx / dy in px, w in percent (media only).
+function tweakStyle(t) {
+  const parts = [];
+  if (t.dx) parts.push(`--dx: ${t.dx}px`);
+  if (t.dy) parts.push(`--dy: ${t.dy}px`);
+  if (t.w) parts.push(`--w: ${t.w}%`);
+  return parts.join("; ");
+}
 function renderSlide(slide, motion = false, chrome = null, key = null, laneChanged = false) {
   const fn = renderers[slide.layout];
   if (!fn) throw new Error(`Unknown layout: "${slide.layout}". Supported: ${Object.keys(renderers).join(", ")}`);
   const moving = slide.motion != null ? !!slide.motion : motion;
-  const a = (i, kind = "up") => (moving ? ` data-a="${kind}" style="--i: ${i}"` : "");
-  let html = fn(slide, a);
+  const tweaks = slide.tweaks || {};
+  // b(name, kind): the block's address and kind, plus its tweak. a(i, kind, name, bkind): entrance
+  // motion and, when a block name is given, its address too, merged into one style attribute.
+  const b = (name, bkind) => {
+    const t = tweaks[name], st = t ? tweakStyle(t) : "";
+    return ` data-b="${name}" data-bk="${bkind}"${t && t.w ? ' data-w=""' : ""}${st ? ` style="${st}"` : ""}`;
+  };
+  const a = (i, kind = "up", name = null, bkind = "block") => {
+    const motionAttr = moving ? ` data-a="${kind}"` : "";
+    const styles = [moving ? `--i: ${i}` : "", name && tweaks[name] ? tweakStyle(tweaks[name]) : ""].filter(Boolean).join("; ");
+    const block = name ? ` data-b="${name}" data-bk="${bkind}"${tweaks[name] && tweaks[name].w ? ' data-w=""' : ""}` : "";
+    return `${motionAttr}${block}${styles ? ` style="${styles}"` : ""}`;
+  };
+  let html = fn(slide, a, b);
+  // The knobs ride on the section as custom properties, merged into any style the layout set.
+  const knobs = knobStyle(slide);
+  if (knobs) html = /^<section class="[^"]*" style="/.test(html) ? html.replace(/^(<section class="[^"]*" style=")/, `$1${knobs}; `) : html.replace(/^(<section class="[^"]*")/, `$1 style="${knobs}"`);
   // data-key-auto says the key is positional (the slide has no `key` of its own), which a lane overlay can't address.
   if (key) html = html.replace(/^(<section class="[^"]*")/, `$1 data-key="${esc(key)}"${slide.key ? "" : ' data-key-auto=""'}${laneChanged ? ' data-lane-changed=""' : ""}`);
   // Reveal removes hidden slides when the deck loads, so the presenter doesn't count them either.
@@ -592,7 +634,18 @@ function readDeck(spec) {
   if (deck.lane != null && (typeof deck.lane !== "string" || !deck.lane.trim())) throw new Error("lane must be the base deck's name, a string");
   if (deck.review != null && typeof deck.review !== "boolean") throw new Error(`review must be true or false, got "${deck.review}"`);
   if (deck.spec != null && (typeof deck.spec !== "string" || !deck.spec.trim())) throw new Error(`spec must be the path of the deck's spec page, got "${deck.spec}"`);
-  for (const [i, s] of deck.slides.entries()) if (s.teaches != null && (typeof s.teaches !== "string" || !s.teaches.trim())) throw new Error(`slide ${i + 1}: teaches must name a section id in the spec, got "${s.teaches}"`);
+  for (const [i, s] of deck.slides.entries()) {
+    if (s.teaches != null && (typeof s.teaches !== "string" || !s.teaches.trim())) throw new Error(`slide ${i + 1}: teaches must name a section id in the spec, got "${s.teaches}"`);
+    if (s.ratio != null && !/^\d+\/\d+$/.test(String(s.ratio))) throw new Error(`slide ${i + 1}: ratio must look like "40/60", got "${s.ratio}"`);
+    for (const k of ["gap", "pad", "scale"]) if (s[k] != null && !(typeof s[k] === "number" && s[k] >= 0)) throw new Error(`slide ${i + 1}: ${k} must be a number, got "${s[k]}"`);
+    if (s.tweaks != null) {
+      if (typeof s.tweaks !== "object" || Array.isArray(s.tweaks)) throw new Error(`slide ${i + 1}: tweaks must be an object of blocks`);
+      for (const [name, t] of Object.entries(s.tweaks)) {
+        if (!t || typeof t !== "object") throw new Error(`slide ${i + 1}: tweaks["${name}"] must be an object`);
+        for (const k of Object.keys(t)) if (!["dx", "dy", "w"].includes(k) || typeof t[k] !== "number") throw new Error(`slide ${i + 1}: tweaks["${name}"].${k} must be a number (dx, dy or w)`);
+      }
+    }
+  }
   const keys = deck.slides.map(s => s.key).filter(k => k != null);
   if (keys.some(k => typeof k !== "string" || !k)) throw new Error("a slide's key must be a non-empty string");
   const dup = keys.find((k, i) => keys.indexOf(k) !== i);
@@ -617,7 +670,7 @@ function readDeck(spec) {
 //     color: "#2F7DE1" }                               // optional: the lane's colour in the overview
 // The lane's id is the overlay's file name without .js, and its output is index-<id>.html.
 // Replacements skip `layout`, `key`, `src`, `cue` and `motion`, so they change words, not structure.
-const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden", "teaches", "spec"]);
+const REPLACE_SKIP = new Set(["layout", "key", "src", "cue", "motion", "hidden", "teaches", "spec", "tweaks", "ratio"]);
 function applyLane(slides, overlay, id) {
   if (!overlay || typeof overlay !== "object") throw new Error(`lane ${id}: the overlay must export an object`);
   const out = structuredClone(slides);
@@ -766,6 +819,13 @@ ${inlineScript(reveal.js)}
 //     slides: { "<key>": { title: { from: "old", to: "new" }, "cards.1.body": { from, to }, notes: { from, to },
 //                          comment: "a note for whoever edits the deck next" } },
 //     deck: { hidden: { "<key>": true | false }, deleted: ["<key>"], order: ["<key>", …] } }
+// A slide entry may also carry layout edits from review mode's layout mode:
+//     knobs: { ratio: { from: null | "50/50", to: "40/60" }, gap: { from, to }, … }   // to: null removes the field
+//     tweaks: { from: null | {…}, to: { "cards.1": { dx: 12, dy: -8 } } }            // the whole object; to: null removes it
+//     arrays: { cards: [0, 2] }                                                      // kept original indices, in the new order
+// They fold into the slide's object literal (set or insert the field, replace `tweaks`, rewrite the
+// array's items), text edits on the same slide first; in a lane, knobs and tweaks go to the overlay
+// by the slide's own key and array edits are layered.
 // Keys are the slides' own `key`s, else "s<n>" by position in slides.js. Before every build the
 // edits are folded into the source: each `from` is looked up as a string literal in slides.js (or
 // in the lane's overlay when the edits were made in a lane) and rewritten to `to`, with the same
@@ -1015,6 +1075,125 @@ function foldLaneHidden(file, hidden) {
     throw new Error(`folding hidden slides into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold it by hand.`);
   }
 }
+// Set, replace or (literal undefined) remove a top-level entry of the object literal at `open`.
+function setEntryIn(src, open, name, literalText) {
+  const { items } = splitTopLevel(src, open);
+  const at = items.findIndex(x => entryKey(src, x) === name), it = items[at];
+  if (it) {
+    if (literalText === undefined) {
+      const prev = items[at - 1];
+      const from = it.comma >= 0 || !prev ? it.leadStart : prev.comma, to = it.comma >= 0 ? it.comma + 1 : it.end;
+      return src.slice(0, from) + src.slice(to);
+    }
+    const colon = src.indexOf(":", it.start);
+    return src.slice(0, colon + 1) + " " + literalText + src.slice(it.end);
+  }
+  if (literalText === undefined) return src;
+  const key = isIdent(name) ? name : JSON.stringify(name);
+  const last = items[items.length - 1];   // a new entry goes last, so key and layout stay first
+  if (!last) return src.slice(0, open + 1) + ` ${key}: ${literalText} ` + src.slice(open + 1);
+  return src.slice(0, last.end) + `, ${key}: ${literalText}` + src.slice(last.end);
+}
+// Rewrite the array entry `name` of the object literal at `open` to hold the items at `kept`
+// (original indices, in the new order), each with the comments above it.
+function keepArrayItems(src, open, name, kept) {
+  const { items } = splitTopLevel(src, open);
+  const it = items.find(x => entryKey(src, x) === name);
+  if (!it) throw new Error(`the slide has no ${name}`);
+  const aOpen = src.indexOf("[", it.start);
+  if (aOpen < 0 || aOpen > it.end) throw new Error(`${name} isn't an array literal`);
+  const { close, items: els } = splitTopLevel(src, aOpen);
+  if (!Array.isArray(kept) || kept.some(i => !(Number.isInteger(i) && i >= 0 && i < els.length))) throw new Error(`${name}: an index is out of range`);
+  const last = els[els.length - 1];
+  const tail = last ? src.slice(last.comma >= 0 ? last.comma + 1 : last.end, close) : src.slice(aOpen + 1, close);
+  // An item keeps the comment above it; the whitespace that frames it comes from the position it
+  // lands in (never that position's old comment), so the list's layout holds.
+  const lead = (el) => src.slice(el.leadStart, el.start);
+  const frame = (el) => { const l = lead(el); return l.includes("\n") ? l.slice(0, l.indexOf("\n") + 1).replace(/[^\n]/g, "") + l.slice(l.lastIndexOf("\n") + 1) : l.replace(/\/\*.*?\*\//g, ""); };
+  const body = kept.map((i, pos) => { const own = lead(els[i]); return (own.trim() ? own : frame(els[Math.min(pos, els.length - 1)])) + src.slice(els[i].start, els[i].end) + ","; }).join("");
+  return src.slice(0, aOpen + 1) + body + tail + src.slice(close);
+}
+// The slide objects of slides.js's list, in order, or null when the list isn't plain object literals.
+function slideItems(src, count) {
+  const open = slidesArray(src);
+  if (open < 0) return null;
+  const { items } = splitTopLevel(src, open);
+  if (items.length !== count) return null;
+  for (const it of items) if (src[it.start] !== "{" || matchBracket(src, it.start) !== it.end - 1) return null;
+  return items;
+}
+// Fold layout edits into slides.js: per slide (by key position), knobs set or removed, `tweaks`
+// replaced whole, arrays rewritten to their kept items. Verified by re-reading the file.
+function foldSlideFields(file, keys, perSlide) {
+  const original = fs.readFileSync(file, "utf8");
+  const items = slideItems(original, keys.length);
+  if (!items) throw new Error("slides.js doesn't export a plain list of slide objects");
+  const work = Object.entries(perSlide).map(([key, ops]) => ({ idx: keys.indexOf(key), key, ops })).filter(w => w.idx >= 0).sort((x, y) => y.idx - x.idx);
+  let src = original;
+  for (const { idx, ops } of work) {   // from the last slide back, so earlier offsets stay valid
+    const it = items[idx];
+    let text = original.slice(it.start, it.end);
+    for (const [name, kept] of Object.entries(ops.arrays || {})) text = keepArrayItems(text, 0, name, kept);
+    if (ops.tweaks) text = setEntryIn(text, 0, "tweaks", ops.tweaks.to && Object.keys(ops.tweaks.to).length ? JSON.stringify(ops.tweaks.to) : undefined);
+    for (const [name, v] of Object.entries(ops.knobs || {})) text = setEntryIn(text, 0, name, v.to == null ? undefined : JSON.stringify(v.to));
+    src = src.slice(0, it.start) + text + src.slice(it.end);
+  }
+  fs.writeFileSync(file, src);
+  try {
+    const deck = readDeck(loadFresh(file));
+    for (const { idx, key, ops } of work) {
+      const sl = deck.slides[idx];
+      for (const [name, v] of Object.entries(ops.knobs || {})) if (!(v.to == null ? sl[name] == null : sl[name] === v.to)) throw new Error(`${name} didn't take on ${key}`);
+      if (ops.tweaks && JSON.stringify(sl.tweaks || null) !== JSON.stringify(ops.tweaks.to && Object.keys(ops.tweaks.to).length ? ops.tweaks.to : null)) throw new Error(`tweaks didn't take on ${key}`);
+      for (const [name, kept] of Object.entries(ops.arrays || {})) if (!Array.isArray(sl[name]) || sl[name].length !== kept.length) throw new Error(`${name} didn't take on ${key}`);
+    }
+  } catch (e) {
+    fs.writeFileSync(file, original);
+    throw new Error(`folding the layout edits into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold them by hand.`);
+  }
+}
+// Fold entries into a lane's overlay: slides: { <key>: { <name>: <literal> } } (a literal of
+// undefined removes the entry). Verified by re-reading the file.
+function foldLaneEntries(file, perKey) {
+  const original = fs.readFileSync(file, "utf8");
+  let src = original;
+  for (const [key, entries] of Object.entries(perKey)) {
+    for (const [name, literalText] of Object.entries(entries)) {
+      const open = exportBracket(src);
+      if (src[open] !== "{") throw new Error("the overlay must export an object");
+      let { items } = splitTopLevel(src, open);
+      let slidesIt = items.find(x => entryKey(src, x) === "slides");
+      if (!slidesIt) {
+        src = setEntryIn(src, open, "slides", "{}");
+        items = splitTopLevel(src, open).items;
+        slidesIt = items.find(x => entryKey(src, x) === "slides");
+      }
+      const sOpen = src.indexOf("{", slidesIt.start);
+      if (sOpen < 0 || sOpen > slidesIt.end) throw new Error("the overlay's `slides` isn't an object");
+      const it = splitTopLevel(src, sOpen).items.find(x => entryKey(src, x) === key);
+      if (it) {
+        const oOpen = src.indexOf("{", it.start);
+        if (oOpen < 0 || oOpen > it.end) throw new Error(`the overlay's slides["${key}"] isn't an object`);
+        src = setEntryIn(src, oOpen, name, literalText);
+      } else if (literalText !== undefined) {
+        src = setEntryIn(src, sOpen, key, `{ ${isIdent(name) ? name : JSON.stringify(name)}: ${literalText} }`);
+      }
+    }
+  }
+  fs.writeFileSync(file, src);
+  try {
+    const o = loadFresh(file);
+    for (const [key, entries] of Object.entries(perKey)) for (const [name, literalText] of Object.entries(entries)) {
+      const got = o.slides && o.slides[key] ? o.slides[key][name] : undefined;
+      const want = literalText === undefined ? undefined : new Function(`return ${literalText}`)();
+      if (JSON.stringify(got === undefined ? null : got) !== JSON.stringify(want === undefined ? null : want)) throw new Error(`${name} didn't take on ${key}`);
+    }
+  } catch (e) {
+    fs.writeFileSync(file, original);
+    throw new Error(`folding into ${path.basename(file)} broke it (${e.message}); the file is unchanged. Fold it by hand.`);
+  }
+}
+
 // The deck ops of edits.json, checked. Returns { hidden: {key: bool}, deleted: [key], order: [key] | null }.
 function readDeckOps(edits) {
   const d = edits.deck;
@@ -1036,12 +1215,20 @@ function foldEdits(cwd, deckLanes) {
   const laneFile = edits.lane ? deckLanes.find(l => laneId(l) === edits.lane) : null;
   if (edits.lane && !laneFile) throw new Error(`${EDITS_FILE} was saved in lane "${edits.lane}", which slides.js no longer lists`);
   const target = edits.lane ? path.resolve(cwd, laneFile) : path.join(cwd, "slides.js");
-  const entries = [];
+  const entries = [], perSlide = {};   // perSlide: layout edits by key
   let comments = [];
   for (const [key, fields] of Object.entries(edits.slides)) {
     if (!fields || typeof fields !== "object") continue;
     for (const [field, v] of Object.entries(fields)) {
       if (field === "comment") { if (typeof v === "string" && v.trim()) comments.push({ key, comment: v.trim() }); continue; }
+      if (field === "knobs" || field === "tweaks" || field === "arrays") {
+        if (!v || typeof v !== "object") throw new Error(`${EDITS_FILE}: ${key}.${field} must be an object`);
+        if (field === "knobs") for (const [n, kv] of Object.entries(v)) { if (!KNOBS.includes(n)) throw new Error(`${EDITS_FILE}: ${key}.knobs.${n} isn't a knob (${KNOBS.join(", ")})`); if (!kv || typeof kv !== "object" || !("to" in kv)) throw new Error(`${EDITS_FILE}: ${key}.knobs.${n} must be { from, to }`); }
+        if (field === "tweaks" && !("to" in v)) throw new Error(`${EDITS_FILE}: ${key}.tweaks must be { from, to }`);
+        if (field === "arrays") for (const [n, arr] of Object.entries(v)) if (!Array.isArray(arr) || !arr.every(Number.isInteger)) throw new Error(`${EDITS_FILE}: ${key}.arrays.${n} must be a list of kept indices`);
+        (perSlide[key] = perSlide[key] || {})[field] = v;
+        continue;
+      }
       if (!v || typeof v.from !== "string" || typeof v.to !== "string") throw new Error(`${EDITS_FILE}: ${key}.${field} must be { from, to }`);
       if (v.from !== v.to) entries.push({ key, field, from: v.from, to: v.to });
     }
@@ -1052,18 +1239,60 @@ function foldEdits(cwd, deckLanes) {
   for (const l of left) console.log(`  kept in ${EDITS_FILE}: ${l.key}.${l.field} (${l.reason}); layered over this build. Fold it by hand.`);
   for (const c of comments) console.log(`  comment on ${c.key}: ${c.comment}`);
 
+  const slidesPath = path.join(cwd, "slides.js");
+  const current = readDeck(loadFresh(slidesPath)).slides.map((s, i) => slideKey(s, i));
+  const keys = Array.isArray(edits.keys) ? edits.keys : null;
+  const listMatches = keys && keys.join("\n") === current.join("\n");
+
+  // Layout edits: knobs, tweaks and array items, into the slide objects (or a lane's overlay).
+  let layoutLeft = {};
+  if (Object.keys(perSlide).length) {
+    const describe = (ps) => { let k = 0, t = 0, a = 0; for (const o of Object.values(ps)) { k += Object.keys(o.knobs || {}).length; t += o.tweaks ? 1 : 0; a += Object.keys(o.arrays || {}).length; } return `${k} knob${k === 1 ? "" : "s"}, ${t} tweak set${t === 1 ? "" : "s"}, ${a} array edit${a === 1 ? "" : "s"}`; };
+    const keepLayout = (ps, reason) => { Object.assign(layoutLeft, ps); console.log(`  kept in ${EDITS_FILE}: the layout edits of ${Object.keys(ps).join(", ")} (${reason}); layered over this build. Fold them by hand.`); };
+    if (!listMatches) keepLayout(perSlide, keys ? "slides.js's slide list changed since the edits were made" : "the file doesn't record the built slide order");
+    else if (!edits.lane) {
+      try { foldSlideFields(slidesPath, keys, perSlide); console.log(`Folded the layout edits into slides.js (${describe(perSlide)}).`); }
+      catch (e) { keepLayout(perSlide, e.message); }
+    } else {
+      // In a lane: knobs and tweaks go to the overlay under the slide's own key; array edits can't
+      // partially replace an inherited array, so they're layered.
+      const laneEntries = {}, kept = {};
+      for (const [key, o] of Object.entries(perSlide)) {
+        const own = !(/^s\d+$/.test(key) && !deckLanesKeyed(cwd, key));
+        if (own && (o.knobs || o.tweaks)) {
+          const e = {};
+          for (const [n, v] of Object.entries(o.knobs || {})) e[n] = v.to == null ? undefined : JSON.stringify(v.to);
+          if (o.tweaks) e.tweaks = o.tweaks.to && Object.keys(o.tweaks.to).length ? JSON.stringify(o.tweaks.to) : undefined;
+          laneEntries[key] = e;
+        }
+        const rest = { ...(own ? {} : { knobs: o.knobs, tweaks: o.tweaks }), ...(o.arrays ? { arrays: o.arrays } : {}) };
+        for (const k of Object.keys(rest)) if (rest[k] == null) delete rest[k];
+        if (Object.keys(rest).length) kept[key] = rest;
+      }
+      if (Object.keys(laneEntries).length) {
+        try { foldLaneEntries(target, laneEntries); console.log(`Folded knobs and tweaks for ${Object.keys(laneEntries).join(", ")} into ${rel}.`); }
+        catch (e) { for (const [key, o] of Object.entries(perSlide)) if (laneEntries[key]) kept[key] = { ...(kept[key] || {}), ...(o.knobs ? { knobs: o.knobs } : {}), ...(o.tweaks ? { tweaks: o.tweaks } : {}) }; console.log(`  kept in ${EDITS_FILE}: the lane's knobs and tweaks (${e.message}); layered over this build.`); }
+      }
+      if (Object.keys(kept).length) keepLayout(kept, "array edits and unkeyed slides can't be folded into a lane overlay");
+    }
+    // A text edit on an item of an array that was just rewritten points at an old index: drop it.
+    left = left.filter(l => {
+      const o = perSlide[l.key];
+      const changed = o && o.arrays && !layoutLeft[l.key] && Object.keys(o.arrays).some(n => l.field.startsWith(n + "."));
+      if (changed) console.log(`  dropped ${l.field} on ${l.key}: its list was rewritten; edit the text again on the new build.`);
+      return !changed;
+    });
+  }
+
   // Structural edits: the slide list in slides.js, `hidden` in a lane's overlay.
   const ops = readDeckOps(edits);
   let deckLeft = null, remap = null;   // remap: old key → new key, once the slide list was reordered
   if (ops) {
-    const slidesPath = path.join(cwd, "slides.js");
-    const current = readDeck(loadFresh(slidesPath)).slides.map((s, i) => slideKey(s, i));
-    const keys = Array.isArray(edits.keys) ? edits.keys : null;
     const keep = (reason, layerOrder = true) => { deckLeft = { ...ops, reason, layerOrder }; console.log(`  kept in ${EDITS_FILE}: the hidden / deleted / order edits (${reason}); layered over this build. Fold them by hand.`); };
     const n = (o) => `${Object.keys(o.hidden).length} hidden or shown, ${o.deleted.length} deleted${o.order ? ", reordered" : ""}`;
     const permutation = (order, of) => order.length === of.length && new Set(order).size === of.length && order.every(k => of.includes(k));
     if (!keys) keep("the file doesn't record the built slide order");
-    else if (keys.join("\n") !== current.join("\n")) keep("slides.js's slide list changed since the edits were made");
+    else if (!listMatches) keep("slides.js's slide list changed since the edits were made");
     else if (ops.order && !permutation(ops.order, keys)) keep("the order doesn't list every slide exactly once", false);   // kept for the record, but an order like that can't be layered either
     else if (!edits.lane) {
       try { remap = foldDeckInto(slidesPath, keys, ops); console.log(`Folded the slide list into slides.js (${n(ops)}).`); }
@@ -1107,13 +1336,15 @@ function foldEdits(cwd, deckLanes) {
     for (const c of comments) c.key = follow("the comment", c.key);
     comments = comments.filter(c => c.key);
     if (deckLeft) deckLeft.hidden = Object.fromEntries(Object.entries(deckLeft.hidden).map(([k, v]) => [remap.get(k) || k, v]));
+    layoutLeft = Object.fromEntries(Object.entries(layoutLeft).filter(([k]) => remap.has(k)).map(([k, v]) => [remap.get(k), v]));
     edits.keys = [...remap.values()];
   }
 
-  if (left.length || comments.length || deckLeft) {
+  if (left.length || comments.length || deckLeft || Object.keys(layoutLeft).length) {
     const slides = {};
     for (const l of left) (slides[l.key] = slides[l.key] || {})[l.field] = { from: l.from, to: l.to };
     for (const c of comments) (slides[c.key] = slides[c.key] || {}).comment = c.comment;
+    for (const [k, o] of Object.entries(layoutLeft)) Object.assign(slides[k] = slides[k] || {}, o);
     const out = { ...edits, slides };
     if (deckLeft) out.deck = { ...(Object.keys(deckLeft.hidden).length ? { hidden: deckLeft.hidden } : {}), ...(deckLeft.deleted.length ? { deleted: deckLeft.deleted } : {}), ...(deckLeft.order ? { order: deckLeft.order } : {}) };
     else delete out.deck;
@@ -1123,7 +1354,8 @@ function foldEdits(cwd, deckLanes) {
     console.log(`${EDITS_FILE} folded and removed.`);
   }
   return { lane: edits.lane || null, fields: left.map(l => ({ key: l.key, field: l.field, to: l.to })), comments,
-    deck: deckLeft ? { hidden: deckLeft.hidden, deleted: deckLeft.deleted, order: deckLeft.layerOrder === false ? null : deckLeft.order } : null };
+    deck: deckLeft ? { hidden: deckLeft.hidden, deleted: deckLeft.deleted, order: deckLeft.layerOrder === false ? null : deckLeft.order } : null,
+    layout: Object.keys(layoutLeft).length ? layoutLeft : null };
 }
 // Whether slides.js gives the slide at auto key s<n> an own key (then the auto key isn't its key).
 function deckLanesKeyed(cwd, autoKey) {
@@ -1133,8 +1365,8 @@ function deckLanesKeyed(cwd, autoKey) {
 }
 // Layer the edits that couldn't be folded over the slides of one output: field values, then
 // hidden flags, deletions and the order (keys are read against the slides' built positions).
-function applyEdits(slides, fields, deck = null) {
-  if (!fields.length && !deck) return slides;
+function applyEdits(slides, fields, deck = null, layout = null) {
+  if (!fields.length && !deck && !layout) return slides;
   let out = structuredClone(slides);
   const keyed = out.map((s, i) => [slideKey(s, i), s]);
   const byKey = new Map(keyed);
@@ -1142,6 +1374,13 @@ function applyEdits(slides, fields, deck = null) {
     const slide = byKey.get(key);
     if (!slide) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`);
     if (!setPath(slide, field, to)) throw new Error(`${EDITS_FILE}: slide ${key} has no field "${field}"`);
+  }
+  for (const [key, o] of Object.entries(layout || {})) {
+    const slide = byKey.get(key);
+    if (!slide) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`);
+    for (const [n, v] of Object.entries(o.knobs || {})) { if (v.to == null) delete slide[n]; else slide[n] = v.to; }
+    if (o.tweaks) { if (o.tweaks.to && Object.keys(o.tweaks.to).length) slide.tweaks = o.tweaks.to; else delete slide.tweaks; }
+    for (const [n, kept] of Object.entries(o.arrays || {})) if (Array.isArray(slide[n])) slide[n] = kept.map(i => slide[n][i]).filter(x => x !== undefined);
   }
   if (deck) {
     for (const [key, h] of Object.entries(deck.hidden || {})) { const s = byKey.get(key); if (!s) throw new Error(`${EDITS_FILE}: no slide has key "${key}"`); if (h) s.hidden = true; else delete s.hidden; }
@@ -1223,7 +1462,7 @@ function main() {
     const switcher = outs.map(o => ({ name: o.name, file: o.file, color: o.color }));
     for (const out of outs) {
       // Edits that couldn't be folded are layered over the output they were made in.
-      if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck);
+      if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck, edits.layout);
       const visible = out.slides.filter(s => !s.hidden);
       const slidesHtml = out.slides.map((s, i) => renderSlide(s, motion, footer.length
         ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i), out.changed.has(slideKey(s, i)))).join("\n");
@@ -1248,4 +1487,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits, splitTopLevel, slidesArray, setHiddenIn };
+module.exports = { themeCss, googleFontsUrl, renderSlide, pageHtml, loadStyleSpec, readDeck, pacingSummary, logoSvg, faviconHref, applyLane, slideKey, stringLiterals, literal, foldEdits, applyEdits, splitTopLevel, slidesArray, setHiddenIn, setEntryIn, keepArrayItems };

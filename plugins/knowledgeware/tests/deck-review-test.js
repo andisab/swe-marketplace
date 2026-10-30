@@ -445,6 +445,103 @@ ok("a deck's spec is embedded and printed; teaches is validated, ignored by the 
   reset();
 });
 
+// ── Blocks, knobs, tweaks ──
+ok("blocks carry data-b and a kind; knobs become custom properties on the section; tweaks land on their block", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES
+    .replace('{ key: "cols", layout: "two-column",', '{ key: "cols", ratio: "40/60", gap: 30, pad: 36, tweaks: { right: { dx: 12, dy: -8 } }, layout: "two-column",')
+    .replace('{ layout: "card-row", title: "Cards", cards: [', '{ layout: "card-row", title: "Cards", gap: 10, tweaks: { "cards.1": { dy: 6 } }, cards: ['));
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const html = read("index.html");
+  assert.match(html, /<section class="layout-two-column" data-key="cols" style="--ratio: 40fr 60fr; --gap: 30px; --pad: 36px">/);
+  assert.match(html, /<div class="columns" data-b="columns" data-bk="block">/);
+  assert.match(html, /<div class="col-right" data-a="up" data-b="right" data-bk="block" style="--i: 3; --dx: 12px; --dy: -8px" data-f="right" data-html="">/);
+  assert.match(html, /<section class="layout-card-row" data-key="s4" data-key-auto="" style="--gap: 10px; --card-count: 2;">/);
+  assert.match(html, /<div class="card" data-a="up" data-b="cards.1" data-bk="item" style="--i: 3; --dy: 6px">/);
+  assert.match(html, /<blockquote data-a="fade" data-b="quote" data-bk="block" style="--i: 0" data-f="quote">/);
+  assert.ok(html.includes('.reveal .slides section [data-b] { position: relative; left: var(--dx, 0px); top: var(--dy, 0px); }'));
+  // a replace pair can't touch a ratio or a tweak
+  const b = fresh(path.join(deck, "build-deck.js"));
+  const laned = b.applyLane(fresh(path.join(deck, "slides.js")).slides, { name: "x", replace: [["40/60", "1/1"], ["right", "left"]] }, "x");
+  assert.strictEqual(laned[2].ratio, "40/60");
+  assert.deepStrictEqual(laned[2].tweaks, { right: { dx: 12, dy: -8 } });
+  // validation
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", ratio: "wide", layout: "two-column",'));
+  assert.match(build().out, /slide 3: ratio must look like "40\/60"/);
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", tweaks: { right: { dz: 1 } }, layout: "two-column",'));
+  assert.match(build().out, /tweaks\["right"\]\.dz must be a number \(dx, dy or w\)/);
+  reset();
+});
+ok("knobs, tweaks and array edits fold into the slide objects; text edits on a rewritten list are dropped", () => {
+  reset();
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('{ key: "cols", layout: "two-column",', '{ key: "cols", gap: 20, layout: "two-column",'));
+  edits({
+    cols: { knobs: { ratio: { from: null, to: "40/60" }, gap: { from: 20, to: null } }, tweaks: { from: null, to: { right: { dx: 12 } } } },
+    s4: { arrays: { cards: [1] }, "cards.0.body": { from: "Shared text", to: "won't fold (ambiguous) and then dropped" }, title: { from: "Cards", to: "Cards, edited" } },
+  }, { keys: KEYS });
+  const r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const src = read("slides.js");
+  assert.match(src, /right: "Shared text", tweaks: \{"right":\{"dx":12\}\}, ratio: "40\/60" \}/, "new fields go last, so key and layout stay first");
+  assert.ok(!/gap: 20/.test(src), "the gap knob was removed");
+  assert.ok(src.includes('cards: [\n      { heading: "Card 2", body: "Short body." },\n    ]'), "only the second card is left:\n" + src);
+  assert.ok(src.includes('title: "Cards, edited"'), "text folds before the array edit");
+  assert.match(r.out, /Folded the layout edits into slides.js \(2 knobs, 1 tweak set, 1 array edit\)/);
+  assert.match(r.out, /dropped cards\.0\.body on s4: its list was rewritten/);
+  assert.ok(!fs.existsSync(path.join(deck, "edits.json")));
+  const folded = fresh(path.join(deck, "slides.js")).slides;
+  assert.strictEqual(folded[2].ratio, "40/60");
+  assert.strictEqual(folded[2].gap, undefined);
+  assert.deepStrictEqual(folded[2].tweaks, { right: { dx: 12 } });
+  assert.deepStrictEqual(folded[3].cards.map((c) => c.heading), ["Card 2"]);
+  assert.match(read("index.html"), /style="--ratio: 40fr 60fr"/);
+  // a second round: replace the tweaks whole, remove them, and empty the list
+  edits({ cols: { tweaks: { from: { right: { dx: 12 } }, to: null } }, s4: { arrays: { cards: [] } } }, { keys: KEYS });
+  const r2 = build();
+  assert.strictEqual(r2.code, 0, r2.out);
+  assert.ok(!read("slides.js").includes("tweaks"), read("slides.js"));
+  assert.deepStrictEqual(fresh(path.join(deck, "slides.js")).slides[3].cards, []);
+});
+ok("layout edits made on a different slide list are kept and layered; in a lane, knobs go to the overlay and array edits are layered", () => {
+  reset();
+  edits({ cols: { knobs: { ratio: { from: null, to: "30/70" } } } }, { keys: ["cover", "s2", "cols"] });
+  let r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.strictEqual(read("slides.js"), SLIDES);
+  assert.match(r.out, /kept in edits.json: the layout edits of cols \(slides.js's slide list changed/);
+  assert.match(read("index.html"), /style="--ratio: 30fr 70fr"/, "layered over the build");
+  assert.deepStrictEqual(JSON.parse(read("edits.json")).slides.cols.knobs, { ratio: { from: null, to: "30/70" } });
+  reset();
+  edits({ cols: { knobs: { gap: { from: null, to: 12 } }, tweaks: { from: null, to: { left: { dy: 4 } } } }, s4: { arrays: { cards: [1, 0] } } }, { lane: "acme-life", file: "index-acme-life.html", keys: KEYS });
+  r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  const lane = fresh(path.join(deck, "lanes", "acme-life.js"));
+  assert.strictEqual(lane.slides.cols.gap, 12);
+  assert.deepStrictEqual(lane.slides.cols.tweaks, { left: { dy: 4 } });
+  assert.strictEqual(lane.slides.cols.right, "Lane text", "the overlay's other fields survive");
+  assert.strictEqual(read("slides.js"), SLIDES, "the base deck is untouched");
+  assert.match(r.out, /array edits and unkeyed slides can't be folded into a lane overlay/);
+  assert.deepStrictEqual(JSON.parse(read("edits.json")).slides.s4, { arrays: { cards: [1, 0] } });
+  const laneHtml = read("index-acme-life.html");
+  assert.ok(laneHtml.indexOf('data-f="cards.0.heading">Card 2<') > 0 && laneHtml.indexOf('data-f="cards.1.heading">Card 1<') > 0, "the lane shows the reordered cards");
+  assert.ok(!read("index.html").includes('data-f="cards.0.heading">Card 2<'));
+});
+ok("setEntryIn and keepArrayItems edit object and array literals in place", () => {
+  const b = fresh(path.join(deck, "build-deck.js"));
+  const obj = `{ a: 1, // keep me\n  b: [x, y, z], c: 'q' }`;
+  assert.strictEqual(b.setEntryIn(obj, 0, "a", "2"), `{ a: 2, // keep me\n  b: [x, y, z], c: 'q' }`);
+  assert.strictEqual(b.setEntryIn(obj, 0, "d", '"new"'), `{ a: 1, // keep me\n  b: [x, y, z], c: 'q', d: "new" }`);
+  assert.strictEqual(b.setEntryIn("{}", 0, "d", "1"), "{ d: 1 }");
+  assert.strictEqual(b.setEntryIn("{ a: 1, }", 0, "d", "1"), "{ a: 1, d: 1, }");
+  assert.strictEqual(b.setEntryIn(obj, 0, "c", undefined), `{ a: 1, // keep me\n  b: [x, y, z] }`);
+  assert.strictEqual(b.setEntryIn(obj, 0, "a", undefined), `{ // keep me\n  b: [x, y, z], c: 'q' }`);
+  assert.strictEqual(b.keepArrayItems(obj, 0, "b", [2, 0]), `{ a: 1, // keep me\n  b: [z, x,], c: 'q' }`);
+  const multi = `{ b: [\n    one,\n    // two's note\n    two,\n    three,\n  ] }`;
+  assert.strictEqual(b.keepArrayItems(multi, 0, "b", [1, 0]), `{ b: [\n    // two's note\n    two,\n    one,\n  ] }`);
+  assert.throws(() => b.keepArrayItems(obj, 0, "b", [3]), /out of range/);
+});
+
 // ── Literal helpers ──
 ok("stringLiterals and literal round-trip every quote style", () => {
   const b = require(path.join(deck, "build-deck.js"));
