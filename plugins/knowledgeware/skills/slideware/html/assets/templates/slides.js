@@ -41,6 +41,10 @@
 //    `gap` and `pad` in px, `scale` in percent of the slide width (image-caption), and
 //    `tweaks: { "cards.1": { dx: 12, dy: -8 }, image: { w: 60 } }` to nudge a block (dx, dy in px)
 //    or size media (w in percent). Leave them out for the layout's defaults.
+// 13. Builds: `steps: true` on a bullets or card-row slide reveals its items one click at a time
+//    (`steps: "rest"` shows the first at once); each item's entrance motion plays on its click.
+//    Mark the clicks in the notes as [click 1], [click 2]. A deck assembled from several sources
+//    can carry a deck-plan.md beside this file (SKILL.md §Planning a deck); the build reads it.
 // 12. `spec: "../my-unit.html"` next to `slides` names the deck's spec page (the knowledgebase
 //    page with its volatility table and outline), and `teaches: "<section-id>"` on a slide names
 //    the section it teaches. Neither renders; both let the librarian keep the deck current.

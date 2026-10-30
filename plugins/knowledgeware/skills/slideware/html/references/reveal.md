@@ -246,7 +246,7 @@ Elements with `data-a` animate in each time their slide becomes current, stagger
 - **One slide:** `motion: true` or `false` on a descriptor overrides the deck setting.
 - **Hand-placed:** light-HTML body strings can carry their own attributes, such as `<span data-a="fade" style="--i: 4">…</span>`.
 
-Motion is for arrival, not for steps: use fragments when the presenter should reveal a block on a keypress.
+Motion is for arrival, not for steps: use fragments when the presenter should reveal a block on a keypress. The two go together: a `.fragment` that also carries `data-a` waits for its click and then plays its entrance (the theme turns the animation off while the fragment is hidden and on, with no stagger, once it's `.visible`). `bullets` and `card-row` slides get this from `steps: true` (every item its own click) or `steps: "rest"` (the first item shows at once); hand-written slides give each element `class="fragment"`, the same `data-fragment-index` to elements that arrive together, and `data-a` on top. Speaker notes mark the clicks as `[click 1]`, `[click 2]`. Builds are a presenting device: the audience window plays them only while a presenter window is connected (`S` or `P`; the presenter window itself always has them), and in review mode they're off, so a deck read in a browser or being edited shows every slide complete with its normal stagger. `presenter.js` does this with Reveal's `fragments` setting and marks `html.rp-builds` while builds are live.
 
 ## Known quirks
 

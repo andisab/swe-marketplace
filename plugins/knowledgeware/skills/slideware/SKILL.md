@@ -66,13 +66,18 @@ A deck built from research gets a **spec**: a one-page knowledgebase site beside
 
 Both formats carry the same presenter information, so a deck can move between them without losing it:
 
-- **Notes** are written for the ear, as plain text: blank lines split paragraphs, `- ` lines form a list, `**bold**` / `*italic*` mark emphasis, and `[pause]` marks a beat. Html renders the markup in its presenter view; pptx strips the emphasis markers, because PowerPoint shows notes as plain text.
+- **Notes** are written for the ear, as plain text: blank lines split paragraphs, `- ` lines form a list, `**bold**` / `*italic*` mark emphasis, and `[pause]` marks a beat. Html renders the markup in its presenter view; pptx strips the emphasis markers, because PowerPoint shows notes as plain text. Keep them succinct and selective: one sentence for what the slide is for, a `[click n]` line for each build saying what it reveals, and one thing to remember. No slide should need more than 5 to 10 minutes; split it if it does.
+- **Builds** (PowerPoint-style click reveals): html `bullets` and `card-row` slides take `steps: true` (every item on its own click) or `steps: "rest"` (the first shows at once); each item's entrance motion then plays on its click. Hand-written HTML uses `class="fragment"` the same way (html/references/reveal.md §Entrance motion). Builds play only while a presenter window is connected (`S` or `P`); a deck opened on its own, or in review mode, shows every slide complete. The presenter counts the builds left on a slide.
 - **Cue** per slide: `session` (a label such as "Session 1"), `module` (a label), and `run`: `default`, `cut-first` (in the run, first to cut when behind), `add-back` (use if ahead) or `backup` (for questions).
 - **Pacing** comes from session lengths in minutes. Each in-run slide (`default` or `cut-first`, not hidden) gets an equal share of its session. Html shows a live pace line, with the length editable in the presenter; pptx writes each slide's planned window into a cue line at the top of its notes.
 - **Hidden slides** stay in the source but out of the show and out of the pacing.
 - **Every build prints a pacing summary**: each session's time per slide, then the hidden slides. For "hide slide 12", "session 2 is 75 minutes" or "which slides are hidden?", edit the deck source, rebuild, and quote that summary.
 
 Mechanics: [html/references/reveal.md](html/references/reveal.md) §Speaker notes (`notes`, `cue`, `hidden` slide fields; `sessions` / `minutes` in `slides.js`) · [pptx/FORMAT.md](pptx/FORMAT.md) §Speaker notes (`speakerNotes()`, `s.hidden`, `SESSIONS`).
+
+## Planning a deck (when a deck needs planning)
+
+Not every deck needs a plan; one assembled from several sources, or revised in rounds, does. The convention is a `deck-plan.md` beside the deck's source, in tables, not prose: a header (date, status), the **sources** named once with short references that the tables cite as `D<deck>.S<slide>` (`DV7.S13` is slide 13 of the V7 deck; `DCUR` for the deck's own current source), the owner's **decisions** with dates, then **one table per section of the deck** (Intro, each block, Close, Backup at the end) with roughly these columns: `#` · `Slide` (the slide's key in backticks, then its title) · `Source` · `Builds` (how many clicks and what each reveals) · `Status` (done or to do, with the mechanism: raw port with fragments, `steps`, new slide). "Not taken" (what each source had that the deck doesn't) and "Mechanics" (how a port is done, the order of work) are free-form notes. Template: [html/assets/templates/deck-plan.md](html/assets/templates/deck-plan.md). The html build reads the file when it's there and prints, for information, rows marked done whose key isn't in `slides.js` and slides the plan doesn't mention. The plan is a working file: the librarian reads it for context (maintenance spec §7, rung 3) and never edits it, and it isn't a spec.
 
 ## Review mode (html)
 
