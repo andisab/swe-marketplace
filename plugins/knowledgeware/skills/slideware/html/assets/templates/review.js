@@ -12,14 +12,14 @@
 //            <br>, <a>, lists). A panel along the bottom edits the slide's speaker notes and
 //            takes a comment for whoever edits the deck next. The arrows still move slides
 //            while no field has focus; Enter or Esc leaves a field.
-//   shift+b  rebuild the deck: a confirm bar, then (through serve-deck.js) the edits are saved,
+//   Shift+B  rebuild the deck: a confirm bar, then (through serve-deck.js) the edits are saved,
 //            `node build-deck.js .` runs, and the page reloads on the same slide. Over file://
 //            or a plain static server there is nothing to run, so the bar says how to save.
 //
-// The overview (o) gains structural edits while review mode is on: an eye on each thumbnail
+// The overview (O) gains structural edits while review mode is on: an eye on each thumbnail
 // hides or shows the slide (in the lane being viewed), an X deletes it (Undo brings it back),
 // thumbnails drag and drop into a new order, and a Rebuild deck button beside Close turns solid
-// when anything is queued. Keys on a focused thumbnail: h, del, shift+arrows. Every such edit is
+// when anything is queued. Keys on a focused thumbnail: H, Del, Shift+arrows. Every such edit is
 // applied to the live deck at once (applyLive: sections re-appended in the pending order, hidden
 // and deleted ones detached, Reveal re-synced), so the deck and the overview agree; slides.js
 // catches up at the rebuild. presenter.js draws the overview through window.RevealReviewAPI,
@@ -106,9 +106,9 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
   const BAR_HTML = `<span class="rv-label">Review</span><span class="rv-count"></span>
 <button type="button" data-rv="save" title="Save edits.json">Save</button>
 <button type="button" data-rv="copy" title="Copy the edits as JSON">Copy</button>
-<button type="button" data-rv="build" title="Save, rebuild the deck and reload (shift+b)">Rebuild<kbd>shift+b</kbd></button>
+<button type="button" data-rv="build" title="Save, rebuild the deck and reload (Shift+B)">Rebuild<kbd>Shift+B</kbd></button>
 <button type="button" data-rv="discard" title="Drop every unsaved edit">Discard</button>
-<button type="button" data-rv="done" title="Leave review mode (e)">Done<kbd>e</kbd></button>`;
+<button type="button" data-rv="done" title="Leave review mode (E)">Done<kbd>E</kbd></button>`;
   const PANEL_HTML = `<div class="rv-panel-head"><span class="rv-panel-num"></span><span>Speaker notes</span><span class="rv-panel-title"></span></div>
 <textarea class="rv-notes" aria-label="Speaker notes" placeholder="Notes for this slide. A blank line splits paragraphs, lines starting with - form a list, **bold**, *italic*, [pause]."></textarea>
 <input class="rv-comment" aria-label="Comment" placeholder="Comment for whoever edits the deck next (optional)"/>`;
@@ -261,7 +261,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       if (!cfg.lane || !s || !s.el.hasAttribute("data-key-auto")) return false;
       const n = all.indexOf(s) + 1;
       showConfirm(`<h2>Slide ${n} has no key</h2><p>A lane hides or deletes a slide through its overlay, which names slides by their own <code>key</code>, and slide ${n} has none in slides.js. Add <code>key: "…"</code> to that slide (or ask Claude to key the slides), rebuild, then try again. Reordering still works, and so does hiding it in the base deck.</p>`,
-        [["cancel", "Close", "esc"]], null);
+        [["cancel", "Close", "Esc"]], null);
       return true;
     }
     // Make the live deck match the pending state: the sections Reveal shows are the pending
@@ -353,17 +353,17 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       catch (e) { toast("Copy failed: " + (e && e.message ? e.message : e)); }
     }
 
-    // ── Rebuild (shift+b) ──────────────────────────────────────────
+    // ── Rebuild (Shift+B) ──────────────────────────────────────────
     function askRebuild() {
       const { n, c, d } = count();
       const what = [n ? `${n} edit${n === 1 ? "" : "s"}` : "", c ? `${c} comment${c === 1 ? "" : "s"}` : "", d ? `${d} slide change${d === 1 ? "" : "s"}` : ""].filter(Boolean).join(", ") || "no edits";
       if (server) {
         showConfirm(`<h2>Rebuild the deck?</h2><p>Saves ${what} to edits.json, folds them into slides.js, runs <code>node build-deck.js .</code> and reloads this page on the same slide.</p>`,
-          [["go", "Rebuild", "enter"], ["cancel", "Cancel", "esc"]], doRebuild);
+          [["go", "Rebuild", "Enter"], ["cancel", "Cancel", "Esc"]], doRebuild);
       } else {
-        showConfirm(`<h2>No local server to rebuild with</h2><p>shift+b rebuilds through <code>serve-deck.js</code> (in the slideware skill's <code>html/scripts/</code> folder). Start it in the deck folder, then open the address it prints:</p>
+        showConfirm(`<h2>No local server to rebuild with</h2><p>Shift+B rebuilds through <code>serve-deck.js</code> (in the slideware skill's <code>html/scripts/</code> folder). Start it in the deck folder, then open the address it prints:</p>
 <pre>node &lt;plugin&gt;/skills/slideware/html/scripts/serve-deck.js .</pre><p>For now, save ${what} as edits.json next to the deck and run <code>node build-deck.js .</code>, or ask Claude to apply your edits.</p>`,
-          [["save", "Save edits.json", "enter"], ["cancel", "Close", "esc"]], () => { closeConfirm(); save(); });
+          [["save", "Save edits.json", "Enter"], ["cancel", "Close", "Esc"]], () => { closeConfirm(); save(); });
       }
     }
     async function doRebuild() {
@@ -374,15 +374,15 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         const r = await fetch("/__build", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ review: true }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || !j.ok) {
-          showConfirm(`<h2>The build failed</h2><pre>${esc((j.output || j.error || r.statusText || "").trim() || "no output")}</pre><p>Fix slides.js (or ask Claude to), then press shift+b again.</p>`,
-            [["cancel", "Close", "esc"]], null);
+          showConfirm(`<h2>The build failed</h2><pre>${esc((j.output || j.error || r.statusText || "").trim() || "no output")}</pre><p>Fix slides.js (or ask Claude to), then press Shift+B again.</p>`,
+            [["cancel", "Close", "Esc"]], null);
           return;
         }
         try { localStorage.removeItem(STORE()); } catch (e) { /* ignore */ }
         setConfirmBusy("Rebuilt. Reloading…\n\n" + (j.output || "").trim());
         setTimeout(() => location.reload(), 400);
       } catch (e) {
-        showConfirm(`<h2>Couldn't reach the server</h2><p>${esc(e && e.message ? e.message : String(e))}. Is serve-deck.js still running?</p>`, [["cancel", "Close", "esc"]], null);
+        showConfirm(`<h2>Couldn't reach the server</h2><p>${esc(e && e.message ? e.message : String(e))}. Is serve-deck.js still running?</p>`, [["cancel", "Close", "Esc"]], null);
       }
     }
     function showConfirm(html, buttons, go) {
@@ -448,7 +448,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
     let stale = false;   // the deck's slides carry no keys: built before review mode, or hand-written
     function staleDeck() {
       showConfirm(`<h2>Rebuild this deck first</h2><p>Its slides carry no keys, so review mode has nothing to address: it was built before review mode, or by hand. Run <code>node build-deck.js . --review</code> in the deck folder (or ask Claude to rebuild the deck), then reload.</p>`,
-        [["cancel", "Close", "esc"]], null);
+        [["cancel", "Close", "Esc"]], null);
     }
     function toggle() {
       if (stale) { staleDeck(); return; }
@@ -500,7 +500,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
         if (e.key === "Escape" || (e.key === "Enter" && !isHtml(el))) { e.preventDefault(); el.blur(); }
         e.stopPropagation();   // Reveal ignores keys in editable fields, and so should the presenter's bindings
       });
-      // shift+b before Reveal sees it (B alone stays its blackout); Enter / Esc drive the confirm bar.
+      // Shift+B before Reveal sees it (B alone stays its blackout); Enter / Esc drive the confirm bar.
       window.addEventListener("keydown", (e) => {
         if (confirmOpen()) {
           if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeConfirm(); }
