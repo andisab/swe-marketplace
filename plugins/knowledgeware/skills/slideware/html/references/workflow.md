@@ -46,11 +46,14 @@ python ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/polish-deck.py ./inde
 # 8. Iterate: edit slides.js or style.md, rebuild, re-render, re-inspect.
 #    Stop when an inspection finds zero meaningful issues — typically 2-3 cycles.
 
-# 9. Hand-over for the user's own text and notes edits (optional): build with review mode and serve it.
+# 9. Hand-over for the user's own edits (optional): build with review mode and open the review file.
 #    node build-deck.js . --review        # or review: true next to slides in slides.js
-#    node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/serve-deck.js .   # http://127.0.0.1:8010/
-#    E in the deck edits text and notes, Shift+B saves edits.json and rebuilds; every build folds
-#    edits.json into slides.js. See reveal.md §Review mode.
+#    open ./index.review.html             # the plain index.html stays the file to share
+#    The user presses E to edit text and notes, L for layout (nudge, resize, reorder, delete),
+#    and connects the deck folder once from the review bar; edits.json then saves itself and
+#    the page reloads when you rebuild. Every build folds edits.json into slides.js, so
+#    "rebuild the deck" is the whole loop. serve-deck.js is optional (one-key Shift+B).
+#    See reveal.md §Review mode.
 ```
 
 ## Choosing a style
