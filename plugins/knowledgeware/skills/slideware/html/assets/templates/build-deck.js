@@ -13,9 +13,12 @@
 //   ./index.html    — single self-contained HTML file: Reveal (from node_modules), theme
 //                     CSS and the presenter plugin (./presenter.js) INLINED, so the deck
 //                     runs with no network. Only the fonts load from Google Fonts (<link>);
-//                     offline they fall back to system fonts. With `review: true` next to
-//                     `slides` (or `--review`), ./review.js is inlined too: E in the deck
-//                     edits text and notes in place, Shift+B rebuilds through serve-deck.js.
+//                     offline they fall back to system fonts.
+//   ./index.review.html (and index-<lane>.review.html) — with `review: true` next to `slides`
+//                     (or `--review`): the same deck with ./review.js inlined, for the person
+//                     building it. E edits text and notes in place, the overview reorders, hides
+//                     and deletes slides, Shift+B rebuilds through serve-deck.js. Share the
+//                     plain files; keep the .review files with the deck folder.
 //
 // Setup (one-time per deck dir):
 //   cp $PLUGIN/skills/slideware/html/assets/templates/{build-deck.js,presenter.js,review.js,slides.js,package.json} .
@@ -571,7 +574,7 @@ function faviconHref(palette) {
 //   lanes     paths of lane overlays (see applyLane): one build writes index.html for the base
 //             deck and index-<id>.html per lane, each with a lane switcher in its overview
 //   lane      the base deck's name in that switcher (default "Base")
-//   review    true inlines review.js: E edits text and notes in the deck (see §Review edits)
+//   review    true also writes the .review flavour of every output, with review.js inlined (see §Review edits)
 //   spec      path (relative to the deck dir) of the deck's spec page: the knowledgebase page that
 //             carries its volatility table and outline. Embedded as <meta name="knowledgeware-spec">
 //             so the librarian finds the spec from the deck. A slide's `teaches` names the spec
@@ -1203,26 +1206,38 @@ function main() {
   const ids = overlays.map(l => l.id);
   const dupLane = ids.find((id, i) => ids.indexOf(id) !== i);
   if (dupLane) throw new Error(`two lanes have the id "${dupLane}" (the overlay's file name)`);
-  const outputs = [{ id: null, name: deck.lane, file: "index.html", slides, color: null, changed: new Set() },
+  const outputs = [{ id: null, name: deck.lane, slides, color: null, changed: new Set() },
     ...overlays.map(l => { const laneSlides = applyLane(slides, l.overlay, l.id); return { ...l, slides: laneSlides, changed: laneChangedKeys(slides, laneSlides) }; })];
-  const switcher = outputs.map(o => ({ name: o.name, file: o.file, color: o.color }));
-
-  for (const out of outputs) {
-    // Edits that couldn't be folded are layered over the output they were made in.
-    if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck);
-    const visible = out.slides.filter(s => !s.hidden);
-    const slidesHtml = out.slides.map((s, i) => renderSlide(s, motion, footer.length
-      ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i), out.changed.has(slideKey(s, i)))).join("\n");
-    const title = out.id ? `${baseTitle} · ${out.name}` : baseTitle;
-    const lanes = switcher.map(l => ({ ...l, current: l.file === out.file }));
-    const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes,
-      reviewJs, review: reviewJs ? { built, lane: out.id, file: out.file } : null, spec: deck.spec });
-    const outPath = path.join(cwd, out.file);
-    fs.writeFileSync(outPath, html);
-    console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${out.slides.length} slides, ${styleSpec.name || "unnamed style"}${out.id ? `, lane ${out.name}` : overlays.length ? `, lane ${out.name} of ${outputs.length}` : ""})`);
-    if (reviewJs && !out.id) console.log(`Review mode inlined (${deck.review ? "review: true in slides.js" : "--review"}): E in the deck edits text and notes, Shift+B rebuilds via serve-deck.js.`);
-    if (footer.length && !out.id) console.log(`Footer on every slide but the title: ${footer.join(" · ")} · ${logo ? `logo ${logo.file}` : "no logo (no ./assets/logo-*.svg; a brand's style stages one)"} · page n / ${visible.length}`);
+  // Two flavours of every output: the clean deck to share (index.html, index-<lane>.html), and, with
+  // review mode, a sibling for the person building it (index.review.html, index-<lane>.review.html)
+  // that inlines review.js. Each flavour's lane switcher stays within the flavour.
+  const fileFor = (out, suffix) => out.id ? `index-${out.id}${suffix}.html` : `index${suffix}.html`;
+  const flavours = [{ suffix: "", reviewJs: "", title: "" }];
+  if (review) flavours.push({ suffix: ".review", reviewJs, title: " · review" });
+  else for (const out of outputs) {   // a deck that dropped review mode leaves no stale review file behind
+    const stale = path.join(cwd, fileFor(out, ".review"));
+    if (fs.existsSync(stale)) { fs.unlinkSync(stale); console.log(`Removed ${path.basename(stale)} (review is off)`); }
   }
+  for (const flavour of flavours) {
+    const outs = outputs.map(o => ({ ...o, file: fileFor(o, flavour.suffix) }));
+    const switcher = outs.map(o => ({ name: o.name, file: o.file, color: o.color }));
+    for (const out of outs) {
+      // Edits that couldn't be folded are layered over the output they were made in.
+      if (edits && edits.lane === out.id) out.slides = applyEdits(out.slides, edits.fields, edits.deck);
+      const visible = out.slides.filter(s => !s.hidden);
+      const slidesHtml = out.slides.map((s, i) => renderSlide(s, motion, footer.length
+        ? { footer, logo: logo ? logo.svg : "", n: s.hidden ? 0 : visible.indexOf(s) + 1, total: visible.length } : null, slideKey(s, i), out.changed.has(slideKey(s, i)))).join("\n");
+      const title = (out.id ? `${baseTitle} · ${out.name}` : baseTitle) + flavour.title;
+      const lanes = switcher.map(l => ({ ...l, current: l.file === out.file }));
+      const html = pageHtml({ title, fontsUrl, css, slidesHtml, reveal, presenterJs, sessions, favicon: faviconHref(palette), footer: footer.length > 0, lanes,
+        reviewJs: flavour.reviewJs, review: flavour.reviewJs ? { built, lane: out.id, file: out.file } : null, spec: deck.spec });
+      const outPath = path.join(cwd, out.file);
+      fs.writeFileSync(outPath, html);
+      console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${out.slides.length} slides, ${styleSpec.name || "unnamed style"}${out.id ? `, lane ${out.name}` : overlays.length ? `, lane ${out.name} of ${outs.length}` : ""}${flavour.suffix ? ", review mode" : ""})`);
+      if (!flavour.suffix && !out.id && footer.length) console.log(`Footer on every slide but the title: ${footer.join(" · ")} · ${logo ? `logo ${logo.file}` : "no logo (no ./assets/logo-*.svg; a brand's style stages one)"} · page n / ${visible.length}`);
+    }
+  }
+  if (review) console.log(`Review mode (${deck.review ? "review: true in slides.js" : "--review"}) is in the .review files only: E edits text, notes and the slide order, Shift+B rebuilds via serve-deck.js. Share: index.html and index-*.html, not the .review files.`);
   const summary = pacingSummary(slides, sessions);
   if (summary) console.log(summary);
   if (deck.spec) {

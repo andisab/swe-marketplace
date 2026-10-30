@@ -15,6 +15,7 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ### knowledgeware 1.12.4
 
+- **A clean deck to share, a review deck to build with.** `index.html` (and `index-<lane>.html`) no longer carry review mode at all; a deck with `review: true` (or `--review`) also writes `index.review.html` and `index-<lane>.review.html`, which inline `review.js` and whose lane switcher stays among the review files. A deck that drops review mode loses its stale `.review` files at the next build. Share the plain files; keep the `.review` files with the deck folder.
 - **Structural edits apply to the live deck at once.** Hiding, deleting or reordering slides in the overview now changes the deck you're looking at (sections re-appended in the pending order, hidden and deleted ones detached, Reveal re-synced on the same slide), with the running footer's page counters renumbered, so the deck and the overview agree before the rebuild writes it into `slides.js`. Discard puts the built order back. The presenter window keeps the built order until the rebuild.
 - **Review mode toggles from the overview too:** `e` works there, and an Edit / Done button sits beside Rebuild deck.
 - **Hotkeys are shown in capitals** everywhere the deck names one (`E`, `Shift+B`, `H · Del · Shift+←→`), replacing 1.12.3's lowercase convention.

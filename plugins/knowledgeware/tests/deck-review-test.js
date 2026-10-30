@@ -85,7 +85,7 @@ const LANE = `module.exports = {
 function reset() {
   fs.writeFileSync(path.join(deck, "slides.js"), SLIDES);
   fs.writeFileSync(path.join(deck, "lanes", "acme-life.js"), LANE);
-  for (const f of ["edits.json", "index.html", "index-acme-life.html"]) { try { fs.unlinkSync(path.join(deck, f)); } catch (e) { /* absent */ } }
+  for (const f of ["edits.json", "index.html", "index-acme-life.html", "index.review.html", "index-acme-life.review.html"]) { try { fs.unlinkSync(path.join(deck, f)); } catch (e) { /* absent */ } }
 }
 function build(...args) {
   try { return { out: execFileSync(process.execPath, ["build-deck.js", ".", ...args], { cwd: deck, env: ENV, stdio: "pipe" }).toString(), code: 0 }; }
@@ -140,22 +140,38 @@ ok("without review, the deck carries no review plugin or config", () => {
 });
 
 // ── Review inlining ──
-ok("--review inlines review.js and the review config (built, lane, file)", () => {
+ok("--review writes a .review flavour beside the clean files, with its own lane switcher", () => {
   const r = build("--review");
   assert.strictEqual(r.code, 0, r.out);
-  const html = read("index.html"), lane = read("index-acme-life.html");
+  const clean = read("index.html"), cleanLane = read("index-acme-life.html"), html = read("index.review.html"), lane = read("index-acme-life.review.html");
   assert.match(html, /plugins: \[RevealPresenter, RevealReview\],/);
-  assert.match(html, /review: \{"built":"\d{4}-\d\d-\d\dT[^"]+","lane":null,"file":"index.html"\},/);
-  assert.match(lane, /review: \{"built":"[^"]+","lane":"acme-life","file":"index-acme-life.html"\},/);
+  assert.match(html, /review: \{"built":"\d{4}-\d\d-\d\dT[^"]+","lane":null,"file":"index.review.html"\},/);
+  assert.match(lane, /review: \{"built":"[^"]+","lane":"acme-life","file":"index-acme-life.review.html"\},/);
   assert.ok(html.includes("root.RevealReview = function"));
-  assert.match(r.out, /Review mode inlined \(--review\)/);
+  assert.match(html, /<title>[^<]* · review<\/title>/);
+  for (const c of [clean, cleanLane]) {
+    assert.ok(!c.includes("root.RevealReview = function"), "the clean flavour carries no review code");
+    assert.ok(!/review: \{/.test(c));
+    assert.match(c, /plugins: \[RevealPresenter\],/);
+  }
+  assert.match(html, /"lanes":\[\{"name":"Acme Corp","file":"index\.review\.html"[^\]]*"file":"index-acme-life\.review\.html"/, "the review switcher links review files");
+  assert.match(clean, /"lanes":\[\{"name":"Acme Corp","file":"index\.html"[^\]]*"file":"index-acme-life\.html"/, "the clean switcher links clean files");
+  assert.match(r.out, /Review mode \(--review\) is in the \.review files only/);
+  assert.match(r.out, /Share: index\.html and index-\*\.html, not the \.review files/);
 });
-ok("review: true in slides.js does the same", () => {
+ok("review: true in slides.js does the same, and dropping it removes the stale .review files", () => {
   fs.writeFileSync(path.join(deck, "slides.js"), SLIDES.replace('lane: "Acme Corp",', 'lane: "Acme Corp",\n  review: true,'));
-  const r = build();
+  let r = build();
   assert.strictEqual(r.code, 0, r.out);
-  assert.ok(read("index.html").includes("RevealReview"));
+  assert.ok(read("index.review.html").includes("root.RevealReview = function"));
+  assert.ok(fs.existsSync(path.join(deck, "index-acme-life.review.html")));
   assert.match(r.out, /review: true in slides.js/);
+  fs.writeFileSync(path.join(deck, "slides.js"), SLIDES);
+  r = build();
+  assert.strictEqual(r.code, 0, r.out);
+  assert.ok(!fs.existsSync(path.join(deck, "index.review.html")), "stale review file removed");
+  assert.ok(!fs.existsSync(path.join(deck, "index-acme-life.review.html")));
+  assert.match(r.out, /Removed index\.review\.html \(review is off\)/);
   reset();
 });
 ok("the build refuses when review.js is missing and says where to copy it from", () => {
@@ -465,7 +481,10 @@ ok("stringLiterals and literal round-trip every quote style", () => {
     const root = await call("GET", "/");
     assert.strictEqual(root.status, 200);
     assert.match(root.type, /text\/html/);
-    assert.ok(root.body.includes("RevealReview"));
+    assert.ok(!root.body.includes("root.RevealReview = function"), "the served index.html is the clean flavour");
+    const rv = await call("GET", "/index.review.html");
+    assert.strictEqual(rv.status, 200);
+    assert.ok(rv.body.includes("root.RevealReview = function"));
     const st = JSON.parse((await call("GET", "/__status")).body);
     assert.deepStrictEqual({ ok: st.ok, slideware: st.slideware, hasEdits: st.hasEdits, hasBuilder: st.hasBuilder }, { ok: true, slideware: true, hasEdits: false, hasBuilder: true });
   });
@@ -489,10 +508,10 @@ ok("stringLiterals and literal round-trip every quote style", () => {
     assert.strictEqual(built.status, 200, built.body);
     assert.strictEqual(j.ok, true);
     assert.match(j.output, /Folded 1 edit from edits.json into slides.js/);
-    assert.match(j.output, /Review mode inlined \(--review\)/);
+    assert.match(j.output, /Review mode \(--review\) is in the \.review files only/);
     assert.ok(read("slides.js").includes(`title: "Served title"`));
     assert.ok(!fs.existsSync(path.join(deck, "edits.json")));
-    assert.ok(read("index.html").includes("RevealReview"));
+    assert.ok(read("index.review.html").includes("root.RevealReview = function"));
   });
   await t("a failing build comes back as ok: false with the builder's output", async () => {
     fs.writeFileSync(path.join(deck, "slides.js"), "module.exports = { slides: [{ layout: 'nope' }] };");
