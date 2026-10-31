@@ -1,7 +1,7 @@
 {
   "name": "dev",
   "description": "Development experts for 10 programming languages (Python, TypeScript, JavaScript, Go, Rust, C++, Kotlin, PHP, Lua and Perl), plus FastAPI and Node.js specialists and a refactoring agent.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Andis A. Blukis",
     "email": "andis.blukis@gmail.com",

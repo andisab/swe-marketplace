@@ -1,7 +1,7 @@
 ---
 name: gitlab-ci-expert
 description: Expert in configuring, optimizing, and maintaining GitLab CI/CD pipelines for efficient and secure software delivery with 2025 security patterns.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#98971a"
 tags:

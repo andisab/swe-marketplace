@@ -26,7 +26,7 @@ Find the row that matches what you want to do, install that plugin, and then ask
 | Get a second and third opinion on code changes | [`adv`](./plugins/adv/) | *"Use the adv-review agent to review my uncommitted changes"* |
 | Research a topic with parallel agents and get one written report | [`research-team`](./plugins/research-team/) | *"Use research-team to research vector database pricing"* |
 | Build your own agents, skills, hooks, plugins or MCP servers | [`context-engineering`](./plugins/context-engineering/) | *"Help me create a skill that drafts our release notes"* |
-| Bring in a specialist for a language, framework, cloud or database | [`dev`](./plugins/dev/), [`frontend`](./plugins/frontend/), [`infrastructure`](./plugins/infrastructure/), [`databases`](./plugins/databases/), [`data`](./plugins/data/), [`machine-learning`](./plugins/machine-learning/), [`genai`](./plugins/genai/) | *"Have the Terraform engineer review this module"* |
+| Bring in a specialist for a language, framework, cloud or database | [`dev`](./plugins/dev/), [`frontend`](./plugins/frontend/), [`infrastructure`](./plugins/infrastructure/), [`databases`](./plugins/databases/), [`data`](./plugins/data/), [`machine-learning`](./plugins/machine-learning/) | *"Have the Terraform engineer review this module"* |
 | Write PRDs and project plans | [`product-management`](./plugins/product-management/) | *"Draft a PRD for single sign-on"* |
 | Keep CLAUDE.md files accurate as the code changes | [`arch`](./plugins/arch/) | *"Update CLAUDE.md for the changes on this branch"* |
 
@@ -125,15 +125,14 @@ One domain each, and nothing but agent definitions: no scripts, no MCP servers, 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`dev`](./plugins/dev/) | 1.0.1 | Specialists for 10 languages, FastAPI and Node.js, plus cross-language refactoring. | 13 agents |
-| [`frontend`](./plugins/frontend/) | 1.0.1 | React, Vue, Next.js, HTML and CSS specialists, plus a designer that turns mockups into specs. | 6 agents |
-| [`infrastructure`](./plugins/infrastructure/) | 1.0.1 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
-| [`databases`](./plugins/databases/) | 1.0.1 | SQL, NoSQL, graph and vector databases. | 7 agents |
-| [`data`](./plugins/data/) | 1.0.1 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, and Python data engineering. | 6 agents |
-| [`machine-learning`](./plugins/machine-learning/) | 1.0.1 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
-| [`genai`](./plugins/genai/) | 1.0.1 | LangChain and LangGraph applications. More frameworks on the way. | 1 agent |
-| [`product-management`](./plugins/product-management/) | 1.0.1 | PRDs, project plans, and clear writing. | 3 agents |
-| [`arch`](./plugins/arch/) | 1.0.1 | Repository housekeeping: CLAUDE.md context files, and Docker and Make workflows. | 2 agents |
+| [`dev`](./plugins/dev/) | 1.0.2 | Specialists for 10 languages, FastAPI and Node.js, plus cross-language refactoring. | 13 agents |
+| [`frontend`](./plugins/frontend/) | 1.0.2 | React, Vue, Next.js, HTML and CSS specialists, plus a designer that turns mockups into specs. | 6 agents |
+| [`infrastructure`](./plugins/infrastructure/) | 1.0.2 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
+| [`databases`](./plugins/databases/) | 1.0.2 | SQL, NoSQL, graph and vector databases. | 7 agents |
+| [`data`](./plugins/data/) | 1.0.2 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, and Python data engineering. | 6 agents |
+| [`machine-learning`](./plugins/machine-learning/) | 1.0.2 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
+| [`product-management`](./plugins/product-management/) | 1.0.2 | PRDs, project plans, and clear writing. | 3 agents |
+| [`arch`](./plugins/arch/) | 1.0.2 | Repository housekeeping: CLAUDE.md context files, and Docker and Make workflows. | 2 agents |
 
 Each plugin's README covers its components, examples and requirements. Versions are pinned in [`marketplace.json`](./.claude-plugin/marketplace.json), and the [changelog](./CHANGELOG.md) says what changed in each. To hear about new releases, watch this repository's releases (**Watch → Custom → Releases**).
 
@@ -225,7 +224,6 @@ An agent is a specialist with its own instructions and its own context window. C
 | machine-learning | `pytorch-expert` | Deep learning models in PyTorch. |
 | machine-learning | `tensorflow-expert` | Developing and deploying TensorFlow models. |
 | machine-learning | `scikit-learn-expert` | scikit-learn: preprocessing, model selection, pipelines, tuning. |
-| genai | `langchain-expert` | LangChain and LangGraph: LCEL chains, RAG, multi-agent systems. |
 | product-management | `prd-writer` | Product requirements documents. |
 | product-management | `project-planner` | Turning a PRD into a development task list. |
 | product-management | `content-writer` | Clear articles and outlines on complex topics. |

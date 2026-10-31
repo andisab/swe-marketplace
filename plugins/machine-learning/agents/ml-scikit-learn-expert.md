@@ -1,7 +1,7 @@
 ---
 name: scikit-learn-expert
 description: Master scikit-learn for machine learning, focusing on model selection, feature engineering, and hyperparameter tuning. Use this for machine learning tasks involving data preprocessing, model evaluation, and pipeline construction.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#ee4c2c"
 tags:

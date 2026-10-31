@@ -7,7 +7,7 @@ description: |
   - <example>
     Context: User is developing a web application with Docker and wants to optimize their workflow.
     user: "My Docker builds are taking too long, can you help?"
-    assistant: "I'll use the docker-make-orchestrator agent to analyze your Dockerfile and suggest optimizations."
+    assistant: "I'll use the build-orchestrator agent to analyze your Dockerfile and suggest optimizations."
     <commentary>
     The user needs help with Docker build optimization, which is a core capability of this agent.
     </commentary>
@@ -15,7 +15,7 @@ description: |
   - <example>
     Context: User has made code changes and needs to update their running containers.
     user: "I've updated my backend code, what's the best way to apply these changes?"
-    assistant: "Let me use the docker-make-orchestrator agent to determine whether you need a rebuild or just a restart."
+    assistant: "Let me use the build-orchestrator agent to determine whether you need a rebuild or just a restart."
     <commentary>
     The agent can analyze the changes and recommend the most efficient update strategy.
     </commentary>
@@ -23,11 +23,12 @@ description: |
   - <example>
     Context: User is having issues with data persistence in their Docker setup.
     user: "My database keeps losing data when I restart the container"
-    assistant: "I'll invoke the docker-make-orchestrator agent to review your volume configuration and fix the persistence issue."
+    assistant: "I'll invoke the build-orchestrator agent to review your volume configuration and fix the persistence issue."
     <commentary>
     Volume management and data persistence are key responsibilities of this agent.
     </commentary>
   </example>
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#d65d0e"
 tags:

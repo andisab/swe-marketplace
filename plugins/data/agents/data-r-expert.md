@@ -16,7 +16,7 @@ description: >
   - "Create an RMarkdown report" → Use this agent for reproducible research
   - "Optimize this R code for performance" → Use this agent for data.table and vectorization
   - "Build a Shiny dashboard" → Use this agent for interactive web applications
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#276DC2"
 tags:

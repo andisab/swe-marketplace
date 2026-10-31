@@ -2,7 +2,18 @@
 
 Notable changes to the marketplace and its plugins. Each plugin carries its own version in [`marketplace.json`](./.claude-plugin/marketplace.json); a marketplace release (tagged `vX.Y.Z`, matching the catalog version) groups the plugin versions that shipped together. Claude Code updates an installed plugin when its version changes, so every shipped change to a plugin bumps its version.
 
-## [1.2.1] — unreleased
+## [1.3.0] — unreleased
+
+### genai removed
+
+- The `genai` plugin is gone from the catalog. Its one agent, `langchain-expert`, didn't earn a plugin of its own. If you installed it, `/plugin uninstall genai@swe-marketplace` removes it; nothing else depends on it.
+
+### Agent packs 1.0.2
+
+arch 1.0.2 · data 1.0.2 · databases 1.0.2 · dev 1.0.2 · frontend 1.0.2 · infrastructure 1.0.2 · machine-learning 1.0.2 · product-management 1.0.2
+
+- **Context7 is gone from every agent.** No plugin here ships or declares the Context7 MCP server, so the `mcp__context7__*` grants named tools most users don't have. The grants, the READMEs' "Do the agents need Context7?" sections and two agents' "use Context7" passages (highcharts-expert, jupyter-expert) are removed. To keep using Context7, install it yourself; agents that inherit MCP tools from your session aren't affected.
+- **arch:** `build-orchestrator` now states its tools (Read, Write, Edit, Bash, Grep, Glob) instead of inheriting every tool, and its examples call it by its own name rather than `docker-make-orchestrator`.
 
 ### Release branches for the directory
 

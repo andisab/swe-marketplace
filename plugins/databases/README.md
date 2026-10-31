@@ -47,8 +47,6 @@ Claude hands a task to one of these agents when the task matches the agent's des
 
 **Can the agents run queries against my database?** Yes, through Bash, when the client such as `psql`, `mongosh` or `cqlsh` is installed. Claude Code asks before each command your permission settings don't already allow, so you see every query first. Point them at a development database rather than production.
 
-**Do the agents need Context7?** No, but they use it when it's there. Every agent here can call the [Context7](https://context7.com) MCP server to look up current library documentation. Without it, an agent answers from the model's own knowledge, which can lag behind recent releases. To add Context7, run `/plugin install context7@claude-plugins-official`.
-
 ---
 
 Part of [swe-marketplace](../../README.md). Changes are in the [changelog](../../CHANGELOG.md). Common questions are in the [FAQ](../../README.md#faq). MIT license.

@@ -1,7 +1,7 @@
 ---
 name: go-expert
 description: Go specialist focusing on idiomatic Go, concurrency, and performance optimization.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#00add8"
 tags:
