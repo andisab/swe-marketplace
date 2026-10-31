@@ -306,9 +306,10 @@ The marketplace ships two manifests. The catalog, `.claude-plugin/marketplace.js
 ```bash
 python scripts/synthesize-plugin-manifests.py          # regenerate every plugin.json
 python scripts/synthesize-plugin-manifests.py --check  # fail if any plugin.json has drifted (CI runs this)
-python scripts/check-agent-tools.py                    # agent tool names (CI runs this)
+python scripts/check-readme-catalog.py                 # this README's catalog tables vs marketplace.json (CI runs this)
+python scripts/check-agent-tools.py                    # agent tool grants (CI runs this)
 ./scripts/validate-all.sh                              # full validation (CI runs this)
-git config core.hooksPath scripts/git-hooks            # optional: run the drift check before each commit
+git config core.hooksPath scripts/git-hooks            # optional: run both catalog checks before each commit
 ```
 
 The pre-commit hook checks the staged files, not the working tree, so a commit with a stale `plugin.json` fails even when the tree is in sync. `git commit --no-verify` skips it for one commit.

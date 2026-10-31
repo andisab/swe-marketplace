@@ -17,8 +17,14 @@ jobs:
           python-version: "3.12"
       - name: Verify generated plugin.json files are in sync
         run: python scripts/synthesize-plugin-manifests.py --check
-      - name: Verify agents name only real tools
+      - name: Verify the README's catalog tables match marketplace.json
+        run: python scripts/check-readme-catalog.py
+      - name: Verify agents state their tools and name only real ones
         run: python scripts/check-agent-tools.py
+      - name: shellcheck
+        run: git ls-files -z '*.sh' 'scripts/git-hooks/*' | xargs -0 shellcheck -S warning
+      - name: ruff
+        run: pipx run ruff==0.17.0 check .
       - name: Test adv's dispatcher against fake engines
         run: sudo apt-get install -y -qq jq >/dev/null && bash plugins/adv/tests/dispatch-test.sh
       - uses: actions/setup-node@v4

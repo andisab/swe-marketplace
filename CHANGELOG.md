@@ -15,6 +15,13 @@ arch 1.0.2 · data 1.0.2 · databases 1.0.2 · dev 1.0.2 · frontend 1.0.2 · in
 - **Context7 is gone from every agent.** No plugin here ships or declares the Context7 MCP server, so the `mcp__context7__*` grants named tools most users don't have. The grants, the READMEs' "Do the agents need Context7?" sections and two agents' "use Context7" passages (highcharts-expert, jupyter-expert) are removed. To keep using Context7, install it yourself; agents that inherit MCP tools from your session aren't affected.
 - **arch:** `build-orchestrator` now states its tools (Read, Write, Edit, Bash, Grep, Glob) instead of inheriting every tool, and its examples call it by its own name rather than `docker-make-orchestrator`.
 
+### Repository checks
+
+- **Linting.** `shellcheck -S warning` and `ruff` (correctness rules only, in a new `ruff.toml`) run in CI and in `validate-all.sh`. The first pass fixed what they found, none of it changing behavior: an unused variable in adv's dispatcher, two trap commands quoted to expand at exit, an `ls | grep` in knowledgeware's font installer replaced by `find`, and unused loop variables in chartware's SVG lint and the gallery script. These ride with each plugin's next version.
+- **Agent tool grants.** `check-agent-tools.py` now also fails an agent with no `tools:` line (it would get every tool) and an MCP tool from a server the agent's plugin doesn't declare, with a short, reasoned list of optional servers (conventions-mcp, for context-engineer).
+- **README catalog.** A new `check-readme-catalog.py` fails when the README's catalog tables and `marketplace.json` disagree on a plugin or its version. CI, `validate-all.sh` and the pre-commit hook run it.
+- **`validate-all.sh` exits clean.** It unsets an inherited `NODE_OPTIONS`, which some terminals set to preload a module that breaks every node call, and deletes untracked `.DS_Store` files under `plugins/` that the validator would warn on. It now also runs the manifest drift check, so it covers everything CI does.
+
 ### Release branches for the directory
 
 - Submitted plugins track `release/<plugin>` in Anthropic's directory instead of `main`, so day-to-day merges don't start a scan. `scripts/cut-release.sh <plugin>` fast-forwards that branch to `origin/main` after checking the plugin's version went up, prints the changelog lines and files since the last cut, and asks before pushing. `release/knowledgeware` starts at the 1.9.3 state.

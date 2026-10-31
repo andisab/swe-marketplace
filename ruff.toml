@@ -1,0 +1,13 @@
+# Lint config for the repo's Python scripts (run by scripts/validate-all.sh and CI).
+# Correctness only: pyflakes, the error subset of pycodestyle, and bugbear. Style is left to the author.
+target-version = "py39"   # stock macOS python3; scripts use `from __future__ import annotations`
+extend-exclude = [
+  "plugins/context-engineering/templates",   # scaffolds with {placeholder} names, not runnable code
+  "node_modules",
+]
+force-exclude = true
+
+[lint]
+select = ["E4", "E7", "E9", "F", "B"]
+# The scripts use compact one-liners (`if x: return y`) and small named lambdas on purpose.
+ignore = ["E701", "E702", "E731", "E741"]   # and `l` for a line in short comprehensions

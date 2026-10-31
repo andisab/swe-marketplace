@@ -597,11 +597,9 @@ elif [[ $EXIT_CODE -ne 0 ]]; then
 fi
 
 # --- Validate response ---
-VALIDATED=true
 if [[ $EXIT_CODE -eq 0 ]]; then
   if ! validate_response "$RESPONSE"; then
     EXIT_CODE=5
-    VALIDATED=false
   fi
 fi
 

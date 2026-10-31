@@ -18,6 +18,7 @@ Requirements:
 - Python 3.10+ (only stdlib used by the generator)
 - `claude` CLI on `PATH` for local validation ([install instructions](https://docs.claude.com/en/docs/claude-code/setup))
 - `git` and a fork of this repo
+- Optional: `shellcheck` and `ruff` (`brew install shellcheck ruff`); `validate-all.sh` lints with them when they're installed, and CI always does
 
 ```bash
 git clone git@github.com:<you>/swe-marketplace.git
@@ -68,7 +69,7 @@ Required formats (per `claude plugin validate`):
 
 Every agent file needs YAML frontmatter or the validator emits a warning.
 
-An agent's `tools:` list may name only real Claude Code tools. `claude plugin validate` doesn't check these names, and an agent can't use a tool that doesn't exist, so one listing `MultiEdit` but not `Edit` can only rewrite whole files. `validate-all.sh` and CI run `scripts/check-agent-tools.py` to catch them: use `Edit` (not `MultiEdit`), `Glob` (not `LS`), `Agent` (not `Task`), and `mcp__<server>__*` for an MCP server such as Context7. Leave `tools:` out to give an agent every tool.
+An agent's `tools:` list may name only real Claude Code tools. `claude plugin validate` doesn't check these names, and an agent can't use a tool that doesn't exist, so one listing `MultiEdit` but not `Edit` can only rewrite whole files. `validate-all.sh` and CI run `scripts/check-agent-tools.py` to catch them: use `Edit` (not `MultiEdit`), `Glob` (not `LS`), `Agent` (not `Task`), and `mcp__<server>__*` only for an MCP server the plugin declares in its catalog entry's `mcpServers` (or one on the checker's short list of optional servers, each with its reason). Every agent states its tools: an agent without a `tools:` line would get every tool, MCP tools included, so the checker rejects it.
 
 ## Adding a new plugin
 
