@@ -35,6 +35,11 @@ if ! python3 scripts/check-agent-tools.py; then
   failed=1
 fi
 
+# The three scripts above, against fixture repositories
+if ! python3 -m unittest discover -s scripts/tests; then
+  failed=1
+fi
+
 # Linters. CI installs both; locally a missing one is skipped with a note, not failed.
 if command -v shellcheck >/dev/null 2>&1; then
   if git ls-files -z '*.sh' 'scripts/git-hooks/*' | xargs -0 shellcheck -S warning; then

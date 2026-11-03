@@ -33,6 +33,7 @@ scripts/
   synthesize-plugin-manifests.py    # generator (writes; --check fails on drift)
   check-readme-catalog.py           # README catalog tables vs marketplace.json (names and versions)
   check-agent-tools.py              # agent tool grants: a tools line, real tool names, declared MCP servers
+  tests/                            # unittest suite for the three scripts above
   validate-all.sh                   # every check below, shellcheck, ruff, every test, `claude plugin validate` on all
   cut-release.sh                    # fast-forwards release/<plugin> for the directory
   git-hooks/pre-commit              # drift and README checks on the staged files
@@ -57,6 +58,7 @@ CHANGELOG.md                        # one section per release, one subsection pe
 - `node plugins/knowledgeware/tests/registry-test.js`, `bash plugins/knowledgeware/tests/svg-lint-test.sh`, `bash plugins/knowledgeware/tests/diagram-digest-test.sh`, `node plugins/knowledgeware/tests/deck-review-test.js` (builds a temp deck against a stub reveal.js and a stub js-yaml, so no install is needed).
 - `python3 scripts/check-agent-tools.py` — reads `tools:` and `allowed-tools:`. Every agent needs one; built-in names must be real; an `mcp__<server>__` name must be a server the agent's own plugin declares in `mcpServers` (bare or as `plugin_<plugin>_<server>`), or one in its `OPTIONAL_MCP_SERVERS` (only `conventions` today, for context-engineer).
 - `python3 scripts/check-readme-catalog.py` — every catalog plugin appears once in the README's catalog tables at its catalog version, and nothing else does.
+- `python3 -m unittest discover -s scripts/tests` — the generator and both checks, each copied into a fixture repository and run there, so a test never reads or writes this checkout.
 - Lint: `shellcheck -S warning` on every tracked shell script and the git hook, `ruff check .` with `ruff.toml` (templates under context-engineering are excluded; they hold `{placeholder}` names). Both run in CI; validate-all skips a linter that isn't installed, with a note.
 
 **Cutting a directory release.** Anthropic's plugin directory follows one git ref per submitted plugin, and each submitted plugin tracks `release/<plugin>` (knowledgeware since 2026-10-26), so work on `main` never reaches the directory on its own. To release, bump the plugin's version on `main` as usual, then run `scripts/cut-release.sh <plugin>` (`--dry-run` to preview). It fast-forwards `origin/release/<plugin>` to `origin/main`, refusing when the version on `main` isn't higher than the released one or the branch isn't an ancestor of `main`. The directory scans the new commit on its next check, or at once with the push webhook. Release branches are unprotected on purpose; nothing else pushes to them. GitHub marketplace installs keep tracking `main`, so those users get every bump and directory users get the cuts. The tracked branch is edited on the plugin's Settings tab in claude.ai/directory/manage, except while a version is with a reviewer.

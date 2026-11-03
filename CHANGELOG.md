@@ -20,6 +20,7 @@ data 1.0.2 · databases 1.0.2 · dev 1.0.2 · frontend 1.0.2 · infrastructure 1
 
 - **Linting.** `shellcheck -S warning` and `ruff` (correctness rules only, in a new `ruff.toml`) run in CI and in `validate-all.sh`. The first pass fixed what they found, none of it changing behavior: an unused variable in adv's dispatcher, two trap commands quoted to expand at exit, an `ls | grep` in knowledgeware's font installer replaced by `find`, and unused loop variables in chartware's SVG lint and the gallery script. These ride with each plugin's next version.
 - **Agent tool grants.** `check-agent-tools.py` now also fails an agent with no `tools:` line (it would get every tool) and an MCP tool from a server the agent's plugin doesn't declare, with a short, reasoned list of optional servers (conventions-mcp, for context-engineer).
+- **Tests for the catalog scripts.** `scripts/tests/` runs the generator and both checks inside fixture repositories, covering what each must accept and reject. CI and `validate-all.sh` run it.
 - **README catalog.** A new `check-readme-catalog.py` fails when the README's catalog tables and `marketplace.json` disagree on a plugin or its version. CI, `validate-all.sh` and the pre-commit hook run it.
 - **`validate-all.sh` exits clean.** It unsets an inherited `NODE_OPTIONS`, which some terminals set to preload a module that breaks every node call, and deletes untracked `.DS_Store` files under `plugins/` that the validator would warn on. It now also runs the manifest drift check, so it covers everything CI does.
 

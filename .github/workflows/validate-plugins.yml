@@ -21,6 +21,8 @@ jobs:
         run: python scripts/check-readme-catalog.py
       - name: Verify agents state their tools and name only real ones
         run: python scripts/check-agent-tools.py
+      - name: Test the catalog scripts against fixture repositories
+        run: python -m unittest discover -s scripts/tests
       - name: shellcheck
         run: git ls-files -z '*.sh' 'scripts/git-hooks/*' | xargs -0 shellcheck -S warning
       - name: ruff
