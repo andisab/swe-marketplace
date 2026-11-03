@@ -28,7 +28,6 @@ Find the row that matches what you want to do, install that plugin, and then ask
 | Build your own agents, skills, hooks, plugins or MCP servers | [`context-engineering`](./plugins/context-engineering/) | *"Help me create a skill that drafts our release notes"* |
 | Bring in a specialist for a language, framework, cloud or database | [`dev`](./plugins/dev/), [`frontend`](./plugins/frontend/), [`infrastructure`](./plugins/infrastructure/), [`databases`](./plugins/databases/), [`data`](./plugins/data/), [`machine-learning`](./plugins/machine-learning/) | *"Have the Terraform engineer review this module"* |
 | Write PRDs and project plans | [`product-management`](./plugins/product-management/) | *"Draft a PRD for single sign-on"* |
-| Keep CLAUDE.md files accurate as the code changes | [`arch`](./plugins/arch/) | *"Update CLAUDE.md for the changes on this branch"* |
 
 To install one, run this in Claude Code (v2.1.275 or later), with any plugin name from the table in place of `knowledgeware`:
 
@@ -36,7 +35,7 @@ To install one, run this in Claude Code (v2.1.275 or later), with any plugin nam
 /plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-[Install](#install) is one command; [docs/install.md](./docs/install.md) covers older Claude Code versions, shells, teams, Claude Desktop, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other nine are agent packs, a set of agent definitions each and nothing more.
+[Install](#install) is one command; [docs/install.md](./docs/install.md) covers older Claude Code versions, shells, teams, Claude Desktop, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other seven are agent packs, a set of agent definitions each and nothing more.
 
 ## What knowledgeware makes
 
@@ -132,7 +131,6 @@ One domain each, and nothing but agent definitions: no scripts, no MCP servers, 
 | [`data`](./plugins/data/) | 1.0.2 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, and Python data engineering. | 6 agents |
 | [`machine-learning`](./plugins/machine-learning/) | 1.0.2 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
 | [`product-management`](./plugins/product-management/) | 1.0.2 | PRDs, project plans, and clear writing. | 3 agents |
-| [`arch`](./plugins/arch/) | 1.0.2 | Repository housekeeping: CLAUDE.md context files, and Docker and Make workflows. | 2 agents |
 
 Each plugin's README covers its components, examples and requirements. Versions are pinned in [`marketplace.json`](./.claude-plugin/marketplace.json), and the [changelog](./CHANGELOG.md) says what changed in each. To hear about new releases, watch this repository's releases (**Watch → Custom → Releases**).
 
@@ -227,8 +225,6 @@ An agent is a specialist with its own instructions and its own context window. C
 | product-management | `prd-writer` | Product requirements documents. |
 | product-management | `project-planner` | Turning a PRD into a development task list. |
 | product-management | `content-writer` | Clear articles and outlines on complex topics. |
-| arch | `context-agent` | Keeping CLAUDE.md files in sync with the repository. |
-| arch | `build-orchestrator` | Docker and Make workflows: images, containers, volumes, build targets. |
 
 </details>
 

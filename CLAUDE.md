@@ -4,7 +4,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 
 ## Status
 
-- 12 plugins. The last tagged catalog release is `v1.2.0` (`metadata.version` in `marketplace.json`); CHANGELOG's `[1.3.0] — unreleased` section collects what has merged since. Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.12.6, context-engineering 1.1.1, the eight agent packs 1.0.2.
+- 11 plugins. The last tagged catalog release is `v1.2.0` (`metadata.version` in `marketplace.json`); CHANGELOG's `[1.3.0] — unreleased` section collects what has merged since. Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.12.6, context-engineering 1.1.1, the seven agent packs 1.0.2.
 - Work happens on short-lived branches off `main`, one PR each (#13–#19 so far). Andis reviews and merges, with `--admin` when branch protection asks for a review; don't push to `main`. Open each PR against `main`, not a stacked branch. At a catalog release, set `metadata.version`, replace `unreleased` in the CHANGELOG heading with the date, and tag `vX.Y.Z`.
 - `./scripts/validate-all.sh` passes clean. It unsets `NODE_OPTIONS` (cmux preloads a module that breaks every node call) and deletes untracked `.DS_Store` files under `plugins/`, which `claude plugin validate` would otherwise warn on.
 - `core.hooksPath` is unset in this clone, so the pre-commit check doesn't run here; enable it with `git config core.hooksPath scripts/git-hooks`.
@@ -12,7 +12,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 
 ## Overview
 
-Public Claude Code plugin marketplace: one catalog at `.claude-plugin/marketplace.json` indexing 12 plugins under `plugins/<name>/`. Two core plugins carry scripts and tests (knowledgeware, research-team), two are experimental (adv, context-engineering), the other eight are agent packs. See the README for what each plugin does and how it's installed.
+Public Claude Code plugin marketplace: one catalog at `.claude-plugin/marketplace.json` indexing 11 plugins under `plugins/<name>/`. Two core plugins carry scripts and tests (knowledgeware, research-team), two are experimental (adv, context-engineering), the other seven are agent packs. See the README for what each plugin does and how it's installed.
 
 ## File structure
 
@@ -75,7 +75,7 @@ CHANGELOG.md                        # one section per release, one subsection pe
 
 ## Shelved plan: agent pack refactor
 
-Planned 2026-11-03, not started. The agent packs are uneven. Measured over the 53 agents that day:
+Planned 2026-11-03, not started. The agent packs are uneven. Measured over the 53 agents that day (arch's two have since been removed):
 
 | Band | Agents | Problem |
 |---|---|---|
@@ -91,7 +91,7 @@ Planned 2026-11-03, not started. The agent packs are uneven. Measured over the 5
 
 **Steps, one PR per pack, each pack to its next minor version.**
 1. Checks first: a shape check (description with examples; body between 100 and 400 lines) as warnings, turned into failures once every pack passes.
-2. Settle overlaps before rewriting: javascript, typescript and nodejs in dev; sql, postgres and mariadb in databases; d3 and highcharts in data; infra-docker-engineer against whatever arch keeps.
+2. Settle overlaps before rewriting: javascript, typescript and nodejs in dev; sql, postgres and mariadb in databases; d3 and highcharts in data.
 3. The seven heavy agents: split core from reference.
 4. The sixteen thin agents: rewrite with domain decision rules and examples, or remove the ones that add nothing over the base model.
 5. The middle band: descriptions, examples, trims.

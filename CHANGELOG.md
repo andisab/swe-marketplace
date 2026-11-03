@@ -4,16 +4,17 @@ Notable changes to the marketplace and its plugins. Each plugin carries its own 
 
 ## [1.3.0] — unreleased
 
-### genai removed
+### genai and arch removed
 
-- The `genai` plugin is gone from the catalog. Its one agent, `langchain-expert`, didn't earn a plugin of its own. If you installed it, `/plugin uninstall genai@swe-marketplace` removes it; nothing else depends on it.
+- The `genai` plugin is gone from the catalog. Its one agent, `langchain-expert`, didn't earn a plugin of its own.
+- The `arch` plugin is gone too. `context-agent` maintained CLAUDE.md from a subagent, which starts without the session's context that an update needs, to a template that no longer matches current guidance; Claude Code's `/init` creates the file. `build-orchestrator` repeated Docker knowledge the model has and the infrastructure pack's `infra-docker-engineer` covers; its conventions (run Makefile targets rather than raw docker commands, when to restart, rebuild or recreate) belong in a user's own CLAUDE.md.
+- If you installed either, `/plugin uninstall genai@swe-marketplace` or `/plugin uninstall arch@swe-marketplace` removes it; nothing else depends on them.
 
 ### Agent packs 1.0.2
 
-arch 1.0.2 · data 1.0.2 · databases 1.0.2 · dev 1.0.2 · frontend 1.0.2 · infrastructure 1.0.2 · machine-learning 1.0.2 · product-management 1.0.2
+data 1.0.2 · databases 1.0.2 · dev 1.0.2 · frontend 1.0.2 · infrastructure 1.0.2 · machine-learning 1.0.2 · product-management 1.0.2
 
 - **Context7 is gone from every agent.** No plugin here ships or declares the Context7 MCP server, so the `mcp__context7__*` grants named tools most users don't have. The grants, the READMEs' "Do the agents need Context7?" sections and two agents' "use Context7" passages (highcharts-expert, jupyter-expert) are removed. To keep using Context7, install it yourself; agents that inherit MCP tools from your session aren't affected.
-- **arch:** `build-orchestrator` now states its tools (Read, Write, Edit, Bash, Grep, Glob) instead of inheriting every tool, and its examples call it by its own name rather than `docker-make-orchestrator`.
 
 ### Repository checks
 

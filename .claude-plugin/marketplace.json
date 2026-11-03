@@ -56,42 +56,6 @@
       }
     },
     {
-      "name": "arch",
-      "source": "./plugins/arch",
-      "description": "Repository housekeeping agents: keep the CLAUDE.md context files Claude Code relies on accurate as a codebase evolves, and manage Docker and Make workflows.",
-      "version": "1.0.2",
-      "author": {
-        "name": "Andis A. Blukis",
-        "email": "andis.blukis@gmail.com",
-        "url": "https://github.com/andisab"
-      },
-      "homepage": "https://github.com/andisab/swe-marketplace",
-      "repository": "https://github.com/andisab/swe-marketplace",
-      "license": "MIT",
-      "keywords": [
-        "architecture",
-        "orchestration",
-        "system-design",
-        "coordination",
-        "planning"
-      ],
-      "category": "architecture",
-      "strict": true,
-      "agents": [
-        "./agents/arch-context-agent.md",
-        "./agents/build-orchestrator.md"
-      ],
-      "metadata": {
-        "directory": {
-          "icon": "./.claude-plugin/icon.png",
-          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/arch/README.md",
-          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
-          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
-          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
-        }
-      }
-    },
-    {
       "name": "context-engineering",
       "source": "./plugins/context-engineering",
       "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, MCP tools, MCP servers, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
