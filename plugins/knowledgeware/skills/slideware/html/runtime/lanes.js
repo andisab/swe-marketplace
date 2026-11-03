@@ -44,6 +44,27 @@
     const m = re.exec(html);
     return m ? elementAt(html, m.index) : null;
   }
+  // The element at a path of element-child indices under the element starting at 0 (a section).
+  // Comments, text and the contents of script and style don't count, as in the editor.
+  function findByPath(html, path) {
+    const scan = maskCode(html);
+    let el = elementAt(scan, 0);
+    for (const i of path || []) {
+      if (!el || el.selfClosing) return null;
+      const re = /<!--[\s\S]*?-->|<\/[^>]*>|<([a-zA-Z][\w:-]*)\b[^>]*>/g;
+      re.lastIndex = el.openEnd;
+      let n = -1, m, found = null;
+      while ((m = re.exec(scan)) && m.index < el.closeStart) {
+        if (!m[1]) continue;
+        const child = elementAt(scan, m.index);
+        if (!child) return null;
+        if (++n === i) { found = child; break; }
+        re.lastIndex = child.end;
+      }
+      el = found;
+    }
+    return el;
+  }
   function setAttrs(openTag, attrs) {
     let t = openTag;
     for (const [k, v] of Object.entries(attrs)) {
@@ -121,8 +142,8 @@
       seenKeys.add(s.key);
       for (const o of bySlide[s.key] || []) {
         if (o.slide) { sec = o.slide; continue; }
-        const el = o.id ? findById(sec, o.id) : null;
-        if (!el) { missing.push({ key: s.key, id: o.id || null }); continue; }
+        const el = o.id ? findById(sec, o.id) : o.path ? findByPath(sec, o.path) : null;
+        if (!el) { missing.push({ key: s.key, id: o.id || (o.path ? o.path.join("/") : null) }); continue; }
         if (o.from !== undefined && sec.slice(el.openEnd, el.closeStart) !== o.from) drifted.push({ key: s.key, id: o.id });
         let open = sec.slice(el.start, el.openEnd), inner = sec.slice(el.openEnd, el.closeStart);
         if (o.attrs) open = setAttrs(open, o.attrs);
@@ -178,5 +199,5 @@
     return hash(slides + "\u0000" + (overlayText || ""));
   }
 
-  return { applyLane, replaceText, elementAt, findById, setAttrs, sectionsIn, slidesRegion, maskCode, hash, sourceStamp };
+  return { applyLane, replaceText, elementAt, findById, findByPath, setAttrs, sectionsIn, slidesRegion, maskCode, hash, sourceStamp };
 });

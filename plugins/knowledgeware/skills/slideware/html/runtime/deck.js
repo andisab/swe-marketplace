@@ -324,13 +324,15 @@ html.sw-print .sw-progress { display: none; }
     const h = stage.parentElement;
     const isBody = h === doc.body;
     const r = isBody ? { width: window.innerWidth, height: window.innerHeight } : h.getBoundingClientRect();
-    const reserve = isBody ? parseFloat(getComputedStyle(html).getPropertyValue("--sw-reserve-bottom")) || 0 : 0;
-    const availH = Math.max(0, r.height - reserve);
+    const cs = getComputedStyle(html);
+    const reserve = isBody ? parseFloat(cs.getPropertyValue("--sw-reserve-bottom")) || 0 : 0;
+    const top = isBody ? parseFloat(cs.getPropertyValue("--sw-reserve-top")) || 0 : 0;
+    const availH = Math.max(0, r.height - reserve - top);
     const s = Math.max(0.01, Math.min(r.width / W, availH / H));
     state.scale = s;
     stage.style.setProperty("--sw-scale", s);
     stage.style.setProperty("--sw-x", (r.width - W * s) / 2 + "px");
-    stage.style.setProperty("--sw-y", (hostAlign === "bottom" ? availH - H * s : (availH - H * s) / 2) + "px");
+    stage.style.setProperty("--sw-y", top + (hostAlign === "bottom" ? availH - H * s : (availH - H * s) / 2) + "px");
     emit("layout", { scale: s });
   }
   let hostObserver = null, hostAlign = "center";

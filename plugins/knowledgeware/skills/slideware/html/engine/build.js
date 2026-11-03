@@ -33,11 +33,16 @@ function pluginDataDir() {
 function editorTarget() { return path.join(pluginDataDir(), "slideware", "editor.js"); }
 function editorUrl() { return pathToFileURL(editorTarget()).href; }
 // Copy the editor bundle into the data folder. Returns the path, or null when there's no editor yet.
-function installEditor() {
+// The editor as one script: the lane builder, the serializer and the editor itself.
+function editorBundle() {
   const src = path.join(HTML_DIR, "editor", "editor.js");
   if (!fs.existsSync(src)) return null;
-  const parts = ["runtime/lanes.js", "editor/serialize.js", "editor/editor.js"].map((p) => path.join(HTML_DIR, p)).filter((p) => fs.existsSync(p));
-  const bundle = `/* slideware editor ${RUNTIME_VERSION}, copied from the knowledgeware plugin. Replaced on every refresh. */\n` + parts.map((p) => fs.readFileSync(p, "utf8")).join("\n");
+  const parts = ["runtime/lanes.js", "editor/serialize.js", "editor/editor.js"].map((p) => path.join(HTML_DIR, p));
+  return `/* slideware editor ${RUNTIME_VERSION}, copied from the knowledgeware plugin. Replaced on every refresh. */\n` + parts.map((p) => fs.readFileSync(p, "utf8")).join("\n");
+}
+function installEditor() {
+  const bundle = editorBundle();
+  if (!bundle) return null;
   const dest = editorTarget();
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, bundle);
@@ -133,4 +138,4 @@ function refreshDeck(text, { brand, runtime = true, theme: doTheme = true } = {}
   return { text, changes, notes };
 }
 
-module.exports = { RUNTIME_VERSION, HTML_DIR, PLUGIN_ROOT, newDeck, refreshDeck, installEditor, pluginDataDir, editorTarget, editorUrl, runtimeJs, loaderJs };
+module.exports = { RUNTIME_VERSION, HTML_DIR, PLUGIN_ROOT, newDeck, refreshDeck, installEditor, editorBundle, pluginDataDir, editorTarget, editorUrl, runtimeJs, loaderJs };
