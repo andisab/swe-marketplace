@@ -8,6 +8,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 - Work happens on short-lived branches off `main`, one PR each (#13–#19 so far). Andis reviews and merges, with `--admin` when branch protection asks for a review; don't push to `main`. Open each PR against `main`, not a stacked branch. At a catalog release, set `metadata.version`, replace `unreleased` in the CHANGELOG heading with the date, and tag `vX.Y.Z`.
 - `./scripts/validate-all.sh` passes clean. It unsets `NODE_OPTIONS` (cmux preloads a module that breaks every node call) and deletes untracked `.DS_Store` files under `plugins/`, which `claude plugin validate` would otherwise warn on.
 - `core.hooksPath` is unset in this clone, so the pre-commit check doesn't run here; enable it with `git config core.hooksPath scripts/git-hooks`.
+- Shelved: the agent pack refactor, planned below under §Shelved plan. Pick it up from there.
 
 ## Overview
 
@@ -71,3 +72,31 @@ CHANGELOG.md                        # one section per release, one subsection pe
 - knowledgeware resolves brands from `KNOWLEDGEWARE_BRANDS_DIR` (Andis's private brands in ABDotfiles) before its own `styles/`; only the five generic styles and the fictional `acmecorp` ship here, enforced by `.gitignore`.
 - Restart Claude Code (or `/reload-plugins`) after installing or updating a plugin.
 - **Where a shared contract lives (knowledgeware).** The skill that defines an artifact owns its contract: brandware owns the brandbook (definition, token schema, assets); knowledgebase owns the maintenance spec, for sites and for decks' spec pages. Mechanics live next to the code that implements them (a format's token mapping in that format's guide, a builder's fields in its reference). Every other file keeps one sentence and a link. When a feature touches several skills, write it once in the owner's file and link from the rest; the review-mode PR described one feature in five places, which is what this rule prevents.
+
+## Shelved plan: agent pack refactor
+
+Planned 2026-11-03, not started. The agent packs are uneven. Measured over the 53 agents that day:
+
+| Band | Agents | Problem |
+|---|---|---|
+| Under 100 lines | 16: ten in dev, all three in machine-learning, fe-html and others | Generic checklists the model already follows. Eight have a one-line description with no triggers or examples. |
+| 100 to 1,000 lines | 30 | Mostly usable; descriptions and examples are uneven. |
+| Over 1,000 lines | 7: five in data, fe-css, infra-docker-engineer | Reference manuals, loaded into the system prompt of every delegation. |
+
+**Target shape for an agent.**
+- Description: one sentence of scope, "Use when…" triggers, and two or three `<example>` blocks, one of them a near miss that should not delegate. Delegation reads only this.
+- Body of 150 to 400 lines holding what the base model gets wrong or does inconsistently: current versions, decision rules, house conventions, an output contract, what not to do. Generic advice goes.
+- Reference material moves to a skill in the same plugin (`skills/<topic>/references/`, read on demand), or is cut where it restates public docs.
+- Tools stay least-privilege (`check-agent-tools.py` enforces the grant); model stays `sonnet` unless there's a reason.
+
+**Steps, one PR per pack, each pack to its next minor version.**
+1. Checks first: a shape check (description with examples; body between 100 and 400 lines) as warnings, turned into failures once every pack passes.
+2. Settle overlaps before rewriting: javascript, typescript and nodejs in dev; sql, postgres and mariadb in databases; d3 and highcharts in data; infra-docker-engineer against whatever arch keeps.
+3. The seven heavy agents: split core from reference.
+4. The sixteen thin agents: rewrite with domain decision rules and examples, or remove the ones that add nothing over the base model.
+5. The middle band: descriptions, examples, trims.
+6. Verify delegation per agent: two or three prompts that should delegate and one or two near misses that shouldn't, run with `claude -p --plugin-dir`, or as an evalkit suite; record the results in the PR.
+
+Pack order: data, dev, frontend, infrastructure, databases, machine-learning, product-management.
+
+**Open decisions for Andis:** which overlapping agents merge or go; whether reference material moves into skills or is cut; the bar a thin agent must clear to stay.
