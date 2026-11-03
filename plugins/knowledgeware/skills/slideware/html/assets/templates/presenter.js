@@ -7,8 +7,11 @@
 // It also replaces Reveal's zoomed-out overview (O) with the section overview below and
 // turns that one off (`overview: false`), so O means one thing.
 //
+// The deck's keys are capital letters (Shift, or Caps Lock on); the lowercase letter does nothing.
+// Reveal's own keys (f, b, ., ?) keep their lowercase.
+//
 // Audience window (the deck itself):
-//   S or P  open the presenter view in a second window; the two windows stay in sync
+//   P       open the presenter view in a second window; the two windows stay in sync
 //           (BroadcastChannel plus window.postMessage, so it also works from file://).
 //           Builds (Reveal fragments, from `steps` or hand-written .fragment elements) play
 //           only while a presenter window is connected: on its own, or in review mode, the
@@ -321,21 +324,39 @@ html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud { display: none !important; }
 <span class="rp-hud-info"><button type="button" data-hud="help" aria-label="Keyboard shortcuts" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg></button><div class="rp-hud-help" role="tooltip"></div></span>`;
   // The key list behind the pill's i. Review mode's keys are listed when the deck was built with it.
   // One convention for every key the plugins show: capital letters, modifiers spelled out.
+  // The deck's own keys are capital letters (Shift, or Caps Lock), matched on e.key so the
+  // lowercase letter does nothing; Reveal's own keys (f, b, ., ?) stay lowercase.
   const KEYS = [
     ["→ ← Space", "Next and previous slide"],
-    ["S or P", "Presenter view in a second window"],
+    ["P", "Presenter view in a second window"],
     ["N", "Notes drawer, for rehearsal"],
     ["O", "Overview of every slide, by section"],
-    ["F", "Fullscreen"],
-    ["B or .", "Black out the screen"],
+    ["f", "Fullscreen"],
+    ["b or .", "Black out the screen"],
     ["Esc", "Close the overview, leave a field"],
     ["?", "Every Reveal.js key"],
   ];
   const REVIEW_KEYS = [
     ["E", "Review mode: edit text, notes and the deck's shape"],
+    ["S", "In review mode: save edits.json"],
+    ["L", "In review mode: layout mode"],
     ["Shift+B", "Rebuild the deck (through serve-deck.js)"],
     ["H · Del · Shift+←→", "In the overview, with review mode on: hide, delete or move the focused slide"],
   ];
+  // The capital letter a key event types, or null: an upper-case character (Shift, or Caps Lock),
+  // or a letter with Shift held (synthetic events, and some remote-control tools, send the
+  // lowercase character with shiftKey set).
+  const capitalOf = (e) => e.key && e.key.length === 1 && (e.shiftKey || e.key !== e.key.toLowerCase()) ? e.key.toUpperCase() : null;
+  // Runs actions[capital letter] for a capital letter pressed on its own, outside a field, in the capture
+  // phase so Reveal and the overview's handler never see it. While the overview is open only O
+  // (which closes it) gets through; the overview keeps the rest of the keyboard.
+  const onCapital = (actions) => window.addEventListener("keydown", (e) => {
+    const act = actions[capitalOf(e)];
+    if (!act || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) return;
+    if (document.documentElement.classList.contains("rp-ov-on") && e.key !== "O") return;
+    e.preventDefault(); e.stopPropagation(); act();
+  }, true);
   const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.4 10.4 0 0 1 12 5c5 0 9 4 10 7a11.7 11.7 0 0 1-3.2 4.3M6.3 6.3A11.6 11.6 0 0 0 2 12c1 3 5 7 10 7a9.7 9.7 0 0 0 4.4-1"/></svg>';
   const EYE_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   const CROSS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -501,7 +522,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       if (!peer || peer.closed) {
         // Reuse a presenter window that survived a reload of this one, so its timer keeps running.
         peer = window.open("", NS + ":" + key, "width=1440,height=900");
-        if (!peer) { console.warn("RevealPresenter: the popup was blocked. Allow popups for this page, then press S again."); return; }
+        if (!peer) { console.warn("RevealPresenter: the popup was blocked. Allow popups for this page, then press P again."); return; }
         let blank = true;
         try { blank = peer.location.href === "about:blank"; } catch (e) { blank = false; }
         if (blank) peer.location.href = presenterUrl();
@@ -536,9 +557,12 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       document.body.appendChild(drawer);
       new ResizeObserver(() => { if (document.documentElement.classList.contains("rp-drawer-on")) reserveBottom(); }).observe(drawer);   // notes change length per slide
       document.addEventListener("rp-reserve-recompute", reserveBottom);   // review mode closed; the drawer's claim applies again
-      deck.addKeyBinding({ keyCode: 83, key: "S", description: "Open presenter view" }, openPresenter);
-      deck.addKeyBinding({ keyCode: 80, key: "P", description: "Open presenter view" }, openPresenter);
-      deck.addKeyBinding({ keyCode: 78, key: "N", description: "Notes drawer (the audience can see it)" }, toggleDrawer);
+      // Capital P and N, before Reveal sees them: Reveal drops Shift-modified letters before its
+      // bindings run. The bindings only keep Reveal's lowercase p and n (previous and next slide)
+      // from firing, and list the keys in Reveal's ? help.
+      onCapital({ P: openPresenter, N: toggleDrawer });
+      deck.addKeyBinding({ keyCode: 80, key: "P", description: "Presenter view (capital P)" }, () => {});
+      deck.addKeyBinding({ keyCode: 78, key: "N", description: "Notes drawer, the audience can see it (capital N)" }, () => {});
       buildHud();
     }
 
@@ -1118,14 +1142,13 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     function onOverviewKey(e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       e.stopPropagation();
-      if (e.key === "Escape" || e.key === "o" || e.key === "O") { e.preventDefault(); closeOverview(); return; }
+      if (e.key === "Escape") { e.preventDefault(); closeOverview(); return; }   // O closes it too (the deck's key handler)
       if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // the lane switcher keeps its own keys
-      if ((e.key === "e" || e.key === "E") && root.RevealReviewAPI) { e.preventDefault(); document.dispatchEvent(new CustomEvent("rp-review-toggle")); return; }   // review mode toggles here too
       const ths = Array.from(ov.querySelectorAll(".rp-ov-th")), at = ths.indexOf(document.activeElement);
       if (at >= 0 && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ths[at].click(); return; }
       if (at >= 0 && editing()) {   // structural edits on the focused thumbnail, in review mode only
         const cell = ths[at].closest(".rp-ov-cell"), key = cell && cell.dataset.key;
-        const act = e.key === "h" || e.key === "H" ? "hide" : e.key === "Delete" || e.key === "Backspace" ? (cell.classList.contains("rp-deleted") ? "undo" : "delete")
+        const act = capitalOf(e) === "H" ? "hide" : e.key === "Delete" || e.key === "Backspace" ? (cell.classList.contains("rp-deleted") ? "undo" : "delete")
           : e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowUp") ? "earlier" : e.shiftKey && (e.key === "ArrowRight" || e.key === "ArrowDown") ? "later" : null;
         if (act) { e.preventDefault(); structural(act, key); return; }
       }
@@ -1168,7 +1191,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     function startPresenter() {
       document.title = "Presenter · " + document.title;
       q(".rp-title").textContent = titleOf(slides[0]) || document.title.replace(/^Presenter · /, "");
-      q(".rp-sync").textContent = bc || peer ? "Waiting for the audience window (press S there)" : "Not synced";
+      q(".rp-sync").textContent = bc || peer ? "Waiting for the audience window (press P there)" : "Not synced";
       const pauseBtn = q("[data-rp=pause]");
       shell.addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-rp]");
@@ -1237,7 +1260,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
       } else buildAudience();
       deck.configure({ overview: false });   // Reveal's zoomed-out overview gives way to the section overview
       buildOverview();
-      deck.addKeyBinding({ keyCode: 79, key: "O", description: "Slide overview, by section" }, toggleOverview);
+      onCapital({ O: () => toggleOverview() });   // in both windows
+      deck.addKeyBinding({ keyCode: 79, key: "O", description: "Slide overview, by section (capital O)" }, () => {});
       connect();
       if (deck.isReady()) onReady(); else deck.on("ready", onReady);
     }

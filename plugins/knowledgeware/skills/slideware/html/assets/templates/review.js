@@ -12,6 +12,8 @@
 //            <br>, <a>, lists). A panel along the bottom edits the slide's speaker notes and
 //            takes a comment for whoever edits the deck next. The arrows still move slides
 //            while no field has focus; Enter or Esc leaves a field.
+//   S        save edits.json now (the Save button), while review mode is on. Capital letters only,
+//            like every key of the deck's own.
 //   Shift+B  rebuild the deck: a confirm bar, then (through serve-deck.js) the edits are saved,
 //            `node build-deck.js .` runs, and the page reloads on the same slide. Over file://
 //            or a plain static server there is nothing to run, so the bar says how to save.
@@ -165,7 +167,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
 
   const BAR_HTML = `<span class="rv-label">Review</span><span class="rv-count"></span>
 <span class="rv-folder"></span><button type="button" data-rv="folder" title="Connect the deck folder once: edits then save themselves and the page reloads when a rebuild lands">Connect folder</button>
-<button type="button" data-rv="save" title="Save edits.json">Save</button>
+<button type="button" data-rv="save" title="Save edits.json (S)">Save<kbd>S</kbd></button>
 <button type="button" data-rv="copy" title="Copy the edits as JSON">Copy</button>
 <button type="button" data-rv="build" title="Save, rebuild the deck and reload (Shift+B)">Rebuild<kbd>Shift+B</kbd></button>
 <button type="button" data-rv="discard" title="Drop every unsaved edit">Discard</button>
@@ -1039,8 +1041,12 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
           return;
         }
         if (typing(e.target)) { if (e.key === "Escape" && !e.target.closest("[data-f]")) e.target.blur(); return; }
-        if (e.key === "B" && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); e.stopPropagation(); askRebuild(); }
-        if (on && !document.documentElement.classList.contains("rp-ov-on") && (e.key === "l" || e.key === "L") && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); e.stopPropagation(); setLayout(!layout); return; }
+        // Capital letters only (Shift, or Caps Lock), as presenter.js's capitalOf reads them.
+        const cap = !e.metaKey && !e.ctrlKey && !e.altKey && e.key && e.key.length === 1 && (e.shiftKey || e.key !== e.key.toLowerCase()) ? e.key.toUpperCase() : null;
+        if (cap === "B" && e.shiftKey) { e.preventDefault(); e.stopPropagation(); askRebuild(); }
+        if (cap === "E") { e.preventDefault(); e.stopPropagation(); toggle(); return; }   // in the overview too
+        if (on && cap === "S") { e.preventDefault(); e.stopPropagation(); save(); return; }
+        if (on && !document.documentElement.classList.contains("rp-ov-on") && cap === "L") { e.preventDefault(); e.stopPropagation(); setLayout(!layout); return; }
         if (layout && selected) {   // the selection takes the arrows and Del; the deck keeps the rest
           const step = e.shiftKey ? 10 : 1;
           const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
@@ -1062,7 +1068,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       deck.on("slidechanged", renderPanel);
       detectServer();
       restoreFolder();
-      document.addEventListener("rp-review-toggle", toggle);   // the overview's Edit button and its e key
+      document.addEventListener("rp-review-toggle", toggle);   // the overview's Edit button
       changed();   // an overview opened before the draft was restored redraws
     }
     function changed(key) { document.dispatchEvent(new CustomEvent("rp-review-change", { detail: { key: key || null } })); }
@@ -1078,7 +1084,7 @@ html.rv-on body > .reveal { height: calc(100% - var(--rp-reserve-bottom, 0px)); 
       stale = sections.length > 0 && all.length < sections.length;
       if (!stale) root.RevealReviewAPI = api;   // before the presenter's overview can fill (?overview opens it at ready)
       build();
-      deck.addKeyBinding({ keyCode: 69, key: "E", description: "Review mode: edit text and notes" }, toggle);
+      deck.addKeyBinding({ keyCode: 69, key: "E", description: "Review mode: edit text and notes (capital E)" }, () => {});   // listed in ? help; the capital E is handled above
       if (deck.isReady()) onReady(); else deck.on("ready", onReady);
     }
 
