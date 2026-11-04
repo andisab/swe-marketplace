@@ -15,8 +15,11 @@
 // Lanes: the bar's lane picker shows a lane (base + its overlay). Edits made there go to that lane's
 // overlay (lanes/<id>.json), never to the base. Saving the base rebuilds every lane file; saving in
 // a lane rebuilds that lane's file. B rebuilds all lane files and runs the in-browser checks.
+// Text format: a bar over the selection styles the selected words (while editing) or the whole
+// element: bold, italic, underline, code, link, the brand's fonts and colours, size, alignment.
 // Keys (capital letters): E done, S save, B build; Esc leaves a field or the selection; Del deletes
-// the selected element; arrows nudge it (Shift ×10); Cmd/Ctrl+Z undoes; Alt+click selects the parent.
+// the selected element; arrows nudge it (Shift ×10); Cmd/Ctrl+Z undoes; Cmd/Ctrl+B, I, U, K format;
+// Alt+click selects the parent.
 (function () {
   "use strict";
   const SW = window.SW, S = window.SWSerialize, L = window.SWLanes;
@@ -34,7 +37,7 @@
   let laneId = new URLSearchParams(location.search).get("lane") || null, overlay = null, overlayText = null;
   let saving = false, autosaveTimer = 0, watchTimer = 0, notesTimer = 0;
   const deleted = new Map();   // key → { el, index } for slides deleted this session
-  let bar, panel, overlayEl, box, toastEl, guides;
+  let bar, panel, overlayEl, box, toastEl, guides, fmt;
 
   // ── UI ────────────────────────────────────────────────────────────
   const MONO = "ui-monospace, Menlo, monospace", SANS = "system-ui, -apple-system, sans-serif";
@@ -55,6 +58,22 @@ html.sw-editing #sw-slides [contenteditable] { outline: 2px solid #2F7DE1 !impor
 .swe-bar button.swe-primary { background: #2F7DE1; border-color: #2F7DE1; color: #FFF; }
 .swe-bar select { font: 13px ${SANS}; padding: 5px 6px; border-radius: 7px; border: 1px solid rgba(255,255,255,.22); background: #2A2A27; color: #EDEDEA; }
 .swe-bar .swe-lane-note { font-size: 12px; color: #F2C08E; }
+.swe-folder { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,.22);
+  cursor: default; font: 12px ${SANS}; color: #EDEDEA; outline: none; }
+.swe-folder:hover, .swe-folder:focus-within { background: rgba(255,255,255,.08); }
+.swe-fdot { width: 8px; height: 8px; border-radius: 50%; background: #F2C08E; flex: none; }
+.swe-folder[data-state=file] .swe-fdot { background: #6FCF8E; }
+.swe-folder[data-state=server] .swe-fdot { background: #9FC3FF; }
+.swe-fname { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.swe-fmenu { display: none; position: absolute; left: 0; top: 100%; padding-top: 6px; z-index: 72; width: max-content; white-space: normal; }
+.swe-folder:hover .swe-fmenu, .swe-folder:focus-within .swe-fmenu { display: block; }
+.swe-fcard { display: block; box-sizing: border-box; min-width: 300px; width: max-content; max-width: min(560px, 80vw); padding: 10px 12px; border-radius: 9px; background: #2A2A27; box-shadow: 0 8px 24px rgba(0,0,0,.35); font: 12px/1.5 ${SANS}; }
+.swe-fcard .swe-fhead { display: block; font: 600 10px ${MONO}; letter-spacing: .1em; text-transform: uppercase; color: #9FC3FF; }
+.swe-fcard .swe-fpath { margin: 4px 0 8px; font: 12px ${MONO}; color: #EDEDEA; word-break: break-all; user-select: text; }
+.swe-fcard .swe-fnote { color: #B9B9B2; margin-bottom: 8px; }
+.swe-fcard .swe-row { margin-top: 0; }
+.swe-fcard button { all: unset; cursor: pointer; padding: 5px 9px; border: 1px solid rgba(255,255,255,.22); border-radius: 7px; font: 500 12px ${SANS}; color: #EDEDEA; }
+.swe-fcard button:hover { background: rgba(255,255,255,.08); }
 .swe-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; padding: 10px 14px;
   background: #FAFAF8; border-top: 1px solid #DDDDD8; box-shadow: 0 -6px 20px rgba(0,0,0,.08); font: 13px/1.4 ${SANS}; color: #1A1A18; box-sizing: border-box; }
 .swe-panel h4 { margin: 0 0 5px; font: 600 10.5px ${MONO}; letter-spacing: .12em; text-transform: uppercase; color: #6B6B63; }
@@ -78,9 +97,24 @@ html.sw-editing #sw-slides [contenteditable] { outline: 2px solid #2F7DE1 !impor
   background: #1A1A18; color: #FAFAF8; font: 13px/1.45 ${SANS}; box-shadow: 0 8px 26px rgba(0,0,0,.28); display: none; }
 .swe-toast.swe-show { display: block; }
 .swe-toast button { all: unset; cursor: pointer; margin-left: 10px; text-decoration: underline; }
-.swe-bar [hidden], .swe-panel [hidden] { display: none !important; }
-html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-editing) .swe-overlay { display: none; }
-@media print { .swe-bar, .swe-panel, .swe-overlay, .swe-toast { display: none !important; } }
+.swe-fmt { position: fixed; z-index: 76; display: none; align-items: center; gap: 2px; padding: 4px; border-radius: 9px; background: #1F1F1D; color: #EDEDEA;
+  box-shadow: 0 6px 20px rgba(0,0,0,.25); font: 12px/1 ${SANS}; }
+.swe-fmt.swe-show { display: flex; }
+html.swe-fmt-on .swe-tag { display: none; }
+.swe-fmt button, .swe-fmt select { all: unset; cursor: pointer; height: 26px; min-width: 24px; padding: 0 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; }
+.swe-fmt button:hover, .swe-fmt select:hover { background: rgba(255,255,255,.12); }
+.swe-fmt button.swe-on { background: #2F7DE1; color: #FFF; }
+.swe-fmt button:disabled { opacity: .35; cursor: default; background: none; }
+.swe-fmt select { padding-right: 4px; appearance: auto; -webkit-appearance: menulist; color: #EDEDEA; background: #2A2A27; }
+.swe-fmt select option { color: #1A1A18; background: #FFF; }
+.swe-fmt .swe-fsep { width: 1px; height: 16px; background: rgba(255,255,255,.2); margin: 0 3px; }
+.swe-fmt .swe-fscope { padding: 0 6px; font: 600 10px ${MONO}; letter-spacing: .1em; text-transform: uppercase; color: #9FC3FF; }
+.swe-fmt .swe-fsize { min-width: 34px; text-align: center; font: 11px ${MONO}; color: #B9B9B2; }
+.swe-fmt input { all: unset; width: 200px; height: 26px; padding: 0 8px; border-radius: 6px; background: #FFF; color: #1A1A18; font: 12px ${SANS}; box-sizing: border-box; }
+.swe-fmt svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.swe-bar [hidden], .swe-panel [hidden], .swe-fmt [hidden] { display: none !important; }
+html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-editing) .swe-overlay, html:not(.sw-editing) .swe-fmt { display: none; }
+@media print { .swe-bar, .swe-panel, .swe-overlay, .swe-toast, .swe-fmt { display: none !important; } }
 `;
   function el(tag, attrs, inner) {
     const e = doc.createElement(tag);
@@ -91,8 +125,10 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
   function buildUi() {
     const style = el("style", { id: "swe-css" }); style.textContent = CSS; doc.head.appendChild(style);
     bar = el("div", { class: "swe-bar", role: "toolbar", "aria-label": "Editor" }, `
-<span class="swe-label">Editing</span><span class="swe-lane"></span><span class="swe-status"></span>
-<button type="button" data-a="connect" hidden>Connect folder</button>
+<span class="swe-label">Editing</span><span class="swe-folder" tabindex="0" data-state="none" aria-label="Deck folder"><span class="swe-fdot"></span><span class="swe-fname">Not connected</span>
+<span class="swe-fmenu"><span class="swe-fcard"><span class="swe-fhead"></span><div class="swe-fpath"></div><div class="swe-fnote"></div>
+<span class="swe-row"><button type="button" data-a="connect">Connect folder</button><button type="button" data-a="copypath">Copy path</button></span></span></span></span>
+<span class="swe-lane"></span><span class="swe-status"></span>
 <button type="button" data-a="save" class="swe-primary">Save<kbd>S</kbd></button>
 <button type="button" data-a="build" title="Rebuild every lane file and run the checks">Build<kbd>B</kbd></button>
 <button type="button" data-a="dup" title="Duplicate this slide">Duplicate slide</button>
@@ -111,7 +147,11 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     guides = el("div");
     overlayEl.append(box, guides);
     toastEl = el("div", { class: "swe-toast", role: "status" });
-    doc.body.append(bar, panel, overlayEl, toastEl);
+    fmt = el("div", { class: "swe-fmt", role: "toolbar", "aria-label": "Text format" }, FMT_HTML);
+    doc.body.append(bar, panel, overlayEl, toastEl, fmt);
+    fmt.addEventListener("mousedown", (e) => { if (!/^(SELECT|INPUT|OPTION)$/.test(e.target.tagName)) e.preventDefault(); });   // keep the text selection
+    fmt.addEventListener("click", (e) => { const b = e.target.closest("button[data-f]"); if (b && !b.disabled) fmtAction(b.dataset.f); });
+    fmt.addEventListener("change", (e) => { const sel = e.target.closest("select[data-f]"); if (sel) { fmtAction(sel.dataset.f, sel.value); sel.value = ""; } });
     bar.addEventListener("click", onBarClick);
     panel.addEventListener("click", onBarClick);
     panel.querySelector(".swe-notes").addEventListener("input", onNotesInput);
@@ -142,10 +182,33 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
   function renderStatus() {
     if (!bar) return;
     const n = ops.length;
-    if (!dir) status(n ? `${n} unsaved edit${n === 1 ? "" : "s"} · connect the deck folder to save` : "Connect the deck folder to save edits (Chrome asks once per session)", true);
+    if (!dir) status(n ? `${n} unsaved edit${n === 1 ? "" : "s"} · not in the file yet: connect the folder (left)` : "Not connected: point at the folder chip to connect", true);
     else status(n ? `${n} unsaved edit${n === 1 ? "" : "s"}${laneId ? ` · lane ${laneName()}` : ""}` : `Saved${laneId ? ` · lane ${laneName()}` : ""}`, false);
-    bar.querySelector("[data-a=connect]").hidden = !!dir;
+    renderFolder();
     try { if (n) localStorage.setItem(DRAFT_KEY, JSON.stringify({ at: Date.now(), lane: laneId, ops })); else localStorage.removeItem(DRAFT_KEY); } catch (e) { /* blocked */ }
+  }
+  // The folder chip: a dot and the folder's name; hover or focus shows where it is, how saving works
+  // and the last save, with Connect / Change folder and Copy path.
+  let viaServer = false, servedDir = null, lastSavedAt = null;
+  function folderPath() { return viaServer ? servedDir : deckFolderPath(); }
+  function renderFolder() {
+    const chip = bar && bar.querySelector(".swe-folder");
+    if (!chip) return;
+    const state = !dir ? "none" : viaServer ? "server" : "file", where = folderPath();
+    const base = (p) => (p || "").split(/[\\/]/).filter(Boolean).pop() || p || "";
+    chip.dataset.state = state;
+    chip.querySelector(".swe-fname").textContent = state === "none" ? "Not connected" : base(where) || (dir && dir.name) || "Connected";
+    chip.querySelector(".swe-fhead").textContent = state === "none" ? "Not connected" : state === "server" ? "Connected through the local server" : "Connected folder";
+    chip.querySelector(".swe-fpath").textContent = where || (dir && dir.name) || "";
+    const saved = lastSavedAt ? ` Last saved ${lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.` : "";
+    chip.querySelector(".swe-fnote").textContent = state === "none"
+      ? (window.showDirectoryPicker ? "Edits are kept in this browser until you connect this deck's folder." : "This browser can't save files: open the deck through the local server, or Copy the edits for Claude.")
+      : state === "server" ? "Saving needs no permission; the server writes the deck's files." + saved
+      : "Edits save into this folder." + saved;
+    const c = chip.querySelector("[data-a=connect]");
+    c.hidden = state === "server" || !window.showDirectoryPicker;
+    c.textContent = state === "file" ? "Change folder" : "Connect folder";
+    chip.querySelector("[data-a=copypath]").hidden = !where;
   }
   function laneName() { const l = (SW.config.lanes || []).find((x) => (x.id || "") === (laneId || "")); return l ? l.name : laneId; }
   function renderLanePicker() {
@@ -213,10 +276,10 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
   }
   async function serverAvailable() {
     if (!/^https?:$/.test(location.protocol) || !/^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname)) return false;
-    try { const r = await fetch("/__sw/ping", { cache: "no-store" }); return r.ok && !!(await r.json()).slideware; } catch (e) { return false; }
+    try { const r = await fetch("/__sw/ping", { cache: "no-store" }); const j = r.ok ? await r.json() : {}; if (j.slideware) servedDir = j.dir || null; return !!j.slideware; } catch (e) { return false; }
   }
   async function restoreFolder(prompt) {
-    if (await serverAvailable()) return useFolder(serverFolder());
+    if (await serverAvailable()) { viaServer = true; return useFolder(serverFolder()); }
     if (!window.showDirectoryPicker) return false;
     const h = await idbGet(location.pathname).catch(() => null);
     if (!h) return false;
@@ -225,23 +288,46 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     if (p !== "granted") return false;
     return useFolder(h);
   }
+  // The deck's own folder, from the page's address (file:// only). A page can't open the picker
+  // there, so the editor names it, copies it, and says how to jump to it in the picker.
+  function deckFolderPath() {
+    if (location.protocol !== "file:") return null;
+    const p = decodeURIComponent(location.pathname).replace(/^\/([A-Za-z]:\/)/, "$1");   // /C:/… on Windows
+    return p.slice(0, p.lastIndexOf("/")) || "/";
+  }
+  // The folder's file is this deck, not another deck's index.html: most of its slide keys match.
+  function sameDeck(text) {
+    const keys = SW.allSlides().map((x) => x.getAttribute("data-key")).filter(Boolean);
+    return !keys.length || keys.filter((k) => text.includes(`data-key="${k}"`)).length >= Math.ceil(keys.length / 2);
+  }
+  let folderError = "";
   async function connect() {
     if (!window.showDirectoryPicker) { toast("This browser can't save files. Use Chrome, Edge or Brave, or Copy the edits and give them to Claude."); return; }
+    const where = deckFolderPath(), mac = /Mac/i.test(navigator.platform || navigator.userAgent);
+    if (where) {
+      let copied = false;
+      try { await navigator.clipboard.writeText(where); copied = true; } catch (e) { /* no clipboard; the path is still shown */ }
+      toast(`Choose this deck's folder: ${where}` + (copied ? (mac ? " (copied: press Cmd+Shift+G in the picker and paste)" : " (copied: paste it into the picker's address bar)") : ""));
+    }
     let h;
-    try { h = await window.showDirectoryPicker({ mode: "readwrite", id: "slideware-deck" }); } catch (e) { return; }
-    if (!(await useFolder(h))) toast(`That folder doesn't hold ${FILE}. Pick the folder this deck is in.`);
+    // One remembered location per deck, so the picker reopens in this deck's folder; Documents the first time.
+    try { h = await window.showDirectoryPicker({ mode: "readwrite", id: "sw-" + L.hash(location.pathname), startIn: "documents" }); } catch (e) { return; }
+    if (!(await useFolder(h))) toast(folderError === "other" ? `That folder holds a different deck. Choose ${where || "the folder this deck is in"}.` : `That folder doesn't hold ${FILE}. Choose ${where || "the folder this deck is in"}.`);
     else { await idbPut(location.pathname, h); toast("Folder connected. Edits save into the deck."); if (ops.length) scheduleSave(); }
   }
   async function useFolder(h) {
+    folderError = "";
     try {
       const f = await (await h.getFileHandle(FILE)).getFile();
+      const text = await f.text();
+      if (!sameDeck(text)) { folderError = "other"; return false; }
       dir = h;
-      fileText = await f.text();
+      fileText = text;
       fileStamp = f.lastModified;
       renderStatus();
       startWatch();
       return true;
-    } catch (e) { return false; }
+    } catch (e) { folderError = "missing"; return false; }
   }
   async function readFile(name) { const f = await (await dir.getFileHandle(name)).getFile(); return { text: await f.text(), stamp: f.lastModified }; }
   async function writeFile(name, text) {
@@ -479,6 +565,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     } finally { saving = false; renderStatus(); }
   }
   function finishSave(batch, failed, msg) {
+    lastSavedAt = new Date();
     ops = ops.slice(batch.length).concat(failed);
     undo = failed.length ? undo.slice(-failed.length) : [];
     if (failed.length) toast(`${msg}. ${failed.length} edit${failed.length === 1 ? "" : "s"} didn't match the file (it changed under them); they're still pending. Copy them for Claude, or Discard.`);
@@ -536,6 +623,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     t.setAttribute("data-sw-ce", "");
     t.focus();
     select(t, true);
+    renderFmt();
   }
   function endText(commit) {
     if (!textEl) return;
@@ -543,7 +631,9 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     textEl = null;
     t.removeAttribute("contenteditable");
     t.removeAttribute("data-sw-ce");
+    savedRange = null;
     if (commit) {
+      tidyInline(t);
       const now = S.cleanInner(t);
       if (now !== textBefore) editText(t, now, textBefore);
     } else t.innerHTML = textBefore;
@@ -554,6 +644,160 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData("text/plain");
     doc.execCommand("insertText", false, text);
+  }
+
+  // ── Text formatting ───────────────────────────────────────────────
+  // One bar over the selection. Words selected while editing text get inline markup (<strong>, <em>,
+  // <u>, <code>, <a>, <span style>), saved with the text edit. Otherwise the whole element is styled
+  // (font, size, weight, colour, alignment), saved as a style edit. Colours and fonts are the brand's.
+  const COLORS = [["accent", "Accent"], ["accent2", "Accent 2"], ["ink", "Ink"], ["ink-body", "Body"], ["ink-muted", "Muted"], ["success", "Success"], ["warning", "Warning"], ["error", "Error"]];
+  const FONTS = [["sans", "Sans"], ["serif", "Serif"], ["mono", "Mono"]];
+  const TEXT_PROPS = ["font-family", "font-size", "font-weight", "font-style", "text-decoration", "color", "text-align"];
+  const icon = (d) => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
+  const FMT_HTML = `<span class="swe-fscope"></span>
+<button type="button" data-f="bold" title="Bold (Cmd+B)"><b>B</b></button><button type="button" data-f="italic" title="Italic (Cmd+I)"><i>I</i></button><button type="button" data-f="underline" title="Underline (Cmd+U)"><u>U</u></button>
+<button type="button" data-f="code" title="Code (selected words)">&lt;/&gt;</button><button type="button" data-f="link" title="Link (Cmd+K, selected words)">Link</button><span class="swe-fsep"></span>
+<select data-f="font" title="Font, from the brand"><option value="">Font</option>${FONTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}<option value="none">Default</option></select>
+<button type="button" data-f="smaller" title="Smaller">A−</button><span class="swe-fsize"></span><button type="button" data-f="larger" title="Larger">A+</button>
+<select data-f="color" title="Colour, from the brand"><option value="">Colour</option>${COLORS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}<option value="none">Default</option></select><span class="swe-fsep"></span>
+<button type="button" data-f="left" title="Align left">${icon("M4 6h16M4 12h10M4 18h14")}</button><button type="button" data-f="center" title="Centre">${icon("M4 6h16M7 12h10M5 18h14")}</button><button type="button" data-f="right" title="Align right">${icon("M4 6h16M10 12h10M6 18h14")}</button><span class="swe-fsep"></span>
+<button type="button" data-f="clear" title="Clear formatting">Clear</button>`;
+  let savedRange = null;
+  function fmtTarget() {   // the element the bar formats, or null when the selection isn't text
+    const t = textEl || selected;
+    if (!t || !t.isConnected || t.closest("svg") || t.closest("[data-sw-expanded]") || !t.textContent.trim()) return null;
+    return t;
+  }
+  function wordsSelected() {
+    if (!textEl || !savedRange || savedRange.collapsed) return false;
+    return textEl.contains(savedRange.commonAncestorContainer);
+  }
+  function onSelectionChange() {
+    if (!textEl) return;
+    const sel = getSelection();
+    if (sel && sel.rangeCount && textEl.contains(sel.getRangeAt(0).commonAncestorContainer)) savedRange = sel.getRangeAt(0).cloneRange();
+    renderFmt();
+  }
+  function renderFmt() {
+    const t = on && fmtTarget();
+    html.classList.toggle("swe-fmt-on", !!t);
+    if (!t || !fmt) { if (fmt) fmt.classList.remove("swe-show"); return; }
+    const words = wordsSelected(), cs = getComputedStyle(t);
+    fmt.querySelector(".swe-fscope").textContent = words ? "Words" : "Element";
+    fmt.querySelector("[data-f=code]").disabled = !words;
+    fmt.querySelector("[data-f=link]").disabled = !words;
+    fmt.querySelector(".swe-fsize").textContent = Math.round(parseFloat(cs.fontSize)) + "px";
+    if (!words) {
+      fmt.querySelector("[data-f=bold]").classList.toggle("swe-on", parseInt(cs.fontWeight, 10) >= 600);
+      fmt.querySelector("[data-f=italic]").classList.toggle("swe-on", cs.fontStyle === "italic");
+      fmt.querySelector("[data-f=underline]").classList.toggle("swe-on", /underline/.test(cs.textDecorationLine));
+    } else fmt.querySelectorAll("[data-f=bold],[data-f=italic],[data-f=underline]").forEach((b) => b.classList.remove("swe-on"));
+    ["left", "center", "right"].forEach((a) => fmt.querySelector(`[data-f=${a}]`).classList.toggle("swe-on", cs.textAlign === a || (a === "left" && cs.textAlign === "start")));
+    fmt.classList.add("swe-show");
+    // Above the element when there's room under the editor's bar; inside the top-right corner of a
+    // tall element (a container) when there isn't; below a short one as the last resort. It replaces
+    // the element tag, and never covers the editor's bar.
+    const r = t.getBoundingClientRect(), w = fmt.offsetWidth, h = fmt.offsetHeight, floor = 46 + 6;
+    let left = r.left, top = r.top - h - 8;
+    if (top < floor) {
+      if (r.height > 2 * h + 40) { top = Math.max(floor, r.top + 6); left = r.right - w - 6; }
+      else top = r.bottom + 8;
+    }
+    fmt.style.left = Math.max(8, Math.min(innerWidth - w - 8, left)) + "px";
+    fmt.style.top = Math.min(innerHeight - h - 8, top) + "px";
+  }
+  function restoreRange() {
+    if (!textEl) return false;
+    textEl.focus();
+    if (!savedRange) return false;
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(savedRange);
+    return true;
+  }
+  function wrapWords(tag, style) {
+    const sel = getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    const w = doc.createElement(tag);
+    if (style) w.setAttribute("style", style);
+    w.appendChild(range.extractContents());
+    range.insertNode(w);
+    sel.removeAllRanges(); const nr = doc.createRange(); nr.selectNodeContents(w); sel.addRange(nr);
+    savedRange = nr.cloneRange();
+  }
+  function unwrapWords(prop) {   // remove inline formatting inside the selection: one property of spans, or all of it
+    const sel = getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (!prop) doc.execCommand("removeFormat");
+    const hits = [];
+    const walker = doc.createTreeWalker(textEl, NodeFilter.SHOW_ELEMENT, { acceptNode: (n) => (prop ? n.localName === "span" : /^(span|code|strong|em|b|i|u|font)$/.test(n.localName)) && range.intersectsNode(n) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP });
+    let n; while ((n = walker.nextNode())) hits.push(n);
+    for (const h of hits) {
+      if (prop) { h.style.removeProperty(prop); if (h.getAttribute("style")) continue; }
+      const frag = doc.createDocumentFragment(); while (h.firstChild) frag.appendChild(h.firstChild); h.replaceWith(frag);
+    }
+  }
+  function linkWords() {
+    const old = fmt.querySelector("input");
+    if (old) { old.focus(); return; }
+    const range = savedRange && savedRange.cloneRange();
+    const i = el("input", { type: "url", placeholder: "https://… then Enter" });
+    i.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") { e.preventDefault(); const url = i.value.trim(); i.remove(); savedRange = range; if (url && restoreRange()) doc.execCommand("createLink", false, url); renderFmt(); }
+      else if (e.key === "Escape") { e.preventDefault(); i.remove(); restoreRange(); }
+    });
+    fmt.appendChild(i); i.focus();
+  }
+  function fmtAction(act, value) {
+    const t = fmtTarget();
+    if (!t) return;
+    if (/^(left|center|right)$/.test(act)) { setStyle(t, { "text-align": act }); if (textEl) restoreRange(); renderFmt(); return; }
+    if (wordsSelected()) {
+      restoreRange();
+      doc.execCommand("styleWithCSS", false, false);
+      if (act === "bold" || act === "italic" || act === "underline") doc.execCommand(act);
+      else if (act === "code") wrapWords("code");
+      else if (act === "link") { linkWords(); return; }
+      else if (act === "font") { if (value === "none") unwrapWords("font-family"); else if (value) wrapWords("span", `font-family: var(--font-${value})`); }
+      else if (act === "larger" || act === "smaller") wrapWords("span", `font-size: ${act === "larger" ? "1.15em" : "0.87em"}`);
+      else if (act === "color") { if (value === "none") unwrapWords("color"); else if (value) wrapWords("span", `color: var(--color-${value})`); }
+      else if (act === "clear") unwrapWords(null);
+      const sel = getSelection(); if (sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+      renderFmt(); drawBox();
+      return;
+    }
+    const cs = getComputedStyle(t);
+    let props = null;
+    if (act === "bold") props = { "font-weight": parseInt(cs.fontWeight, 10) >= 600 ? "400" : "700" };
+    else if (act === "italic") props = { "font-style": cs.fontStyle === "italic" ? "normal" : "italic" };
+    else if (act === "underline") props = { "text-decoration": /underline/.test(cs.textDecorationLine) ? "none" : "underline" };
+    else if (act === "font") props = value ? { "font-family": value === "none" ? null : `var(--font-${value})` } : null;
+    else if (act === "larger" || act === "smaller") { const px = parseFloat(cs.fontSize); props = { "font-size": Math.max(6, Math.round(act === "larger" ? px * 1.1 + 0.5 : px / 1.1 - 0.5)) + "px" }; }
+    else if (act === "color") props = value ? { color: value === "none" ? null : `var(--color-${value})` } : null;
+    else if (act === "clear") props = Object.fromEntries(TEXT_PROPS.map((k) => [k, null]));
+    if (props) setStyle(t, props);
+    if (textEl) restoreRange();
+    renderFmt(); drawBox();
+  }
+  // What the browser's editing leaves behind, in the deck's terms: <b>/<i> become <strong>/<em>,
+  // <font> and empty wrappers go, Enter's <div>s become line breaks, links open in a new tab,
+  // and nothing executable survives.
+  function tidyInline(t) {
+    const rename = { b: "strong", i: "em" };
+    t.querySelectorAll("b, i, font, div, span, a, strong, em, u, code, *").forEach((n) => {
+      if (!n.isConnected) return;
+      for (const a of Array.from(n.attributes)) if (/^on/i.test(a.name) || (/^(href|src)$/.test(a.name) && /^\s*javascript:/i.test(a.value))) n.removeAttribute(a.name);
+      const tag = n.localName;
+      if (rename[tag]) { const r = doc.createElement(rename[tag]); while (n.firstChild) r.appendChild(n.firstChild); n.replaceWith(r); return; }
+      if (tag === "font" || ((tag === "span" || tag === "strong" || tag === "em" || tag === "u" || tag === "code") && !n.textContent && !n.querySelector("img, svg, br"))) {
+        const f = doc.createDocumentFragment(); while (n.firstChild) f.appendChild(n.firstChild); n.replaceWith(f); return;
+      }
+      if (tag === "span" && !n.attributes.length) { const f = doc.createDocumentFragment(); while (n.firstChild) f.appendChild(n.firstChild); n.replaceWith(f); return; }
+      if (tag === "div" && n.parentNode === t) { const f = doc.createDocumentFragment(); if (n.previousSibling) f.appendChild(doc.createElement("br")); while (n.firstChild) f.appendChild(n.firstChild); n.replaceWith(f); return; }
+      if (tag === "a" && /^https?:/i.test(n.getAttribute("href") || "")) { n.setAttribute("target", "_blank"); n.setAttribute("rel", "noopener"); }
+    });
   }
 
   // ── Selection, move and resize ────────────────────────────────────
@@ -573,7 +817,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     selected = node;
     const info = panel.querySelector(".swe-sel");
     ["pin", "reset", "parent", "remove"].forEach((a) => { panel.querySelector(`[data-a=${a}]`).hidden = !node; });
-    if (!node) { info.textContent = "Click an element on the slide."; box.classList.remove("swe-show"); return; }
+    if (!node) { info.textContent = "Click an element on the slide."; box.classList.remove("swe-show"); renderFmt(); return; }
     const a = addrOf(node);
     const cls = (node.getAttribute("class") || "").split(/\s+/).filter((c) => c && !/^sw-/.test(c))[0];
     info.textContent = `${node.localName}${a.id ? "#" + a.id : cls ? "." + cls : ""}${node.hasAttribute("data-figure-ref") ? " (figure " + node.getAttribute("data-figure-ref") + ")" : ""} · double-click to edit text · drag to move · corners resize`;
@@ -583,6 +827,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     if (!quiet) node.blur && node.blur();
   }
   function drawBox() {
+    renderFmt();
     if (!selected || !selected.isConnected || !on) { box.classList.remove("swe-show"); return; }
     const r = selected.getBoundingClientRect();
     Object.assign(box.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
@@ -910,6 +1155,8 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
   // ── Keys and clicks ───────────────────────────────────────────────
   function onKey(e) {
     if (!on) return;
+    const fkey = (e.metaKey || e.ctrlKey) && !e.altKey && { b: "bold", i: "italic", u: "underline", k: "link" }[e.key.toLowerCase()];
+    if (fkey && (textEl || (selected && !SW.typing(e.target)))) { e.preventDefault(); e.stopPropagation(); fmtAction(fkey); return; }
     if (textEl) {
       if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); endText(false); }
       else if (e.key === "Enter" && !e.shiftKey && !/^(li|p|div|td|th|blockquote)$/.test(textEl.localName)) { e.preventDefault(); endText(true); }
@@ -946,6 +1193,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     if (!b) return;
     const a = b.dataset.a;
     if (a === "connect") connect();
+    else if (a === "copypath") { try { await navigator.clipboard.writeText(folderPath() || ""); toast("Copied the folder's path."); } catch (err) { toast(folderPath() || ""); } }
     else if (a === "save") save();
     else if (a === "build") buildAll();
     else if (a === "dup") duplicateSlide();
@@ -973,6 +1221,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     SW.stage.addEventListener("click", onClickCapture, true);
     doc.addEventListener("keydown", onKey, true);
     doc.addEventListener("paste", onPaste, true);
+    doc.addEventListener("selectionchange", onSelectionChange);
     window.addEventListener("resize", drawBox);
     SW.on("layout", drawBox);
     SW.on("change", () => { if (on) { if (textEl) endText(true); select(null); renderPanel(); } });

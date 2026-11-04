@@ -12,7 +12,7 @@ Capital letters need Shift (or Caps Lock); a lowercase letter does nothing. `?` 
 | ← ↑ PageUp | previous build, then previous slide (shown complete) |
 | Home, End | first and last slide |
 | P | presenter view in a second window |
-| N | notes drawer along the bottom, for rehearsal |
+| N | notes drawer along the bottom, for rehearsal; drag its top edge to resize it (double-click resets), remembered per browser |
 | O | overview of every slide, by section |
 | E | the editor |
 | f | fullscreen |
@@ -63,6 +63,7 @@ E loads the editor from the plugin. A bar along the top and a panel along the bo
 
 | Action | How |
 |---|---|
+| Format text | the bar over the selection: bold, italic, underline (Cmd/Ctrl+B, I, U), code, link (Cmd/Ctrl+K), font (the brand's sans, serif, mono), size (A− A+), colour (the brand's roles), alignment, Clear. With words selected while typing it formats those words; otherwise the whole element. The bar says which (Words or Element) |
 | Edit text | double-click any text (or select and press Enter); Esc cancels, Enter commits single lines, Shift+Enter breaks a line; paste is plain text |
 | Select | click an element; Alt+click or Parent selects the parent; Esc clears |
 | Move | drag (snaps to slide edges, centres and other elements; Alt drag skips snapping), or arrows (Shift: 10 px) |
@@ -75,6 +76,7 @@ E loads the editor from the plugin. A bar along the top and a panel along the bo
 | Structure | the overview (O): hide, delete, drag to reorder; Duplicate slide in the bar |
 | Undo | Cmd/Ctrl+Z |
 | Save | S, or Save; also automatic after each edit |
+| Folder | the chip at the left of the bar: a dot (amber not connected, green a folder, blue the local server) and the folder's name; point at it for the full location, the last save, Connect or Change folder, and Copy path |
 | Build | B: rebuilds every lane file and runs the checks (overflow, footer band) |
 | Copy | the unsaved edits as JSON, for Claude, where a browser can't save |
 | Discard | drops every unsaved edit |
@@ -82,13 +84,13 @@ E loads the editor from the plugin. A bar along the top and a panel along the bo
 
 A move is stored on the element as `translate` (an offset from where the layout puts it); a pinned element stores `left` and `top`; sizes are `width`, `height` or `scale`. These don't interfere with motion.
 
-**Saving.** The first save asks Chrome (or Edge, Brave) for the deck folder, once per browser session; the folder is remembered per deck. Every edit is recorded against the slide's key and the element's id (or its position among its parent's elements), applied to the page at once, and replayed onto the file when saving: the editor re-reads `index.html`, applies the edits, and writes back only the slides they touched. If the file changed meanwhile (Claude edited it), the edits go onto that version; an edit whose element is gone stays pending and the bar says so. Saving the base rebuilds every lane file. Unsaved edits survive a reload in the browser's storage; the editor offers to save or drop them next time.
+**Saving.** Through `serve` (the default when Claude hands a deck over for editing) saving needs nothing. Opened from the file, the first save asks Chrome (or Edge, Brave) for the deck folder, once per browser session; the folder is remembered per deck. A page can't open the picker at its own folder, so the editor names the folder and copies its path (on a Mac, Cmd+Shift+G in the picker, then paste); the picker reopens where this deck's folder was chosen last, and a folder holding another deck is refused. Every edit is recorded against the slide's key and the element's id (or its position among its parent's elements), applied to the page at once, and replayed onto the file when saving: the editor re-reads `index.html`, applies the edits, and writes back only the slides they touched. If the file changed meanwhile (Claude edited it), the edits go onto that version; an edit whose element is gone stays pending and the bar says so. Saving the base rebuilds every lane file. Unsaved edits survive a reload in the browser's storage; the editor offers to save or drop them next time.
 
 **Lanes.** The lane picker in the bar shows a lane. Edits there are written to `lanes/<id>.json` as overrides (by id when the element has one), never to the base; notes, comments, deleting and reordering happen in the base view.
 
 **Claude's changes.** While the folder is connected, the editor watches the file; when it changes, the page reloads on the same slide (saving pending edits first).
 
-**Other browsers.** Safari and Firefox can't write files from a page. Run `cli.js serve <index.html> --open` and edit at the address it prints: saving works there in any browser, with no permission click.
+**Other browsers.** Safari and Firefox can't write files from a page; they save through `serve`, as every browser does there.
 
 **A recipient's copy.** On a machine without the plugin, E shows a short note and nothing else loads.
 

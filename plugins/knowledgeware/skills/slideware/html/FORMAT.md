@@ -139,7 +139,7 @@ Run `lanes` after editing the base or an overlay; the editor's save does it too.
 
 ## Editing (the owner, in the browser)
 
-Open `index.html` and press E. The editor loads from the plugin's data folder, which `new` and `refresh` keep current. It edits text on any element (double-click), moves, resizes and pins any element including figures, notes, comments for Claude, and the deck's structure in the overview (O). S saves into the file itself: the first save asks Chrome for the deck folder, once per browser session. Saving the base rebuilds every lane file; edits made in a lane view (the lane picker) go to that lane's overlay. B rebuilds every lane file and runs the in-browser checks. Safari and Firefox save through `serve`. The full reference: [references/runtime.md](references/runtime.md) §Editor.
+**When the owner asks to edit a deck, start `$CLI serve <index.html>` in the background and give them the address it prints**; that is the default. There is no folder picker or permission prompt, it works in any browser, the editor comes straight from the plugin, and the page reloads on your edits. The server takes the first free port from 47100, so several decks can be open at once; stop it when the owner is done. Opening `index.html` directly and pressing E works too (Chrome, Edge, Brave): the editor loads from the plugin's data folder, which `new` and `refresh` keep current, and the first save asks for the deck folder, naming it and copying its path. The editor edits text on any element (double-click), formats it from a bar over the selection (the selected words while typing, else the whole element: bold, italic, underline, code, link, the brand's fonts and colours, size, alignment), moves, resizes and pins any element including figures, notes, comments for Claude, and the deck's structure in the overview (O). S saves into the file itself. Saving the base rebuilds every lane file; edits made in a lane view (the lane picker) go to that lane's overlay. B rebuilds every lane file and runs the in-browser checks. The full reference: [references/runtime.md](references/runtime.md) §Editor.
 
 Comments the owner leaves are HTML comments inside the slide, `<!-- @claude: … -->`. When asked to address them, find them (`grep -n "@claude:"`), make each change, and remove the comment.
 
@@ -151,7 +151,7 @@ When the owner has the deck open while you edit it, their page reloads on your c
 2. **Write the slides** into `#sw-slides`, figures into `#sw-assets`, settings into `#sw-deck`.
 3. **Check**: `check`, then `check --render`. Fix every error and warning.
 4. **Look**: `export --png` and read every slide image at full size. Find at least one thing to improve per slide; fix, re-export, re-read. Two or three rounds is typical. For builds, open the deck with `?presenter` in a browser and step through.
-5. **Hand over**: give the absolute path; tell the owner P presents, N shows the notes drawer, O the overview, E edits.
+5. **Hand over**: give the absolute path; tell the owner P presents, N shows the notes drawer, O the overview, E edits. When they want to edit, start `serve` (§Editing).
 
 ## Export and import
 

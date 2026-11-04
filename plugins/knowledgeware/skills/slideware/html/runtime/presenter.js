@@ -9,7 +9,7 @@
 //       plus window.postMessage, so it works from file:// too). Builds play only while a
 //       presenter window is connected; on its own, or while editing, the deck shows every
 //       slide complete.
-//   N   toggle a notes drawer along the bottom, for rehearsal (anyone who can see the screen
+//   N   toggle a notes drawer along the bottom, for rehearsal; drag its top edge to resize (anyone who can see the screen
 //       can read it). The deck re-fits above it (--sw-reserve-bottom on <html>).
 //   O   the overview: every slide as a thumbnail, grouped by section dividers (a section with
 //       data-divider, or the older class layout-section; its kicker is the element with class
@@ -58,10 +58,15 @@
   const SANS = "var(--font-sans, system-ui, sans-serif)";
   const ACCENT = "var(--color-accent, #3B5249)";
   const CSS = `
-.rp-drawer { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; max-height: 38vh; overflow-y: auto;
+.rp-drawer { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; max-height: var(--rp-drawer-h, 38vh); overflow-y: auto; box-sizing: border-box;
   padding: 16px 28px 22px; background: rgba(250,250,249,.97); border-top: 1px solid #E3E3DF;
   box-shadow: 0 -8px 24px rgba(26,26,24,.10); color: #1A1A18; font-family: ${SANS}; line-height: 1.55; text-align: left; }
 html.rp-drawer-on .rp-drawer { display: block; padding-bottom: 64px; }
+html.rp-drawer-sized .rp-drawer { height: var(--rp-drawer-h); }
+.rp-drawer-grip { position: fixed; left: 0; right: 0; z-index: 41; height: 10px; margin-top: -5px; cursor: ns-resize; display: none; }
+html.rp-drawer-on .rp-drawer-grip { display: block; }
+.rp-drawer-grip::after { content: ""; position: absolute; left: 50%; top: 3px; width: 44px; height: 4px; margin-left: -22px; border-radius: 2px; background: #C9C9C3; }
+.rp-drawer-grip:hover::after, .rp-drawer-grip.rp-dragging::after { background: ${ACCENT}; }
 .rp-cue-text { font-family: ${MONO}; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
 .rp-drawer .rp-md { margin-top: 8px; font-size: 18px; max-width: 1100px; }
 .rp-md p { margin: 0 0 .8em; }
@@ -244,7 +249,7 @@ html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within, .rp-hud[data-help] 
 .rp-hud-help dd { margin: 0; }
 .rp-hud-help p { margin: 8px 0 0; color: var(--color-ink-muted, #6B6B63); }
 html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud, html.sw-print .rp-hud, html.sw-capture .rp-hud { display: none !important; }
-@media print { .rp-hud, .rp-drawer, .rp-ov { display: none !important; } }
+@media print { .rp-hud, .rp-drawer, .rp-drawer-grip, .rp-ov { display: none !important; } }
 `;
   const HUD_HTML = `
 <button type="button" data-hud="prev" aria-label="Previous slide" title="Previous"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -420,10 +425,46 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     reserveBottom();
   }
   function reserveBottom() {
+    placeGrip();
     if (html.classList.contains("sw-editing")) return;   // the editor's panel owns the space then
     if (html.classList.contains("rp-drawer-on")) html.style.setProperty("--sw-reserve-bottom", drawer.offsetHeight + "px");
     else html.style.removeProperty("--sw-reserve-bottom");
     SW.layout();
+  }
+  // The drawer's height: drag the grip along its top edge; double-click returns to the default.
+  // Remembered per browser.
+  const DRAWER_KEY = "sw-presenter:drawer-h";
+  let grip = null;
+  function placeGrip() { if (grip && drawer) grip.style.top = (innerHeight - drawer.offsetHeight) + "px"; }
+  function setDrawerHeight(px) {
+    if (px === null) { html.style.removeProperty("--rp-drawer-h"); html.classList.remove("rp-drawer-sized"); try { localStorage.removeItem(DRAWER_KEY); } catch (e) { /* blocked */ } }
+    else {
+      const h = Math.round(Math.max(80, Math.min(innerHeight * 0.85, px)));
+      html.style.setProperty("--rp-drawer-h", h + "px"); html.classList.add("rp-drawer-sized");
+      try { localStorage.setItem(DRAWER_KEY, String(h)); } catch (e) { /* blocked */ }
+    }
+    reserveBottom();
+  }
+  function buildGrip() {
+    grip = doc.createElement("div");
+    grip.className = "rp-drawer-grip";
+    grip.title = "Drag to resize the notes; double-click to reset";
+    doc.body.appendChild(grip);
+    let saved = null;
+    try { saved = parseInt(localStorage.getItem(DRAWER_KEY), 10); } catch (e) { /* blocked */ }
+    if (saved > 0) { html.style.setProperty("--rp-drawer-h", Math.min(saved, innerHeight * 0.85) + "px"); html.classList.add("rp-drawer-sized"); }
+    grip.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      grip.setPointerCapture(e.pointerId);
+      grip.classList.add("rp-dragging");
+      const move = (ev) => setDrawerHeight(innerHeight - ev.clientY);
+      const up = () => { grip.classList.remove("rp-dragging"); grip.removeEventListener("pointermove", move); };
+      grip.addEventListener("pointermove", move);
+      grip.addEventListener("pointerup", up, { once: true });
+      grip.addEventListener("pointercancel", up, { once: true });
+    });
+    grip.addEventListener("dblclick", () => setDrawerHeight(null));
+    window.addEventListener("resize", placeGrip);
   }
   function renderDrawer() {
     if (!html.classList.contains("rp-drawer-on")) return;
@@ -437,6 +478,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     drawer.setAttribute("aria-live", "polite");
     drawer.innerHTML = '<div class="rp-cue-text"></div><div class="rp-md"></div>';
     doc.body.appendChild(drawer);
+    buildGrip();
     new ResizeObserver(() => { if (html.classList.contains("rp-drawer-on")) reserveBottom(); }).observe(drawer);
     doc.addEventListener("sw-reserve", reserveBottom);   // the editor closed; the drawer's claim applies again
     SW.key({ key: "P", desc: "Presenter view in a second window" }, openPresenter);

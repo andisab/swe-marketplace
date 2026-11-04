@@ -81,7 +81,7 @@ Not every deck needs a plan; one assembled from several sources, or revised in r
 
 ## Editing and handing over (html)
 
-An HTML deck is edited in place: the owner opens `index.html`, presses E, edits text, moves and resizes anything, writes notes, leaves comments for Claude and rearranges slides, and S saves into the file. Comments arrive in the slides as `<!-- @claude: … -->`; when asked to address them, find them with grep, make each change and remove the comment. When the owner has the deck open while you edit it, their page reloads with your change. Old-format decks (their own `build-deck.js` and `slides.js`) are converted with `migrate` before anything else, and their old files are deleted only after the owner approves. Mechanics: [html/FORMAT.md](html/FORMAT.md) §Editing and §Old decks.
+An HTML deck is edited in place: when the owner wants to edit, start the engine's `serve` in the background and give them the address (FORMAT.md §Editing); they press E, edits and formats text, moves and resizes anything, writes notes, leaves comments for Claude and rearranges slides, and S saves into the file. Comments arrive in the slides as `<!-- @claude: … -->`; when asked to address them, find them with grep, make each change and remove the comment. When the owner has the deck open while you edit it, their page reloads with your change. Old-format decks (their own `build-deck.js` and `slides.js`) are converted with `migrate` before anything else, and their old files are deleted only after the owner approves. Mechanics: [html/FORMAT.md](html/FORMAT.md) §Editing and §Old decks.
 
 ## Sample mimicry (shared principle: style only, never content)
 

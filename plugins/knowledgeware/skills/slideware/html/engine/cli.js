@@ -10,7 +10,7 @@
 //   node cli.js export <index.html> --png [dir] [--scale 2] [--all] | --pdf [file] | --pptx [file] [--level 0|1]
 //   node cli.js migrate <old-deck-dir> [--out dir] [--brand name | --kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
 //   node cli.js import <file.pptx> [--out dir] [--mode redesign|faithful] [--brand name]
-//   node cli.js serve <index.html> [--port 47100] [--open]  local server: edit and save in any browser
+//   node cli.js serve <index.html> [--port N] [--open]      local server: edit and save in any browser (first free port from 47100)
 //   node cli.js install-editor                              copy the editor into the plugin's data folder
 // Exit code 1 when check finds errors.
 "use strict";
@@ -195,10 +195,13 @@ const commands = {
   async serve({ pos, opt }) {
     const file = deckPath(pos[0]);
     const { serve } = require("./serve");
-    const port = Number(opt.port) || 47100;
     build.installEditor();
-    await serve(path.dirname(file), { port });
-    const url = `http://127.0.0.1:${port}/${path.basename(file)}`;
+    // A named port is used as is; otherwise the first free one from 47100, so several decks can be served at once.
+    let server = null;
+    for (let port = Number(opt.port) || 47100, tries = opt.port ? 1 : 20; tries > 0 && !server; port++, tries--) {
+      try { server = await serve(path.dirname(file), { port }); } catch (e) { if (e.code !== "EADDRINUSE" || tries === 1) throw e; }
+    }
+    const url = `http://127.0.0.1:${server.address().port}/${path.basename(file)}`;
     console.log(`Serving ${rel(path.dirname(file))} at ${url} (Ctrl+C stops it). Press E in the deck to edit; saving needs no folder permission here.`);
     if (opt.open) require("child_process").spawn(process.platform === "darwin" ? "open" : process.platform === "win32" ? "explorer" : "xdg-open", [url], { stdio: "ignore", detached: true }).unref();
   },
