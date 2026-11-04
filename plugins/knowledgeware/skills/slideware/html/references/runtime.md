@@ -63,7 +63,7 @@ E loads the editor from the plugin. A bar along the top and a panel along the bo
 
 | Action | How |
 |---|---|
-| Format text | the bar over the selection: bold, italic, underline (Cmd/Ctrl+B, I, U), code, link (Cmd/Ctrl+K), font (the brand's sans, serif, mono), size (A− A+), colour (the brand's roles), alignment, Clear. With words selected while typing it formats those words; otherwise the whole element. The bar says which (Words or Element) |
+| Format text | the bar over the selection: bold, italic, underline (Cmd/Ctrl+B, I, U), code, link (Cmd/Ctrl+K), font (the brand's sans, serif, mono), size (A− A+), colour, alignment, Clear. Colour opens the brand's colours (every `--color-*` the theme declares; saved as the variable, so they follow the brand), recent custom colours, a hex field, the browser's picker (the rainbow circle) and, in Chrome, an eyedropper; custom colours are saved as hex. With words selected while typing it formats those words; otherwise the whole element. The bar says which (Words or Element) |
 | Edit text | double-click any text (or select and press Enter); Esc cancels, Enter commits single lines, Shift+Enter breaks a line; paste is plain text |
 | Select | click an element; Alt+click or Parent selects the parent; Esc clears |
 | Move | drag (snaps to slide edges, centres and other elements; Alt drag skips snapping), or arrows (Shift: 10 px) |

@@ -125,6 +125,21 @@ html.swe-fmt-on .swe-tag { display: none; }
 .swe-fmt .swe-fscope { padding: 0 6px; font: 600 10px ${MONO}; letter-spacing: .1em; text-transform: uppercase; color: #9FC3FF; }
 .swe-fmt .swe-fsize { min-width: 34px; text-align: center; font: 11px ${MONO}; color: #B9B9B2; }
 .swe-fmt input { all: unset; width: 200px; height: 26px; padding: 0 8px; border-radius: 6px; background: #FFF; color: #1A1A18; font: 12px ${SANS}; box-sizing: border-box; }
+.swe-cwrap { position: relative; display: inline-flex; }
+.swe-cswatch { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(255,255,255,.5); background: currentColor; }
+.swe-cpop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 2; display: flex; flex-direction: column; gap: 6px; width: 236px; padding: 10px; border-radius: 9px;
+  background: #2A2A27; box-shadow: 0 8px 24px rgba(0,0,0,.35); cursor: default; }
+.swe-cpop[hidden] { display: none; }
+.swe-chead { font: 600 10px ${MONO}; letter-spacing: .1em; text-transform: uppercase; color: #9FC3FF; }
+.swe-cgrid { display: grid; grid-template-columns: repeat(8, 22px); gap: 6px; }
+.swe-cgrid button { width: 22px; height: 22px; min-width: 0; padding: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); box-sizing: border-box; }
+.swe-cgrid button:hover { outline: 2px solid #FFF; outline-offset: 1px; background-image: none; }
+.swe-crow { display: flex; gap: 6px; align-items: center; }
+.swe-fmt .swe-crow input[type=text] { width: 86px; font: 12px ${MONO}; }
+.swe-cany { position: relative; flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(255,255,255,.5); box-sizing: border-box;
+  background: conic-gradient(#F33, #FC3, #3C6, #3CF, #36F, #C3F, #F33); cursor: pointer; }
+.swe-cany:hover { outline: 2px solid #FFF; outline-offset: 1px; }
+.swe-fmt .swe-cany input { all: unset; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .swe-fmt svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 .swe-bar [hidden], .swe-panel [hidden], .swe-fmt [hidden] { display: none !important; }
 html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-editing) .swe-overlay, html:not(.sw-editing) .swe-fmt { display: none; }
@@ -170,6 +185,7 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
     fmt.addEventListener("mousedown", (e) => { if (!/^(SELECT|INPUT|OPTION)$/.test(e.target.tagName)) e.preventDefault(); });   // keep the text selection
     fmt.addEventListener("click", (e) => { const b = e.target.closest("button[data-f]"); if (b && !b.disabled) fmtAction(b.dataset.f); });
     fmt.addEventListener("change", (e) => { const sel = e.target.closest("select[data-f]"); if (sel) { fmtAction(sel.dataset.f, sel.value); sel.value = ""; } });
+    wireColors();
     bar.addEventListener("click", onBarClick);
     panel.addEventListener("click", onBarClick);
     panel.querySelector(".swe-notes").addEventListener("input", onNotesInput);
@@ -686,10 +702,70 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
 <button type="button" data-f="code" title="Code (selected words)">&lt;/&gt;</button><button type="button" data-f="link" title="Link (Cmd+K, selected words)">Link</button><span class="swe-fsep"></span>
 <select data-f="font" title="Font, from the brand"><option value="">Font</option>${FONTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}<option value="none">Default</option></select>
 <button type="button" data-f="smaller" title="Smaller">A−</button><span class="swe-fsize"></span><button type="button" data-f="larger" title="Larger">A+</button>
-<select data-f="color" title="Colour, from the brand"><option value="">Colour</option>${COLORS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}<option value="none">Default</option></select><span class="swe-fsep"></span>
+<span class="swe-cwrap"><button type="button" data-f="colors" class="swe-cbtn" title="Colour"><span class="swe-cswatch"></span>Colour</button>
+<span class="swe-cpop" hidden><span class="swe-chead">Brand</span><span class="swe-cgrid swe-cbrand"></span><span class="swe-chead swe-crecent-h">Recent</span><span class="swe-cgrid swe-crecent"></span>
+<span class="swe-crow"><input type="text" class="swe-chex" placeholder="#3B5249" maxlength="7" spellcheck="false" aria-label="Hex colour"><span class="swe-cany" title="Any colour: the browser's picker"><input type="color" class="swe-cnative" aria-label="Any colour"></span><button type="button" class="swe-cdrop" title="Pick a colour from the screen">${icon("M14 4l6 6M4 20l3-1 10-10-2-2L5 17l-1 3z")}</button><button type="button" class="swe-cnone">Default</button></span></span></span><span class="swe-fsep"></span>
 <button type="button" data-f="left" title="Align left">${icon("M4 6h16M4 12h10M4 18h14")}</button><button type="button" data-f="center" title="Centre">${icon("M4 6h16M7 12h10M5 18h14")}</button><button type="button" data-f="right" title="Align right">${icon("M4 6h16M10 12h10M6 18h14")}</button><span class="swe-fsep"></span>
 <button type="button" data-f="clear" title="Clear formatting">Clear</button>`;
   let savedRange = null;
+  // ── Colours: the brand's, recent custom ones, a hex field, the browser's picker, the eyedropper ──
+  // A brand colour is saved as its variable (var(--color-accent)), so it follows the brand; a custom
+  // colour is saved as its hex.
+  const RECENT_KEY = "sw-editor:recent-colors";
+  const colorCss = (v) => (/^#/.test(v) ? v : `var(--color-${v})`);
+  const toHex = (c) => { const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(c || ""); return m ? "#" + [m[1], m[2], m[3]].map((n) => (+n).toString(16).padStart(2, "0")).join("").toUpperCase() : (c || "").toUpperCase(); };
+  function brandColors() {   // every --color-* the deck's theme and CSS declare on :root, roles first, one per value
+    const names = new Set(COLORS.map(([v]) => v));
+    const walk = (rules) => { for (const r of rules || []) { if (r.cssRules && !r.selectorText) walk(r.cssRules); else if (r.selectorText && /(^|,)\s*:root\s*($|,)/.test(r.selectorText)) for (const prop of r.style) if (prop.startsWith("--color-")) names.add(prop.slice(8)); } };
+    for (const id of ["sw-theme", "sw-deck-css"]) { const st = doc.getElementById(id); try { if (st && st.sheet) walk(st.sheet.cssRules); } catch (e) { /* unreadable */ } }
+    const cs = getComputedStyle(html), seen = new Set(), out = [];
+    for (const n of names) {
+      const v = cs.getPropertyValue("--color-" + n).trim();
+      if (!v || seen.has(v.toLowerCase())) continue;
+      seen.add(v.toLowerCase()); out.push([n, v]);
+    }
+    return out;
+  }
+  function recentColors() { try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch (e) { return []; } }
+  function rememberColor(hex) { try { localStorage.setItem(RECENT_KEY, JSON.stringify([hex, ...recentColors().filter((c) => c !== hex)].slice(0, 8))); } catch (e) { /* blocked */ } }
+  const swatch = (value, color, title) => `<button type="button" data-c="${value}" title="${title}" style="background:${color}"></button>`;
+  function toggleColors() {
+    const pop = fmt.querySelector(".swe-cpop");
+    if (!pop.hidden) { closeColors(); return; }
+    pop.querySelector(".swe-cbrand").innerHTML = brandColors().map(([n, v]) => swatch(n, v, `${n} · ${toHex(v)}`)).join("");
+    const recent = recentColors();
+    pop.querySelector(".swe-crecent").innerHTML = recent.map((h) => swatch(h, h, h)).join("");
+    pop.querySelector(".swe-crecent").hidden = pop.querySelector(".swe-crecent-h").hidden = !recent.length;
+    const t = fmtTarget(), cur = t ? toHex(getComputedStyle(t).color) : "";
+    pop.querySelector(".swe-chex").value = cur;
+    if (/^#[0-9A-F]{6}$/.test(cur)) pop.querySelector(".swe-cnative").value = cur.toLowerCase();
+    pop.querySelector(".swe-cdrop").hidden = !window.EyeDropper;
+    pop.hidden = false;
+  }
+  function closeColors() { const pop = fmt && fmt.querySelector(".swe-cpop"); if (pop) pop.hidden = true; }
+  function applyCustom(hex) {
+    let h = hex.trim().replace(/^#?/, "#").toUpperCase();
+    if (/^#[0-9A-F]{3}$/.test(h)) h = "#" + [...h.slice(1)].map((c) => c + c).join("");
+    if (!/^#[0-9A-F]{6}$/.test(h)) { toast("A colour is # and six hex digits, like #3B5249."); return; }
+    rememberColor(h);
+    fmtAction("color", h);
+  }
+  function wireColors() {
+    const pop = fmt.querySelector(".swe-cpop");
+    pop.addEventListener("click", async (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      e.stopPropagation();
+      if (b.dataset.c) { if (/^#/.test(b.dataset.c)) rememberColor(b.dataset.c); fmtAction("color", b.dataset.c); }
+      else if (b.classList.contains("swe-cnone")) fmtAction("color", "none");
+      else if (b.classList.contains("swe-cdrop") && window.EyeDropper) { try { const r = await new window.EyeDropper().open(); applyCustom(r.sRGBHex); } catch (err) { /* cancelled */ } }
+    });
+    const hexIn = pop.querySelector(".swe-chex"), native = pop.querySelector(".swe-cnative");
+    hexIn.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); applyCustom(hexIn.value); } else if (e.key === "Escape") closeColors(); });
+    native.addEventListener("input", () => { hexIn.value = native.value.toUpperCase(); });
+    native.addEventListener("change", () => applyCustom(native.value));
+    doc.addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest(".swe-cwrap")) closeColors(); }, true);
+  }
   function fmtTarget() {   // the element the bar formats, or null when the selection isn't text
     const t = textEl || selected;
     if (!t || !t.isConnected || t.closest("svg") || t.closest("[data-sw-expanded]") || !t.textContent.trim()) return null;
@@ -708,12 +784,13 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
   function renderFmt() {
     const t = on && fmtTarget();
     html.classList.toggle("swe-fmt-on", !!t);
-    if (!t || !fmt) { if (fmt) fmt.classList.remove("swe-show"); return; }
+    if (!t || !fmt) { if (fmt) { fmt.classList.remove("swe-show"); closeColors(); } return; }
     const words = wordsSelected(), cs = getComputedStyle(t);
     fmt.querySelector(".swe-fscope").textContent = words ? "Words" : "Element";
     fmt.querySelector("[data-f=code]").disabled = !words;
     fmt.querySelector("[data-f=link]").disabled = !words;
     fmt.querySelector(".swe-fsize").textContent = Math.round(parseFloat(cs.fontSize)) + "px";
+    fmt.querySelector(".swe-cswatch").style.color = cs.color;
     if (!words) {
       fmt.querySelector("[data-f=bold]").classList.toggle("swe-on", parseInt(cs.fontWeight, 10) >= 600);
       fmt.querySelector("[data-f=italic]").classList.toggle("swe-on", cs.fontStyle === "italic");
@@ -780,6 +857,8 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
   function fmtAction(act, value) {
     const t = fmtTarget();
     if (!t) return;
+    if (act === "colors") { toggleColors(); return; }
+    if (act === "color") closeColors();
     if (/^(left|center|right)$/.test(act)) { setStyle(t, { "text-align": act }); if (textEl) restoreRange(); renderFmt(); return; }
     if (wordsSelected()) {
       restoreRange();
@@ -789,7 +868,7 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
       else if (act === "link") { linkWords(); return; }
       else if (act === "font") { if (value === "none") unwrapWords("font-family"); else if (value) wrapWords("span", `font-family: var(--font-${value})`); }
       else if (act === "larger" || act === "smaller") wrapWords("span", `font-size: ${act === "larger" ? "1.15em" : "0.87em"}`);
-      else if (act === "color") { if (value === "none") unwrapWords("color"); else if (value) wrapWords("span", `color: var(--color-${value})`); }
+      else if (act === "color") { if (value === "none") unwrapWords("color"); else if (value) wrapWords("span", `color: ${colorCss(value)}`); }
       else if (act === "clear") unwrapWords(null);
       const sel = getSelection(); if (sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
       renderFmt(); drawBox();
@@ -802,7 +881,7 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
     else if (act === "underline") props = { "text-decoration": /underline/.test(cs.textDecorationLine) ? "none" : "underline" };
     else if (act === "font") props = value ? { "font-family": value === "none" ? null : `var(--font-${value})` } : null;
     else if (act === "larger" || act === "smaller") { const px = parseFloat(cs.fontSize); props = { "font-size": Math.max(6, Math.round(act === "larger" ? px * 1.1 + 0.5 : px / 1.1 - 0.5)) + "px" }; }
-    else if (act === "color") props = value ? { color: value === "none" ? null : `var(--color-${value})` } : null;
+    else if (act === "color") props = value ? { color: value === "none" ? null : colorCss(value) } : null;
     else if (act === "clear") props = Object.fromEntries(TEXT_PROPS.map((k) => [k, null]));
     if (props) setStyle(t, props);
     if (textEl) restoreRange();
@@ -1182,6 +1261,7 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
   // ── Keys and clicks ───────────────────────────────────────────────
   function onKey(e) {
     if (!on) return;
+    if (fmt && fmt.contains(e.target)) return;   // the format bar's own fields (hex colour, link) take their keys
     const fkey = (e.metaKey || e.ctrlKey) && !e.altKey && { b: "bold", i: "italic", u: "underline", k: "link" }[e.key.toLowerCase()];
     if (fkey && (textEl || (selected && !SW.typing(e.target)))) { e.preventDefault(); e.stopPropagation(); fmtAction(fkey); return; }
     if (textEl) {
