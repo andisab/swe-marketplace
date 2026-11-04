@@ -7,7 +7,7 @@
 //   - the brand tag against brandware (stale or not), the runtime against the plugin
 //   - anything loaded from the network besides Google Fonts (the deck must work offline)
 //   - the spec page and how many slides name the section they teach (for the librarian)
-//   - deck-plan.md against the deck
+//   - the deck's plan (deck-plan.md, or the .md named like its spec page) against the deck
 //   - lanes: overlays that parse, overrides that still match, lane files that are current
 // render(file) adds what only a browser can measure: overflow past the slide, the footer band,
 // script errors. Both return { errors, warnings, info }.
@@ -162,16 +162,20 @@ function check(file) {
   }
 
   // deck-plan.md
-  const planFile = path.join(path.dirname(file), "deck-plan.md");
-  if (fs.existsSync(planFile)) {
+  // The deck's plan: deck-plan.md beside it, or a .md named like its spec page (../<unit>.html → ../<unit>.md).
+  const planFile = [path.join(path.dirname(file), "deck-plan.md"), cfg.spec ? path.resolve(path.dirname(file), cfg.spec).replace(/\.html?$/i, ".md") : null]
+    .find((f) => f && f !== path.resolve(path.dirname(file), cfg.spec || "") && fs.existsSync(f));
+  const planName = planFile ? path.relative(path.dirname(file), planFile) : "";
+  if (planFile) {
     const rows = readDeckPlan(fs.readFileSync(planFile, "utf8"));
-    if (!rows.length) info.push("deck-plan.md: no slide tables found (a table needs a Status column)");
+    if (!rows.length) info.push(`${planName}: no slide tables found (a table needs a Status column)`);
     else {
-      const done = rows.filter((r) => /^done/.test(r.status));
+      const done = rows.filter((r) => /^(done|hidden)/.test(r.status));   // in the deck, shown or hidden
+      const closed = rows.filter((r) => /^(done|hidden|deleted|dropped|cut)/.test(r.status));
       const missing = done.filter((r) => r.key && !keys.has(r.key)).map((r) => r.key);
       const planned = new Set(rows.map((r) => r.key).filter(Boolean));
       const unplanned = [...keys.keys()].filter((k) => !planned.has(k));
-      info.push(`deck-plan.md: ${rows.length} rows, ${done.length} done, ${rows.length - done.length} to do`);
+      info.push(`${planName}: ${rows.length} rows, ${done.length} in the deck, ${rows.length - closed.length} to do`);
       if (missing.length) info.push(`  done in the plan but not in the deck: ${missing.join(", ")}`);
       if (planned.size && unplanned.length) info.push(`  in the deck but not in the plan: ${unplanned.join(", ")}`);
     }

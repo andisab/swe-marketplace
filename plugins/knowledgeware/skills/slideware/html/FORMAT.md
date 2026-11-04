@@ -11,7 +11,7 @@ A deck is one `index.html`. It is both the source and the file people open: ther
   index.html            the deck: source and presented file
   index-<lane>.html     a lane's file, derived from index.html and lanes/<lane>.json (optional)
   lanes/<lane>.json     a lane's overlay (optional)
-  deck-plan.md          the deck's plan (optional; ../SKILL.md §Planning a deck)
+  deck-plan.md          the deck's plan (optional; or ../<unit>.md beside its spec page; ../SKILL.md §Planning a deck)
 ```
 
 Inside `index.html`, fixed regions, each found by its id:

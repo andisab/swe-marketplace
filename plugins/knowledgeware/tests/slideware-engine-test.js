@@ -120,6 +120,15 @@ assert(net.includes("https://example.com/x.png") && !/https:\/\/example\.com(,|$
 fs.writeFileSync(file, text);
 fs.writeFileSync(path.join(dir, "deck-plan.md"), "| Key | Slide | Status |\n|---|---|---|\n| title | Hello | done |\n| s9 | Missing | done |\n");
 assert(check(file).info.some((l) => /done in the plan but not in the deck: s9/.test(l))); ok("check compares deck-plan.md with the deck");
+// a plan named like the spec page, one folder up, is read when there's no deck-plan.md
+fs.rmSync(path.join(dir, "deck-plan.md"));
+const specText = text.replace(/("title": "Engine test",)/, '$1\n  "spec": "../unit.html",');
+fs.writeFileSync(file, specText);
+fs.writeFileSync(path.join(tmp, "unit.html"), "<html></html>");
+fs.writeFileSync(path.join(tmp, "unit.md"), "| # | Slide | Status |\n|---|---|---|\n| 1 | `title` Hello | done |\n| 2 | `s3` Backup | hidden |\n| 3 | `gone` Old | deleted 2026-11-01 |\n");
+const specInfo = check(file).info;
+assert(specInfo.some((l) => /^\.\.\/unit\.md: 3 rows, 2 in the deck, 0 to do/.test(l)), specInfo.join("\n")); ok("check reads ../<unit>.md named like the spec; hidden and deleted rows aren't to do");
+assert(specInfo.some((l) => /in the deck but not in the plan: s2/.test(l))); ok("check lists slides the plan doesn't mention");
 
 // PowerPoint: a valid zip with the parts PowerPoint needs, the hidden flag and the notes
 const png = Buffer.from("89504e470d0a1a0a0000000d4948445200000001000000010806000000" + "1f15c4890000000d49444154789c6360000002000154a24f5d0000000049454e44ae426082", "hex");
