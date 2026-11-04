@@ -248,6 +248,8 @@ html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within, .rp-hud[data-help] 
 .rp-hud-help dt { font-family: ${MONO}; font-size: 11px; white-space: nowrap; color: ${ACCENT}; }
 .rp-hud-help dd { margin: 0; }
 .rp-hud-help p { margin: 8px 0 0; color: var(--color-ink-muted, #6B6B63); }
+html.sw-editing .rp-ov { top: var(--sw-reserve-top, 0px); bottom: var(--sw-reserve-bottom, 0px); }   /* between the editor's bar and panel */
+html.sw-editing .rp-hud { bottom: calc(var(--sw-reserve-bottom, 0px) + 12px); z-index: 71; }   /* above the editor's panel, which reserves its height */
 html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud, html.sw-print .rp-hud, html.sw-capture .rp-hud { display: none !important; }
 @media print { .rp-hud, .rp-drawer, .rp-drawer-grip, .rp-ov { display: none !important; } }
 `;

@@ -76,6 +76,18 @@ html.sw-editing #sw-slides [contenteditable] { outline: 2px solid #2F7DE1 !impor
 .swe-fcard button:hover { background: rgba(255,255,255,.08); }
 .swe-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; padding: 10px 14px;
   background: #FAFAF8; border-top: 1px solid #DDDDD8; box-shadow: 0 -6px 20px rgba(0,0,0,.08); font: 13px/1.4 ${SANS}; color: #1A1A18; box-sizing: border-box; }
+.swe-pgrip { position: absolute; left: 0; right: 0; top: -6px; height: 12px; cursor: ns-resize; z-index: 1; }
+.swe-pgrip::after { content: ""; position: absolute; left: 50%; top: 4px; width: 44px; height: 4px; margin-left: -22px; border-radius: 2px; background: #C9C9C3; }
+.swe-pgrip:hover::after, .swe-pgrip.swe-dragging::after { background: #2F7DE1; }
+.swe-panel.swe-side-closed { grid-template-columns: 1fr 28px; }
+.swe-side { position: relative; min-width: 0; }
+.swe-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.swe-side-head h4 { margin: 0; }
+.swe-panel .swe-side-hide { padding: 2px 8px; font-size: 11px; color: #6B6B63; }
+.swe-panel .swe-side-tab { display: none; }
+.swe-panel.swe-side-closed .swe-side-body { display: none; }
+.swe-panel.swe-side-closed .swe-side-tab { display: flex; align-items: center; justify-content: center; position: absolute; inset: 0; padding: 6px 0; writing-mode: vertical-rl;
+  font: 600 10.5px ${MONO}; letter-spacing: .12em; text-transform: uppercase; color: #6B6B63; border-radius: 7px; }
 .swe-panel h4 { margin: 0 0 5px; font: 600 10.5px ${MONO}; letter-spacing: .12em; text-transform: uppercase; color: #6B6B63; }
 .swe-panel textarea { width: 100%; box-sizing: border-box; height: 92px; resize: vertical; padding: 7px 9px; border: 1px solid #DDDDD8; border-radius: 7px; font: 13px/1.45 ${SANS}; background: #FFF; }
 .swe-panel input[type=text] { flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid #DDDDD8; border-radius: 7px; font: 13px ${SANS}; }
@@ -136,12 +148,14 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
 <button type="button" data-a="discard" title="Drop every unsaved edit">Discard</button>
 <button type="button" data-a="done">Done<kbd>E</kbd></button>`);
     panel = el("div", { class: "swe-panel" }, `
+<div class="swe-pgrip" title="Drag to resize the panel; double-click to reset"></div>
 <div><h4>Speaker notes</h4><textarea class="swe-notes" spellcheck="true" placeholder="Notes for this slide"></textarea></div>
-<div><h4>Comment for Claude</h4><div class="swe-row" style="margin-top:0"><input type="text" class="swe-comment" placeholder="e.g. tighten this to one line"><button type="button" data-a="comment">Add</button></div>
+<div class="swe-side"><button type="button" class="swe-side-tab" data-a="side" title="Show the comment and selection tools">Comment · Selection</button><div class="swe-side-body">
+<div class="swe-side-head"><h4>Comment for Claude</h4><button type="button" class="swe-side-hide" data-a="side" title="Hide this column; the notes take the width">Hide ›</button></div><div class="swe-row" style="margin-top:5px"><input type="text" class="swe-comment" placeholder="e.g. tighten this to one line"><button type="button" data-a="comment">Add</button></div>
 <ul class="swe-comments"></ul>
 <h4 style="margin-top:8px">Selection</h4><div class="swe-row"><span class="swe-sel">Click an element on the slide.</span>
 <button type="button" data-a="pin" hidden>Pin in place</button><button type="button" data-a="reset" hidden>Reset position</button><button type="button" data-a="parent" hidden>Parent</button><button type="button" data-a="remove" hidden>Delete</button></div>
-<div class="swe-checks"></div></div>`);
+<div class="swe-checks"></div></div></div>`);
     overlayEl = el("div", { class: "swe-overlay" });
     box = el("div", { class: "swe-box" }, '<span class="swe-tag"></span>' + ["nw", "ne", "sw", "se"].map((h) => `<span class="swe-h" data-h="${h}"></span>`).join(""));
     guides = el("div");
@@ -155,10 +169,40 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     bar.addEventListener("click", onBarClick);
     panel.addEventListener("click", onBarClick);
     panel.querySelector(".swe-notes").addEventListener("input", onNotesInput);
+    wirePanelSize();
     panel.querySelector(".swe-comment").addEventListener("keydown", (e) => { if (e.key === "Enter") addComment(); });
     box.addEventListener("pointerdown", onHandleDown);
     new ResizeObserver(reservePanel).observe(panel);
     renderLanePicker();
+  }
+  // The panel's size: its top edge drags the notes box taller or shorter (the same height the box's
+  // own corner sets), double-click resets; the right column folds to a tab. Both remembered per browser.
+  const PANEL_KEY = "sw-editor:panel";
+  function panelPrefs() { try { return JSON.parse(localStorage.getItem(PANEL_KEY)) || {}; } catch (e) { return {}; } }
+  function savePanelPrefs(patch) { try { localStorage.setItem(PANEL_KEY, JSON.stringify({ ...panelPrefs(), ...patch })); } catch (e) { /* blocked */ } }
+  function setSide(open, remember = true) {
+    panel.classList.toggle("swe-side-closed", !open);
+    if (remember) savePanelPrefs({ sideClosed: !open });
+  }
+  function wirePanelSize() {
+    const ta = panel.querySelector(".swe-notes"), grip = panel.querySelector(".swe-pgrip");
+    const prefs = panelPrefs();
+    if (prefs.notesH) ta.style.height = prefs.notesH + "px";
+    setSide(!prefs.sideClosed, false);
+    const clamp = (h) => Math.round(Math.max(40, Math.min(innerHeight * 0.7, h)));
+    grip.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      try { grip.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointer */ }
+      grip.classList.add("swe-dragging");
+      const y0 = e.clientY, h0 = ta.offsetHeight;
+      const move = (ev) => { ta.style.height = clamp(h0 + (y0 - ev.clientY)) + "px"; };
+      const up = () => { grip.classList.remove("swe-dragging"); grip.removeEventListener("pointermove", move); savePanelPrefs({ notesH: ta.offsetHeight }); };
+      grip.addEventListener("pointermove", move);
+      grip.addEventListener("pointerup", up, { once: true });
+      grip.addEventListener("pointercancel", up, { once: true });
+    });
+    grip.addEventListener("dblclick", () => { ta.style.height = ""; savePanelPrefs({ notesH: null }); });
+    ta.addEventListener("mouseup", () => { if (ta.style.height) savePanelPrefs({ notesH: ta.offsetHeight }); });   // the box's own corner
   }
   function reservePanel() {
     if (!on) return;
@@ -1206,6 +1250,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
       location.reload();
     } else if (a === "done") toggle(false);
     else if (a === "comment") addComment();
+    else if (a === "side") setSide(panel.classList.contains("swe-side-closed"));
     else if (a === "pin") pin();
     else if (a === "reset") resetPosition();
     else if (a === "parent") { if (selected && selected.parentElement && !selected.parentElement.matches("#sw-slides > section")) select(selected.parentElement); }
