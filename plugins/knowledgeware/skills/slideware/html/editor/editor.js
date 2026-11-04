@@ -134,6 +134,7 @@ html.swe-fmt-on .swe-tag { display: none; }
 .swe-cgrid { display: grid; grid-template-columns: repeat(8, 22px); gap: 6px; }
 .swe-cgrid button { width: 22px; height: 22px; min-width: 0; padding: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); box-sizing: border-box; }
 .swe-cgrid button:hover { outline: 2px solid #FFF; outline-offset: 1px; background-image: none; }
+.swe-cname { min-height: 15px; font: 11px ${SANS}; color: #B9B9B2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .swe-crow { display: flex; gap: 6px; align-items: center; }
 .swe-fmt .swe-crow input[type=text] { width: 86px; font: 12px ${MONO}; }
 .swe-cany { position: relative; flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(255,255,255,.5); box-sizing: border-box;
@@ -703,7 +704,7 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
 <select data-f="font" title="Font, from the brand"><option value="">Font</option>${FONTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}<option value="none">Default</option></select>
 <button type="button" data-f="smaller" title="Smaller">A−</button><span class="swe-fsize"></span><button type="button" data-f="larger" title="Larger">A+</button>
 <span class="swe-cwrap"><button type="button" data-f="colors" class="swe-cbtn" title="Colour"><span class="swe-cswatch"></span>Colour</button>
-<span class="swe-cpop" hidden><span class="swe-chead">Brand</span><span class="swe-cgrid swe-cbrand"></span><span class="swe-chead swe-crecent-h">Recent</span><span class="swe-cgrid swe-crecent"></span>
+<span class="swe-cpop" hidden><span class="swe-chead">Brand colours</span><span class="swe-cgrid swe-cbrand"></span><span class="swe-chead swe-cneutral-h">Neutrals</span><span class="swe-cgrid swe-cneutral"></span><span class="swe-cname"></span><span class="swe-chead swe-crecent-h">Recent</span><span class="swe-cgrid swe-crecent"></span>
 <span class="swe-crow"><input type="text" class="swe-chex" placeholder="#3B5249" maxlength="7" spellcheck="false" aria-label="Hex colour"><span class="swe-cany" title="Any colour: the browser's picker"><input type="color" class="swe-cnative" aria-label="Any colour"></span><button type="button" class="swe-cdrop" title="Pick a colour from the screen">${icon("M14 4l6 6M4 20l3-1 10-10-2-2L5 17l-1 3z")}</button><button type="button" class="swe-cnone">Default</button></span></span></span><span class="swe-fsep"></span>
 <button type="button" data-f="left" title="Align left">${icon("M4 6h16M4 12h10M4 18h14")}</button><button type="button" data-f="center" title="Centre">${icon("M4 6h16M7 12h10M5 18h14")}</button><button type="button" data-f="right" title="Align right">${icon("M4 6h16M10 12h10M6 18h14")}</button><span class="swe-fsep"></span>
 <button type="button" data-f="clear" title="Clear formatting">Clear</button>`;
@@ -714,7 +715,21 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
   const RECENT_KEY = "sw-editor:recent-colors";
   const colorCss = (v) => (/^#/.test(v) ? v : `var(--color-${v})`);
   const toHex = (c) => { const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(c || ""); return m ? "#" + [m[1], m[2], m[3]].map((n) => (+n).toString(16).padStart(2, "0")).join("").toUpperCase() : (c || "").toUpperCase(); };
-  function brandColors() {   // every --color-* the deck's theme and CSS declare on :root, roles first, one per value
+  // Hue, saturation and lightness of a colour, for ordering the swatches.
+  function hsl(c) {
+    const m = /^#([0-9A-F]{6})$/.exec(toHex(c));
+    if (!m) return null;
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16) / 255);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+    if (!d) return { h: 0, s: 0, l, c: 0 };
+    const sat = d / (1 - Math.abs(2 * l - 1));
+    const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return { h: h * 60, s: sat, l, c: d };   // c: chroma, how far from grey
+  }
+  // The brandbook's names for its colours, by hex, written onto the theme by the engine.
+  function brandNames() { try { return JSON.parse((doc.getElementById("sw-theme") || {}).getAttribute?.("data-color-names") || "{}"); } catch (e) { return {}; } }
+  const prettify = (n) => n.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+  function brandColors() {   // every --color-* the deck's theme and CSS declare on :root, one per value
     const names = new Set(COLORS.map(([v]) => v));
     const walk = (rules) => { for (const r of rules || []) { if (r.cssRules && !r.selectorText) walk(r.cssRules); else if (r.selectorText && /(^|,)\s*:root\s*($|,)/.test(r.selectorText)) for (const prop of r.style) if (prop.startsWith("--color-")) names.add(prop.slice(8)); } };
     for (const id of ["sw-theme", "sw-deck-css"]) { const st = doc.getElementById(id); try { if (st && st.sheet) walk(st.sheet.cssRules); } catch (e) { /* unreadable */ } }
@@ -724,7 +739,13 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
       if (!v || seen.has(v.toLowerCase())) continue;
       seen.add(v.toLowerCase()); out.push([n, v]);
     }
-    return out;
+    // Colours round the wheel (red, orange, yellow, green, blue, violet), each hue dark to light;
+    // then the neutrals (little saturation) dark to light. Labels: the brandbook's, else the variable's.
+    const labels = brandNames();
+    const rows = out.map(([n, v]) => ({ n, v, c: hsl(v) || { h: 0, s: 0, l: 1, c: 0 }, label: labels[toHex(v)] || prettify(n) }));
+    const neutral = (r) => r.c.c < 0.035;   // greys, near-greys and the palest tints
+    const colours = rows.filter((r) => !neutral(r)).sort((a, b) => Math.round(a.c.h / 15) - Math.round(b.c.h / 15) || a.c.l - b.c.l);
+    return { colours, neutrals: rows.filter(neutral).sort((a, b) => a.c.l - b.c.l) };
   }
   function recentColors() { try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch (e) { return []; } }
   function rememberColor(hex) { try { localStorage.setItem(RECENT_KEY, JSON.stringify([hex, ...recentColors().filter((c) => c !== hex)].slice(0, 8))); } catch (e) { /* blocked */ } }
@@ -732,7 +753,12 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
   function toggleColors() {
     const pop = fmt.querySelector(".swe-cpop");
     if (!pop.hidden) { closeColors(); return; }
-    pop.querySelector(".swe-cbrand").innerHTML = brandColors().map(([n, v]) => swatch(n, v, `${n} · ${toHex(v)}`)).join("");
+    const { colours, neutrals } = brandColors();
+    const cell = (r) => swatch(r.n, r.v, `${r.label} · ${toHex(r.v)}`);
+    pop.querySelector(".swe-cbrand").innerHTML = colours.map(cell).join("");
+    pop.querySelector(".swe-cneutral").innerHTML = neutrals.map(cell).join("");
+    pop.querySelector(".swe-cneutral").hidden = pop.querySelector(".swe-cneutral-h").hidden = !neutrals.length;
+    pop.querySelector(".swe-cname").textContent = "";
     const recent = recentColors();
     pop.querySelector(".swe-crecent").innerHTML = recent.map((h) => swatch(h, h, h)).join("");
     pop.querySelector(".swe-crecent").hidden = pop.querySelector(".swe-crecent-h").hidden = !recent.length;
@@ -760,6 +786,7 @@ html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe
       else if (b.classList.contains("swe-cnone")) fmtAction("color", "none");
       else if (b.classList.contains("swe-cdrop") && window.EyeDropper) { try { const r = await new window.EyeDropper().open(); applyCustom(r.sRGBHex); } catch (err) { /* cancelled */ } }
     });
+    pop.addEventListener("pointerover", (e) => { const b = e.target.closest("button[data-c]"); pop.querySelector(".swe-cname").textContent = b ? b.title : ""; });
     const hexIn = pop.querySelector(".swe-chex"), native = pop.querySelector(".swe-cnative");
     hexIn.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); applyCustom(hexIn.value); } else if (e.key === "Escape") closeColors(); });
     native.addEventListener("input", () => { hexIn.value = native.value.toUpperCase(); });

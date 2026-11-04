@@ -76,7 +76,7 @@ function newDeck({ brand, title = "Untitled deck", subtitle = "", footer = [], s
 ${headBrandTags(t)}<script type="application/json" id="sw-deck">
 ${JSON.stringify(config, null, 2)}
 </script>
-<style id="sw-theme" data-brand="${escA(t.brand)}" data-brand-hash="${t.hash}">
+<style id="sw-theme" data-brand="${escA(t.brand)}" data-brand-hash="${t.hash}" data-color-names="${escA(JSON.stringify(t.colorNames || {}))}">
 ${t.css}</style>
 <style id="sw-deck-css">
 /* This deck's own CSS, for anything beyond the brand's classes. */
@@ -118,7 +118,7 @@ function refreshDeck(text, { brand, runtime = true, theme: doTheme = true } = {}
     let t = null;
     try { t = theme.themeFor(name); } catch (e) { notes.push(`brand "${name}" isn't on this machine; the deck keeps its copy`); }
     if (t && (brand || t.hash !== current.attrs["data-brand-hash"])) {
-      text = D.spliceRegion(text, "sw-theme", `\n${t.css}`, { "data-brand": t.brand, "data-brand-hash": t.hash });
+      text = D.spliceRegion(text, "sw-theme", `\n${t.css}`, { "data-brand": t.brand, "data-brand-hash": t.hash, "data-color-names": JSON.stringify(t.colorNames || {}) });
       // favicon and fonts links tagged with the brand
       text = text.replace(/<link\b[^>]*\bdata-brand=["'][^"']*["'][^>]*>\n?/gi, "");
       text = text.replace(/(<script type="application\/json" id="sw-deck">)/i, headBrandTags(t) + "$1");
