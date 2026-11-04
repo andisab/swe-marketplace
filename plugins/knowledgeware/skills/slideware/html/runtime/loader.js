@@ -52,6 +52,7 @@
     s.onerror = () => { loading = false; note("The editor wasn't found. With the knowledgeware plugin installed, ask Claude to refresh this deck, then press E again."); };
     document.head.appendChild(s);
   }
-  SW.key({ key: "E", desc: "Edit the deck (needs the knowledgeware plugin)" }, load);
+  SW.key({ key: "E", desc: "Edit the deck", last: true, note: "Edit requires knowledgeware plugin install.",
+    href: "https://github.com/andisab/swe-marketplace/blob/main/plugins/knowledgeware/README.md", linkText: "github.com/andisab/swe-marketplace" }, load);
   SW.ready(() => { if (new URLSearchParams(location.search).has("edit")) load(); });
 })();

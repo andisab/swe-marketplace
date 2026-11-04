@@ -22,7 +22,7 @@
 //   SW.slides() SW.allSlides() SW.current() SW.index() SW.step() SW.steps(slide) SW.stepsLeft()
 //   SW.go(i, step | "end") SW.next() SW.prev() SW.builds(on?) SW.paused() SW.pause(on?)
 //   SW.on(type, fn) — "ready", "change" {index, step, moved}, "pause", "layout", "refresh"
-//   SW.key({ key, desc, when }, fn) SW.keys()  SW.layout() SW.host(el) SW.scale() SW.refresh()
+//   SW.key({ key, desc, when, last, note, href, linkText }, fn) SW.keys() SW.keyHtml(entry)  SW.layout() SW.host(el) SW.scale() SW.refresh()
 //   SW.asset(name) SW.expand(root) SW.ready(fn) SW.config SW.stage SW.measure()
 (function () {
   "use strict";
@@ -103,6 +103,8 @@ html.sw-help-on .sw-help { display: block; }
 .sw-help dt { font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; white-space: nowrap; color: var(--color-accent, #3B5249); }
 .sw-help dd { margin: 0; }
 .sw-help p { margin: 10px 0 0; color: var(--color-ink-muted, #6B6B63); }
+.sw-key-note { display: block; margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--color-ink-muted, #6B6B63); overflow-wrap: anywhere; }
+.sw-key-note a { color: var(--color-accent, #3B5249); }
 }
 html.sw-paused::after { content: ""; position: fixed; inset: 0; z-index: 90; background: #000; }
 
@@ -393,9 +395,20 @@ html.sw-print .sw-progress { display: none; }
   // ("f", "?", "ArrowRight", " "); spec.keys: several of those. spec.label is what help shows.
   function key(spec, fn) {
     const keys = [].concat(spec.keys || spec.key);
-    bindings.push({ keys, label: spec.label || keys.map((k) => k === " " ? "Space" : k).join(" "), desc: spec.desc || "", when: spec.when, hidden: !!spec.hidden, fn });
+    bindings.push({ keys, label: spec.label || keys.map((k) => k === " " ? "Space" : k).join(" "), desc: spec.desc || "", when: spec.when, hidden: !!spec.hidden,
+      last: !!spec.last, note: spec.note || "", href: spec.href || "", linkText: spec.linkText || "", fn });
   }
-  function keyList() { return bindings.filter((b) => b.desc && !b.hidden).map((b) => ({ label: b.label, desc: b.desc })); }
+  // The key list for the help panels: in registration order, entries marked last at the end;
+  // an entry may carry a note and a link shown under its description.
+  function keyList() {
+    const shown = bindings.filter((b) => b.desc && !b.hidden);
+    return shown.filter((b) => !b.last).concat(shown.filter((b) => b.last)).map((b) => ({ label: b.label, desc: b.desc, note: b.note, href: b.href, linkText: b.linkText }));
+  }
+  // One key list entry as HTML, shared by the runtime's help and the presenter's.
+  function keyHtml(k) {
+    const link = k.href ? ` <a href="${escHtml(k.href)}" target="_blank" rel="noopener">${escHtml(k.linkText || k.href.replace(/^https?:\/\//, ""))}</a>` : "";
+    return `<dt>${escHtml(k.label)}</dt><dd>${escHtml(k.desc)}${k.note || link ? `<small class="sw-key-note">${escHtml(k.note)}${link}</small>` : ""}</dd>`;
+  }
   function onKey(e) {
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;
     const cap = capitalOf(e);
@@ -417,7 +430,7 @@ html.sw-print .sw-progress { display: none; }
       doc.body.appendChild(helpEl);
     }
     open = open === undefined ? !html.classList.contains("sw-help-on") : open;
-    if (open) helpEl.innerHTML = "<h3>Keys</h3><dl>" + keyList().map((k) => `<dt>${escHtml(k.label)}</dt><dd>${escHtml(k.desc)}</dd>`).join("") +
+    if (open) helpEl.innerHTML = "<h3>Keys</h3><dl>" + keyList().map(keyHtml).join("") +
       "</dl><p>Capital letters need Shift (or Caps Lock). Esc closes this.</p>";
     html.classList.toggle("sw-help-on", open);
   }
@@ -541,7 +554,7 @@ html.sw-print .sw-progress { display: none; }
     scale: () => state.scale,
     layout, refresh, expand, asset, measure, cloneSlide,
     host: setHost,
-    key, keys: keyList,
+    key, keys: keyList, keyHtml,
     capitalOf, typing,
     help: toggleHelp,
     isReady: () => state.ready,

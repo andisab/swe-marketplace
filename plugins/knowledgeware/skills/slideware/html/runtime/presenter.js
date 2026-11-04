@@ -528,7 +528,7 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
   }
   function fillHelp() {
     const keys = SW.keys();
-    hud.querySelector(".rp-hud-help").innerHTML = "<h3>Keys</h3><dl>" + keys.map((k) => "<dt>" + esc(k.label) + "</dt><dd>" + esc(k.desc) + "</dd>").join("") + "</dl>" +
+    hud.querySelector(".rp-hud-help").innerHTML = "<h3>Keys</h3><dl>" + keys.map(SW.keyHtml).join("") + "</dl>" +
       "<p>Capital letters need Shift. Click the i to keep this open.</p>";
   }
   function pinHelp(open) {
