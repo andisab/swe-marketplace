@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // registry.js — one place that knows where styles and brandbooks live.
-// Used by load-style.js, list-styles.js and the slideware html converter.
+// Used by load-style.js, list-styles.js and slideware's html theme (skills/slideware/html/engine/theme.js).
 //
 // Three registries, searched in this order; a later one shadows an earlier one on a name collision:
 //   styles/                      the default styles shipped with the plugin

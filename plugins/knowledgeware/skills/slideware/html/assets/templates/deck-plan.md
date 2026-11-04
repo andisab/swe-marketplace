@@ -10,7 +10,7 @@ Short references, used in the tables as `D<deck>.S<slide>` (`DV7.S13` is slide 1
 
 - **DV7** — `~/path/to/v7.pptx` · the click sequences and the speaker notes
 - **DT03** — `~/path/to/track-03/index.html` · the better visuals
-- **DCUR** — this deck's current `slides.js` · the worked examples
+- **DCUR** — this deck's current `index.html` · the worked examples
 
 Rule for choosing between sources: <one line, e.g. "the newest source with a verified figure wins; visuals from DT03 unless DV7's sequence is the point">.
 

@@ -1,124 +1,174 @@
-# slideware — HTML format (Reveal.js)
+# slideware — HTML format
 
-Format guide for HTML output. Read [../SKILL.md](../SKILL.md) first for format choice and style resolution — this file covers the HTML-specific mechanics: **Reveal.js + js-yaml** (Node.js), producing a single `index.html` that runs in any modern browser, share-able via link or hosted statically.
+Format guide for HTML decks. Read [../SKILL.md](../SKILL.md) first for choosing the format and resolving a style. This file covers how an HTML deck is built, written, checked and handed over.
 
-## Reference map
+## The deck is one file
 
-| Need | Read |
-|------|------|
-| End-to-end workflow (fast + full paths) | [references/workflow.md](references/workflow.md) |
-| 8 layout archetypes | [references/layout-patterns.md](references/layout-patterns.md) |
-| Visual principles (hierarchy, color, type, spacing) | [references/visual-principles.md](references/visual-principles.md) |
-| Reveal.js API + theme conventions | [references/reveal.md](references/reveal.md) |
-| Speaker notes, pacing, hidden slides, presenter view | [references/reveal.md](references/reveal.md) §Speaker notes |
-| Review mode: the `.review` flavour, editing text, notes and layout in the browser, the connected folder, `edits.json`, `serve-deck.js` | [references/reveal.md](references/reveal.md) §Review mode |
-| Layout knobs (`ratio`, `gap`, `pad`, `scale`) and block `tweaks` on a slide | [references/reveal.md](references/reveal.md) §Review mode, and the `slides.js` checklist |
-| Builds (`steps` on bullets, card-row, two-column, image-caption and quote: every item, the rest, or groups per click by index or element id; fragments with entrance motion) | [references/reveal.md](references/reveal.md) §Entrance motion |
-| Planning a deck from several sources (`deck-plan.md`) | [../SKILL.md](../SKILL.md) §Planning a deck, template in `assets/templates/deck-plan.md` |
-| Brandbook → CSS-variable mapping | this guide, §Token → CSS mapping (the brandbook itself: brandware's `references/brandbook-spec.md`) |
+A deck is one `index.html`. It is both the source and the file people open: there is no build step for the base deck and no separate review file. The code lives in the plugin. The engine (`$PLUGIN/skills/slideware/html/engine/cli.js`) creates decks, keeps their runtime and brand current, checks them, and exports them. The editor loads from the plugin when the owner presses E.
 
-**Recommended order**: layout-patterns → visual-principles → reveal (when you hit a specific API question).
-
-## Staging a style
-
-"Style"/"brandbook" resolution is shared — see [../SKILL.md](../SKILL.md). This format consumes a **YAML-frontmatter `style.md`**: the renderer reads the frontmatter; the LLM reads both frontmatter and prose body. This format's loader converts any registry style, brandbook, or local `.css`/`.md` into that form (pass-through if the input already has frontmatter):
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js <name|path> -o ./style.md
+```
+<deck>/
+  index.html            the deck: source and presented file
+  index-<lane>.html     a lane's file, derived from index.html and lanes/<lane>.json (optional)
+  lanes/<lane>.json     a lane's overlay (optional)
+  deck-plan.md          the deck's plan (optional; ../SKILL.md §Planning a deck)
 ```
 
-The renderer (`build-deck.js`) reads `./style.md` and extracts tokens from its YAML frontmatter. There is no separate tokens.json file — the tokens live in the .md.
+Inside `index.html`, fixed regions, each found by its id:
 
-The loader also stages the brand's logo: when the style is a brand with `logo-light.svg` / `logo-dark.svg` in its `assets/` folder, it copies them to `./assets/` beside `style.md`, and the deck's running footer (deck-level `footer` in `slides.js`) inlines the one that suits the background. The generic styles have no logo, so their decks get a footer without one. See [references/reveal.md](references/reveal.md) §Running footer and logo.
-
-## Token → CSS mapping
-
-The renderer converts `style.md` frontmatter to CSS variables:
-
-| Token | CSS variable | Notes |
+| Region | Holds | Who writes it |
 |---|---|---|
-| `palette.bg` | `--color-bg` | Hex with `#` (CSS expects it; no strip) |
-| `palette.bgDark` | `--color-bg-dark` | Falls back to `palette.ink` if missing |
-| `palette.surface`, `surfaceAlt` | `--color-surface`, `--color-surface-alt` | |
-| `palette.ink`, `inkBody`, `inkMuted`, `inkFaint` | `--color-ink`, `--color-ink-body`, etc. | |
-| `palette.accent`, `accent2` | `--color-accent`, `--color-accent2` | |
-| `type.sans`, `serif`, `mono` | `--font-sans`, `--font-serif`, `--font-mono` | Generates matching Google Fonts `<link>` |
-| `type.heroPt`, `titlePt`, `bodyPt`, ... | `--size-hero`, `--size-title`, `--size-body`, ... | Points (CSS supports `pt` natively) |
-| `layout.radiusPx` | `--radius` | Pixels |
-| `layout.shadowOpacity` | `--shadow-opacity` | 0-1 |
-| `layout.marginIn` | `--margin` | Inches (CSS supports `in`) |
+| `<script type="application/json" id="sw-deck">` | settings: `title`, `footer`, `logo`, `pageNumbers`, `sessions`, `lanes`, `spec`, `builds`, `progress` | Claude; the engine keeps `lanes` |
+| `<style id="sw-theme" data-brand data-brand-hash>` | the brand, copied from brandware | the engine only (`new`, `refresh`) |
+| `<style id="sw-deck-css">` | this deck's own CSS, for anything beyond the brand's classes | Claude |
+| `<script id="sw-runtime">` | runtime and presenter | the engine only |
+| `<script id="sw-loader" data-editor>` | loads the editor on E | the engine only |
+| `<main id="sw-slides">` | the slides | Claude and the editor |
+| `<template id="sw-assets">` | figures (`data-figure`), images (`data-asset`), the logo | Claude and the engine |
 
-**Critical**: unlike pptxgenjs (which needs hex *without* `#`), CSS expects the `#`. The build-deck.js does NOT strip it.
+Never hand-edit the engine's regions; `refresh` replaces them whole.
 
-**Google Fonts.** The build inspects `type.sans/serif/mono` and emits one `<link>` URL (`fonts.googleapis.com/css2?family=…&display=swap`); weight ranges are fixed (sans 400/500/600/700 · serif 400/700 · mono 400/500). A non-Google font still emits the URL (it 404s silently) and falls back to the system stack — verify in DevTools if fidelity matters. This table and the paragraph are the html format's brand mapping; resolution and the rules every consumer follows are brandware's `references/consumer-contract.md`.
+## Commands
 
-## Two paths
+`$CLI` is `node $PLUGIN/skills/slideware/html/engine/cli.js`.
 
-| Path | When | Cycle |
+| Command | Does |
+|---|---|
+| `$CLI new <dir> --brand <name> --title "…" [--subtitle "…"] [--footer "A\|B"] [--minutes N]` | writes `<dir>/index.html` with the brand inside and a title slide |
+| `$CLI outline <index.html>` | slide keys, titles and line ranges, so you read and edit one slide at a time |
+| `$CLI slide <index.html> <key>` | prints one slide |
+| `$CLI check <index.html> [--render]` | settings, slides, notes, assets, pacing, hidden slides, brand, spec, deck-plan, lanes; `--render` adds overflow and the footer band, measured in Chrome |
+| `$CLI refresh <index.html> [--brand <name>]` | brings the runtime, loader and brand up to date (and rebuilds lane files) |
+| `$CLI lanes <index.html>` | rebuilds every `index-<lane>.html` from the base and `lanes/*.json` |
+| `$CLI export <index.html> --png [dir] \| --pdf [file] \| --pptx [file] [--level 0\|1]` | pictures, PDF, PowerPoint (§Export and import) |
+| `$CLI import <file.pptx> [--mode redesign\|faithful] [--out dir]` | brings a PowerPoint deck in |
+| `$CLI migrate <old-deck-dir> --out <new-dir>` | converts an old-format deck (§Old decks) |
+| `$CLI serve <index.html> [--open]` | a local server, so the owner can edit and save in any browser |
+
+Every command needs Node 22 or newer; export, `check --render` and `migrate` also need Chrome, Edge, Brave or Chromium. Nothing is installed per deck.
+
+## Writing slides
+
+Each slide is a `<section data-key="…">` inside `<main id="sw-slides">`, preceded by a marker comment the outline uses:
+
+```html
+<!-- s1-07 · One organization, unless a wall is mandatory -->
+<section data-key="s1-07" data-session="Session 1" data-module="Block 1" data-teaches="org-boundary">
+  <p class="kicker">The boundary</p>
+  <h2>One organization, unless a wall is mandatory</h2>
+  <div class="cols">…</div>
+  <aside class="notes">What the slide is for, in one sentence.
+
+[click 1] What the first build reveals.</aside>
+</section>
+```
+
+The slide is a 1280 × 720 canvas, and anything HTML, CSS and SVG can draw goes. Patterns for common shapes, built on the brand's classes: [references/patterns.md](references/patterns.md). Visual rules: [references/visual-principles.md](references/visual-principles.md).
+
+What the runtime reads on a section:
+
+| Attribute | Means |
+|---|---|
+| `data-key` | the slide's address, unique, stable across edits (required) |
+| `hidden` | out of the show and the pacing, kept in the file |
+| `data-session`, `data-module`, `data-run` | the cue; `data-run` is `default`, `cut-first`, `add-back` or `backup` |
+| `data-divider` | starts a section in the overview (its heading names it, `.kicker` labels it) |
+| `data-chrome="none"` | no running footer on this slide (a title or cover) |
+| `data-footer="Block 1"` | this slide's own part of the footer, after the deck's text |
+| `data-teaches="<section-id>"` | the spec section the slide teaches (for the librarian) |
+
+Inside a slide:
+
+- **Notes**: `<aside class="notes">` as plain text, for the ear (../SKILL.md §Speaker notes).
+- **Builds**: `data-step="n"` on any element (several elements may share a step), or `class="fragment"` with an optional `data-fragment-index`. They play only while presenting.
+- **Motion**: `data-a="up|fade|left|right|pop|grow-x|grow-y|wipe|draw"` with `style="--i: n"` for the stagger.
+- **Per-slide CSS**: a `<style>` inside the section, every rule prefixed with `[data-key="s1-07"]`.
+- **Ids**: give an element an `id` when a lane changes it (§Lanes) or a build targets it.
+- **Links**: real `<a href target="_blank" rel="noopener">`.
+
+Details of each, and the keys: [references/runtime.md](references/runtime.md).
+
+**Figures.** A drawing used on a slide lives once in the asset block and is placed with an empty placeholder that carries its size and position:
+
+```html
+<!-- in <template id="sw-assets"> -->
+<svg data-figure="company-map" viewBox="0 0 1120 560" xmlns="http://www.w3.org/2000/svg">…</svg>
+<!-- on the slide -->
+<svg data-figure-ref="company-map" class="cw-dg" style="width: 760px"></svg>
+```
+
+The runtime fills the placeholder at load, with ids suffixed per copy, so CSS, builds on SVG groups and the editor all work on it, and one figure can appear on several slides. Scope a figure's own `<style>` under a class on the placeholder (chartware figures use `.cw-dg`); `check` flags unscoped rules. Raster images go in the block as data URIs (`<img data-asset="qr" src="data:…">`, placed with `<img data-asset-ref="qr">`), so the file stays self-contained. An SVG icon sprite marked `data-inline` (`<svg data-asset="icons" data-inline>` with `<symbol>`s) is placed in the page, so `<use href="#i-flag">` resolves on any slide. Chartware makes the figures ([../../chartware/SKILL.md](../../chartware/SKILL.md)).
+
+**Working on a large deck.** Read with `outline`, then `slide <key>` or the line range; edit slides with targeted edits; keep figures in the asset block at the end of the file. Run `check` after every round of edits and quote its pacing summary when you change sessions or hidden slides.
+
+## The brand
+
+`new` copies the brand from brandware into `#sw-theme` and tags it with the brand's name and a hash of its files: tokens as `--color-*`, `--font-*`, `--size-*`, `--radius`, `--margin`, base typography and the kit classes the patterns use, or the brand's own `css/slideware.css` when it ships one (that brand then owns its base look). The logos go into the asset block (`logo`, `logo-light`, `logo-dark`); the footer uses `logo` unless the settings name another asset or `"logo": false`. Fonts load from Google Fonts through a link tagged with the brand.
+
+### Token → CSS mapping
+
+The engine (`engine/theme.js`) writes the brand's tokens as custom properties at the top of `#sw-theme`; the base, the kit, a brand's `slideware.css` and the deck's CSS all read them. A token the brandbook leaves out falls back as listed.
+
+| Token | Custom property | Fallback |
 |---|---|---|
-| **Fast** | 1-3 slides, throwaway, prototype | scaffold → author → build → ship |
-| **Full** | ≥4 slides, anything shipped | + inspect every slide visually → find ≥1 issue → iterate 2-3× |
+| `palette.bg`, `bgDark` | `--color-bg`, `--color-bg-dark` | white; `ink` |
+| `palette.surface`, `surfaceAlt` | `--color-surface`, `--color-surface-alt` | `bg`; `surface` |
+| `palette.ink`, `inkBody`, `inkMuted`, `inkFaint` | `--color-ink`, `--color-ink-body`, `--color-ink-muted`, `--color-ink-faint` | near-black; `ink`; grey; `inkMuted` |
+| `palette.border` | `--color-border` | light grey |
+| `palette.accent`, `accent2` | `--color-accent`, `--color-accent2` | green-grey; `accent` |
+| `palette.success`, `warning`, `error` | `--color-success`, `--color-warning`, `--color-error` | green, amber, red |
+| `type.sans`, `serif`, `mono` | `--font-sans`, `--font-serif`, `--font-mono` | system stacks |
+| `type.heroPt`, `sectionPt`, `titlePt`, `bodyPt`, `subBodyPt`, `captionPt`, `codePt` | `--size-hero`, `--size-section`, `--size-title`, `--size-body`, `--size-subbody`, `--size-caption`, `--size-code` (in pt) | 44, 32, 28, 14, 12, 10, 12 |
+| `layout.radiusPx`, `shadowOpacity`, `marginIn` | `--radius`, `--shadow-opacity`, `--margin` | 6px, 0.12, 0.5in |
 
-See [workflow.md](references/workflow.md) for both. Don't pay the full-path tax on a throwaway deck.
+In the base: headings `h1`–`h3` take `--font-serif` at the hero, section and title sizes; `h4` and `.kicker` are small capitals in `--color-accent`; body text is `--color-ink-body` at `--size-body`; a slide's padding is `--pad`, else `--margin`; `data-divider` slides sit on `--color-surface-alt` with an accent rule. The favicon is drawn from `ink`, `bg` and `accent`; the fonts link loads `type.sans`, `serif` and `mono` from Google Fonts unless they're system faces. A brand's `css/slideware.css` replaces the base and kit, not the custom properties.
 
-## Visual review (tool preference order)
+When the brand changes in brandware, `check` says so and `refresh` replaces the block, its links and logos. `refresh --brand <name>` switches brands. A machine without the brand keeps the deck's copy. Brand resolution, registries and markers: [../../brandware/SKILL.md](../../brandware/SKILL.md).
 
-Inspect the deck in a real browser via an MCP whenever one is available — an interactive session sees fonts loading, transitions, and fragment states that static captures can't:
+## Lanes
 
-1. **Claude in Chrome** (`mcp__claude-in-chrome__*`) — open the deck in a new tab and screenshot each slide (navigate with arrow-key presses via the `computer` tool). If the extension can't open `file://` URLs, serve the deck first: `python3 -m http.server 8010 -d <deck-dir>` → `http://localhost:8010/`.
-2. **Playwright MCP** (find its tools via `tool_search` for "playwright browser") — `browser_navigate` to the deck (file:// or localhost), `browser_take_screenshot` per slide, advancing with `browser_press_key` ArrowRight.
-3. **Fallback (no browser MCP — headless/CI):** `bash ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/render-slides.sh ./index.html ./preview/` — Puppeteer per-slide PNGs (or a bare `chrome --headless` single-slide capture if Puppeteer isn't installed). Then read every PNG at full size.
+A lane is the same deck worked for another audience: `lanes/<id>.json` lists what differs, and `index-<id>.html` is derived from it. An overlay holds:
 
-Whichever tool captures the slides, the review bar is the same: inspect **every** slide, find ≥1 issue, fix, re-render, repeat 2-3 cycles. For a first pass over the whole deck at once (layout variety, section balance, a slide that's visibly overfull), open it with `?overview`: one screenshot shows every slide as a thumbnail, grouped by section. It doesn't replace the per-slide pass; thumbnails hide type-size and wrapping problems.
+- `name` and an optional `color`;
+- `replace`: `[["Acme Corp", "Acme Investments"]]`, text replacements in slide text only;
+- `overrides`: `{ "key": "s1-07", "id": "company", "html": "…" }` (an element's content), `"attrs": { "style": "…" }`, or `{ "key": "s1-09", "slide": "<section …>…</section>" }` (a whole slide);
+- `figures`: `{ "company-map": "company-map@acme-investments" }`, with the variant in the asset block;
+- `hidden` and `shown`: slide keys hidden or shown in this lane only.
 
-## Pitfalls (single canonical home — read once, refer back)
+Run `lanes` after editing the base or an overlay; the editor's save does it too. `check` flags an override that matches nothing, a lane file that's out of date, and a lane figure that's missing.
 
-- **Slide dimensions are 1280×720 px** in `build-deck.js`. Reveal's default 960×700 is too small for our type scale. Don't author at the default size.
-- **Theme CSS rules MUST be scoped under `.reveal`** — Reveal's reset is aggressive and unprefixed rules get clobbered.
-- **`display=swap` on the Google Fonts URL** is required — without it, you get FOIT (invisible text during load).
-- **Don't reference `./style.md` from the output HTML.** Output must stand alone. The build inlines theme CSS into a `<style>` block.
-- **Reveal is pinned and inlined** (`reveal.js` 5.0.5 in `package.json` and `REVEAL_VERSION` in `build-deck.js`). Run `npm install` in the deck dir before the first build; the build refuses a mismatched version. Decks then run offline; only fonts need a network. Bumping the version is a deliberate change to both pins — diff the output HTML after.
-- **Entrance motion is on by default.** Turn it off with `motion: false` in `slides.js` (deck) or on a slide. See [references/reveal.md](references/reveal.md) §Entrance motion.
-- **Copy `presenter.js` and `review.js` along with `build-deck.js`.** The build inlines the first (presenter view, section overview, notes drawer) and exits with an error if it's missing; it inlines the second only for a deck with `review: true` (or `--review`), and exits with an error if that deck lacks it. Speaker notes go in each slide's `notes` and `cue` fields, never in the slide markup.
-- **Every build folds `edits.json` into `slides.js` first.** The file is what review mode writes, by itself once the deck folder is connected (text and notes from `E`, the slide order and hidden slides from the overview, knobs, tweaks and list edits from layout mode); the build rewrites the edited literals, the slide list and the slide objects in `slides.js` (or a lane's overlay), prints what it folded, keeps what it couldn't place and any comments in the file (layered over the build, printed with reasons), and deletes the file when nothing is left. When asked to "apply my edits" or "rebuild the deck", run the build, then act on the comments and leftovers it prints: fold a leftover by hand, answer a comment by editing the slide. Don't edit `edits.json` yourself, and don't leave one behind. See [references/reveal.md](references/reveal.md) §Review mode.
-- **With a `footer`, nothing but the footer in the bottom 40px.** The builder reserves the band (`padding-bottom: max(var(--margin), 40px)` on every slide), so the template layouts clear it. A custom layout or hand-placed `position: absolute` block must clear the footer's top, not just the 720px edge: measure the lowest descendant of each section against it. One way to measure every slide at once: load the deck with `?print-pdf` in a 1280×720 iframe (Reveal lays all slides out, no navigation needed; driving `Reveal.slide()` inside an iframe fails on `replaceState`), then compare each section's lowest element (skip `aside`, SVG internals and `.chrome-bot`) with the footer's top, and keep a browser-tool evaluation to about three decks so it finishes within the tool's timeout.
-- **Lanes multiply the outputs.** With `lanes` in `slides.js`, one build writes `index.html` plus `index-<id>.html` per overlay, and each file's overview has a switcher to the others. Keys on slides must be unique and every key an overlay names must exist, or the build fails. Review every lane's output, not just the base: a `replace` pair rewrites every text field. See [references/reveal.md](references/reveal.md) §Lanes.
-- **`section` slides also structure the overview.** `O` in a deck opens a grid of thumbnails grouped under each `section` slide's kicker and title (see [references/reveal.md](references/reveal.md) §Speaker notes, Presenting). A long deck without section slides shows as one flat grid, so give a deck of more than a dozen slides dividers.
-- **Pacing and hidden slides live in `slides.js`.** Session lengths go in `sessions` (or `minutes` for a deck without sessions) next to `slides`; `hidden: true` takes a slide out of the deck and out of the time per slide. For "hide slide 12", "session 2 is 75 minutes" or "which slides are hidden?", edit `slides.js`, rebuild, and quote the pacing summary the build prints.
-- **Reveal initializes with `controls`, `progress`, `slideNumber`, and `transition: 'fade'`** by default. Override these only if you have a reason — match the medium (kiosk, walkthrough, recorded presentation).
-- **Image references in slides** are relative paths the deck dir; if you ship a `.skill` or move the deck, images break unless you base64-inline them or fetch from an absolute URL.
-- **Markdown-style content in body strings** is NOT processed — slides take light HTML (`<strong>`, `<em>`, `<code>`, `<br>`, `<a>`). Don't author `<h1>`/`<h2>` tags; layouts emit their own heading hierarchy.
-- **`card-row` overflows beyond 4 cards** on 1280×720. Split across two slides or use a different layout.
-- **Long unbreakable tokens wrap mid-character.** URLs, code identifiers, and uppercase headings with letter-spacing can be wider than their card/column track. The theme CSS forces them to break (overflow-wrap: anywhere + min-width: 0 on grid items) so they don't push past the slide's right edge — but mid-token wraps still look bad. `polish-deck.py` flags any unbreakable run > 28 chars in a card or > 50 chars in a column. Shorten the URL, abbreviate the identifier, or insert a soft hyphen (`&shy;`) at a sensible break point.
+## Editing (the owner, in the browser)
 
-## Anti-monotony rule
+Open `index.html` and press E. The editor loads from the plugin's data folder, which `new` and `refresh` keep current. It edits text on any element (double-click), moves, resizes and pins any element including figures, notes, comments for Claude, and the deck's structure in the overview (O). S saves into the file itself: the first save asks Chrome for the deck folder, once per browser session. Saving the base rebuilds every lane file; edits made in a lane view (the lane picker) go to that lane's overlay. B rebuilds every lane file and runs the in-browser checks. Safari and Firefox save through `serve`. The full reference: [references/runtime.md](references/runtime.md) §Editor.
 
-Shared rule in [../SKILL.md](../SKILL.md). The 8 HTML archetypes live in [references/layout-patterns.md](references/layout-patterns.md).
+Comments the owner leaves are HTML comments inside the slide, `<!-- @claude: … -->`. When asked to address them, find them (`grep -n "@claude:"`), make each change, and remove the comment.
 
-## Maintenance section (required for decks with volatile facts)
+When the owner has the deck open while you edit it, their page reloads on your change, keeping their unsaved edits.
 
-An HTML deck is a hosted, long-lived artifact — it gets the knowledgebase skill's design-for-decay treatment scaled to a deck (full contract: `../../knowledgebase/references/maintenance.md`; apply it proportionally, not verbatim — a deck is not a site):
+## Workflow
 
-- **Final slide: "Sources & verification"** (or a vertical appendix stack for large decks). Every cited source as a live `<a href="…" target="_blank" rel="noopener">` link in the deck's muted caption treatment, grouped by the slide it supports (use slide titles as group labels). A citation nobody can click is a citation nobody re-verifies.
-- **A `Last verified: YYYY-MM-DD` stamp** on that slide, plus a one-line staleness note ("facts older than 90 days: re-verify before presenting externally"). Per-slide stamps are allowed where one slide's facts churn much faster than the rest.
-- **For large or long-lived decks**, add a compact volatility list on the same slide: fact class · source link · how often it moves. This is the deck-scale master volatility table and is what lets the librarian agent (or a human) plan checks without reading every slide.
-- The maintenance slide follows the deck's visual style — it's a designed slide, not a plain-text dump; layout it like a `refs`/resources slide.
+1. **Resolve the style** (../SKILL.md), then `new`. Plan the slides: a deck of more than a dozen slides gets `data-divider` sections; vary the slide shapes (../SKILL.md §Anti-monotony).
+2. **Write the slides** into `#sw-slides`, figures into `#sw-assets`, settings into `#sw-deck`.
+3. **Check**: `check`, then `check --render`. Fix every error and warning.
+4. **Look**: `export --png` and read every slide image at full size. Find at least one thing to improve per slide; fix, re-export, re-read. Two or three rounds is typical. For builds, open the deck with `?presenter` in a browser and step through.
+5. **Hand over**: give the absolute path; tell the owner P presents, N shows the notes drawer, O the overview, E edits.
 
-When iterating on an existing deck, update this slide with what actually changed and bump only stamps whose facts were re-verified.
+## Export and import
 
-The slide is the deck's own record (the maintenance spec's §7, rung 2). A deck with a **spec page** adds `spec: "../<unit>.html"` next to `slides` and `teaches: "<section-id>"` on each slide; the builder embeds the spec as `<meta name="knowledgeware-spec">`, prints it with how many slides name their section, and warns when the file isn't there. Neither field renders, and lane `replace` pairs leave both alone.
+- `export --png` writes one picture per slide, fully built (hidden slides with `--all`).
+- `export --pdf` writes one 1280 × 720 page per shown slide.
+- `export --pptx` writes PowerPoint. Level 1, the default: each slide is a picture of the slide with its text hidden, and the text is native, editable text boxes on top; notes, the cue line and hidden slides carry over. Level 0: one picture per slide. A ledger beside the file lists what each slide became. Fonts are named, not embedded; tell the recipient which to install (`bash $PLUGIN/scripts/install-fonts.sh --check <brand>` lists them).
+- `import --mode redesign` writes an outline (titles, text, notes) and a picture per page under `.slideware/import/`; author new slides in the deck's style from them.
+- `import --mode faithful` writes a deck with every shape absolutely positioned (text, pictures, tables, fills, groups, notes, hidden slides). Its ledger lists what didn't come across (charts, SmartArt, EMF pictures); redraw charts with chartware.
 
-## Output convention
+## Old decks
 
-Default `<cwd>/index.html` unless the user specifies (plus `index-<id>.html` per lane, when the deck has lanes). With `review: true`, every output also gets a `.review` sibling (`index.review.html`, `index-<id>.review.html`): point the user at the review file while the deck is being worked on, and tell them to share the plain files only. Print the absolute path after writing. Open it in a browser via `open ./index.html` (macOS), `xdg-open` (Linux), or `start` (Windows) — Reveal works over `file://` for local preview.
+A deck with its own `build-deck.js` and `slides.js` is the old format. When you meet one, convert it before changing anything:
 
-For sharing via link: drop the directory on any static host (GitHub Pages, Netlify, S3) — no build pipeline needed.
+1. `$CLI migrate <old-deck> --out <old-deck>-v2` rebuilds it once with its own builder, converts every slide from that output, writes the new folder, rebuilds its lanes, and pixel-compares every slide in every lane against the old output.
+2. Report the comparison (slides over the threshold and their images in `migrate-report/`) and the brand kit it wrote, if the deck had its own theme.
+3. Show the owner the list of old files the new folder replaces. Delete them, and swap the folders, only after the owner approves.
 
-## Style mimicry (style only, never content)
+## Maintenance
 
-When the user provides a sample HTML deck or screenshots:
-
-- For an HTML deck: open it via Claude in Chrome or Playwright MCP (preferred — screenshot slides and read computed styles with the page/JS tools; fall back to manual DevTools), extract palette/type/layout tokens, encode as `style.md`. Use `node ${CLAUDE_PLUGIN_ROOT}/skills/slideware/html/scripts/load-style.js <path-to-css> -o ./style.md` if there's a standalone CSS file.
-- For screenshots: read 3-4 representative slide images. Derive palette, type pairing, layout patterns, motif, density. Apply to the new deck. **Don't copy content.**
-
-**Mimicry overrides anti-monotony.** If the sample has a distinctive non-standard layout, faithfully echoing *that* layout matters more than picking from the canonical 8 archetypes.
+A deck that states external facts ends with a sources slide (each source as a link, with the date it was checked), names its spec page in the settings (`"spec": "../unit.html"`), and marks slides with `data-teaches`. `check` prints how many slides name their section and whether the spec exists. The maintenance contract: [../../knowledgebase/references/maintenance.md](../../knowledgebase/references/maintenance.md) §7.

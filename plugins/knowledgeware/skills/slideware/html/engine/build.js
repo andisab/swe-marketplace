@@ -93,8 +93,7 @@ ${loaderJs()}
 ${firstSlides}
 </main>
 <template id="sw-assets">
-${logoAssets(t)}
-</template>
+${logoAssets(t) ? logoAssets(t) + "\n" : ""}</template>
 </body>
 </html>
 `;

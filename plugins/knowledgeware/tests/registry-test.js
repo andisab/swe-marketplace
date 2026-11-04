@@ -107,17 +107,25 @@ const flat = JSON.parse(node([path.join(PLUGIN, "scripts", "load-style.js"), "fl
 assert.strictEqual(flat.name, "flatco");
 assert(fs.existsSync(path.join(brands, "tokens", "flatco.json"))); ok("a flat entry caches under tokens/<name>.json");
 
-// html converter: frontmatter passes through, name from folder
-const md = node([path.join(PLUGIN, "skills", "slideware", "html", "scripts", "load-style.js"), "folderco"]);
-assert(md.startsWith("---\nname: folderco")); ok("html converter resolves a folder entry");
-// a prose-only brandbook gets frontmatter with the folder name and paletteDark omitted
+// slideware's html theme: resolves through the registry, hashes the brand's files, and a brand's
+// own css/slideware.css replaces the generic base and kit
+const theme = require(path.join(PLUGIN, "skills", "slideware", "html", "engine", "theme.js"));
+const t1 = theme.themeFor("folderco");
+assert.strictEqual(t1.brand, "folderco"); assert(t1.css.includes("--color-") && t1.css.includes(".kicker")); ok("the html theme resolves a folder entry, tokens plus the kit");
+assert.strictEqual(theme.themeFor("folderco").hash, t1.hash); ok("the brand hash is stable");
+fs.mkdirSync(path.join(brands, "folderco", "css"), { recursive: true });
+fs.writeFileSync(path.join(brands, "folderco", "css", "slideware.css"), ".folderco-kit { color: red; }\n");
+const t2 = theme.themeFor("folderco");
+assert(t2.hash !== t1.hash && t2.css.includes(".folderco-kit") && !t2.css.includes(".kicker")); ok("a brand's slideware.css changes the hash and replaces the kit");
+fs.rmSync(path.join(brands, "folderco", "css"), { recursive: true, force: true });
+// a prose-only brandbook still yields a theme
 fs.mkdirSync(path.join(brands, "proseco"), { recursive: true });
 fs.writeFileSync(path.join(brands, "proseco", "brand.md"), "# ProseCo\n\n> test\n\n## Palette\n| Role | Hex |\n|---|---|\n| Background | `#FAFAFA` |\n| Ink primary | `#101010` |\n| Brand accent | `#CC3300` |\n");
-const prose = node([path.join(PLUGIN, "skills", "slideware", "html", "scripts", "load-style.js"), "proseco"]);
-assert(/^---\nname: proseco\n/.test(prose) && !prose.includes("paletteDark")); ok("html converter generates frontmatter for a prose-only folder entry");
+const prose = theme.themeFor("proseco");
+assert(prose.brand === "proseco" && /#cc3300/i.test(prose.css)); ok("the html theme reads a prose-only folder entry");
 
-// every shipped brand.md must be strict YAML in its frontmatter: js-yaml in the html deck builder
-// rejects an unquoted "key: value: more" line that the lenient loader accepts
+// every shipped brand.md must be strict YAML in its frontmatter, so any YAML parser reads it:
+// strict parsers reject an unquoted "key: value: more" line that the lenient loader accepts
 for (const dir of fs.readdirSync(path.join(PLUGIN, "styles"))) {
   const f = path.join(PLUGIN, "styles", dir, "brand.md");
   if (!fs.existsSync(f)) continue;

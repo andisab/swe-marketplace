@@ -5,6 +5,7 @@
 //   - figure and image references that resolve, assets nothing uses, figures whose <style> leaks
 //   - the pacing summary and the hidden slides
 //   - the brand tag against brandware (stale or not), the runtime against the plugin
+//   - anything loaded from the network besides Google Fonts (the deck must work offline)
 //   - the spec page and how many slides name the section they teach (for the librarian)
 //   - deck-plan.md against the deck
 //   - lanes: overlays that parse, overrides that still match, lane files that are current
@@ -140,6 +141,18 @@ function check(file) {
   else if (rr && rr.content.trim() !== build.runtimeJs().trim()) warnings.push("the runtime differs from the plugin's copy: run refresh");
   const lr = deck.regions["sw-loader"];
   if (lr && lr.attrs["data-editor"] !== build.editorUrl()) info.push("the editor path is for another machine or install: run refresh to edit here");
+
+  // Offline: everything but the brand's Google Fonts lives in the file. Links (<a href>) don't load.
+  const own = ["sw-runtime", "sw-loader"].reduce((t, id) => (deck.regions[id] ? t.replace(deck.regions[id].content, "") : t), text);
+  const remote = new Set();
+  const REMOTE = String.raw`((?:https?:)?\/\/[^"'()\s]+)`;
+  const loads = [
+    new RegExp(String.raw`<(?:script|link|img|image|iframe|video|audio|source|track|use|embed|object)\b[^>]*?\s(?:src|href|xlink:href|data|poster)\s*=\s*["']` + REMOTE, "gi"),
+    new RegExp(String.raw`url\(\s*["']?` + REMOTE, "gi"),
+    new RegExp(String.raw`@import\s+["']` + REMOTE, "gi"),
+  ];
+  for (const re of loads) for (const m of own.matchAll(re)) if (!/^(https?:)?\/\/fonts\.(googleapis|gstatic)\.com(\/|$)/.test(m[1])) remote.add(m[1]);
+  if (remote.size) warnings.push(`loads from the network, so the deck won't work offline (put it in #sw-assets as a data URI): ${[...remote].slice(0, 5).join(", ")}${remote.size > 5 ? ` and ${remote.size - 5} more` : ""}`);
 
   // Spec page and teaches (the librarian follows these)
   if (cfg.spec) {

@@ -25,6 +25,7 @@ styles/                    # the registry (plugin root)
         ├── tokens.json    #   derived token cache (regenerable; never hand-edit)
         ├── assets/        #   logo-light.svg, logo-dark.svg, mark.svg, wordmark.png, icons … (never mixed across brands)
         ├── css/<name>.css #   optional: tokens as CSS variables + base styles for pages not built by a skill
+        ├── css/slideware.css # optional: the brand's own slide CSS for html decks (replaces slideware's base and kit)
         ├── starters/      #   optional: page, deck or document starters in the brand
         └── README.md      #   what's in the folder, where it came from (provenance), how to use it
 $KNOWLEDGEWARE_BRANDS_DIR/ # OPTIONAL user-owned brands directory — same layout as styles/brands/
@@ -76,7 +77,7 @@ Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brand
 Filesystem-driven — no code edits. **Destination**: `$KNOWLEDGEWARE_BRANDS_DIR/` when the env var is set (survives plugin updates — preferred), else `styles/brands/` (warn: wiped on update). `<dest>` below means that directory:
 - **From scratch or by hand**: copy the checked-in `styles/brands/acmecorp/` folder to `<dest>/<name>/` (it is the template: a spec-complete `brand.md`, a `README.md` with the provenance lines to fill in, and `assets/` with the logo files decks look for), then rewrite `brand.md` for the brand per `references/brandbook-spec.md`, replace the logos and delete `tokens.json` so the loader rebuilds it.
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it to `<dest>/<name>/brand.md`, then normalize toward the spec if role tables are missing.
-- **From a design kit or brand plugin** the user already has (a folder with its own brandbook, tokens, CSS and logos): copy the brandbook to `brand.md`, the logos and marks into `assets/`, the stylesheet into `css/`, and write the README's provenance line (source path, version, date). Keep that kit as the owner of its runtime; the registry copy is for the knowledgeware consumers.
+- **From a design kit or brand plugin** the user already has (a folder with its own brandbook, tokens, CSS and logos): copy the brandbook to `brand.md`, the logos and marks into `assets/`, the stylesheet into `css/` (a kit's slide styles for html decks go in `css/slideware.css`), and write the README's provenance line (source path, version, date). Keep that kit as the owner of its runtime; the registry copy is for the knowledgeware consumers.
 - **From Google Drive**: `python3 scripts/fetch-resource.py <share-url> <dest>/<name>/brand.md` (file must be "Anyone with the link").
 
 Token caches are internals — consumers derive and refresh them automatically (rule 1); never present cache commands to the user as a setup step.

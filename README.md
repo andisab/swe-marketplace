@@ -75,7 +75,7 @@ chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, h
 
 *Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
 
-slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
+slideware builds a deck from a short outline. A PowerPoint deck is written by a pptxgenjs build script. An HTML deck is one `index.html` file that holds the slides, the brand and everything needed to present them, so it runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
 
 ![A deck slide beside its presenter view with notes and pacing](docs/images/presenter.jpg)
 
@@ -106,7 +106,7 @@ The two plugins I use daily and keep current. Both carry scripts, templates and 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.12.7 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.13.0 | Slide decks (PowerPoint, or HTML with a presenter view and an in-browser editor), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
 | [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
 
 ### Experimental plugins
@@ -143,7 +143,7 @@ Claude loads a skill when your request matches the skill's description. You can 
 | `knowledgeware:knowledgebase` | Multi-page, offline HTML knowledge bases (field guides, handbooks, runbooks, study guides), each with a maintenance page so it can be kept current. |
 | `knowledgeware:brandware` | The shared brand registry. It imports, derives or edits the brandbooks and logos that every deliverable uses. |
 | `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
-| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, a section overview, session pacing, speaker notes, and a review mode for editing text and notes in the browser. |
+| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, a section overview, session pacing, speaker notes, and an editor in the browser for text, notes, layout and slide order, plus PowerPoint export and import. |
 | `research-team:coordinator` | Runs the research pipeline. It splits a topic into subtopics, researches them in parallel, then has the report written. |
 | `research-team:report-formats` | Format profiles (Markdown, Obsidian, Joplin) and six report types for the research reports. |
 | `context-engineering:agent-dev` | Designing subagents: frontmatter, system prompt, tool access, example-driven descriptions. |

@@ -101,8 +101,8 @@ if ! bash plugins/knowledgeware/tests/diagram-digest-test.sh; then
   failed=1
 fi
 
-# slideware's HTML review flow: addressable markup, edits.json folded into slides.js, serve-deck.js
-if ! node plugins/knowledgeware/tests/deck-review-test.js; then
+# slideware's HTML engine: regions, new and refresh, lanes, check, the PowerPoint zip (no browser)
+if ! node plugins/knowledgeware/tests/slideware-engine-test.js; then
   failed=1
 fi
 

@@ -4,7 +4,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 
 ## Status
 
-- 11 plugins. The last tagged catalog release is `v1.2.0` (`metadata.version` in `marketplace.json`); CHANGELOG's `[1.3.0] — unreleased` section collects what has merged since. Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.12.6, context-engineering 1.1.1, the seven agent packs 1.0.2.
+- 11 plugins. The last tagged catalog release is `v1.2.0` (`metadata.version` in `marketplace.json`); CHANGELOG's `[1.3.0] — unreleased` section collects what has merged since. Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.13.0, context-engineering 1.1.1, the seven agent packs 1.0.2.
 - Work happens on short-lived branches off `main`, one PR each (#13–#19 so far). Andis reviews and merges, with `--admin` when branch protection asks for a review; don't push to `main`. Open each PR against `main`, not a stacked branch. At a catalog release, set `metadata.version`, replace `unreleased` in the CHANGELOG heading with the date, and tag `vX.Y.Z`.
 - `./scripts/validate-all.sh` passes clean. It unsets `NODE_OPTIONS` (cmux preloads a module that breaks every node call) and deletes untracked `.DS_Store` files under `plugins/`, which `claude plugin validate` would otherwise warn on.
 - `core.hooksPath` is unset in this clone, so the pre-commit check doesn't run here; enable it with `git config core.hooksPath scripts/git-hooks`.
@@ -55,7 +55,7 @@ CHANGELOG.md                        # one section per release, one subsection pe
 
 **Tests** (all run by validate-all and CI, no network or accounts needed):
 - `bash plugins/adv/tests/dispatch-test.sh [bash-binary]` — adv's dispatcher, run-phase and preflight against fake engines; run it with `/bin/bash` too, since stock macOS has bash 3.2.
-- `node plugins/knowledgeware/tests/registry-test.js`, `bash plugins/knowledgeware/tests/svg-lint-test.sh`, `bash plugins/knowledgeware/tests/diagram-digest-test.sh`, `node plugins/knowledgeware/tests/deck-review-test.js` (builds a temp deck against a stub reveal.js and a stub js-yaml, so no install is needed).
+- `node plugins/knowledgeware/tests/registry-test.js`, `bash plugins/knowledgeware/tests/svg-lint-test.sh`, `bash plugins/knowledgeware/tests/diagram-digest-test.sh`, `node plugins/knowledgeware/tests/slideware-engine-test.js` (the HTML deck engine without a browser: regions, new and refresh, lanes, check, the PowerPoint zip).
 - `python3 scripts/check-agent-tools.py` — reads `tools:` and `allowed-tools:`. Every agent needs one; built-in names must be real; an `mcp__<server>__` name must be a server the agent's own plugin declares in `mcpServers` (bare or as `plugin_<plugin>_<server>`), or one in its `OPTIONAL_MCP_SERVERS` (only `conventions` today, for context-engineer).
 - `python3 scripts/check-readme-catalog.py` — every catalog plugin appears once in the README's catalog tables at its catalog version, and nothing else does.
 - `python3 -m unittest discover -s scripts/tests` — the generator and both checks, each copied into a fixture repository and run there, so a test never reads or writes this checkout.

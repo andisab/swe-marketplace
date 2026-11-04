@@ -6,8 +6,8 @@ Brandware defines what a style and a brandbook are (`brandbook-spec.md`), lists 
 
 1. **Resolves by name through the registry** (SKILL.md §Resolution contract): the user's `$KNOWLEDGEWARE_BRANDS_DIR`, then `styles/brands/`, then the five styles; never a path to a token cache.
 2. **Honours the markers when nothing is named**: `.knowledgeware` in the project, then `DEFAULT` (the user directory's wins), and says which identity it resolved to. Only when no marker resolves does it use its own fallback, and it says so.
-3. **Loads through the loader** (`scripts/load-style.js`, or the html converter that imports it), reading the brandbook's prose for anything richer than the tokens carry: heading colours, reserved faces, diagram categories, distinctive treatments. The `.md` is canonical.
-4. **Uses the brandbook's extras when they're there**: logos from `assets/` (slideware's running footer), a stylesheet from `css/` for pages a skill doesn't build, starters. A style without them renders without them.
+3. **Loads through the loader** (`scripts/load-style.js`, which slideware's html theme imports too), reading the brandbook's prose for anything richer than the tokens carry: heading colours, reserved faces, diagram categories, distinctive treatments. The `.md` is canonical.
+4. **Uses the brandbook's extras when they're there**: logos from `assets/` (slideware's running footer), its own folder or file for the medium (§Per-consumer extensions), a stylesheet from `css/` for pages a skill doesn't build, starters. A style without them renders without them.
 5. **Degrades gracefully** (SKILL.md rule 3): with no brand installed it works from its bundled defaults, and a brand named but missing is reported, never improvised.
 6. **Keeps its mapping next to its code**: the table of tokens to variables, options or style strings lives in the consumer's own guide, where it changes with the implementation, and is listed in the index below. Brandware's audit checks consumers against the intent rules here, not against their tables.
 
@@ -25,7 +25,7 @@ What a token role means in each medium. A consumer's mapping implements these; a
 | Consumer | Consumes | Mapping lives in |
 |---|---|---|
 | slideware pptx | tokens JSON from `scripts/load-style.js` | `skills/slideware/pptx/references/pptxgenjs.md` §Brand tokens → pptxgenjs |
-| slideware html | `style.md` from the html converter (frontmatter = the tokens) | `skills/slideware/html/FORMAT.md` §Token → CSS mapping |
+| slideware html | tokens from `scripts/load-style.js`, plus `css/slideware.css` when the brand ships one | `skills/slideware/html/FORMAT.md` §Token → CSS mapping |
 | knowledgebase | palette + type → template CSS variables + Mermaid themeVariables | `skills/knowledgebase/references/brand-mapping.md` |
 | chartware | palette + diagram strokes + type → mxGraph style strings; Mermaid via the knowledgebase block | `skills/chartware/references/brand-mapping.md` |
 | data charts (any consumer) | palette → series and chrome colours | `references/chart-styling.md` (here) |
@@ -34,6 +34,12 @@ What a token role means in each medium. A consumer's mapping implements these; a
 
 Resolve per §What every consumer does, honour the intent for your medium (add a paragraph above if the medium is new), keep your mapping in your own guide, add a row to the index, and run acceptably with no brand installed.
 
-## Planned: per-consumer extension folders (not implemented)
+## Per-consumer extensions
 
-A brand sometimes needs more than tokens in one medium: the Enterprise Enablement decks, for instance, render in a design kit whose theme stylesheet and extra layouts were spliced into a copy of the HTML deck builder. The intended shape is an optional folder per consumer inside the brand (`<brand>/slideware-html/`, `<brand>/knowledgebase/` …) holding what that consumer knows how to apply: a theme stylesheet, extra layouts, a starter. The consumer looks for its folder and applies it when present; a brand without one renders from tokens alone. Nothing reads these folders yet. When a consumer implements its slot, it documents the folder's contents in its mapping guide and this paragraph moves into §What every consumer does.
+A brand sometimes needs more than tokens in one medium: its own layouts, a theme stylesheet, an icon sprite. A consumer that supports this names one file or folder inside the brand and applies it when present; a brand without it renders from tokens alone.
+
+| Consumer | Reads | Effect |
+|---|---|---|
+| slideware html | `<brand>/css/slideware.css` | copied into each deck's theme block after the tokens, replacing the generic base and kit; part of the brand hash, so decks see the change |
+
+A new consumer that adds a slot documents its contents in its mapping guide and adds a row here.

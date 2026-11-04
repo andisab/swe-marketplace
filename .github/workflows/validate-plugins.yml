@@ -38,8 +38,8 @@ jobs:
         run: bash plugins/knowledgeware/tests/svg-lint-test.sh
       - name: Test chartware's diagram digest
         run: bash plugins/knowledgeware/tests/diagram-digest-test.sh
-      - name: Test slideware's HTML review flow
-        run: node plugins/knowledgeware/tests/deck-review-test.js
+      - name: Test slideware's HTML engine
+        run: node plugins/knowledgeware/tests/slideware-engine-test.js
 
   validate-manifests:
     name: claude plugin validate
