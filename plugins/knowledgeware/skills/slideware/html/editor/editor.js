@@ -171,7 +171,52 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
   }
   async function idbGet(k) { const db = await idb(); return new Promise((res) => { const t = db.transaction("folders").objectStore("folders").get(k); t.onsuccess = () => res(t.result || null); t.onerror = () => res(null); }); }
   async function idbPut(k, v) { const db = await idb(); return new Promise((res) => { const t = db.transaction("folders", "readwrite").objectStore("folders").put(v, k); t.onsuccess = () => res(true); t.onerror = () => res(false); }); }
+  // The plugin's local server (cli.js serve) offers the same file operations over HTTP. This adapter
+  // looks like a FileSystemDirectoryHandle to the rest of the editor.
+  function serverFolder(prefix = "") {
+    const fsUrl = (rel, extra = "") => "/__sw/fs?path=" + encodeURIComponent(rel) + extra;
+    const fileHandle = (rel) => ({
+      kind: "file",
+      async getFile() {
+        const r = await fetch(fsUrl(rel, "&stat"), { cache: "no-store" });
+        if (!r.ok) throw new Error(`${rel} not found`);
+        const { lastModified } = await r.json();
+        return { lastModified, text: async () => { const t = await fetch(fsUrl(rel), { cache: "no-store" }); if (!t.ok) throw new Error(`${rel} not found`); return t.text(); } };
+      },
+      async createWritable() {
+        const parts = [];
+        return { write: async (x) => { parts.push(x); }, close: async () => {
+          const r = await fetch(fsUrl(rel), { method: "PUT", headers: { "x-slideware": "1" }, body: parts.join("") });
+          if (!r.ok) throw new Error(await r.text());
+        } };
+      },
+    });
+    return {
+      kind: "directory", server: true,
+      async getFileHandle(name, opts) {
+        const rel = prefix + name;
+        if (!(opts && opts.create)) { const r = await fetch(fsUrl(rel, "&stat"), { cache: "no-store" }); if (!r.ok) throw new Error(`${rel} not found`); }
+        return fileHandle(rel);
+      },
+      async getDirectoryHandle(name) {
+        const r = await fetch("/__sw/ls?path=" + encodeURIComponent(prefix + name), { cache: "no-store" });
+        if (!r.ok) throw new Error(`no folder ${name}`);
+        return serverFolder(prefix + name + "/");
+      },
+      async *entries() {
+        const r = await fetch("/__sw/ls?path=" + encodeURIComponent(prefix.replace(/\/$/, "")), { cache: "no-store" });
+        for (const n of r.ok ? await r.json() : []) yield [n, fileHandle(prefix + n)];
+      },
+      async queryPermission() { return "granted"; },
+      async requestPermission() { return "granted"; },
+    };
+  }
+  async function serverAvailable() {
+    if (!/^https?:$/.test(location.protocol) || !/^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname)) return false;
+    try { const r = await fetch("/__sw/ping", { cache: "no-store" }); return r.ok && !!(await r.json()).slideware; } catch (e) { return false; }
+  }
   async function restoreFolder(prompt) {
+    if (await serverAvailable()) return useFolder(serverFolder());
     if (!window.showDirectoryPicker) return false;
     const h = await idbGet(location.pathname).catch(() => null);
     if (!h) return false;

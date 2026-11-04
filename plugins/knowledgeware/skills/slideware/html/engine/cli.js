@@ -9,6 +9,7 @@
 //   node cli.js lanes <index.html>                          rebuild index-<lane>.html from lanes/*.json
 //   node cli.js export <index.html> --png [dir] [--scale 2] [--all] | --pdf [file] | --pptx [file] [--level 0|1]
 //   node cli.js migrate <old-deck-dir> [--out dir] [--kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
+//   node cli.js serve <index.html> [--port 47100] [--open]  local server: edit and save in any browser
 //   node cli.js install-editor                              copy the editor into the plugin's data folder
 // Exit code 1 when check finds errors.
 "use strict";
@@ -183,6 +184,17 @@ const commands = {
     console.log("Once reviewed, these old files are replaced by the new folder:\n  " + r.replaces.join("\n  "));
   },
 
+  async serve({ pos, opt }) {
+    const file = deckPath(pos[0]);
+    const { serve } = require("./serve");
+    const port = Number(opt.port) || 47100;
+    build.installEditor();
+    await serve(path.dirname(file), { port });
+    const url = `http://127.0.0.1:${port}/${path.basename(file)}`;
+    console.log(`Serving ${rel(path.dirname(file))} at ${url} (Ctrl+C stops it). Press E in the deck to edit; saving needs no folder permission here.`);
+    if (opt.open) require("child_process").spawn(process.platform === "darwin" ? "open" : process.platform === "win32" ? "explorer" : "xdg-open", [url], { stdio: "ignore", detached: true }).unref();
+  },
+
   async "install-editor"() {
     const p = build.installEditor();
     console.log(p ? `Editor: ${p}` : "No editor in this plugin version.");
@@ -193,7 +205,7 @@ function lineOf(text, pos) { let n = 1; for (let i = 0; i < pos; i++) if (text.c
 (async () => {
   const [cmd, ...rest] = process.argv.slice(2);
   if (!cmd || !commands[cmd]) {
-    console.log("usage: node cli.js <new|refresh|check|outline|slide|lanes|export|install-editor> …  (see the top of cli.js)");
+    console.log("usage: node cli.js <new|refresh|check|outline|slide|lanes|export|migrate|serve|install-editor> …  (see the top of cli.js)");
     process.exitCode = cmd ? 1 : 0;
     return;
   }
