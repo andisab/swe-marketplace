@@ -94,7 +94,7 @@ A move is stored on the element as `translate` (an offset from where the layout 
 
 **Other browsers.** Safari and Firefox can't write files from a page; they save through `serve`, as every browser does there.
 
-**A recipient's copy.** On a machine without the plugin, E shows a short note and nothing else loads.
+**A recipient's copy.** On a machine without the plugin (or opened from a website), E shows a small card that stays until closed: editing needs the knowledgeware plugin, the one-line install command, and a link to the README. Nothing else loads.
 
 ## For the engine's tools
 
