@@ -53,6 +53,6 @@
     document.head.appendChild(s);
   }
   SW.key({ key: "E", desc: "Edit the deck", last: true, note: "Edit requires knowledgeware plugin install.",
-    href: "https://github.com/andisab/swe-marketplace/blob/main/plugins/knowledgeware/README.md", linkText: "github.com/andisab/swe-marketplace" }, load);
+    href: "https://github.com/andisab/swe-marketplace/blob/main/plugins/knowledgeware/README.md", linkWord: "knowledgeware" }, load);
   SW.ready(() => { if (new URLSearchParams(location.search).has("edit")) load(); });
 })();

@@ -22,7 +22,7 @@
 //   SW.slides() SW.allSlides() SW.current() SW.index() SW.step() SW.steps(slide) SW.stepsLeft()
 //   SW.go(i, step | "end") SW.next() SW.prev() SW.builds(on?) SW.paused() SW.pause(on?)
 //   SW.on(type, fn) — "ready", "change" {index, step, moved}, "pause", "layout", "refresh"
-//   SW.key({ key, desc, when, last, note, href, linkText }, fn) SW.keys() SW.keyHtml(entry)  SW.layout() SW.host(el) SW.scale() SW.refresh()
+//   SW.key({ key, desc, when, last, note, href, linkWord }, fn) SW.keys() SW.keyHtml(entry)  SW.layout() SW.host(el) SW.scale() SW.refresh()
 //   SW.asset(name) SW.expand(root) SW.ready(fn) SW.config SW.stage SW.measure()
 (function () {
   "use strict";
@@ -396,18 +396,24 @@ html.sw-print .sw-progress { display: none; }
   function key(spec, fn) {
     const keys = [].concat(spec.keys || spec.key);
     bindings.push({ keys, label: spec.label || keys.map((k) => k === " " ? "Space" : k).join(" "), desc: spec.desc || "", when: spec.when, hidden: !!spec.hidden,
-      last: !!spec.last, note: spec.note || "", href: spec.href || "", linkText: spec.linkText || "", fn });
+      last: !!spec.last, note: spec.note || "", href: spec.href || "", linkWord: spec.linkWord || "", fn });
   }
   // The key list for the help panels: in registration order, entries marked last at the end;
   // an entry may carry a note and a link shown under its description.
   function keyList() {
     const shown = bindings.filter((b) => b.desc && !b.hidden);
-    return shown.filter((b) => !b.last).concat(shown.filter((b) => b.last)).map((b) => ({ label: b.label, desc: b.desc, note: b.note, href: b.href, linkText: b.linkText }));
+    return shown.filter((b) => !b.last).concat(shown.filter((b) => b.last)).map((b) => ({ label: b.label, desc: b.desc, note: b.note, href: b.href, linkWord: b.linkWord }));
   }
   // One key list entry as HTML, shared by the runtime's help and the presenter's.
   function keyHtml(k) {
-    const link = k.href ? ` <a href="${escHtml(k.href)}" target="_blank" rel="noopener">${escHtml(k.linkText || k.href.replace(/^https?:\/\//, ""))}</a>` : "";
-    return `<dt>${escHtml(k.label)}</dt><dd>${escHtml(k.desc)}${k.note || link ? `<small class="sw-key-note">${escHtml(k.note)}${link}</small>` : ""}</dd>`;
+    // The link goes on linkWord inside the note when it's there, else after the note as the address.
+    const a = (text) => `<a href="${escHtml(k.href)}" target="_blank" rel="noopener">${escHtml(text)}</a>`;
+    let note = escHtml(k.note);
+    if (k.href) {
+      const i = k.linkWord ? k.note.indexOf(k.linkWord) : -1;
+      note = i >= 0 ? escHtml(k.note.slice(0, i)) + a(k.linkWord) + escHtml(k.note.slice(i + k.linkWord.length)) : `${note} ${a(k.href.replace(/^https?:\/\//, ""))}`;
+    }
+    return `<dt>${escHtml(k.label)}</dt><dd>${escHtml(k.desc)}${note ? `<small class="sw-key-note">${note}</small>` : ""}</dd>`;
   }
   function onKey(e) {
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;

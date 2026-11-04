@@ -14,7 +14,7 @@ Capital letters need Shift (or Caps Lock); a lowercase letter does nothing. `?` 
 | P | presenter view in a second window |
 | N | the notes panel along the bottom, for rehearsal; drag its top edge to resize it (double-click resets), remembered per browser. While editing it is always shown and editable |
 | O | overview of every slide, by section |
-| E | the editor; listed last in the key list, with a note that editing requires the knowledgeware plugin and a link to its install guide |
+| E | the editor; listed last in the key list, with a note that editing requires the knowledgeware plugin (the word links to its install guide) |
 | f | fullscreen |
 | b or . | black out the screen |
 | ? | the key list |
