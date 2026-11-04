@@ -18,6 +18,7 @@
 //    converted, becomes a brand kit (kitDir, default <out>/brand-kit: css/slideware.css, the deck's
 //    style.md as brand.md, its logos) to move into the brands directory. Raw-slide CSS and the
 //    balance CSS go to the deck either way.
+// A deck-plan.md beside the old deck is copied into the new folder.
 // Returns a report with every old file the new folder replaces, for deletion after review.
 "use strict";
 const fs = require("fs");
@@ -231,6 +232,10 @@ async function migrate(oldDir, { out, brand, kitDir, rebuild = true, browser: gi
   fs.mkdirSync(out, { recursive: true });
   const outFile = path.join(out, "index.html");
   fs.writeFileSync(outFile, text);
+  if (fs.existsSync(path.join(oldDir, "deck-plan.md"))) {   // the plan stays with the deck; check reads it
+    fs.copyFileSync(path.join(oldDir, "deck-plan.md"), path.join(out, "deck-plan.md"));
+    report.notes.push("carried deck-plan.md over");
+  }
 
   // Lanes.
   const baseByKey = new Map(baseSections.map((s) => [s.key, s]));
