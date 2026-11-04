@@ -12,7 +12,7 @@ Capital letters need Shift (or Caps Lock); a lowercase letter does nothing. `?` 
 | ← ↑ PageUp | previous build, then previous slide (shown complete) |
 | Home, End | first and last slide |
 | P | presenter view in a second window |
-| N | notes drawer along the bottom, for rehearsal; drag its top edge to resize it (double-click resets), remembered per browser |
+| N | the notes panel along the bottom, for rehearsal; drag its top edge to resize it (double-click resets), remembered per browser. While editing it is always shown and editable |
 | O | overview of every slide, by section |
 | E | the editor |
 | f | fullscreen |
@@ -71,9 +71,9 @@ E loads the editor from the plugin. A bar along the top and a panel along the bo
 | Pin | "Pin in place" makes the element absolutely positioned where it is |
 | Reset | removes the element's position and size edits |
 | Delete | Del, or the Delete button |
-| Notes | the panel's notes box; drag the panel's top edge (or the box's corner) to make it taller, double-click the edge to reset; remembered per browser |
+| Notes | the notes panel (the same one N shows) turns editable while editing; drag its top edge to make it taller, double-click to reset; one height for both, remembered per browser |
 | Side column | Hide folds the comment and selection column to a tab, so the notes take the width; the tab opens it again |
-| Navigate | the navigation pill stays above the panel; its overview opens between the editor's bars, with hide, delete and drag to reorder |
+| Navigate | the navigation pill stays above the notes panel; its overview opens below the editor's bar with the notes panel hidden, with hide, delete and drag to reorder |
 | Comment for Claude | the panel's comment box; saved as `<!-- @claude: … -->` in the slide |
 | Structure | the overview (O): hide, delete, drag to reorder; Duplicate slide in the bar |
 | Undo | Cmd/Ctrl+Z |

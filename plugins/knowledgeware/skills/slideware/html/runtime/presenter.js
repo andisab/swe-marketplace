@@ -61,10 +61,18 @@
 .rp-drawer { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; max-height: var(--rp-drawer-h, 38vh); overflow-y: auto; box-sizing: border-box;
   padding: 16px 28px 22px; background: rgba(250,250,249,.97); border-top: 1px solid #E3E3DF;
   box-shadow: 0 -8px 24px rgba(26,26,24,.10); color: #1A1A18; font-family: ${SANS}; line-height: 1.55; text-align: left; }
-html.rp-drawer-on .rp-drawer { display: block; padding-bottom: 64px; }
+html.rp-drawer-on .rp-drawer { display: block; }
+/* While editing, the drawer is the editor's notes panel: always shown, the notes editable, the
+   editor's side column beside them. One panel, one height, one resize edge. */
+html.sw-editing .rp-drawer { display: flex; flex-direction: column; gap: 6px; height: var(--rp-drawer-h, 190px); max-height: 70vh; overflow: hidden;
+  padding: 10px 14px 12px; background: #FAFAF8; border-top-color: #DDDDD8; z-index: 70; }
+html.sw-editing .rp-drawer .rp-md { display: none; }
+html.sw-editing .rp-drawer .rp-cue-text { flex: none; font-size: 10.5px; }
+html.rp-ov-on .rp-drawer, html.rp-ov-on .rp-drawer-grip { display: none !important; }
 html.rp-drawer-sized .rp-drawer { height: var(--rp-drawer-h); }
 .rp-drawer-grip { position: fixed; left: 0; right: 0; z-index: 41; height: 10px; margin-top: -5px; cursor: ns-resize; display: none; }
-html.rp-drawer-on .rp-drawer-grip { display: block; }
+html.rp-drawer-on .rp-drawer-grip, html.sw-editing .rp-drawer-grip { display: block; }
+html.sw-editing .rp-drawer-grip { z-index: 71; }
 .rp-drawer-grip::after { content: ""; position: absolute; left: 50%; top: 3px; width: 44px; height: 4px; margin-left: -22px; border-radius: 2px; background: #C9C9C3; }
 .rp-drawer-grip:hover::after, .rp-drawer-grip.rp-dragging::after { background: ${ACCENT}; }
 .rp-cue-text { font-family: ${MONO}; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: ${ACCENT}; }
@@ -248,8 +256,9 @@ html.rp-hud-on .rp-hud, .rp-hud:hover, .rp-hud:focus-within, .rp-hud[data-help] 
 .rp-hud-help dt { font-family: ${MONO}; font-size: 11px; white-space: nowrap; color: ${ACCENT}; }
 .rp-hud-help dd { margin: 0; }
 .rp-hud-help p { margin: 8px 0 0; color: var(--color-ink-muted, #6B6B63); }
-html.sw-editing .rp-ov { top: var(--sw-reserve-top, 0px); bottom: var(--sw-reserve-bottom, 0px); }   /* between the editor's bar and panel */
-html.sw-editing .rp-hud { bottom: calc(var(--sw-reserve-bottom, 0px) + 12px); z-index: 71; }   /* above the editor's panel, which reserves its height */
+html.sw-editing .rp-ov { top: var(--sw-reserve-top, 0px); }   /* below the editor's bar; the notes panel hides while it's open */
+.rp-hud { bottom: calc(var(--sw-reserve-bottom, 0px) + 14px); }   /* above the notes, when they're shown */
+html.sw-editing .rp-hud { z-index: 71; }
 html.rp-presenter .rp-hud, html.rp-ov-on .rp-hud, html.sw-print .rp-hud, html.sw-capture .rp-hud { display: none !important; }
 @media print { .rp-hud, .rp-drawer, .rp-drawer-grip, .rp-ov { display: none !important; } }
 `;
@@ -426,10 +435,10 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     renderDrawer();
     reserveBottom();
   }
+  const drawerShown = () => html.classList.contains("sw-editing") || html.classList.contains("rp-drawer-on");
   function reserveBottom() {
     placeGrip();
-    if (html.classList.contains("sw-editing")) return;   // the editor's panel owns the space then
-    if (html.classList.contains("rp-drawer-on")) html.style.setProperty("--sw-reserve-bottom", drawer.offsetHeight + "px");
+    if (drawerShown() && drawer.offsetHeight) html.style.setProperty("--sw-reserve-bottom", drawer.offsetHeight + "px");
     else html.style.removeProperty("--sw-reserve-bottom");
     SW.layout();
   }
@@ -469,10 +478,10 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     window.addEventListener("resize", placeGrip);
   }
   function renderDrawer() {
-    if (!html.classList.contains("rp-drawer-on")) return;
+    if (!drawerShown()) return;
     const n = notes[cur] || readNote(SW.current()), cue = cueLine(n);
-    drawer.firstChild.textContent = (cur + 1) + " / " + slides.length + (cue ? "  ·  " + cue : "");
-    drawer.lastChild.innerHTML = md(n.text);
+    drawer.querySelector(".rp-cue-text").textContent = (html.classList.contains("sw-editing") ? "Speaker notes  ·  " : "") + (cur + 1) + " / " + slides.length + (cue ? "  ·  " + cue : "");
+    drawer.querySelector(".rp-md").innerHTML = md(n.text);
   }
   function buildAudience() {
     drawer = doc.createElement("div");
@@ -481,8 +490,8 @@ ${splitHtml("row", "y", "Resize current slide and notes")}
     drawer.innerHTML = '<div class="rp-cue-text"></div><div class="rp-md"></div>';
     doc.body.appendChild(drawer);
     buildGrip();
-    new ResizeObserver(() => { if (html.classList.contains("rp-drawer-on")) reserveBottom(); }).observe(drawer);
-    doc.addEventListener("sw-reserve", reserveBottom);   // the editor closed; the drawer's claim applies again
+    new ResizeObserver(reserveBottom).observe(drawer);
+    doc.addEventListener("sw-reserve", () => { renderDrawer(); reserveBottom(); });   // the editor opened or closed
     SW.key({ key: "P", desc: "Presenter view in a second window" }, openPresenter);
     SW.key({ key: "N", desc: "Notes drawer, for rehearsal" }, toggleDrawer);
     buildHud();

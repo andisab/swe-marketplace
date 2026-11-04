@@ -74,11 +74,13 @@ html.sw-editing #sw-slides [contenteditable] { outline: 2px solid #2F7DE1 !impor
 .swe-fcard .swe-row { margin-top: 0; }
 .swe-fcard button { all: unset; cursor: pointer; padding: 5px 9px; border: 1px solid rgba(255,255,255,.22); border-radius: 7px; font: 500 12px ${SANS}; color: #EDEDEA; }
 .swe-fcard button:hover { background: rgba(255,255,255,.08); }
-.swe-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; padding: 10px 14px;
-  background: #FAFAF8; border-top: 1px solid #DDDDD8; box-shadow: 0 -6px 20px rgba(0,0,0,.08); font: 13px/1.4 ${SANS}; color: #1A1A18; box-sizing: border-box; }
-.swe-pgrip { position: absolute; left: 0; right: 0; top: -6px; height: 12px; cursor: ns-resize; z-index: 1; }
-.swe-pgrip::after { content: ""; position: absolute; left: 50%; top: 4px; width: 44px; height: 4px; margin-left: -22px; border-radius: 2px; background: #C9C9C3; }
-.swe-pgrip:hover::after, .swe-pgrip.swe-dragging::after { background: #2F7DE1; }
+/* The panel lives inside the deck's notes drawer (presenter.js), which sizes and positions it;
+   decks without the presenter get it fixed along the bottom (.swe-own). */
+.swe-panel { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; font: 13px/1.4 ${SANS}; color: #1A1A18; text-align: left; }
+.swe-panel.swe-own { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; height: 150px; padding: 10px 14px; background: #FAFAF8; border-top: 1px solid #DDDDD8;
+  box-shadow: 0 -6px 20px rgba(0,0,0,.08); box-sizing: border-box; }
+.swe-notes-col { display: flex; flex-direction: column; min-height: 0; }
+.swe-side-body { height: 100%; overflow: auto; }
 .swe-panel.swe-side-closed { grid-template-columns: 1fr 28px; }
 .swe-side { position: relative; min-width: 0; }
 .swe-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -89,7 +91,7 @@ html.sw-editing #sw-slides [contenteditable] { outline: 2px solid #2F7DE1 !impor
 .swe-panel.swe-side-closed .swe-side-tab { display: flex; align-items: center; justify-content: center; position: absolute; inset: 0; padding: 6px 0; writing-mode: vertical-rl;
   font: 600 10.5px ${MONO}; letter-spacing: .12em; text-transform: uppercase; color: #6B6B63; border-radius: 7px; }
 .swe-panel h4 { margin: 0 0 5px; font: 600 10.5px ${MONO}; letter-spacing: .12em; text-transform: uppercase; color: #6B6B63; }
-.swe-panel textarea { width: 100%; box-sizing: border-box; height: 92px; resize: vertical; padding: 7px 9px; border: 1px solid #DDDDD8; border-radius: 7px; font: 13px/1.45 ${SANS}; background: #FFF; }
+.swe-panel textarea { width: 100%; box-sizing: border-box; flex: 1; min-height: 0; height: auto; resize: none; padding: 7px 9px; border: 1px solid #DDDDD8; border-radius: 7px; font: 13px/1.45 ${SANS}; background: #FFF; }
 .swe-panel input[type=text] { flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid #DDDDD8; border-radius: 7px; font: 13px ${SANS}; }
 .swe-panel button { border-color: #CFCFC9; color: #1A1A18; }
 .swe-panel button:hover { background: #EFEFEC; }
@@ -126,6 +128,7 @@ html.swe-fmt-on .swe-tag { display: none; }
 .swe-fmt svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 .swe-bar [hidden], .swe-panel [hidden], .swe-fmt [hidden] { display: none !important; }
 html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-editing) .swe-overlay, html:not(.sw-editing) .swe-fmt { display: none; }
+html.rp-ov-on .swe-panel.swe-own, html.rp-ov-on .swe-overlay, html.rp-ov-on .swe-fmt { display: none; }   /* the overview takes the space */
 @media print { .swe-bar, .swe-panel, .swe-overlay, .swe-toast, .swe-fmt { display: none !important; } }
 `;
   function el(tag, attrs, inner) {
@@ -148,8 +151,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
 <button type="button" data-a="discard" title="Drop every unsaved edit">Discard</button>
 <button type="button" data-a="done">Done<kbd>E</kbd></button>`);
     panel = el("div", { class: "swe-panel" }, `
-<div class="swe-pgrip" title="Drag to resize the panel; double-click to reset"></div>
-<div><h4>Speaker notes</h4><textarea class="swe-notes" spellcheck="true" placeholder="Notes for this slide"></textarea></div>
+<div class="swe-notes-col"><textarea class="swe-notes" spellcheck="true" placeholder="Notes for this slide"></textarea></div>
 <div class="swe-side"><button type="button" class="swe-side-tab" data-a="side" title="Show the comment and selection tools">Comment · Selection</button><div class="swe-side-body">
 <div class="swe-side-head"><h4>Comment for Claude</h4><button type="button" class="swe-side-hide" data-a="side" title="Hide this column; the notes take the width">Hide ›</button></div><div class="swe-row" style="margin-top:5px"><input type="text" class="swe-comment" placeholder="e.g. tighten this to one line"><button type="button" data-a="comment">Add</button></div>
 <ul class="swe-comments"></ul>
@@ -162,21 +164,23 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     overlayEl.append(box, guides);
     toastEl = el("div", { class: "swe-toast", role: "status" });
     fmt = el("div", { class: "swe-fmt", role: "toolbar", "aria-label": "Text format" }, FMT_HTML);
-    doc.body.append(bar, panel, overlayEl, toastEl, fmt);
+    const notesDrawer = doc.querySelector(".rp-drawer");
+    if (notesDrawer) notesDrawer.appendChild(panel); else { panel.classList.add("swe-own"); doc.body.appendChild(panel); }
+    doc.body.append(bar, overlayEl, toastEl, fmt);
     fmt.addEventListener("mousedown", (e) => { if (!/^(SELECT|INPUT|OPTION)$/.test(e.target.tagName)) e.preventDefault(); });   // keep the text selection
     fmt.addEventListener("click", (e) => { const b = e.target.closest("button[data-f]"); if (b && !b.disabled) fmtAction(b.dataset.f); });
     fmt.addEventListener("change", (e) => { const sel = e.target.closest("select[data-f]"); if (sel) { fmtAction(sel.dataset.f, sel.value); sel.value = ""; } });
     bar.addEventListener("click", onBarClick);
     panel.addEventListener("click", onBarClick);
     panel.querySelector(".swe-notes").addEventListener("input", onNotesInput);
-    wirePanelSize();
+    setSide(!panelPrefs().sideClosed, false);
     panel.querySelector(".swe-comment").addEventListener("keydown", (e) => { if (e.key === "Enter") addComment(); });
     box.addEventListener("pointerdown", onHandleDown);
     new ResizeObserver(reservePanel).observe(panel);
     renderLanePicker();
   }
-  // The panel's size: its top edge drags the notes box taller or shorter (the same height the box's
-  // own corner sets), double-click resets; the right column folds to a tab. Both remembered per browser.
+  // The panel's right column folds to a tab, remembered per browser. Its height is the notes
+  // drawer's (drag the drawer's top edge), shared with the N drawer outside editing.
   const PANEL_KEY = "sw-editor:panel";
   function panelPrefs() { try { return JSON.parse(localStorage.getItem(PANEL_KEY)) || {}; } catch (e) { return {}; } }
   function savePanelPrefs(patch) { try { localStorage.setItem(PANEL_KEY, JSON.stringify({ ...panelPrefs(), ...patch })); } catch (e) { /* blocked */ } }
@@ -184,30 +188,9 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     panel.classList.toggle("swe-side-closed", !open);
     if (remember) savePanelPrefs({ sideClosed: !open });
   }
-  function wirePanelSize() {
-    const ta = panel.querySelector(".swe-notes"), grip = panel.querySelector(".swe-pgrip");
-    const prefs = panelPrefs();
-    if (prefs.notesH) ta.style.height = prefs.notesH + "px";
-    setSide(!prefs.sideClosed, false);
-    const clamp = (h) => Math.round(Math.max(40, Math.min(innerHeight * 0.7, h)));
-    grip.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      try { grip.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointer */ }
-      grip.classList.add("swe-dragging");
-      const y0 = e.clientY, h0 = ta.offsetHeight;
-      const move = (ev) => { ta.style.height = clamp(h0 + (y0 - ev.clientY)) + "px"; };
-      const up = () => { grip.classList.remove("swe-dragging"); grip.removeEventListener("pointermove", move); savePanelPrefs({ notesH: ta.offsetHeight }); };
-      grip.addEventListener("pointermove", move);
-      grip.addEventListener("pointerup", up, { once: true });
-      grip.addEventListener("pointercancel", up, { once: true });
-    });
-    grip.addEventListener("dblclick", () => { ta.style.height = ""; savePanelPrefs({ notesH: null }); });
-    ta.addEventListener("mouseup", () => { if (ta.style.height) savePanelPrefs({ notesH: ta.offsetHeight }); });   // the box's own corner
-  }
-  function reservePanel() {
+  function reservePanel() {   // the drawer reserves its own height; the fallback panel reserves here
     if (!on) return;
-    html.style.setProperty("--sw-reserve-bottom", panel.offsetHeight + "px");
-    SW.layout();
+    if (panel.classList.contains("swe-own")) { html.style.setProperty("--sw-reserve-bottom", panel.offsetHeight + "px"); SW.layout(); }
     drawBox();
   }
   let toastTimer = 0;
@@ -1282,7 +1265,7 @@ html:not(.sw-editing) .swe-bar, html:not(.sw-editing) .swe-panel, html:not(.sw-e
     html.classList.toggle("sw-editing", on);
     if (on) {
       SW.builds(false);
-      html.style.removeProperty("--sw-reserve-bottom");
+      doc.dispatchEvent(new CustomEvent("sw-reserve"));   // the notes drawer becomes the editing panel
       reservePanel();
       renderPanel();
       renderStatus();
