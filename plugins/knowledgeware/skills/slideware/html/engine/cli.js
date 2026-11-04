@@ -8,7 +8,7 @@
 //   node cli.js slide <index.html> <key>                    print one slide's HTML
 //   node cli.js lanes <index.html>                          rebuild index-<lane>.html from lanes/*.json
 //   node cli.js export <index.html> --png [dir] [--scale 2] [--all] | --pdf [file] | --pptx [file] [--level 0|1]
-//   node cli.js migrate <old-deck-dir> [--out dir] [--kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
+//   node cli.js migrate <old-deck-dir> [--out dir] [--brand name | --kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
 //   node cli.js import <file.pptx> [--out dir] [--mode redesign|faithful] [--brand name]
 //   node cli.js serve <index.html> [--port 47100] [--open]  local server: edit and save in any browser
 //   node cli.js install-editor                              copy the editor into the plugin's data folder
@@ -154,9 +154,9 @@ const commands = {
   async migrate({ pos, opt }) {
     const { migrate, compare } = require("./migrate");
     const oldDir = path.resolve(pos[0] || ".");
-    const r = await migrate(oldDir, { out: opt.out, kitDir: opt.kit, rebuild: !opt["no-rebuild"] });
+    const r = await migrate(oldDir, { out: opt.out, brand: opt.brand, kitDir: opt.kit, rebuild: !opt["no-rebuild"] });
     const file = path.join(r.out, "index.html");
-    console.log(`Wrote ${rel(file)}: ${r.slides} slides, ${r.figures} figures. Brand kit: ${rel(r.kit)}`);
+    console.log(`Wrote ${rel(file)}: ${r.slides} slides, ${r.figures} figures. ${r.brand ? `Brand: ${r.brand}` : `Brand kit: ${rel(r.kit)} (move it into the brands directory, then refresh --brand <name>)`}`);
     r.notes.forEach((n) => console.log(`  ${n}`));
     await commands.lanes({ pos: [file], opt: {} });
     if (!opt["no-compare"]) {

@@ -14,8 +14,10 @@
 //    deck's footer settings (plus a slide's own part in data-footer).
 // 5. Lanes become overlays: the old persona's text replacements, figure swaps, and a whole-slide
 //    override wherever the lane still differs.
-// 6. The fork's theme CSS, converted, becomes the brand kit (kitDir/css/slideware.css, with the
-//    deck's style.md as brand.md and its logos); raw-slide CSS and the balance CSS go to the deck.
+// 6. The deck takes its brand from brandware when `brand` names one. Otherwise the old theme CSS,
+//    converted, becomes a brand kit (kitDir, default <out>/brand-kit: css/slideware.css, the deck's
+//    style.md as brand.md, its logos) to move into the brands directory. Raw-slide CSS and the
+//    balance CSS go to the deck either way.
 // Returns a report with every old file the new folder replaces, for deletion after review.
 "use strict";
 const fs = require("fs");
@@ -135,7 +137,7 @@ function sectionWith(sec, { figureNames, hidden, footerExtra, teaches }) {
   return html.replace(/<\/section>\s*$/, (notes ? `  <aside class="notes">${escText(notes)}</aside>\n` : "") + "</section>");
 }
 
-async function migrate(oldDir, { out, kitDir, rebuild = true, browser: given } = {}) {
+async function migrate(oldDir, { out, brand, kitDir, rebuild = true, browser: given } = {}) {
   oldDir = path.resolve(oldDir);
   const slidesFile = path.join(oldDir, "slides.js");
   if (!fs.existsSync(slidesFile) || !fs.existsSync(path.join(oldDir, "build-deck.js"))) throw new Error(`${oldDir} isn't an old-format deck (no slides.js and build-deck.js)`);
@@ -192,29 +194,36 @@ async function migrate(oldDir, { out, kitDir, rebuild = true, browser: given } =
   const rawCss = blocks.find((c) => !isReveal(c) && c !== balanceCss && /\.raw-slide/.test(c) && !/:root\s*\{/.test(c)) || "";
   const themeCss = blocks.find((c) => !isReveal(c) && c !== balanceCss && c !== rawCss && /:root\s*\{/.test(c)) || "";
   if (!themeCss) report.notes.push("no theme CSS found in the old output's <head>");
-  kitDir = path.resolve(kitDir || path.join(path.dirname(oldDir), "..", "shared", "brand-provectus"));
-  fs.mkdirSync(path.join(kitDir, "css"), { recursive: true });
-  fs.mkdirSync(path.join(kitDir, "assets"), { recursive: true });
-  fs.copyFileSync(path.join(oldDir, "style.md"), path.join(kitDir, "brand.md"));
-  for (const f of ["logo-light.svg", "logo-dark.svg"]) if (fs.existsSync(path.join(oldDir, "assets", f))) fs.copyFileSync(path.join(oldDir, "assets", f), path.join(kitDir, "assets", f));
-  // The fork's CSS was written on top of Reveal, which set the page's line-height to 1, its text to
-  // black and every shown slide to display: flex (Reveal's display option). That baseline comes first,
-  // so the fork's own rules override it exactly as they did.
-  const baseline = "/* What Reveal set under the fork's rules. */\nsection[data-key] { display: flex; line-height: 1; color: #000; }\n";
-  fs.writeFileSync(path.join(kitDir, "css", "slideware.css"), `/* Provectus kit for slideware decks: the Track 03 fork's theme, converted by migrate.js. */\n${baseline}\n${convertCss(themeCss).trim()}\n`);
-  report.kit = kitDir;
+  let brandRef = brand;
+  if (brand) {
+    const t = require("./theme").themeFor(brand);   // throws when brandware doesn't have it
+    if (themeCss && !/slideware\.css \*\//.test(t.css)) report.notes.push(`brand ${t.brand} has no css/slideware.css, so the old theme's look isn't carried over; the comparison shows how far off it is`);
+    report.brand = t.brand;
+  } else {
+    kitDir = path.resolve(kitDir || path.join(out, "brand-kit"));
+    fs.mkdirSync(path.join(kitDir, "css"), { recursive: true });
+    fs.mkdirSync(path.join(kitDir, "assets"), { recursive: true });
+    fs.copyFileSync(path.join(oldDir, "style.md"), path.join(kitDir, "brand.md"));
+    for (const f of ["logo-light.svg", "logo-dark.svg"]) if (fs.existsSync(path.join(oldDir, "assets", f))) fs.copyFileSync(path.join(oldDir, "assets", f), path.join(kitDir, "assets", f));
+    // The old CSS was written on top of Reveal, which set the page's line-height to 1, its text to
+    // black and every shown slide to display: flex (Reveal's display option). That baseline comes
+    // first, so the old rules override it exactly as they did.
+    const baseline = "/* What Reveal set under the old deck's rules. */\nsection[data-key] { display: flex; line-height: 1; color: #000; }\n";
+    fs.writeFileSync(path.join(kitDir, "css", "slideware.css"), `/* Brand kit for slideware decks: ${path.basename(path.dirname(oldDir))}'s theme, converted by migrate.js. */\n${baseline}\n${convertCss(themeCss).trim()}\n`);
+    report.kit = kitDir;
+    brandRef = path.join(kitDir, "brand.md");
+  }
 
   // The new deck.
-  const theme = require("./theme").themeFor(path.join(kitDir, "brand.md"));
   const config = {
     title: deckSpec.title || base.title, footer: cfgFooter, sessions: deckSpec.sessions || (deckSpec.minutes ? { "": deckSpec.minutes } : {}),
     lanes: [], ...(deckSpec.spec ? { spec: path.relative(out, path.resolve(oldDir, deckSpec.spec)) } : {}),
     ...(deckSpec.lane ? { laneName: deckSpec.lane } : {}),
   };
   const slidesHtml = "\n" + baseSections.map((s) => `<!-- ${s.key}${s.title ? " · " + s.title.replace(/--/g, "—") : ""} -->\n${s.html}`).join("\n\n") + "\n";
-  let text = build.newDeck({ brand: path.join(kitDir, "brand.md"), title: config.title, slides: slidesHtml.trim() });
+  let text = build.newDeck({ brand: brandRef, title: config.title, slides: slidesHtml.trim() });
   text = D.spliceRegion(text, "sw-deck", "\n" + JSON.stringify(config, null, 2) + "\n");
-  const deckCss = [rawCss && `/* Raw slides (the Track 03 stylesheet), converted. */\n${convertCss(rawCss).trim()}`, balanceCss && `/* Balance, as the old load-time pass left it. */\n${convertCss(balanceCss).trim()}`].filter(Boolean).join("\n\n");
+  const deckCss = [rawCss && `/* Raw slides (the old deck's stylesheet), converted. */\n${convertCss(rawCss).trim()}`, balanceCss && `/* Balance, as the old load-time pass left it. */\n${convertCss(balanceCss).trim()}`].filter(Boolean).join("\n\n");
   text = D.spliceRegion(text, "sw-deck-css", `\n${deckCss}\n`);
   const ar = D.region(text, "sw-assets");
   const sprites = base.defs.map((d) => d.replace(/^<svg\b/, '<svg data-asset="icons" data-inline'));

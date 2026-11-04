@@ -42,7 +42,7 @@ Never hand-edit the engine's regions; `refresh` replaces them whole.
 | `$CLI lanes <index.html>` | rebuilds every `index-<lane>.html` from the base and `lanes/*.json` |
 | `$CLI export <index.html> --png [dir] \| --pdf [file] \| --pptx [file] [--level 0\|1]` | pictures, PDF, PowerPoint (§Export and import) |
 | `$CLI import <file.pptx> [--mode redesign\|faithful] [--out dir]` | brings a PowerPoint deck in |
-| `$CLI migrate <old-deck-dir> --out <new-dir>` | converts an old-format deck (§Old decks) |
+| `$CLI migrate <old-deck-dir> --out <new-dir> [--brand <name>]` | converts an old-format deck (§Old decks) |
 | `$CLI serve <index.html> [--open]` | a local server, so the owner can edit and save in any browser |
 
 Every command needs Node 22 or newer; export, `check --render` and `migrate` also need Chrome, Edge, Brave or Chromium. Nothing is installed per deck.
@@ -165,8 +165,8 @@ When the owner has the deck open while you edit it, their page reloads on your c
 
 A deck with its own `build-deck.js` and `slides.js` is the old format. When you meet one, convert it before changing anything:
 
-1. `$CLI migrate <old-deck> --out <old-deck>-v2` rebuilds it once with its own builder, converts every slide from that output, writes the new folder, rebuilds its lanes, and pixel-compares every slide in every lane against the old output.
-2. Report the comparison (slides over the threshold and their images in `migrate-report/`) and the brand kit it wrote, if the deck had its own theme.
+1. `$CLI migrate <old-deck> --out <old-deck>-v2 --brand <name>` rebuilds it once with its own builder, converts every slide from that output, writes the new folder, rebuilds its lanes, and pixel-compares every slide in every lane against the old output. Name the brand the deck uses in brandware. Without `--brand`, it converts the old deck's theme into a brand kit at `<new-dir>/brand-kit/` (a `brand.md` and `css/slideware.css`) and builds the deck from that; move the kit into the brands directory (../../brandware/SKILL.md §Add / import), then `refresh --brand <name>`.
+2. Report the comparison (slides over the threshold and their images in `migrate-report/`), and the kit if one was written.
 3. Show the owner the list of old files the new folder replaces. Delete them, and swap the folders, only after the owner approves.
 
 ## Maintenance
