@@ -9,6 +9,7 @@
 //   node cli.js lanes <index.html>                          rebuild index-<lane>.html from lanes/*.json
 //   node cli.js export <index.html> --png [dir] [--scale 2] [--all] | --pdf [file] | --pptx [file] [--level 0|1]
 //   node cli.js migrate <old-deck-dir> [--out dir] [--kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
+//   node cli.js import <file.pptx> [--out dir] [--mode redesign|faithful] [--brand name]
 //   node cli.js serve <index.html> [--port 47100] [--open]  local server: edit and save in any browser
 //   node cli.js install-editor                              copy the editor into the plugin's data folder
 // Exit code 1 when check finds errors.
@@ -184,6 +185,13 @@ const commands = {
     console.log("Once reviewed, these old files are replaced by the new folder:\n  " + r.replaces.join("\n  "));
   },
 
+  async import({ pos, opt }) {
+    const { importPptx } = require("./import");
+    if (!pos[0] || !/\.pptx$/i.test(pos[0])) throw new Error("name a .pptx file to import");
+    const r = await importPptx(pos[0], { out: opt.out, mode: opt.mode || "redesign", brand: opt.brand });
+    console.log(`Imported ${r.slides} slides (${r.mode}) into ${rel(r.out)}; see import-ledger.md there.`);
+  },
+
   async serve({ pos, opt }) {
     const file = deckPath(pos[0]);
     const { serve } = require("./serve");
@@ -205,7 +213,7 @@ function lineOf(text, pos) { let n = 1; for (let i = 0; i < pos; i++) if (text.c
 (async () => {
   const [cmd, ...rest] = process.argv.slice(2);
   if (!cmd || !commands[cmd]) {
-    console.log("usage: node cli.js <new|refresh|check|outline|slide|lanes|export|migrate|serve|install-editor> …  (see the top of cli.js)");
+    console.log("usage: node cli.js <new|refresh|check|outline|slide|lanes|export|import|migrate|serve|install-editor> …  (see the top of cli.js)");
     process.exitCode = cmd ? 1 : 0;
     return;
   }
