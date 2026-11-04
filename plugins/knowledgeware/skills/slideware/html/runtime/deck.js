@@ -86,9 +86,10 @@ html.sw-quiet [data-a] { animation: none !important; }
 .sw-chrome-l { display: flex; align-items: center; min-width: 0; white-space: nowrap; overflow: hidden; }
 .sw-chrome-l span + span::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%;
   background: var(--color-ink-faint, #A8A294); margin: 0 14px; vertical-align: middle; }
-.sw-chrome-r { display: flex; align-items: center; gap: 14px; flex: none; }
+.sw-chrome-r { display: flex; align-items: center; flex: none; }
 .sw-chrome-logo { height: 13px; width: auto; opacity: .85; }
 .sw-chrome-pg { letter-spacing: .08em; color: var(--color-ink-body, #3D3A35); font-variant-numeric: tabular-nums; }
+.sw-chrome-logo + .sw-chrome-pg { margin-left: 14px; }
 
 .sw-progress { position: fixed; left: 0; bottom: 0; z-index: 30; height: 3px; width: 100%; pointer-events: none;
   background: var(--color-accent, #3B5249); transform-origin: 0 0; transform: scaleX(var(--sw-progress, 0)); transition: transform .3s ease; }
@@ -376,7 +377,8 @@ html.sw-print .sw-progress { display: none; }
       f.setAttribute("aria-hidden", "true");
       const l = doc.createElement("span");
       l.className = "sw-chrome-l";
-      texts.forEach((t) => { const s = doc.createElement("span"); s.textContent = t; l.appendChild(s); });
+      const extra = sec.getAttribute("data-footer");   // a slide's own part, e.g. "Block 1", after the deck's text
+      texts.concat(extra ? [extra] : []).forEach((t) => { const s = doc.createElement("span"); s.textContent = t; l.appendChild(s); });
       const r = doc.createElement("span");
       r.className = "sw-chrome-r";
       if (logo) { const c = logo.cloneNode(true); c.removeAttribute("data-asset"); c.removeAttribute("data-figure"); c.classList.add("sw-chrome-logo"); rewriteIds(c, "--swl" + (++instance)); r.appendChild(c); }
@@ -471,6 +473,16 @@ html.sw-print .sw-progress { display: none; }
     if (query.has("still") || capture) html.classList.add("sw-quiet");
     if (capture) html.classList.add("sw-capture");
     expand(stage);
+    // Assets marked data-inline (an icon sprite: <svg data-asset="icons" data-inline> with <symbol>s)
+    // are placed in the page, so <use href="#…"> on any slide resolves.
+    const ar = assetsRoot();
+    if (ar) ar.querySelectorAll("[data-inline]").forEach((a) => {
+      const c = a.cloneNode(true);
+      c.setAttribute("data-sw-gen", "");
+      c.setAttribute("aria-hidden", "true");
+      if (!c.style.display) c.style.cssText += ";position:absolute;width:0;height:0;overflow:hidden";
+      doc.body.insertBefore(c, doc.body.firstChild);
+    });
     readSlides();
     state.slides.forEach(staggerBuilds);
     chrome();

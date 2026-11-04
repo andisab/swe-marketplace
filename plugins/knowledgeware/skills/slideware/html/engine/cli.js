@@ -8,6 +8,7 @@
 //   node cli.js slide <index.html> <key>                    print one slide's HTML
 //   node cli.js lanes <index.html>                          rebuild index-<lane>.html from lanes/*.json
 //   node cli.js export <index.html> --png [dir] [--scale 2] [--all] | --pdf [file] | --pptx [file] [--level 0|1]
+//   node cli.js migrate <old-deck-dir> [--out dir] [--kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
 //   node cli.js install-editor                              copy the editor into the plugin's data folder
 // Exit code 1 when check finds errors.
 "use strict";
@@ -146,6 +147,40 @@ const commands = {
       console.log(`Wrote ${rel(out)} (${r.slides} slides, level ${r.level}); fidelity ledger ${rel(r.ledger)}`);
     }
     if (!opt.png && !opt.pdf && !opt.pptx) throw new Error("say what to export: --png, --pdf or --pptx");
+  },
+
+  async migrate({ pos, opt }) {
+    const { migrate, compare } = require("./migrate");
+    const oldDir = path.resolve(pos[0] || ".");
+    const r = await migrate(oldDir, { out: opt.out, kitDir: opt.kit, rebuild: !opt["no-rebuild"] });
+    const file = path.join(r.out, "index.html");
+    console.log(`Wrote ${rel(file)}: ${r.slides} slides, ${r.figures} figures. Brand kit: ${rel(r.kit)}`);
+    r.notes.forEach((n) => console.log(`  ${n}`));
+    await commands.lanes({ pos: [file], opt: {} });
+    if (!opt["no-compare"]) {
+      const reportDir = path.join(r.out, "migrate-report");
+      fs.mkdirSync(reportDir, { recursive: true });
+      const pairs = [["index.html", "index.html"]].concat(fs.readdirSync(r.out).filter((f) => /^index-.+\.html$/.test(f)).map((f) => [f, f]));
+      let worst = 0, over = 0, total = 0;
+      for (const [o, n] of pairs) {
+        if (!fs.existsSync(path.join(oldDir, o))) continue;
+        const rows = await compare(path.join(oldDir, o), path.join(r.out, n), { threshold: Number(opt.threshold) || 0.02 });
+        for (const row of rows) {
+          total++;
+          if (row.diff === null) { console.log(`  ${o} ${row.key}: ${row.note}`); continue; }
+          worst = Math.max(worst, row.diff);
+          if (!row.ok) {
+            over++;
+            const stem = `${o.replace(/\.html$/, "")}-${row.key}`.replace(/[^\w.-]/g, "_");
+            fs.writeFileSync(path.join(reportDir, `${stem}-old.png`), Buffer.from(row.a, "base64"));
+            fs.writeFileSync(path.join(reportDir, `${stem}-new.png`), Buffer.from(row.b, "base64"));
+          }
+          console.log(`  ${o.padEnd(28)} ${row.key.padEnd(14)} ${(row.diff * 100).toFixed(2).padStart(6)}% ${row.ok ? "" : " over"}`);
+        }
+      }
+      console.log(`Compared ${total} slides: ${over} over the threshold, worst ${(worst * 100).toFixed(2)}%. Images of those: ${rel(reportDir)}`);
+    }
+    console.log("Once reviewed, these old files are replaced by the new folder:\n  " + r.replaces.join("\n  "));
   },
 
   async "install-editor"() {

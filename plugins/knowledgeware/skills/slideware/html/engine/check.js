@@ -86,14 +86,22 @@ function check(file) {
     }
   });
   lanesOf(file).forEach((l) => Object.values((l.overlay && l.overlay.figures) || {}).forEach((n) => { used.add(n); if (!names.has(n)) errors.push(`lane ${l.id}: figure "${n}" isn't in the asset block`); }));
-  const unused = assets.filter((a) => !used.has(a.name) && !/^logo(-light|-dark)?$/.test(a.name)).map((a) => a.name);
+  const inlineNames = new Set([...(deck.regions["sw-assets"] ? deck.regions["sw-assets"].content : "").matchAll(/<[\w:-]+\b[^>]*\bdata-asset=["']([^"']+)["'][^>]*\bdata-inline\b/gi)].map((m) => m[1]));
+  const unused = assets.filter((a) => !used.has(a.name) && !inlineNames.has(a.name) && !/^logo(-light|-dark)?$/.test(a.name)).map((a) => a.name);
   if (unused.length) info.push(`assets no slide uses: ${unused.join(", ")}`);
-  const ar = deck.regions["sw-assets"];
-  if (ar) for (const a of assets) {
+  for (const a of assets) {
     if (a.kind !== "figure") continue;
     const el = Lanes.elementAt(text, a.at);
     const body = el ? text.slice(el.start, el.end) : "";
-    if (/<style\b/i.test(body)) warnings.push(`figure "${a.name}" has a <style>: its rules apply to the whole page; scope them under the figure's own classes`);
+    const root = /^<svg\b[^>]*>/i.exec(body);
+    const classes = root ? ((/\sclass=["']([^"']*)["']/i.exec(root[0]) || [])[1] || "").split(/\s+/).filter(Boolean) : [];
+    for (const m of body.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
+      // A selector that starts with a class or an id is scoped (chartware figures use .cw-dg on the
+      // slide's placeholder); a bare element or * selector styles the whole page.
+      const selectors = m[1].replace(/\/\*[\s\S]*?\*\//g, "").replace(/@[^{]+\{/g, "").split("}").map((r) => r.split("{")[0]).join(",").split(",").map((s) => s.trim()).filter((s) => s && !/^(from|to|\d+%)$/.test(s));
+      const loose = selectors.filter((s) => !/^[.#]/.test(s) && !classes.some((c) => s.startsWith(`svg.${c}`)));
+      if (loose.length) warnings.push(`figure "${a.name}": its <style> has rules not scoped to the figure (${loose.slice(0, 3).join(", ")}); they apply to the whole page`);
+    }
   }
 
   // Pacing and hidden slides
