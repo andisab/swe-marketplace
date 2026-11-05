@@ -3,12 +3,13 @@
 //
 //   NODE_OPTIONS= node docs/gallery/make-decks.js <scratch-dir> [--images]
 //
-// Builds three decks from decks/style-{1,3,5}.html (slide markup written with the catalogue's
+// Builds two decks from decks/style-{1,3}.html (slide markup written with the catalogue's
 // patterns; the first line's comment names the style, title, footer and minutes), with the chart
-// figures from charts/ (or chartware's templates) in each deck's asset block. Then it exports every
-// slide as a picture, photographs the presenter view on style-1's big-number slide, lays out
-// decks-sheet.html and presenter-sheet.html, and with --images writes docs/images/decks.jpg and
-// presenter.jpg. Needs Node 22+ and Chrome; nothing is installed.
+// figures from charts/ (or chartware's templates) in each deck's asset block, and the catalogue's
+// gallery deck in three styles. Then it exports every slide as a picture, photographs the presenter
+// view on style-1's big-number slide, lays out decks-sheet.html (one row per style) and
+// presenter-sheet.html, and with --images writes docs/images/decks.jpg and presenter.jpg.
+// Needs Node 22+ and Chrome; nothing is installed.
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -33,8 +34,9 @@ function figureSvg(name) {
   throw new Error(`no chart ${name}.svg`);
 }
 
+const env = { ...process.env, NODE_OPTIONS: "" };
 const decks = [];
-for (const n of [1, 3, 5]) {
+for (const n of [1, 3]) {
   const src = fs.readFileSync(path.join(__dirname, "decks", `style-${n}.html`), "utf8");
   const head = /<!--\s*deck:\s*(\S+)\s*·\s*title:\s*(.*?)\s*·\s*footer:\s*(.*?)\s*·\s*minutes:\s*(\d+)\s*-->/.exec(src);
   const slides = src.slice(head.index + head[0].length).trim();
@@ -44,16 +46,28 @@ for (const n of [1, 3, 5]) {
   const file = path.join(out, `deck-style-${n}`, "index.html");
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, text);
-  const env = { ...process.env, NODE_OPTIONS: "" };
   const check = execFileSync(process.execPath, [CLI, "check", file, "--render"], { env, encoding: "utf8" }).trim().split("\n").pop();
   execFileSync(process.execPath, [CLI, "export", file, "--png", path.join(out, "shots", `s${n}`)], { env });
   console.log(`style-${n}: ${check}`);
   decks.push({ n, file });
 }
 
-// The sheets: six slides from the three decks, and the big-number slide beside its presenter view.
-const pick = [["s1", "02-speed"], ["s3", "02-part-1"], ["s5", "05-roadmap"], ["s1", "05-engineer"], ["s3", "03-load"], ["s5", "03-levers"]];
-for (const [dir, f] of pick) fs.copyFileSync(path.join(out, "shots", dir, `${f}.png`), path.join(out, "shots", `${dir}-${f}.png`));
+// The catalogue's example slides, one gallery deck per style.
+for (const brand of ["style-5", "style-3", "style-1"]) {
+  const file = path.join(out, `gallery-${brand}`, "index.html");
+  execFileSync(process.execPath, [CLI, "gallery", file, "--brand", brand], { env });
+  const check = execFileSync(process.execPath, [CLI, "check", file, "--render"], { env, encoding: "utf8" }).trim().split("\n").pop();
+  execFileSync(process.execPath, [CLI, "export", file, "--png", path.join(out, "shots", `g-${brand}`)], { env });
+  console.log(`gallery ${brand}: ${check}`);
+}
+
+// The sheets: nine slides, a row per style, and the big-number slide beside its presenter view.
+const pick = [["g-style-5", "cycle"], ["g-style-5", "boundary"], ["g-style-5", "staircase"], ["s3", "load"], ["g-style-3", "rings"], ["g-style-3", "breakdown"],
+  ["g-style-1", "agent-map"], ["g-style-1", "layers"], ["g-style-1", "equation"]];
+for (const [dir, name] of pick) {
+  const f = fs.readdirSync(path.join(out, "shots", dir)).find((x) => x.endsWith(`-${name}.png`));
+  fs.copyFileSync(path.join(out, "shots", dir, f), path.join(out, "shots", `${dir}-${name}.png`));
+}
 fs.copyFileSync(path.join(__dirname, "decks-sheet.html"), path.join(out, "decks-sheet.html"));
 fs.copyFileSync(path.join(__dirname, "presenter-sheet.html"), path.join(out, "presenter-sheet.html"));
 

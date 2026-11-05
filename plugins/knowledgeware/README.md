@@ -166,11 +166,11 @@ chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, h
 
 ## **slideware**: decks in PowerPoint or HTML
 
-![Six slides from three HTML decks in three built-in styles](../../docs/images/decks.jpg)
+![Nine HTML slides in three built-in styles, a row each: an agent loop, a trust boundary and a staircase; a heatmap, blast-radius rings and a token breakdown; an agent system map, a layer stack and an equation with labelled terms](../../docs/images/decks.jpg)
 
-*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+*Nine HTML slides in three built-in styles, a row each. Material Olive: an agent loop with its hand-offs, a trust boundary, a staircase. Dark Precision: a chartware heatmap, blast-radius rings, a breakdown. Editorial Light: an agent system map, a layer stack, attention with labelled terms. The numbers are illustrative.*
 
-slideware builds a deck from a short outline. A PowerPoint deck is written by a pptxgenjs build script. An HTML deck is one `index.html` file that holds the slides, the brand and everything needed to present them, so it runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
+slideware builds a deck from a short outline. A PowerPoint deck is written by a pptxgenjs build script. An HTML deck is one `index.html` file that holds the slides, the brand and everything needed to present them, so it runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand. HTML slides build from a catalogue of 39 patterns, each a proven way to express one kind of idea, written against the brand's tokens. Beyond titles, cards and tables, it covers what technical talks need: architectures and agent loops drawn in HTML that adapt to the number of boxes, code read line by line, terminal output with a verdict, equations with labelled terms, and results that put the claim first. `cli.js catalog` lists them, `cli.js gallery` builds a deck of every example in the brand of your choice, and charts come in as chartware templates placed as figures.
 
 ![A deck slide beside its presenter view with notes and pacing](../../docs/images/presenter.jpg)
 
