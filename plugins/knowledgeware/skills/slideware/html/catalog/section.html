@@ -1,0 +1,34 @@
+<!-- pattern
+name: section
+title: Section divider
+idea: Marks a new part of the talk and shows where it sits in the whole.
+use: Between parts of a deck longer than a dozen slides; add data-divider so the overview groups by it. The rail (optional) lists every part with the current one marked.
+avoid: Dividers for parts of one or two slides; a part needs at least three.
+builds: none
+from: AI-SDLC workshop s3, s6 (numbered divider with an agenda rail); Track 03 (layout-section)
+-->
+<style>
+section[data-key].layout-section { display: grid; grid-template-columns: 1fr minmax(0, 320px); gap: 48px; align-items: center; }
+section[data-key].layout-section:not(:has(.rail)) { grid-template-columns: 1fr; }
+section[data-key].layout-section .num { display: block; margin: 0 0 .1em; font-family: var(--font-heading, var(--font-serif)); font-size: 120pt; font-weight: 700; line-height: .9; color: var(--color-accent); }
+section[data-key].layout-section h2 { max-width: 22ch; }
+section[data-key].layout-section .lede { max-width: 48ch; font-size: var(--size-subbody); color: var(--color-ink-body); }
+section[data-key].layout-section .rail { margin: 0; padding: 0 0 0 20px; border-left: 1px solid var(--color-border); list-style: none; counter-reset: rail; }
+section[data-key].layout-section .rail li { counter-increment: rail; margin: 0 0 .55em; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-section .rail li::before { content: counter(rail); display: inline-block; width: 1.8em; font-family: var(--font-mono); }
+section[data-key].layout-section .rail li.on { font-weight: 700; color: var(--color-ink); }
+</style>
+<section data-key="example-section" class="layout-section" data-divider>
+  <div>
+    <span class="num">2</span>
+    <p class="kicker">Part two</p>
+    <h2>What changes in the pull request flow</h2>
+    <p class="lede">Who reviews what, and where the bot's first pass fits.</p>
+  </div>
+  <ol class="rail">
+    <li>Why we're changing it</li>
+    <li class="on">The new flow</li>
+    <li>Rollout and support</li>
+  </ol>
+  <aside class="notes">Transition: from why to how.</aside>
+</section>

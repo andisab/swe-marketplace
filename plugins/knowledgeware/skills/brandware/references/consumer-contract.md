@@ -40,6 +40,6 @@ A brand sometimes needs more than tokens in one medium: its own layouts, a theme
 
 | Consumer | Reads | Effect |
 |---|---|---|
-| slideware html | `<brand>/css/slideware.css` | copied into each deck's theme block after the tokens, replacing the generic base and kit; part of the brand hash, so decks see the change |
+| slideware html | `<brand>/css/slideware.css` | optional; copied into each deck's theme block after the tokens, in the brand's cascade layer over slideware's pattern catalogue, so it refines the patterns (colours, faces, the brand's treatments) and wins where they differ; part of the brand hash. A brand without it renders the catalogue from its tokens alone |
 
 A new consumer that adds a slot documents its contents in its mapping guide and adds a row here.

@@ -1,0 +1,27 @@
+<!-- pattern
+name: agenda
+title: Agenda
+idea: What the session covers and how long each part takes.
+use: The opening of a workshop or a long talk; each li has a time or duration (.t) and the part (h4, optional p); .on marks the current part when the slide returns.
+avoid: Short talks (say it instead); agendas over seven items.
+builds: none
+from: AI-SDLC workshop s36 (timed hands-on agenda), s2
+-->
+<style>
+section[data-key].layout-agenda ol.agenda { margin: .8em 0 0; padding: 0; list-style: none; }
+section[data-key].layout-agenda ol.agenda > li { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 18px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+section[data-key].layout-agenda .t { font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-accent); padding-top: 2px; }
+section[data-key].layout-agenda li h4 { margin: 0; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-agenda li p { margin: .15em 0 0; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-agenda li.on h4 { color: var(--color-accent); }
+</style>
+<section data-key="example-agenda" class="layout-agenda">
+  <p class="kicker">Today</p>
+  <h3>Forty minutes, three parts</h3>
+  <ol class="agenda">
+    <li><span class="t">10 min</span><div><h4>Why we're changing review</h4><p>The pilot numbers</p></div></li>
+    <li class="on"><span class="t">20 min</span><div><h4>The new flow, live</h4><p>One pull request, end to end</p></div></li>
+    <li><span class="t">10 min</span><div><h4>Questions and next steps</h4></div></li>
+  </ol>
+  <aside class="notes">Point at where we are.</aside>
+</section>

@@ -19,8 +19,9 @@ Inside `index.html`, fixed regions, each found by its id:
 | Region | Holds | Who writes it |
 |---|---|---|
 | `<script type="application/json" id="sw-deck">` | settings: `title`, `footer`, `logo`, `pageNumbers`, `sessions`, `lanes`, `spec`, `builds`, `progress` | Claude; the engine keeps `lanes` |
-| `<style id="sw-theme" data-brand data-brand-hash>` | the brand, copied from brandware | the engine only (`new`, `refresh`) |
-| `<style id="sw-deck-css">` | this deck's own CSS, for anything beyond the brand's classes | Claude |
+| `<style id="sw-theme" data-brand data-brand-hash>` | the brand, copied from brandware: the layer order, then the brand's tokens and its `slideware.css` in `@layer sw-brand` | the engine only (`new`, `refresh`) |
+| `<style id="sw-kit" data-patterns>` | the catalogue's CSS: core and the patterns the slides use, in `@layer sw-kit` | the engine only (`new`, `refresh`) |
+| `<style id="sw-deck-css">` | this deck's own CSS, for anything beyond the patterns and the brand (unlayered, so it wins over both) | Claude |
 | `<script id="sw-runtime">` | runtime and presenter | the engine only |
 | `<script id="sw-loader" data-editor>` | loads the editor on E | the engine only |
 | `<main id="sw-slides">` | the slides | Claude and the editor |
@@ -44,6 +45,8 @@ Never hand-edit the engine's regions; `refresh` replaces them whole.
 | `$CLI import <file.pptx> [--mode redesign\|faithful] [--out dir]` | brings a PowerPoint deck in |
 | `$CLI migrate <old-deck-dir> --out <new-dir> [--brand <name>]` | converts an old-format deck (§Old decks) |
 | `$CLI serve <index.html> [--open]` | a local server, so the owner can edit and save in any browser |
+| `$CLI catalog [--json]` · `$CLI pattern <name>` | the slide pattern catalogue: each pattern's name, title and the idea it expresses · one pattern's file (metadata, CSS, example slides) |
+| `$CLI gallery <out.html> [--brand <name>]` | a deck of every pattern's examples in a brand, to browse the catalogue |
 
 Every command needs Node 22 or newer; export, `check --render` and `migrate` also need Chrome, Edge, Brave or Chromium. Nothing is installed per deck.
 
@@ -63,7 +66,7 @@ Each slide is a `<section data-key="…">` inside `<main id="sw-slides">`, prece
 </section>
 ```
 
-The slide is a 1280 × 720 canvas, and anything HTML, CSS and SVG can draw goes. Patterns for common shapes, built on the brand's classes: [references/patterns.md](references/patterns.md). Visual rules: [references/visual-principles.md](references/visual-principles.md).
+The slide is a 1280 × 720 canvas, and anything HTML, CSS and SVG can draw goes. Start from the pattern catalogue: `$CLI catalog` lists the patterns with the idea each expresses, and `$CLI pattern <name>` prints one, with its example slide to copy. A slide uses a pattern by its class (`<section class="layout-steps">`), and `refresh` copies that pattern's CSS into the deck. Adapt patterns, combine them, or invent a layout in `#sw-deck-css` when none expresses the content clearly ([../SKILL.md](../SKILL.md) §Anti-monotony; the catalogue: [catalog/README.md](catalog/README.md)). Visual rules: [references/visual-principles.md](references/visual-principles.md).
 
 What the runtime reads on a section:
 
@@ -103,11 +106,11 @@ The runtime fills the placeholder at load, with ids suffixed per copy, so CSS, b
 
 ## The brand
 
-`new` copies the brand from brandware into `#sw-theme` and tags it with the brand's name and a hash of its files: tokens as `--color-*`, `--font-*`, `--size-*`, `--radius`, `--margin`, base typography and the kit classes the patterns use, or the brand's own `css/slideware.css` when it ships one (that brand then owns its base look). The logos go into the asset block (`logo`, `logo-light`, `logo-dark`); the footer uses `logo` unless the settings name another asset or `"logo": false`. Fonts load from Google Fonts through a link tagged with the brand.
+`new` copies the brand from brandware into `#sw-theme` and tags it with the brand's name and a hash of its files: tokens as `--color-*`, `--font-*`, `--size-*`, `--radius`, `--margin`, and the brand's own `css/slideware.css` when it ships one. The CSS cascades in layers: the runtime's defaults, then the catalogue's patterns (`#sw-kit`), then the brand, then the deck's own CSS and a slide's `<style>`. So a brand refines the patterns (colours, faces, treatments its brandbook calls for) and wins where it disagrees, a brand without `slideware.css` still gets well-formed slides from its tokens, and the deck's CSS has the last word. A deck whose brand and own CSS already style every slide (a converted deck) sets `"kit": false` in the settings and gets no catalogue CSS. The logos go into the asset block (`logo`, `logo-light`, `logo-dark`); the footer uses `logo` unless the settings name another asset or `"logo": false`. Fonts load from Google Fonts through a link tagged with the brand.
 
 ### Token → CSS mapping
 
-The engine (`engine/theme.js`) writes the brand's tokens as custom properties at the top of `#sw-theme`; the base, the kit, a brand's `slideware.css` and the deck's CSS all read them. A token the brandbook leaves out falls back as listed.
+The engine (`engine/theme.js`) writes the brand's tokens as custom properties at the top of the brand layer in `#sw-theme`; the patterns, a brand's `slideware.css` and the deck's CSS all read them. A pattern may use a name the table doesn't list (`--size-eyebrow`) with a fallback to one it does, and a brand's `slideware.css` may define it; no schema change is needed. A token the brandbook leaves out falls back as listed.
 
 | Token | Custom property | Fallback |
 |---|---|---|
@@ -121,7 +124,7 @@ The engine (`engine/theme.js`) writes the brand's tokens as custom properties at
 | `type.heroPt`, `sectionPt`, `titlePt`, `bodyPt`, `subBodyPt`, `captionPt`, `codePt` | `--size-hero`, `--size-section`, `--size-title`, `--size-body`, `--size-subbody`, `--size-caption`, `--size-code` (in pt) | 44, 32, 28, 14, 12, 10, 12 |
 | `layout.radiusPx`, `shadowOpacity`, `marginIn` | `--radius`, `--shadow-opacity`, `--margin` | 6px, 0.12, 0.5in |
 
-In the base: headings `h1`–`h3` take `--font-serif` at the hero, section and title sizes; `h4` and `.kicker` are small capitals in `--color-accent`; body text is `--color-ink-body` at `--size-body`; a slide's padding is `--pad`, else `--margin`; `data-divider` slides sit on `--color-surface-alt` with an accent rule. The favicon is drawn from `ink`, `bg` and `accent`; the fonts link loads `type.sans`, `serif` and `mono` from Google Fonts unless they're system faces. A brand's `css/slideware.css` replaces the base and kit, not the custom properties. The brandbook's names for its colours (its palette tables: a role in the first column, hex codes in the second, each with an optional qualifier such as "text" or "tint") go on the theme as `data-color-names`, so the editor's colour picker can label its swatches.
+In the catalogue's core: headings `h1`–`h3` take `--font-heading` (else `--font-serif`) at the hero, section and title sizes; `h4` and `.kicker` are small capitals in `--color-accent`; body text is `--color-ink-body` at `--size-body`; a slide's padding is `--pad`, else `--margin`; `data-divider` slides sit on `--color-surface-alt` with an accent rule. The favicon is drawn from `ink`, `bg` and `accent`; the fonts link loads `type.sans`, `serif` and `mono` from Google Fonts unless they're system faces. A brand's `css/slideware.css` sits in the brand layer after the tokens, so it can redefine them too. The brandbook's names for its colours (its palette tables: a role in the first column, hex codes in the second, each with an optional qualifier such as "text" or "tint") go on the theme as `data-color-names`, so the editor's colour picker can label its swatches.
 
 When the brand changes in brandware, `check` says so and `refresh` replaces the block, its links and logos. `refresh --brand <name>` switches brands. A machine without the brand keeps the deck's copy. Brand resolution, registries and markers: [../../brandware/SKILL.md](../../brandware/SKILL.md).
 

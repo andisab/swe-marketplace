@@ -12,7 +12,7 @@
 "use strict";
 
 const REGION_TAGS = {
-  "sw-deck": "script", "sw-theme": "style", "sw-deck-css": "style", "sw-runtime": "script",
+  "sw-deck": "script", "sw-theme": "style", "sw-kit": "style", "sw-deck-css": "style", "sw-runtime": "script",
   "sw-loader": "script", "sw-slides": "main", "sw-assets": "template",
 };
 

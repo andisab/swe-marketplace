@@ -11,6 +11,9 @@
 //   node cli.js migrate <old-deck-dir> [--out dir] [--brand name | --kit dir] [--no-rebuild] [--no-compare] [--threshold 0.02]
 //   node cli.js import <file.pptx> [--out dir] [--mode redesign|faithful] [--brand name]
 //   node cli.js serve <index.html> [--port N] [--open]      local server: edit and save in any browser (first free port from 47100)
+//   node cli.js catalog [--json]                            the slide pattern catalogue: name, title, the idea each expresses
+//   node cli.js pattern <name>                              print a pattern's file (metadata, CSS, example slides)
+//   node cli.js gallery <out.html> [--brand <name>]         a deck of every pattern's examples, for browsing
 //   node cli.js install-editor                              copy the editor into the plugin's data folder
 // Exit code 1 when check finds errors.
 "use strict";
@@ -192,6 +195,31 @@ const commands = {
     console.log(`Imported ${r.slides} slides (${r.mode}) into ${rel(r.out)}; see import-ledger.md there.`);
   },
 
+  async catalog({ opt }) {
+    const all = require("./catalog").list();
+    if (opt.json) { console.log(JSON.stringify(all.map(({ css, examples, ...p }) => ({ ...p, examples: examples.length })), null, 2)); return; }
+    for (const p of all) console.log(`${p.name.padEnd(16)} ${p.title}${p.origin === "home" ? "  (yours)" : ""}\n${"".padEnd(17)}${p.idea}`);
+    console.log(`\n${all.length} patterns. Plugin: ${rel(require("../../../../scripts/home.js").catalogDirs("slideware")[0])} · yours: ${rel(require("../../../../scripts/home.js").catalogDirs("slideware")[1])}`);
+  },
+  async pattern({ pos }) {
+    const p = require("./catalog").get(pos[0]);
+    if (!p) throw new Error(`no pattern "${pos[0]}"; run catalog for the list`);
+    console.log(`${rel(p.file)}\n\n${fs.readFileSync(p.file, "utf8")}`);
+  },
+  async gallery({ pos, opt }) {
+    if (!pos[0]) throw new Error("gallery <out.html> [--brand <name>]");
+    const all = require("./catalog").list();
+    let n = 0;
+    const slides = all.flatMap((p) => p.examples.map((ex) => {
+      n++;
+      const key = `g${String(n).padStart(2, "0")}-${p.name}`;
+      return `<!-- ${key} · ${p.title} -->\n` + ex.replace(/data-key="[^"]*"/, `data-key="${key}"`).replace(/(<section\b[^>]*?)(\s*>)/, (m, a, b) => /data-footer=/.test(a) ? m : `${a} data-footer="${p.name}"${b}`);
+    }));
+    const out = path.resolve(pos[0]);
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    fs.writeFileSync(out, build.newDeck({ brand: opt.brand || "style-1", title: "Slide pattern catalogue", footer: ["Slide pattern catalogue"], slides: slides.join("\n\n") }));
+    console.log(`Wrote ${rel(out)}: ${n} example slides from ${all.length} patterns${opt.brand ? ` in ${opt.brand}` : ""}.`);
+  },
   async serve({ pos, opt }) {
     const file = deckPath(pos[0]);
     const { serve } = require("./serve");

@@ -220,9 +220,10 @@ async function migrate(oldDir, { out, brand, kitDir, rebuild = true, browser: gi
     title: deckSpec.title || base.title, footer: cfgFooter, sessions: deckSpec.sessions || (deckSpec.minutes ? { "": deckSpec.minutes } : {}),
     lanes: [], ...(deckSpec.spec ? { spec: path.relative(out, path.resolve(oldDir, deckSpec.spec)) } : {}),
     ...(deckSpec.lane ? { laneName: deckSpec.lane } : {}),
+    kit: false,   // the converted theme and the deck's CSS style every slide; the catalogue's CSS would leak under them
   };
   const slidesHtml = "\n" + baseSections.map((s) => `<!-- ${s.key}${s.title ? " · " + s.title.replace(/--/g, "—") : ""} -->\n${s.html}`).join("\n\n") + "\n";
-  let text = build.newDeck({ brand: brandRef, title: config.title, slides: slidesHtml.trim() });
+  let text = build.newDeck({ brand: brandRef, title: config.title, slides: slidesHtml.trim(), kit: false });
   text = D.spliceRegion(text, "sw-deck", "\n" + JSON.stringify(config, null, 2) + "\n");
   const deckCss = [rawCss && `/* Raw slides (the old deck's stylesheet), converted. */\n${convertCss(rawCss).trim()}`, balanceCss && `/* Balance, as the old load-time pass left it. */\n${convertCss(balanceCss).trim()}`].filter(Boolean).join("\n\n");
   text = D.spliceRegion(text, "sw-deck-css", `\n${deckCss}\n`);

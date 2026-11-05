@@ -37,7 +37,7 @@ A style is a **name resolved through the registry**, never a path to a token cac
 
 **Staging differs per format** (each guide shows the exact command):
 - pptx consumes **tokens JSON** — `node $PLUGIN/scripts/load-style.js <name|path> -o style-tokens.json` (serves the `tokens.json` cache next to each `brand.md` when it's fresh, and rebuilds it otherwise).
-- html copies the brand **into the deck** — `node $PLUGIN/skills/slideware/html/engine/cli.js new <dir> --brand <name|path>` writes the theme block (tokens, base typography and kit classes, or the brand's own `css/slideware.css`) and the brand's logos; `refresh` updates them when the brand changes ([html/FORMAT.md](html/FORMAT.md) §The brand).
+- html copies the brand **into the deck** — `node $PLUGIN/skills/slideware/html/engine/cli.js new <dir> --brand <name|path>` writes the theme block (the brand's tokens, and its `css/slideware.css` refinements when it ships one), the CSS of the catalogue patterns the slides use, and the brand's logos; `refresh` updates them when the brand or the slides change ([html/FORMAT.md](html/FORMAT.md) §The brand).
 
 **Fonts (handle silently)**: brandbooks name fonts; nothing embeds them. When building **pptx**, after resolving the style run `bash $PLUGIN/scripts/install-fonts.sh --check <name>` and, if Google Fonts are missing, install them with the same script without asking — just mention it in one line. Non–Google-Fonts families can't be auto-installed: fall back per the brandbook and tell the user which face to install manually. HTML decks load Google Fonts via `<link>`, so viewers (and you) need nothing installed.
 
@@ -45,7 +45,9 @@ A style is a **name resolved through the registry**, never a path to a token cac
 
 ## Anti-monotony rule (shared)
 
-The point is **content-shape variety**, not visual-archetype rigidity. A deck that walks one consistent story can reuse a layout deliberately; a survey of unrelated topics should vary archetypes slide to slide. The failure mode is reaching for the same layout because the template defaulted to it. If you reuse an archetype twice without articulating why, swap one out. Archetype catalogs: [pptx/references/layout-patterns.md](pptx/references/layout-patterns.md) (12) · [html/references/patterns.md](html/references/patterns.md) (starting points; html slides are free-form).
+The point is **content-shape variety**, not visual-archetype rigidity. A deck that walks one consistent story can reuse a layout deliberately; a survey of unrelated topics should vary archetypes slide to slide. The failure mode is reaching for the same layout because the template defaulted to it. If you reuse an archetype twice without articulating why, swap one out. Archetype catalogs: [pptx/references/layout-patterns.md](pptx/references/layout-patterns.md) (12) · html: the slide pattern catalogue ([html/catalog/README.md](html/catalog/README.md); `cli.js catalog` lists it).
+
+**The html catalogue is a source of ideas, not a closed set.** Each pattern is a proven way to express one kind of idea (a sequence, a comparison, a number that matters), written against the brand's tokens so it fits any brand; the brand's `slideware.css` and its brandbook refine it, and where the brand says otherwise, the brand wins. Pick the pattern that expresses the content, adapt it, combine patterns, or invent a new layout in the deck's CSS when none says the thing clearly; the catalogue grows from decks, not the other way round. When a deck produces patterns that would serve other decks, offer to add them to the user's own catalogue (the knowledgeware home's `slideware/catalog/`), and ask before anything goes into the plugin's catalogue; never add to either without asking.
 
 ## Citations are clickable (shared)
 

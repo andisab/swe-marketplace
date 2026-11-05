@@ -56,7 +56,7 @@ function check(file) {
   const errors = [], warnings = [], info = [];
   const text = fs.readFileSync(file, "utf8");
   const deck = D.readDeck(text);
-  for (const id of Object.keys(D.REGION_TAGS)) if (!deck.regions[id]) (id === "sw-deck-css" ? warnings : errors).push(`missing region ${id}`);
+  for (const id of Object.keys(D.REGION_TAGS)) if (!deck.regions[id]) (id === "sw-deck-css" ? warnings.push(`missing region ${id}`) : id === "sw-kit" ? warnings.push("missing region sw-kit (the catalogue's CSS): run refresh") : errors.push(`missing region ${id}`));
   if (deck.configError) errors.push(`sw-deck settings aren't valid JSON: ${deck.configError}`);
   const cfg = deck.config || {};
   if (!deck.slides.length) errors.push("the deck has no slides (<section data-key> inside <main id=\"sw-slides\">)");

@@ -12,6 +12,7 @@ const path = require("path");
 const { pathToFileURL } = require("url");
 const D = require("./deckfile");
 const theme = require("./theme");
+const catalog = require("./catalog");
 
 const HTML_DIR = path.resolve(__dirname, "..");
 const PLUGIN_ROOT = path.resolve(HTML_DIR, "..", "..", "..");
@@ -58,9 +59,9 @@ function logoAssets(t) {
   return Object.entries(t.logos).map(([name, svg]) => theme.svgAsset(name, svg)).join("\n");
 }
 
-function newDeck({ brand, title = "Untitled deck", subtitle = "", footer = [], sessions = {}, minutes, slides } = {}) {
+function newDeck({ brand, title = "Untitled deck", subtitle = "", footer = [], sessions = {}, minutes, slides, kit = true } = {}) {
   const t = theme.themeFor(brand);
-  const config = { title, footer: [].concat(footer || []), sessions: minutes ? { "": Number(minutes) } : sessions, lanes: [] };
+  const config = { title, footer: [].concat(footer || []), sessions: minutes ? { "": Number(minutes) } : sessions, lanes: [], ...(kit ? {} : { kit: false }) };
   const firstSlides = slides || `<!-- title · ${esc(title)} -->
 <section data-key="title" data-chrome="none" class="center">
   <h1>${esc(title)}</h1>${subtitle ? `\n  <p class="lede">${esc(subtitle)}</p>` : ""}
@@ -78,6 +79,7 @@ ${JSON.stringify(config, null, 2)}
 </script>
 <style id="sw-theme" data-brand="${escA(t.brand)}" data-brand-hash="${t.hash}" data-color-names="${escA(JSON.stringify(t.colorNames || {}))}">
 ${t.css}</style>
+${kitTag(firstSlides, !kit)}
 <style id="sw-deck-css">
 /* This deck's own CSS, for anything beyond the brand's classes. */
 </style>
@@ -99,6 +101,12 @@ ${logoAssets(t) ? logoAssets(t) + "\n" : ""}</template>
 `;
 }
 
+// The deck's kit region: core and the catalogue patterns its slides use.
+function kitTag(slidesHtml, off) {
+  const k = catalog.kitFor(catalog.used(slidesHtml), undefined, { off });
+  return `<style id="sw-kit" data-patterns="${escA(k.patterns.join(" "))}">${k.css}</style>`;
+}
+
 // Bring a deck's runtime, loader and brand up to date. Returns { text, changes: [...], notes: [...] }.
 function refreshDeck(text, { brand, runtime = true, theme: doTheme = true } = {}) {
   const changes = [], notes = [];
@@ -111,6 +119,15 @@ function refreshDeck(text, { brand, runtime = true, theme: doTheme = true } = {}
     const ld = loaderJs(), url = editorUrl(), lr = D.region(text, "sw-loader");
     if (!lr) throw new Error("the deck has no sw-loader region");
     if (lr.content.trim() !== ld.trim() || lr.attrs["data-editor"] !== url) { text = D.spliceRegion(text, "sw-loader", `\n${ld}\n`, { "data-editor": url }); changes.push("loader"); }
+  }
+  // The kit: core and the patterns the slides use now (added after the theme in a deck that predates it).
+  if (doTheme) {
+    const slides = D.region(text, "sw-slides").content;
+    const off = (D.readDeck(text).config || {}).kit === false;
+    const k = catalog.kitFor(catalog.used(slides), undefined, { off });
+    const kr = D.region(text, "sw-kit");
+    if (!kr) { const th = D.region(text, "sw-theme"); text = text.slice(0, th.end) + "\n" + kitTag(slides, off) + text.slice(th.end); changes.push(off ? "kit (off)" : `kit (${k.patterns.join(", ")})`); }
+    else if (kr.content !== k.css || kr.attrs["data-patterns"] !== k.patterns.join(" ")) { text = D.spliceRegion(text, "sw-kit", k.css, { "data-patterns": k.patterns.join(" ") }); changes.push(off ? "kit (off)" : `kit (${k.patterns.join(", ")})`); }
   }
   if (doTheme) {
     const current = D.region(text, "sw-theme");

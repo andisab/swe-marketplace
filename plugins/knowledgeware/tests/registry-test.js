@@ -107,16 +107,16 @@ const flat = JSON.parse(node([path.join(PLUGIN, "scripts", "load-style.js"), "fl
 assert.strictEqual(flat.name, "flatco");
 assert(fs.existsSync(path.join(brands, "tokens", "flatco.json"))); ok("a flat entry caches under tokens/<name>.json");
 
-// slideware's html theme: resolves through the registry, hashes the brand's files, and a brand's
-// own css/slideware.css replaces the generic base and kit
+// slideware's html theme: resolves through the registry, hashes the brand's files, declares the
+// layer order, and puts the brand's tokens and its own css/slideware.css in the brand layer
 const theme = require(path.join(PLUGIN, "skills", "slideware", "html", "engine", "theme.js"));
 const t1 = theme.themeFor("folderco");
-assert.strictEqual(t1.brand, "folderco"); assert(t1.css.includes("--color-") && t1.css.includes(".kicker")); ok("the html theme resolves a folder entry, tokens plus the kit");
+assert.strictEqual(t1.brand, "folderco"); assert(t1.css.includes("--color-") && t1.css.includes("@layer sw-defaults, sw-kit, sw-brand;") && t1.css.includes("@layer sw-brand {")); ok("the html theme resolves a folder entry: the layer order and the brand's tokens in its layer");
 assert.strictEqual(theme.themeFor("folderco").hash, t1.hash); ok("the brand hash is stable");
 fs.mkdirSync(path.join(brands, "folderco", "css"), { recursive: true });
 fs.writeFileSync(path.join(brands, "folderco", "css", "slideware.css"), ".folderco-kit { color: red; }\n");
 const t2 = theme.themeFor("folderco");
-assert(t2.hash !== t1.hash && t2.css.includes(".folderco-kit") && !t2.css.includes(".kicker")); ok("a brand's slideware.css changes the hash and replaces the kit");
+assert(t2.hash !== t1.hash && /@layer sw-brand \{[\s\S]*\.folderco-kit[\s\S]*\}/.test(t2.css)); ok("a brand's slideware.css changes the hash and sits in the brand layer");
 fs.rmSync(path.join(brands, "folderco", "css"), { recursive: true, force: true });
 // a prose-only brandbook still yields a theme
 fs.mkdirSync(path.join(brands, "proseco"), { recursive: true });

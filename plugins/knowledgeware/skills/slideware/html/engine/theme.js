@@ -1,10 +1,10 @@
 // theme.js — turn a brand from the brandware registry into a deck's theme block.
 //
 // The theme block (<style id="sw-theme">) is the deck's one copy of its brand. It holds:
-//   - the brand's tokens as CSS custom properties (--color-*, --font-*, --size-*, --radius, --margin)
-//   - base typography for slides
-//   - the kit: brand-neutral, optional classes the pattern library uses (cols, cards, stat, quote, …)
-//   - or instead of the base and the kit, the brand's own css/slideware.css when it ships one
+//   - the cascade layer order: the runtime's defaults, the catalogue's kit (#sw-kit), the brand
+//   - in @layer sw-brand, the brand's tokens as CSS custom properties (--color-*, --font-*, --size-*,
+//     --radius, --margin), then the brand's own css/slideware.css when it ships one: refinements over
+//     the catalogue's patterns, which win where they differ
 // It is tagged with the brand's name and a hash of the brand's files, so `refresh` and `check` can
 // tell when brandware has moved on. The editor never writes this block.
 "use strict";
@@ -16,7 +16,7 @@ const PLUGIN_ROOT = path.resolve(__dirname, "..", "..", "..", "..");
 const registry = require(path.join(PLUGIN_ROOT, "scripts", "registry.js"));
 const loadStyle = require(path.join(PLUGIN_ROOT, "scripts", "load-style.js"));
 
-const THEME_VERSION = "2.1.0";   // bump when the generated CSS changes, so decks see a stale tag
+const THEME_VERSION = "3.0.0";   // bump when the generated CSS changes, so decks see a stale tag
 const SYSTEM_FONTS = new Set(["georgia", "arial", "helvetica", "helvetica neue", "times", "times new roman", "menlo", "monaco", "courier", "courier new",
   "system-ui", "ui-sans-serif", "ui-serif", "ui-monospace", "sans-serif", "serif", "monospace", "verdana", "tahoma", "consolas", "sf pro", "sf mono", "inter var"]);
 
@@ -102,47 +102,6 @@ function tokensCss(t) {
 }`;
 }
 
-// Base slide typography and the kit. Every rule is scoped to slides, so the deck's chrome and the
-// editor's panels keep their own styles.
-const BASE_AND_KIT = `
-section[data-key] { display: flex; flex-direction: column; padding: var(--pad, var(--margin)); background: var(--color-bg);
-  color: var(--color-ink-body); font-family: var(--font-sans); font-size: var(--size-body); line-height: 1.5; text-align: left; }
-section[data-key] :is(h1, h2, h3, h4) { margin: 0 0 .5em; font-family: var(--font-serif); font-weight: 600; line-height: 1.15; color: var(--color-ink); }
-section[data-key] h1 { font-size: var(--size-hero); }
-section[data-key] h2 { font-size: var(--size-section); }
-section[data-key] h3 { font-size: var(--size-title); }
-section[data-key] h4 { font-size: var(--size-subbody); font-family: var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
-section[data-key] :is(p, li) { margin: 0 0 .6em; font-size: var(--size-body); line-height: 1.5; color: var(--color-ink-body); }
-section[data-key] :is(ul, ol) { margin: 0 0 .6em; padding-left: 1.3em; }
-section[data-key] :is(small, .caption, figcaption) { font-size: var(--size-caption); color: var(--color-ink-muted); }
-section[data-key] :is(code, pre, kbd) { font-family: var(--font-mono); font-size: var(--size-code); }
-section[data-key] a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid currentColor; }
-section[data-key] strong { font-weight: 700; color: var(--color-ink); }
-section[data-key] img, section[data-key] > svg, section[data-key] .figure > svg { max-width: 100%; height: auto; }
-
-/* Kit: optional classes the pattern library uses. Brands restyle them in css/slideware.css. */
-section[data-key] .kicker { margin: 0 0 .4em; font-family: var(--font-sans); font-size: var(--size-caption); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent); }
-section[data-key] .lede { margin: 0 0 1em; font-size: var(--size-title); line-height: 1.3; color: var(--color-ink-muted); }
-section[data-key].center, section[data-key] .center { justify-content: center; }
-section[data-key] .grow { flex: 1 1 auto; min-height: 0; }
-section[data-key][data-divider] { justify-content: center; background: var(--color-surface-alt); border-left: 6px solid var(--color-accent); }
-section[data-key] .cols { display: grid; grid-template-columns: var(--cols, 1fr 1fr); gap: var(--gap, 2em); align-items: start; }
-section[data-key] .cards { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: var(--gap, 1.2em); }
-section[data-key] :is(.cols, .cards) > * { min-width: 0; overflow-wrap: anywhere; }
-section[data-key] .card { padding: 1em; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, var(--shadow-opacity)); overflow: hidden; }
-section[data-key] .card > h4:first-child { margin-bottom: .3em; }
-section[data-key] .stat { display: flex; align-items: baseline; gap: .15em; font-family: var(--font-serif); font-weight: 700; line-height: 1; color: var(--color-accent); }
-section[data-key] .stat-value { font-size: 144pt; }
-section[data-key] .stat-unit { font-size: 72pt; }
-section[data-key] .stat-label { margin-top: .3em; font-size: var(--size-title); color: var(--color-ink); max-width: 80%; }
-section[data-key] blockquote { margin: 0 0 .6em; padding-left: .8em; border-left: 4px solid var(--color-accent); font-family: var(--font-serif);
-  font-size: var(--size-section); font-style: italic; line-height: 1.3; color: var(--color-ink); }
-section[data-key] .attribution { padding-left: 1em; font-size: var(--size-subbody); color: var(--color-ink-muted); }
-section[data-key] .figure { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
-section[data-key] .figure > :is(img, svg) { max-height: 100%; object-fit: contain; }
-section[data-key] .footnote { margin-top: auto; font-size: var(--size-caption); color: var(--color-ink-muted); }
-`;
 
 // Everything a deck needs from its brand: the theme block, its tag, the fonts link, favicon, logos.
 // The brandbook's names for its colours, by hex: the palette tables' first column names a role and
@@ -176,10 +135,10 @@ function themeFor(brandName) {
   const tokens = loadStyle.build(b.source);
   const files = brandFiles(b);
   const brandCss = files.css ? fs.readFileSync(files.css, "utf8").trim() : "";
-  // A brand that ships its own slideware.css owns its base look; the generic base and kit are for
-  // brands that don't, so the two never fight over properties one of them leaves unset.
+  // The layer order (runtime defaults, the catalogue's kit, the brand) and the brand's layer: its
+  // tokens, then its own slideware.css when it ships one, which may refine the tokens and the kit.
   const css = `/* ${b.name} brand, from brandware. Generated by slideware (theme ${THEME_VERSION}); refresh replaces this block whole. */\n` +
-    tokensCss(tokens) + "\n" + (brandCss ? `/* ${b.name} slideware.css */\n${brandCss}` : BASE_AND_KIT.trim()) + "\n";
+    `${require("./catalog").LAYERS}\n@layer sw-brand {\n${tokensCss(tokens)}\n` + (brandCss ? `/* ${b.name} slideware.css */\n${brandCss}\n` : "") + "}\n";
   const svg = (p) => p ? fs.readFileSync(p, "utf8").replace(/<\?xml[^>]*>/, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<!DOCTYPE[^>]*>/i, "").trim() : null;
   const dark = luminance(tokens.palette && tokens.palette.bg) < 0.5;
   const logos = {};

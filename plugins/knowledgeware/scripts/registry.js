@@ -5,7 +5,8 @@
 // Three registries, searched in this order; a later one shadows an earlier one on a name collision:
 //   styles/                      the default styles shipped with the plugin
 //   styles/brands/               brandbooks installed into the plugin (wiped on update)
-//   $KNOWLEDGEWARE_BRANDS_DIR/   the user's own brands directory (survives updates)
+//   <home>/brands/               the user's own brands (survives updates): $KNOWLEDGEWARE_BRANDS_DIR, else
+//                                brands/ in the knowledgeware home (scripts/home.js)
 //
 // Each registry holds entries in either layout:
 //   folder  <dir>/<name>/brand.md      with tokens.json, assets/, css/, README.md beside it
@@ -14,7 +15,7 @@
 //
 // Which identity to use when none is named, first match wins:
 //   .knowledgeware   a one-line file in the working directory or any parent (per project)
-//   DEFAULT          a one-line file in $KNOWLEDGEWARE_BRANDS_DIR, then in styles/brands/
+//   DEFAULT          a one-line file in the user's brands directory, then in styles/brands/
 
 const fs = require("fs");
 const os = require("os");
@@ -24,15 +25,7 @@ const PLUGIN_ROOT = path.join(__dirname, "..");
 const STYLES_DIR = path.join(PLUGIN_ROOT, "styles");
 const BRANDS_DIR = path.join(STYLES_DIR, "brands");
 
-function resolveUserBrandsDir() {
-  let d = process.env.KNOWLEDGEWARE_BRANDS_DIR;
-  if (!d || !d.trim()) return null;
-  d = d.trim();
-  if (d === "~") d = os.homedir();
-  else if (d.startsWith("~/")) d = path.join(os.homedir(), d.slice(2));
-  return path.resolve(d);
-}
-const USER_BRANDS_DIR = resolveUserBrandsDir();
+const USER_BRANDS_DIR = require("./home").brandsDir();
 
 function registries() {
   const dirs = [[STYLES_DIR, "default"], [BRANDS_DIR, "brand"]];

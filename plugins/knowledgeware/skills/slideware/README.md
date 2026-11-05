@@ -40,7 +40,8 @@ Both formats follow the same path: gather inputs, resolve the style, plan layout
 | `SKILL.md` | Activation, format choice, the shared rules (style resolution, notes and pacing, citations, provenance, editing and handing over) |
 | `pptx/FORMAT.md`, `html/FORMAT.md` | What Claude follows after choosing a format: mechanics, pitfalls, output convention |
 | `pptx/references/{workflow,layout-patterns,visual-principles,pptxgenjs,canonical-samples}.md` | pptx build path, 12 archetypes, design principles, API gotchas, how to use the sample decks |
-| `html/references/{runtime,patterns,visual-principles}.md` | Keys, builds, motion, presenter, overview and the editor; starting points for common slide shapes; design principles |
+| `html/references/{runtime,visual-principles}.md` | Keys, builds, motion, presenter, overview and the editor; design principles |
+| `html/catalog/` | The slide pattern catalogue: `core` and one `<name>.html` per pattern (metadata, scoped CSS, an example slide); its README says how to use and write one |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with the checklist and pitfalls inline |
 | `pptx/assets/samples/<name>/` | Three sample decks: build script, token file, rendered previews |
 | `html/runtime/{deck,presenter,lanes,loader}.js` | Inlined into every deck: the runtime (stage, navigation, builds, motion, footer, print), the presenter and overview, lane generation, and the loader that fetches the editor on `E` |

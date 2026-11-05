@@ -1,0 +1,25 @@
+<!-- pattern
+name: figure
+title: Figure
+idea: A drawing does the explaining: a flow, a structure, a chart; the words under it say what to see.
+use: One chartware figure from the asset block, placed with <svg data-figure-ref> in .fig; one or two .figfoot lines under it; a sources line when it states facts.
+avoid: A figure that needs a paragraph to read; redraw it simpler, or split it.
+builds: SVG groups in the figure (data-step on <g id>)
+from: Track 03 decks (layout-figure), AI-SDLC workshop s7, s22, s26
+-->
+<style>
+section[data-key].layout-figure .fig { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; margin-top: .6em; }
+section[data-key].layout-figure .fig > :is(svg, img) { max-width: 100%; max-height: 100%; height: auto; }
+section[data-key].layout-figure .figfoot { max-width: 70ch; }
+</style>
+<section data-key="example-figure" class="layout-figure has-sources">
+  <p class="kicker">The new flow</p>
+  <h3>The bot reads first, a person approves</h3>
+  <div class="fig"><svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" style="width: 760px" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="10" y="60" width="200" height="80" rx="8"/><rect x="350" y="60" width="200" height="80" rx="8"/><rect x="690" y="60" width="200" height="80" rx="8"/>
+    <path d="M210 100h140M550 100h140"/>
+    <g fill="currentColor" stroke="none" font-size="20" text-anchor="middle"><text x="110" y="107">Pull request</text><text x="450" y="107">Bot review</text><text x="790" y="107">Human review</text></g></svg></div>
+  <p class="figfoot">The bot's comments arrive before a reviewer is assigned.</p>
+  <p class="sources">Source: engineering handbook, review policy, checked 2026-11-20</p>
+  <aside class="notes">Walk the three boxes left to right.</aside>
+</section>

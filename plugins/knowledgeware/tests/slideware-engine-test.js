@@ -108,6 +108,28 @@ fs.writeFileSync(path.join(dir, "lanes", "acme.json"), JSON.stringify({ ...overl
 assert(check(file).warnings.some((w) => /override for s2 #gone matches nothing/.test(w))); ok("check flags an override that matches nothing");
 fs.rmSync(path.join(dir, "lanes"), { recursive: true }); fs.rmSync(path.join(dir, "index-acme.html"));
 
+// the catalogue: new copies core and the patterns its slides use into #sw-kit, in the kit layer under the brand
+const catalog = require(path.join(HTML, "engine", "catalog.js"));
+assert(catalog.list().some((p) => p.name === "core") && catalog.list().every((p) => p.css && p.examples.length), "every pattern has CSS and an example"); ok("the catalogue lists patterns, each with CSS and an example");
+const kitDeck = build.newDeck({ brand: "style-1", title: "Kit", slides: '<section data-key="a" class="layout-steps"><h3>A</h3></section>\n<section data-key="b" class="layout-card-row"><h3>B</h3></section>' });
+const kr = D.region(kitDeck, "sw-kit");
+assert.strictEqual(kr.attrs["data-patterns"], "core card-row steps"); assert(/@layer sw-kit \{/.test(kr.content) && kr.content.includes(".layout-steps")); ok("new copies core and the used patterns into the kit layer");
+assert(D.region(kitDeck, "sw-theme").content.startsWith(D.region(kitDeck, "sw-theme").content.split("@layer sw-defaults")[0]) && D.region(kitDeck, "sw-theme").content.includes("@layer sw-defaults, sw-kit, sw-brand;")); ok("the theme declares the layer order");
+const moreSlides = D.spliceRegion(kitDeck, "sw-slides", D.region(kitDeck, "sw-slides").content + '<section data-key="c" class="layout-timeline"><h3>C</h3></section>\n');
+const rk = build.refreshDeck(moreSlides);
+assert(rk.changes.some((c) => /^kit/.test(c)) && D.region(rk.text, "sw-kit").attrs["data-patterns"].includes("timeline")); ok("refresh adds a pattern's CSS when a slide starts using it");
+assert.deepStrictEqual(build.refreshDeck(rk.text).changes, []); ok("refresh leaves a current kit alone");
+const offDeck = build.newDeck({ brand: "style-1", title: "Off", slides: '<section data-key="a" class="layout-steps"><h3>A</h3></section>', kit: false });
+assert(!D.region(offDeck, "sw-kit").content.includes(".layout-steps") && D.readDeck(offDeck).config.kit === false); ok('"kit": false keeps the catalogue CSS out');
+// a pattern in the knowledgeware home shadows the plugin's
+const homeCat = path.join(tmp, "kwhome", "slideware", "catalog");
+fs.mkdirSync(homeCat, { recursive: true });
+fs.writeFileSync(path.join(homeCat, "steps.html"), '<!-- pattern\nname: steps\ntitle: My steps\nidea: mine\n-->\n<style>section[data-key].layout-steps { --mine: 1; }</style>\n<section data-key="x" class="layout-steps"></section>\n');
+process.env.KNOWLEDGEWARE_HOME = path.join(tmp, "kwhome");
+const mine = catalog.get("steps");
+assert(mine.origin === "home" && mine.title === "My steps"); ok("a pattern in the knowledgeware home shadows the plugin's");
+delete process.env.KNOWLEDGEWARE_HOME;
+
 // check errors: a duplicate key, a missing figure, a network load
 fs.writeFileSync(file, text.replace('data-key="s3"', 'data-key="s2"').replace('data-figure-ref="map"', 'data-figure-ref="nope"').replace("<p>Body</p>", '<p>Body</p><img src="https://example.com/x.png"><a href="https://example.com">a link</a>'));
 res = check(file);

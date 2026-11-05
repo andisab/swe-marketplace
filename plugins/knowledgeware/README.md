@@ -103,46 +103,45 @@ python3 scripts/fetch-resource.py <drive-share-url> $BRANDS/example/brand.md
 # 3. Write one by hand, following skills/brandware/references/brandbook-spec.md and the acmecorp example
 ```
 
-Logos and wordmarks go in the brand's `assets/` folder, and a stylesheet or starters can sit beside them in `css/` and `starters/`. A `css/slideware.css` holds the brand's own slide styles for HTML decks, in place of slideware's generic ones. If you have a design kit or brand plugin already, copy its brandbook, logos and stylesheet into this shape and note where they came from in the folder's README. slideware installs a brand's Google Fonts when it builds a PowerPoint deck. To install them yourself, run `bash scripts/install-fonts.sh example`.
+Logos and wordmarks go in the brand's `assets/` folder, and a stylesheet or starters can sit beside them in `css/` and `starters/`. A `css/slideware.css` refines slideware's slide patterns for the brand: colours, fonts and the details its guidelines call for. If you have a design kit or brand plugin already, copy its brandbook, logos and stylesheet into this shape and note where they came from in the folder's README. slideware installs a brand's Google Fonts when it builds a PowerPoint deck. To install them yourself, run `bash scripts/install-fonts.sh example`.
 
-### Bring your own brands directory
+### Your knowledgeware home
 
-Brands stored inside the plugin's install folder are replaced whenever the plugin updates. Keep your brands in a directory you own instead, anywhere on disk, and point the plugin at it in `~/.claude/settings.json`. Set it there rather than in your shell profile, so every Claude Code session has it:
+Your own brands and slide patterns live in one folder outside the plugin, so plugin updates never touch them: `~/.claude/knowledgeware/` by default, or wherever `KNOWLEDGEWARE_HOME` points. Set it in `~/.claude/settings.json` rather than your shell profile, so every Claude Code session has it:
 
 ```jsonc
 // ~/.claude/settings.json
 {
   "env": {
-    "KNOWLEDGEWARE_BRANDS_DIR": "~/my-brands"
+    "KNOWLEDGEWARE_HOME": "~/my-knowledgeware"
   }
 }
 ```
 
-The directory has the same layout as the plugin's own brands folder:
-
 ```
-~/my-brands/
-├── DEFAULT                # optional: one line naming your go-to brand, e.g. "acmecorp"
-└── <name>/
-    ├── brand.md           # the brandbook
-    ├── tokens.json        # a cache derived from the brandbook (regenerated automatically)
-    ├── assets/            # logos, marks, wordmarks
-    ├── css/<name>.css     # optional stylesheet
-    └── README.md          # optional: provenance and notes
+~/my-knowledgeware/
+├── README.md              # what the folder holds
+├── .gitignore             # leaves out caches and renders
+├── brands/
+│   ├── DEFAULT            # optional: one line naming your go-to brand, e.g. "acmecorp"
+│   └── <name>/
+│       ├── brand.md       # the brandbook
+│       ├── tokens.json    # a cache derived from the brandbook (regenerated automatically)
+│       ├── assets/        # logos, marks, wordmarks
+│       ├── css/           # optional: <name>.css for pages, slideware.css for decks
+│       └── README.md      # optional: provenance and notes
+└── slideware/
+    └── catalog/           # your own slide patterns, beside the ones the plugin ships
 ```
 
-Brands in the older flat layout (`<name>.md` next to `tokens/<name>.json` and `<name>/assets/`) keep working; move one into a folder whenever you edit it.
-
-Everything in this directory survives plugin updates, and it works well as a private git repository. Its entries win over same-named entries in the plugin, and its `DEFAULT` file wins over the plugin's.
-
-Without the environment variable, brands go in `styles/brands/` inside the plugin install, which every plugin update replaces. In that setup, keep the originals somewhere else and copy them back after each update (`cp -Rp ~/my-brands/. <plugin-root>/styles/brands/`). `styles/brands/README.md` has the details.
+`node scripts/home.js` prints where each folder is, and `node scripts/home.js init` creates the home with its README and `.gitignore`. Its entries win over same-named entries in the plugin, and its `DEFAULT` file wins over the plugin's. It works well as a private git repository. To keep brands somewhere else, set `KNOWLEDGEWARE_BRANDS_DIR` to that folder; it takes the place of `brands/` in the home. Brands in the older flat layout (`<name>.md` next to `tokens/<name>.json` and `<name>/assets/`) keep working; move one into a folder whenever you edit it.
 
 ### How style resolution works
 
 When a request names a style or brand, the skills look for it in three places, in this order:
 
 ```
-$KNOWLEDGEWARE_BRANDS_DIR/     # your directory (checked first)
+<home>/brands/                 # your brands (checked first; or $KNOWLEDGEWARE_BRANDS_DIR)
 styles/brands/                 # brandbooks inside the plugin install
 styles/                        # the five built-in styles (checked last)
 ```

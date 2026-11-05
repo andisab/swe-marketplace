@@ -25,13 +25,14 @@ styles/                    # the registry (plugin root)
         ├── tokens.json    #   derived token cache (regenerable; never hand-edit)
         ├── assets/        #   logo-light.svg, logo-dark.svg, mark.svg, wordmark.png, icons … (never mixed across brands)
         ├── css/<name>.css #   optional: tokens as CSS variables + base styles for pages not built by a skill
-        ├── css/slideware.css # optional: the brand's own slide CSS for html decks (replaces slideware's base and kit)
+        ├── css/slideware.css # optional: refinements for html decks, layered over slideware's pattern catalogue
         ├── starters/      #   optional: page, deck or document starters in the brand
         └── README.md      #   what's in the folder, where it came from (provenance), how to use it
-$KNOWLEDGEWARE_BRANDS_DIR/ # OPTIONAL user-owned brands directory — same layout as styles/brands/
-    │                      #   (DEFAULT marker, <name>/brand.md …). Lives anywhere the user chooses,
-    │                      #   so it SURVIVES plugin updates. Entries here shadow plugin entries on
-    │                      #   name collision; its DEFAULT marker wins too.
+<home>/brands/            # the user's own brands — same layout as styles/brands/
+    │                      #   (DEFAULT marker, <name>/brand.md …). <home> is $KNOWLEDGEWARE_HOME, else
+    │                      #   ~/.claude/knowledgeware (scripts/home.js; `init` creates it); set
+    │                      #   $KNOWLEDGEWARE_BRANDS_DIR to keep brands anywhere else. It SURVIVES plugin
+    │                      #   updates; its entries shadow plugin entries, and its DEFAULT marker wins.
 <project>/.knowledgeware   # OPTIONAL per-project marker: one line naming the brand to use in this
                            #   repository, checked before any DEFAULT marker
 scripts/                   # shared tooling (plugin root)
@@ -53,15 +54,15 @@ skills/brandware/references/
 1. **The `.md` is canonical, and carries two layers** (see `references/brandbook-spec.md`): a required prose body (heuristically parsed; read directly by chartware/knowledgebase) and an optional YAML frontmatter block of exact tokens that wins over prose heuristics when present. Generators (derive-style.js, the html `.css` import) emit both layers together. Tokens JSON is a derived cache — auto-invalidated by mtime; if anything disagrees, the `.md` wins.
 2. **Brands are private; styles are public.** The 5 default styles ship with the plugin. Brandbooks under `styles/brands/` are proprietary/brand-specific content, kept out of the plugin repository (`.gitignore`d) and copied in from a private source repo. Never commit a brandbook to the plugin repo. *Documented exception*: slideware's canonical sample decks (`skills/slideware/pptx/assets/samples/`) include derived token JSONs and rendered previews of publicly-derived identities — they exist to demonstrate layout quality, are not registry entries, and are the only brand-derived content allowed in the repo.
 3. **Graceful degradation.** Consumers must work when no brand is installed: slideware falls back to its five default styles, knowledgebase to its default palette, chartware to its default catalog. Brands add named identities; they are never a hard dependency.
-4. **Brand shadows default.** On a name collision: the entry in `$KNOWLEDGEWARE_BRANDS_DIR/` wins over the one in `styles/brands/`, which wins over the default style in `styles/`.
-5. **Prefer the user directory when it exists.** Anything inside the plugin install (`styles/brands/`) is wiped by plugin updates. When `KNOWLEDGEWARE_BRANDS_DIR` is set, write new brandbooks, token caches, assets, and the DEFAULT marker there. When it isn't set and the user imports a brand, warn them it won't survive updates and suggest setting the env var (in `~/.claude/settings.json` under `"env"`, so it's present in every session).
+4. **Brand shadows default.** On a name collision: the entry in the user's brands directory wins over the one in `styles/brands/`, which wins over the default style in `styles/`.
+5. **Write to the user's brands directory.** Anything inside the plugin install (`styles/brands/`) is wiped by plugin updates. New brandbooks, token caches, assets and the DEFAULT marker go in the user's brands directory: `node scripts/home.js` prints it (`$KNOWLEDGEWARE_BRANDS_DIR` when set, else `brands/` in the knowledgeware home), and `node scripts/home.js init` creates the home with its README and `.gitignore`.
 
 ## Resolution contract (for consumer skills)
 
-0. **No name given?** Check the markers, first match wins: a `.knowledgeware` file in the working directory or any parent (one line naming a registry entry, for "this repository is always in brand X"), then `$KNOWLEDGEWARE_BRANDS_DIR/DEFAULT` if the env var is set, then `styles/brands/DEFAULT`. If a marker resolves (steps 1–3 below), use that identity and tell the user; if none exists or it names a missing entry, use the consumer's bundled defaults.
+0. **No name given?** Check the markers, first match wins: a `.knowledgeware` file in the working directory or any parent (one line naming a registry entry, for "this repository is always in brand X"), then `DEFAULT` in the user's brands directory, then `styles/brands/DEFAULT`. If a marker resolves (steps 1–3 below), use that identity and tell the user; if none exists or it names a missing entry, use the consumer's bundled defaults.
 
 Given a brand/style name, look for `<name>/brand.md` (or the flat `<name>.md`) in:
-1. `$KNOWLEDGEWARE_BRANDS_DIR/` (if the env var is set).
+1. The user's brands directory (`$KNOWLEDGEWARE_BRANDS_DIR`, else `<home>/brands/`).
 2. `styles/brands/` (plugin root).
 3. `styles/` (the 5 defaults).
 4. Fall back to the consumer's bundled defaults, and say so.
@@ -74,7 +75,7 @@ Run `node scripts/list-styles.js` for the live inventory (`--default` / `--brand
 
 ### Add / import a brandbook
 
-Filesystem-driven — no code edits. **Destination**: `$KNOWLEDGEWARE_BRANDS_DIR/` when the env var is set (survives plugin updates — preferred), else `styles/brands/` (warn: wiped on update). `<dest>` below means that directory:
+Filesystem-driven — no code edits. **Destination**: the user's brands directory (`node scripts/home.js` prints it; it survives plugin updates). Never `styles/brands/`, which updates wipe. `<dest>` below means that directory:
 - **From scratch or by hand**: copy the checked-in `styles/brands/acmecorp/` folder to `<dest>/<name>/` (it is the template: a spec-complete `brand.md`, a `README.md` with the provenance lines to fill in, and `assets/` with the logo files decks look for), then rewrite `brand.md` for the brand per `references/brandbook-spec.md`, replace the logos and delete `tokens.json` so the loader rebuilds it.
 - **From a local file**: a `.css` or `.md` brandbook parses directly — copy it to `<dest>/<name>/brand.md`, then normalize toward the spec if role tables are missing.
 - **From a design kit or brand plugin** the user already has (a folder with its own brandbook, tokens, CSS and logos): copy the brandbook to `brand.md`, the logos and marks into `assets/`, the stylesheet into `css/` (a kit's slide styles for html decks go in `css/slideware.css`), and write the README's provenance line (source path, version, date). Keep that kit as the owner of its runtime; the registry copy is for the knowledgeware consumers.

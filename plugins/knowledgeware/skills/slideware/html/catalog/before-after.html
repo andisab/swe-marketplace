@@ -1,0 +1,30 @@
+<!-- pattern
+name: before-after
+title: Before and after
+idea: The same aspects, then and now: what changes, row by row.
+use: A change of process or design; three to six rows. Each .row has the aspect (.k), the old way (.from) and the new way (.to); the header names the two states.
+avoid: Changes that aren't comparable row by row (use two-column).
+builds: one row per click
+from: AI-SDLC workshop s8 (from-to rows), s4
+-->
+<style>
+section[data-key].layout-before-after .ba { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) 28px minmax(0, 1fr); column-gap: 14px; margin-top: .8em; }
+section[data-key].layout-before-after .ba > .row { display: contents; }
+section[data-key].layout-before-after .ba > .row > * { padding: 10px 0; border-bottom: 1px solid var(--color-border); font-size: var(--size-subbody); }
+section[data-key].layout-before-after .ba > .row.head > * { padding-top: 0; border-bottom: 2px solid var(--color-ink); font-size: var(--size-caption); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-before-after .ba .k { font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-before-after .ba .from { color: var(--color-ink-muted); }
+section[data-key].layout-before-after .ba .arrow { text-align: center; color: var(--color-accent); }
+section[data-key].layout-before-after .ba .to { color: var(--color-ink); }
+</style>
+<section data-key="example-before-after" class="layout-before-after">
+  <p class="kicker">What changes</p>
+  <h3>The same review, done differently</h3>
+  <div class="ba">
+    <div class="row head"><span></span><span>Today</span><span></span><span>From December</span></div>
+    <div class="row" data-step="1"><span class="k">First look</span><span class="from">Whoever is free, often the next day</span><span class="arrow">→</span><span class="to">The bot, within two minutes</span></div>
+    <div class="row" data-step="2"><span class="k">Style</span><span class="from">Debated in comments</span><span class="arrow">→</span><span class="to">Fixed by the linter before review</span></div>
+    <div class="row" data-step="3"><span class="k">Approval</span><span class="from">Any one reviewer</span><span class="arrow">→</span><span class="to">A code owner, after the bot</span></div>
+  </div>
+  <aside class="notes">[click 1] … [click 3] …</aside>
+</section>
