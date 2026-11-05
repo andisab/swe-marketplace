@@ -1,0 +1,52 @@
+<!-- deck: style-3 · title: Observability overhaul · footer: SRE guild · 2026-10-14 · minutes: 20 -->
+<section data-key="title" class="layout-title" data-chrome="none">
+  <p class="kicker">SRE guild</p>
+  <h1>Observability overhaul</h1>
+  <p class="subtitle">From dashboards nobody opened to alerts people trust</p>
+  <div class="srule"></div>
+  <p class="meta">2026-10-14</p>
+  <aside class="notes">One sentence on why now.</aside>
+</section>
+<section data-key="part-1" class="layout-section" data-divider>
+  <div><span class="num">1</span><p class="kicker">Part one</p><h2>Where the pages came from</h2><p class="lede">Ninety days of tickets and pages, read by hour and by cause.</p></div>
+  <ol class="rail"><li class="on">Where the pages came from</li><li>Three rules for every alert</li><li>What we'll watch next</li></ol>
+  <aside class="notes">Transition into the data.</aside>
+</section>
+<section data-key="load" class="layout-figure">
+  <p class="kicker">Ticket load</p>
+  <h3>Weekday afternoons carry the load</h3>
+  <div class="fig"><svg data-figure-ref="heatmap" style="width: 960px"></svg></div>
+  <p class="figfoot">Tickets by weekday and hour, last 90 days; weekends stay under ten per slot.</p>
+  <aside class="notes">Point at the afternoon band.</aside>
+</section>
+<section data-key="noise" class="layout-bignumber">
+  <div class="stat">
+    <p class="label">Pages in Q2 that auto-resolved within five minutes</p>
+    <div class="figure-row"><span class="figure">42</span><span class="unit">%</span></div>
+    <p class="context">1,920 pages reviewed. Source: on-call tooling export, 2026-07.</p>
+  </div>
+  <aside class="notes">Almost half the pages needed nobody.</aside>
+</section>
+<section data-key="rules" class="layout-card-row" style="--card-count: 3">
+  <p class="kicker">The fix</p>
+  <h3>Three rules for every alert</h3>
+  <div class="cards">
+    <div class="card top"><h4>A runbook or it doesn't page</h4><p>Every paging alert links to a runbook with a first command to run.</p></div>
+    <div class="card top"><h4>Symptoms, not causes</h4><p>Page on user-visible latency and errors. Causes go to a ticket queue.</p></div>
+    <div class="card top"><h4>Owned by a route</h4><p>Each alert names the team that owns the route, not the service.</p></div>
+  </div>
+  <aside class="notes">Three rules, one sentence each.</aside>
+</section>
+<section data-key="watch" class="layout-table">
+  <p class="kicker">Next quarter</p>
+  <h3>What we'll watch</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Measure</th><th class="num">Target</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="first">Pages per on-call week</td><td class="num">≤ 3</td><td>The headline</td></tr>
+      <tr><td class="first">Page to runbook opened</td><td class="num">≤ 2 min</td><td>Runbooks that are actually used</td></tr>
+      <tr><td class="first">Alerts deleted vs added</td><td class="num">≥ 1</td><td>The set shrinks, not grows</td></tr>
+      <tr><td class="first">Error budget burn by route</td><td class="num">weekly</td><td>Owners see their own routes</td></tr>
+    </tbody></table></div>
+  <aside class="notes">Four numbers, reviewed weekly.</aside>
+</section>
