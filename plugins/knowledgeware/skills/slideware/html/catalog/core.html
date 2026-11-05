@@ -1,8 +1,8 @@
 <!-- pattern
 name: core
 title: Core: base typography and the shared parts
-idea: The defaults every slide starts from, and the small parts patterns share: kicker, lede, breadcrumb chip, lesson strip, figure notes, sources line, footnote.
-use: Always included. Put .kicker above a title, .lede under it, .lesson as a slide's closing line, .sources (with has-sources on the section) for citations.
+idea: The defaults every slide starts from, and the small parts patterns share: kicker, lede, breadcrumb chip, lesson strip, figure notes, sources line, footnote, inverse panel.
+use: Always included. Put .kicker above a title, .lede under it, .lesson as a slide's closing line, .sources (with has-sources on the section) for citations. .inverse on any element sets it on --color-bg-dark and swaps the ink, border and surface tokens for it, so its text (and a brand's rules for p, li and headings) reads light on dark.
 avoid: Restyling these per deck; refine them in the brand's slideware.css instead.
 builds: none
 -->
@@ -39,6 +39,11 @@ section[data-key].has-sources { padding-bottom: calc(var(--margin) + 2.2em); }
 section[data-key] .sources { position: absolute; left: var(--margin); right: var(--margin); bottom: calc(var(--margin) + 1.2em); margin: 0;
   font-size: var(--size-caption); color: var(--color-ink-muted); }
 section[data-key] .footnote { margin-top: auto; font-size: var(--size-caption); color: var(--color-ink-muted); }
+/* Inverse: an element on bg-dark. The ink tokens are redefined inside it, so every rule that reads them (the kit's and the brand's) follows. */
+section[data-key] .inverse { --color-ink: var(--color-bg); --color-ink-body: color-mix(in srgb, var(--color-bg) 80%, var(--color-bg-dark));
+  --color-ink-muted: color-mix(in srgb, var(--color-bg) 60%, var(--color-bg-dark)); --color-ink-faint: color-mix(in srgb, var(--color-bg) 40%, var(--color-bg-dark));
+  --color-border: color-mix(in srgb, var(--color-bg) 18%, var(--color-bg-dark)); --color-surface: color-mix(in srgb, var(--color-bg) 6%, var(--color-bg-dark));
+  --color-surface-alt: color-mix(in srgb, var(--color-bg) 12%, var(--color-bg-dark)); border-color: var(--color-bg-dark); background: var(--color-bg-dark); color: var(--color-ink-body); }
 section[data-key][data-divider] { justify-content: center; background: var(--color-surface-alt); border-left: 6px solid var(--color-accent); }
 </style>
 <section data-key="core-parts">

@@ -1,0 +1,59 @@
+<!-- pattern
+name: cycle
+title: Cycle with hand-offs
+idea: A process that repeats, with the thing each stage hands to the next written on the edge between them.
+use: An agent loop, train and evaluate, build and measure, incident to fix; three to six stages. Set --n to the stage count; each .node takes --i from 0, and each .art (the hand-off from stage i to i + 1) the same --i. .on marks the stage the slide is about; .hub sits in the middle. --rx and --ry size the ring.
+avoid: A sequence that ends (use steps or pipeline); more than six stages (the hand-offs crowd).
+builds: one stage and its hand-off per click
+from: AI-SDLC workshop s7, s22 (loop with artifacts on each edge); one-shot agents deck (tool-use loop); Signal template (operating cycle)
+-->
+<style>
+section[data-key].layout-cycle .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 36px; align-items: stretch; margin-top: .4em; }
+section[data-key].layout-cycle .body:not(:has(.side)) { grid-template-columns: 1fr; }
+section[data-key].layout-cycle .loop { position: relative; min-height: 0; --rx: 240px; --ry: 178px; }
+section[data-key].layout-cycle .ring { position: absolute; left: 50%; top: 50%; width: calc(var(--rx) * 2); height: calc(var(--ry) * 2); transform: translate(-50%, -50%);
+  border: 2px solid color-mix(in srgb, var(--color-ink-faint) 70%, var(--color-border)); border-radius: 50%; }
+section[data-key].layout-cycle .node, section[data-key].layout-cycle .art { --a: calc(var(--i) / var(--n, 4) * 360deg - 90deg); position: absolute;
+  left: calc(50% + var(--rx) * cos(var(--a))); top: calc(50% + var(--ry) * sin(var(--a))); transform: translate(-50%, -50%); }
+section[data-key].layout-cycle .art { --a: calc((var(--i) + .5) / var(--n, 4) * 360deg - 90deg); }
+section[data-key].layout-cycle .node { display: flex; flex-direction: column; align-items: center; min-width: 140px; padding: 9px 18px 10px; border: 2px solid var(--color-ink); border-radius: 999px;
+  background: var(--color-surface); text-align: center; font-size: var(--size-subbody); font-weight: 600; line-height: 1.2; color: var(--color-ink); }
+section[data-key].layout-cycle .node .n { font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 500; color: var(--color-ink-muted); }
+section[data-key].layout-cycle .node.on { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-bg); box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent); }
+section[data-key].layout-cycle .node.on .n { color: color-mix(in srgb, var(--color-bg) 75%, var(--color-accent)); }
+section[data-key].layout-cycle .art { display: flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: var(--radius); background: var(--color-bg);
+  font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-accent); }
+section[data-key].layout-cycle .art .dir { display: inline-block; font-family: var(--font-sans); font-style: normal; transform: rotate(calc(var(--a) + 90deg)); color: var(--color-ink-muted); }
+section[data-key].layout-cycle .hub { position: absolute; left: 50%; top: 50%; width: calc(var(--rx) * 1.05); transform: translate(-50%, -50%); text-align: center; }
+section[data-key].layout-cycle .hub .t { font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); font-style: italic; line-height: 1.15; color: var(--color-ink); }
+section[data-key].layout-cycle .hub .d { margin-top: .4em; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-cycle .side { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding-left: 28px; border-left: 1px solid var(--color-border); }
+section[data-key].layout-cycle .side > div { padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+section[data-key].layout-cycle .side > div:last-child { border-bottom: 0; }
+section[data-key].layout-cycle .side h4 { margin: 0 0 .3em; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-cycle .side p { margin: 0; font-size: var(--size-caption); line-height: 1.5; color: var(--color-ink-body); }
+</style>
+<section data-key="example-cycle" class="layout-cycle">
+  <p class="kicker">The agent loop</p>
+  <h3>Every turn hands something concrete to the next</h3>
+  <div class="body">
+    <div class="loop" style="--n: 4">
+      <div class="ring"></div>
+      <div class="hub"><div class="t">until the check passes</div><div class="d">or the budget runs out</div></div>
+      <div class="node" style="--i: 0" data-step="1"><span class="n">01</span>Gather context</div>
+      <span class="art" style="--i: 0" data-step="1"><i class="dir">→</i>files + ticket</span>
+      <div class="node" style="--i: 1" data-step="2"><span class="n">02</span>Plan</div>
+      <span class="art" style="--i: 1" data-step="2"><i class="dir">→</i>plan.md</span>
+      <div class="node on" style="--i: 2" data-step="3"><span class="n">03</span>Act</div>
+      <span class="art" style="--i: 2" data-step="3"><i class="dir">→</i>diff + tool output</span>
+      <div class="node" style="--i: 3" data-step="4"><span class="n">04</span>Verify</div>
+      <span class="art" style="--i: 3" data-step="4"><i class="dir">→</i>test report</span>
+    </div>
+    <div class="side" data-step="5">
+      <div><h4>Hand-offs are files</h4><p>A plan, a diff, a report: each one a person can read when the loop goes wrong.</p></div>
+      <div><h4>Act is where the cost is</h4><p>Tool calls take most of the tokens and all of the risk.</p></div>
+      <div><h4>Verify closes the loop</h4><p>Without a check the model can run, the loop stops when the model feels done.</p></div>
+    </div>
+  </div>
+  <aside class="notes">[click 1–4] One stage and what it hands on. [click 5] Three things to notice.</aside>
+</section>

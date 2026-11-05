@@ -1,0 +1,74 @@
+<!-- pattern
+name: code-notes
+title: Code with numbered notes
+idea: Real code read line by line: numbered markers on the lines that matter, each tied to a note beside the panel.
+use: A tool schema, a hook, a config, a training loop; up to about 18 lines. Mark lines with .ln.hl and data-n; .dim mutes context lines and .new marks what a step added, so a run of slides can grow one file; .out under the code shows what it prints. Spans .c (comment), .kw (keyword), .s (string) colour the code; a pre without .ln lines shows plain text.
+avoid: Code the audience must read in full (link it); more than four notes (split the slide); wrapped lines (shorten them).
+builds: one note and its marker per click
+from: Track 03 v6 s26, s33 (code panel with gutter markers); textrecipes useR! 2022 (growing code, dimmed lines); slides.com and Slidev code windows
+-->
+<style>
+section[data-key].layout-code-notes { --pn-bg: var(--color-bg-dark); --pn-ink: var(--color-bg); --pn-muted: color-mix(in srgb, var(--pn-ink) 55%, var(--pn-bg));
+  --pn-accent: color-mix(in srgb, var(--color-accent) 60%, var(--pn-ink)); }
+section[data-key].layout-code-notes .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, var(--code-w, 1.35fr)) minmax(0, 1fr); gap: 40px; align-items: start; margin-top: .8em; }
+section[data-key].layout-code-notes .body:not(:has(.cn)) { grid-template-columns: 1fr; }
+section[data-key].layout-code-notes .code { border-radius: calc(var(--radius) + 4px); background: var(--pn-bg); color: var(--pn-ink); overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, calc(var(--shadow-opacity) * 1.5)); }
+section[data-key].layout-code-notes .code .bar { display: flex; align-items: center; gap: 7px; padding: 10px 14px; border-bottom: 1px solid color-mix(in srgb, var(--pn-ink) 12%, transparent);
+  font-family: var(--font-mono); font-size: var(--size-caption); color: var(--pn-muted); }
+section[data-key].layout-code-notes .code .bar::before { content: ""; flex: 0 0 9px; height: 9px; border-radius: 50%; margin-right: 38px; background: var(--pn-muted);
+  box-shadow: 15px 0 0 var(--pn-muted), 30px 0 0 var(--pn-muted); opacity: .5; }
+section[data-key].layout-code-notes .code .bar .lang { margin-left: auto; letter-spacing: .08em; text-transform: uppercase; }
+section[data-key].layout-code-notes pre { margin: 0; padding: 14px 18px 16px 48px; font-family: var(--font-mono); font-size: var(--size-code); line-height: 1.75; white-space: normal; overflow: hidden; }
+section[data-key].layout-code-notes pre:not(:has(.ln)) { white-space: pre; }
+section[data-key].layout-code-notes .ln { display: block; position: relative; white-space: pre; color: var(--pn-ink); min-height: 1.75em; margin: 0 -10px; padding: 0 10px; border-radius: 3px; }
+section[data-key].layout-code-notes .ln.hl { background: color-mix(in srgb, var(--color-accent) 22%, transparent); box-shadow: inset 3px 0 0 var(--pn-accent); }
+section[data-key].layout-code-notes .ln.hl.warn { background: color-mix(in srgb, var(--color-warning) 24%, transparent); box-shadow: inset 3px 0 0 var(--color-warning); }
+section[data-key].layout-code-notes .ln.dim { opacity: .42; }
+section[data-key].layout-code-notes .ln.new { box-shadow: inset 3px 0 0 var(--pn-accent); }
+section[data-key].layout-code-notes .ln[data-n]::before { content: attr(data-n); position: absolute; left: -34px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; background: var(--pn-accent); color: var(--pn-bg); font-size: calc(var(--size-caption) * .9); font-weight: 700; }
+section[data-key].layout-code-notes .ln.warn[data-n]::before { background: var(--color-warning); }
+section[data-key].layout-code-notes .c { color: var(--pn-muted); font-style: italic; }
+section[data-key].layout-code-notes .kw { color: var(--pn-accent); }
+section[data-key].layout-code-notes .s { color: color-mix(in srgb, var(--color-accent2) 45%, var(--pn-ink)); }
+section[data-key].layout-code-notes .out { margin: 0; white-space: pre; padding: 12px 18px 14px 48px; border-top: 1px dashed color-mix(in srgb, var(--pn-ink) 18%, transparent);
+  font-family: var(--font-mono); font-size: var(--size-caption); line-height: 1.6; color: var(--pn-muted); }
+section[data-key].layout-code-notes ol.cn { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-border); }
+section[data-key].layout-code-notes ol.cn > li { display: grid; grid-template-columns: 26px 1fr; gap: 0 14px; margin: 0; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+section[data-key].layout-code-notes ol.cn > li > .n { width: 24px; height: 24px; border: 2px solid var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 700; color: var(--color-accent); }
+section[data-key].layout-code-notes ol.cn > li.warn > .n { border-color: var(--color-warning); background: var(--color-warning); color: var(--color-bg); }
+section[data-key].layout-code-notes ol.cn h4 { margin: 2px 0 4px; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-code-notes ol.cn p { margin: 0; font-size: var(--size-caption); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-code-notes ol.cn code { padding: 1px 5px; border-radius: 3px; background: var(--color-surface-alt); font-size: .92em; color: var(--color-ink); }
+</style>
+<section data-key="example-code-notes" class="layout-code-notes">
+  <p class="kicker">Tool use</p>
+  <h3>A tool definition is a prompt the model reads</h3>
+  <div class="body">
+    <div class="code"><div class="bar">tools/search_tickets.py<span class="lang">python</span></div>
+<pre><span class="ln dim"><span class="kw">from</span> agent <span class="kw">import</span> tool</span>
+<span class="ln"> </span>
+<span class="ln">@tool(</span>
+<span class="ln hl" data-n="1">    name=<span class="s">"search_tickets"</span>,</span>
+<span class="ln hl" data-n="2">    description=<span class="s">"Search open tickets by text. Use before</span></span>
+<span class="ln hl">        <span class="s">creating a ticket, to avoid duplicates."</span>,</span>
+<span class="ln">)</span>
+<span class="ln"><span class="kw">def</span> search_tickets(</span>
+<span class="ln hl" data-n="3">    query: str, limit: int = <span class="s">10</span>,</span>
+<span class="ln">) -> list[Ticket]:</span>
+<span class="ln dim">    <span class="c"># read-only: no side effects, safe to retry</span></span>
+<span class="ln hl warn" data-n="4">    <span class="kw">return</span> db.search(query)[:limit]</span></pre>
+      <div class="out">→ 3 tickets · 41 ms</div></div>
+    <ol class="cn">
+      <li data-step="1"><span class="n">1</span><div><h4>The name is a verb and a noun</h4><p>The model picks tools by name first; <code>search_tickets</code> beats <code>tickets_v2</code>.</p></div></li>
+      <li data-step="2"><span class="n">2</span><div><h4>The description says when</h4><p>Not what the function does but when to call it, and what to do instead.</p></div></li>
+      <li data-step="3"><span class="n">3</span><div><h4>Typed, bounded arguments</h4><p>A default limit keeps one call from flooding the context.</p></div></li>
+      <li data-step="4" class="warn"><span class="n">4</span><div><h4>The slice happens after the query</h4><p>The database still returns every row. Push the limit down.</p></div></li>
+    </ol>
+  </div>
+  <aside class="notes">The panel stays; each click lights one marker and its note.
+
+[click 1] The name. [click 2] The description is the part the model reads most. [click 3] Arguments. [click 4] The bug.</aside>
+</section>

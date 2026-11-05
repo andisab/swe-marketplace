@@ -1,0 +1,68 @@
+<!-- pattern
+name: quadrant
+title: Quadrant
+idea: Items placed on two axes so the four corners become four decisions.
+use: Where to start (value and effort), what to automate (ambiguity and blast radius), risk and likelihood; six to twelve items. Each .pt takes --x and --y from 0 to 1; .q1 to .q4 are the corner names (top left, top right, bottom left, bottom right) and .on tints the corner the slide is about. Name the axes in .ax-x and .ax-y. An optional .side column lists what each corner means.
+avoid: Items that need precise values (use a scatter chart); more than twelve points.
+builds: the axes and corners, then the points by corner
+from: AI SRE talk (capability map, callout region); common in strategy decks; Cartesian template
+-->
+<style>
+section[data-key].layout-quadrant .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 40px; margin-top: .4em; }
+section[data-key].layout-quadrant .body:not(:has(.side)) { grid-template-columns: 1fr; }
+section[data-key].layout-quadrant .qwrap { display: grid; grid-template-columns: 24px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 24px; gap: 6px; min-height: 0; }
+section[data-key].layout-quadrant .plane { grid-column: 2; grid-row: 1; position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  border-left: 2px solid var(--color-ink); border-bottom: 2px solid var(--color-ink); }
+section[data-key].layout-quadrant .plane::before, section[data-key].layout-quadrant .plane::after { content: ""; position: absolute; pointer-events: none; }
+section[data-key].layout-quadrant .plane::before { left: 50%; top: 0; bottom: 0; border-left: 1px dashed var(--color-ink-faint); }
+section[data-key].layout-quadrant .plane::after { top: 50%; left: 0; right: 0; border-top: 1px dashed var(--color-ink-faint); }
+section[data-key].layout-quadrant .q { padding: 12px 14px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-quadrant .q2, section[data-key].layout-quadrant .q4 { text-align: right; }
+section[data-key].layout-quadrant .q3, section[data-key].layout-quadrant .q4 { display: flex; flex-direction: column; justify-content: flex-end; }
+section[data-key].layout-quadrant .q.on { background: color-mix(in srgb, var(--color-accent) 10%, transparent); font-weight: 700; color: var(--color-accent); }
+section[data-key].layout-quadrant .pt { position: absolute; left: calc(var(--x) * 100%); bottom: calc(var(--y) * 100%); display: flex; align-items: center; gap: 7px; transform: translate(-6px, 50%);
+  font-size: var(--size-caption); font-weight: 500; white-space: nowrap; color: var(--color-ink); }
+section[data-key].layout-quadrant .pt::before { content: ""; flex: 0 0 12px; height: 12px; border-radius: 50%; background: var(--color-ink); }
+section[data-key].layout-quadrant .pt.l { flex-direction: row-reverse; transform: translate(calc(-100% + 6px), 50%); }
+section[data-key].layout-quadrant .pt.hot::before { background: var(--color-accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+section[data-key].layout-quadrant .pt.hot { font-weight: 700; }
+section[data-key].layout-quadrant .ax-y { grid-column: 1; grid-row: 1; display: flex; align-items: center; justify-content: center; }
+section[data-key].layout-quadrant .ax-y > span { writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; white-space: nowrap; color: var(--color-ink-muted); }
+section[data-key].layout-quadrant .ax-x { grid-column: 2; grid-row: 2; text-align: center; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; color: var(--color-ink-muted); }
+section[data-key].layout-quadrant .ax-y > span::after, section[data-key].layout-quadrant .ax-x::after { content: " →"; }
+section[data-key].layout-quadrant .side { display: flex; flex-direction: column; justify-content: center; }
+section[data-key].layout-quadrant .side > div { padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+section[data-key].layout-quadrant .side > div:first-child { border-top: 1px solid var(--color-border); }
+section[data-key].layout-quadrant .side h4 { margin: 0 0 4px; }
+section[data-key].layout-quadrant .side p { margin: 0; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-quadrant .side > div.on h4 { color: var(--color-accent); }
+</style>
+<section data-key="example-quadrant" class="layout-quadrant">
+  <p class="kicker">What to hand an agent</p>
+  <h3>Sort the backlog by ambiguity and blast radius</h3>
+  <div class="body">
+    <div class="qwrap">
+      <div class="ax-y"><span>blast radius</span></div>
+      <div class="plane" data-step="1">
+        <div class="q q1">Pair</div><div class="q q2">Keep human</div><div class="q q3 on">Automate</div><div class="q q4">Supervise</div>
+        <span class="pt hot" style="--x: .06; --y: .1" data-step="2">Dependency bumps</span>
+        <span class="pt hot" style="--x: .16; --y: .36" data-step="2">Flaky test triage</span>
+        <span class="pt hot" style="--x: .1; --y: .23" data-step="2">Lint and typing fixes</span>
+        <span class="pt" style="--x: .7; --y: .22" data-step="3">Support macro drafts</span>
+        <span class="pt" style="--x: .62; --y: .38" data-step="3">UI copy changes</span>
+        <span class="pt" style="--x: .18; --y: .66" data-step="3">Schema migration</span>
+        <span class="pt" style="--x: .3; --y: .82" data-step="3">Auth library upgrade</span>
+        <span class="pt l" style="--x: .9; --y: .88" data-step="3">Incident command</span>
+        <span class="pt l" style="--x: .86; --y: .66" data-step="3">Pricing change</span>
+      </div>
+      <div class="ax-x">ambiguity</div>
+    </div>
+    <div class="side" data-step="4">
+      <div class="on"><h4>Automate</h4><p>Clear spec, small blast radius: let it run, review the diff.</p></div>
+      <div><h4>Supervise</h4><p>Unclear but cheap to undo: iterate with the agent.</p></div>
+      <div><h4>Pair</h4><p>Clear but risky: the agent drafts, a person drives.</p></div>
+      <div><h4>Keep human</h4><p>Unclear and risky: the agent researches, nothing more.</p></div>
+    </div>
+  </div>
+  <aside class="notes">[click 1] The axes. [click 2] Start bottom left. [click 3] The rest of the backlog. [click 4] What each corner means.</aside>
+</section>

@@ -1,0 +1,50 @@
+<!-- pattern
+name: boundary
+title: Architecture with a trust boundary
+idea: Components in a row joined by the protocol on each edge, with the part that runs somewhere else, or with fewer rights, inside a dashed zone.
+use: Sandboxes, a VPC, a remote host, a client and a server; up to seven nodes, at most two zones. A row of .node, .edge (its label in span; .both for request and response) and .zone (with a .zlab and an optional .zfoot) in reading order. .focus marks the node doing the work.
+avoid: Graphs with branches (use agent-map, fan-out or a figure); long labels on edges (one or two words).
+builds: the nodes, then the edges, then the zone
+from: Kalinowski, MCP Console (process topology, sandboxed processes); Track 03 v6 s44 (shared responsibility)
+-->
+<style>
+section[data-key].layout-boundary .arch { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; margin-top: .6em; }
+section[data-key].layout-boundary .node { position: relative; flex: 0 1 auto; min-width: 0; padding: 16px 18px; border: 1.5px solid var(--color-ink-muted); border-radius: calc(var(--radius) * 1.6);
+  background: var(--color-surface); text-align: center; }
+section[data-key].layout-boundary .node b { display: block; font-size: var(--size-subbody); line-height: 1.25; color: var(--color-ink); }
+section[data-key].layout-boundary .node small { display: block; margin-top: 4px; font-size: var(--size-caption); line-height: 1.35; color: var(--color-ink-muted); }
+section[data-key].layout-boundary .node .tag { display: block; margin-bottom: 4px; font-family: var(--font-mono); font-size: calc(var(--size-caption) * .9); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-boundary .node.focus { border: 2px solid var(--color-accent); background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface)); }
+section[data-key].layout-boundary .node.focus .tag { color: var(--color-accent); }
+section[data-key].layout-boundary .edge { position: relative; flex: 1 1 60px; min-width: 56px; height: 0; border-top: 2px solid var(--color-ink-muted); }
+section[data-key].layout-boundary .edge::after { content: ""; position: absolute; right: -1px; top: -7px; border: 6px solid transparent; border-left: 8px solid var(--color-ink-muted); border-right: 0; }
+section[data-key].layout-boundary .edge.both::before { content: ""; position: absolute; left: -1px; top: -7px; border: 6px solid transparent; border-right: 8px solid var(--color-ink-muted); border-left: 0; }
+section[data-key].layout-boundary .edge > span { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-ink-body); }
+section[data-key].layout-boundary .edge > span + span { bottom: auto; top: 8px; color: var(--color-ink-muted); }
+section[data-key].layout-boundary .zone { position: relative; flex: 0 1 auto; display: flex; align-items: center; gap: 0; min-width: 0; padding: 52px 26px 44px; border: 2px dashed var(--color-accent);
+  border-radius: calc(var(--radius) * 3); background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+section[data-key].layout-boundary .zone.alt { border-color: var(--color-ink-faint); background: var(--color-surface-alt); }
+section[data-key].layout-boundary .zone > .zlab { position: absolute; left: 0; right: 0; top: 14px; text-align: center; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--color-accent); }
+section[data-key].layout-boundary .zone.alt > .zlab { color: var(--color-ink-muted); }
+section[data-key].layout-boundary .zone > .zfoot { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-boundary .zone .zone { padding-top: 44px; padding-bottom: 36px; }
+section[data-key].layout-boundary .figfoot { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--color-border); }
+</style>
+<section data-key="example-boundary" class="layout-boundary">
+  <p class="kicker">Where the code runs</p>
+  <h3>Session control outside, execution inside the sandbox</h3>
+  <div class="arch">
+    <div class="node" data-step="1"><span class="tag">client</span><b>Chat app</b><small>the user's machine</small></div>
+    <div class="edge both" data-step="2"><span>MCP</span><span>stdio</span></div>
+    <div class="node" data-step="1"><span class="tag">server</span><b>Session manager</b><small>records, limits, audit log</small></div>
+    <div class="edge both" data-step="2"><span>RPC</span><span>cells + output</span></div>
+    <div class="zone" data-step="3"><span class="zlab">Sandboxed processes</span>
+      <div class="node"><span class="tag">relay</span><b>Worker relay</b><small>supervises, kills on timeout</small></div>
+      <div class="edge both"><span>pipe</span></div>
+      <div class="node focus"><span class="tag">worker</span><b>Code runner</b><small>Python · SQL</small></div>
+      <span class="zfoot">no network · scratch disk · 60 s per cell</span></div>
+  </div>
+  <p class="figfoot ink" data-step="3">The manager can't run code; the runner can't see the session. A bug in one doesn't reach the other.</p>
+  <aside class="notes">[click 1] The two parts the user sees. [click 2] What crosses each edge. [click 3] The sandbox: the reason for the split.</aside>
+</section>

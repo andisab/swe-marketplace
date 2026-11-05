@@ -1,0 +1,43 @@
+<!-- pattern
+name: pipeline
+title: Pipeline with labelled hand-offs
+idea: Data or work moving through named stages, with what passes between them written on the rail, and where we are marked.
+use: RAG (chunk, embed, index, retrieve), training and serving, observability, CI; three to six stages. Set --n. Each li has a .dot (a number or a glyph), an .edge (what goes to the next stage, omitted on the last), h4, an optional code line (.cfg) and a sentence. .done, .now and .next show progress, so the same slide can return through a talk as its roadmap. A .panel after the list spans the middle stages for a config or a command.
+avoid: Stages that loop back (use cycle); stages with real detail (use steps).
+builds: one stage per click, left to right
+from: Track 03 v6 s61 (OpenTelemetry to Grafana, labels cutting the line); AI-SDLC workshop s24; tidymodels workshop (the whole game, future stages faded); slides.com Form (process track)
+-->
+<style>
+section[data-key].layout-pipeline .pipe { position: relative; display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); margin: 1.4em 0 0; padding: 0; list-style: none; margin: auto 0; }
+section[data-key].layout-pipeline .pipe::before { content: ""; position: absolute; left: calc(50% / var(--n, 4)); right: calc(50% / var(--n, 4)); top: 31px; border-top: 2px solid var(--color-ink-faint); }
+section[data-key].layout-pipeline .pipe > li { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 0 14px; text-align: center; }
+section[data-key].layout-pipeline .dot { position: relative; z-index: 1; width: 62px; height: 62px; border: 2px solid var(--color-ink); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--color-bg); font-family: var(--font-mono); font-size: var(--size-subbody); font-weight: 700; color: var(--color-ink); }
+section[data-key].layout-pipeline .edge { position: absolute; z-index: 2; top: 31px; right: 0; transform: translate(50%, -50%); padding: 2px 8px; border-radius: var(--radius); background: var(--color-bg);
+  font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-accent); }
+section[data-key].layout-pipeline .edge::after { content: " →"; color: var(--color-ink-muted); }
+section[data-key].layout-pipeline .pipe h4 { margin: 16px 0 4px; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-pipeline .cfg { display: block; margin: 0 0 8px; font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-accent); }
+section[data-key].layout-pipeline .pipe p { margin: 0; font-size: var(--size-subbody); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-pipeline .pipe > li.done .dot { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-bg); }
+section[data-key].layout-pipeline .pipe > li.now .dot { border-color: var(--color-accent); color: var(--color-accent); box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-accent) 18%, transparent); }
+section[data-key].layout-pipeline .pipe > li.now h4 { color: var(--color-accent); }
+section[data-key].layout-pipeline .pipe > li.next > :not(.edge) { opacity: .4; }
+section[data-key].layout-pipeline .panel { margin: 0 calc(100% / var(--n, 4) / 2) 0; padding: 14px 18px; border-radius: var(--radius); background: var(--color-surface-alt); }
+section[data-key].layout-pipeline .panel .lab { display: block; margin-bottom: 6px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-pipeline .panel .src { font-family: var(--font-mono); font-size: var(--size-caption); line-height: 1.6; white-space: pre; color: var(--color-ink); }
+</style>
+<section data-key="example-pipeline" class="layout-pipeline">
+  <p class="kicker">Retrieval</p>
+  <h3>Five stages between a document and an answer</h3>
+  <ol class="pipe" style="--n: 5">
+    <li class="done" data-step="1"><span class="dot">1</span><span class="edge">chunks</span><h4>Chunk</h4><code class="cfg">800 tokens · 100 overlap</code><p>Split on headings first, then by length.</p></li>
+    <li class="done" data-step="2"><span class="dot">2</span><span class="edge">vectors</span><h4>Embed</h4><code class="cfg">1,024 dims</code><p>One vector per chunk, plus the title.</p></li>
+    <li class="now" data-step="3"><span class="dot">3</span><span class="edge">top 50</span><h4>Retrieve</h4><code class="cfg">hybrid: BM25 + dense</code><p>Keywords catch identifiers that embeddings blur.</p></li>
+    <li class="next" data-step="4"><span class="dot">4</span><span class="edge">top 8</span><h4>Rerank</h4><code class="cfg">cross-encoder</code><p>Reads query and chunk together.</p></li>
+    <li class="next" data-step="5"><span class="dot">5</span><h4>Answer</h4><code class="cfg">cite chunk ids</code><p>Every claim points at a chunk.</p></li>
+  </ol>
+  <div class="panel" data-step="3"><span class="lab">Where most misses happen</span><div class="src">recall@50, dense only   0.71
+recall@50, hybrid       0.88   ← exact names and error codes</div></div>
+  <aside class="notes">Stages one and two are done; we're on retrieval. The panel says why hybrid.</aside>
+</section>

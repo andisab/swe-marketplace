@@ -1,0 +1,69 @@
+<!-- pattern
+name: agent-map
+title: Agent system map
+idea: An agent system on one map: what comes in, the agent, the tools it reaches through, and what comes out, each zone in its own role.
+use: The architecture slide of an agent talk. .ins and .outs are lists (two to four each, --ni and --no their counts); .agent is the centre; .tools (two to six, --nt) hangs under it, each tool a capability (b) over its connector (span). A .claim line (optional) under the map says what it's for.
+avoid: Several agents talking to each other (use fan-out or a figure); a tool list longer than six (group them).
+builds: inputs, then the agent, then tools, then outputs
+from: AI SRE talk, Severin 2025 (inputs, agent, two-tier tool row, outputs); Kalinowski, MCP Console (tools behind connectors)
+-->
+<style>
+section[data-key].layout-agent-map .map { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1.05fr) 56px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto; row-gap: 44px; margin-top: .8em; --line: var(--color-ink-faint); }
+section[data-key].layout-agent-map .zone { position: relative; display: grid; grid-auto-rows: 1fr; margin: 0; padding: 0; list-style: none; align-self: center; }
+section[data-key].layout-agent-map .zone > li { position: relative; display: flex; align-items: center; margin: 0; padding: 5px 0; }
+section[data-key].layout-agent-map .zone > li > span { flex: 1 1 auto; padding: 9px 14px; border: 1.5px solid var(--color-ink-muted); border-radius: var(--radius); background: var(--color-surface);
+  font-size: var(--size-subbody); line-height: 1.3; color: var(--color-ink); }
+section[data-key].layout-agent-map .zone > li > span small { display: block; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-agent-map .zone .lab { position: absolute; bottom: 100%; left: 0; margin-bottom: 8px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-agent-map .ins { grid-column: 1; grid-row: 1; }
+section[data-key].layout-agent-map .outs { grid-column: 5; grid-row: 1; }
+section[data-key].layout-agent-map .outs > li > span { border-color: var(--color-accent); }
+section[data-key].layout-agent-map .ins > li::after, section[data-key].layout-agent-map .outs > li::before { content: ""; position: absolute; top: 50%; width: 28px; border-top: 2px solid var(--line); }
+section[data-key].layout-agent-map .ins > li::after { left: 100%; }
+section[data-key].layout-agent-map .outs > li::before { right: 100%; }
+section[data-key].layout-agent-map .ins::after, section[data-key].layout-agent-map .outs::before { content: ""; position: absolute; top: calc(50% / var(--ni, 3)); bottom: calc(50% / var(--ni, 3)); border-left: 2px solid var(--line); }
+section[data-key].layout-agent-map .outs::before { top: calc(50% / var(--no, 2)); bottom: calc(50% / var(--no, 2)); }
+section[data-key].layout-agent-map .ins::after { left: calc(100% + 28px); }
+section[data-key].layout-agent-map .outs::before { right: calc(100% + 28px); }
+section[data-key].layout-agent-map .agent { --color-ink: var(--color-bg); --color-ink-body: var(--color-bg); --color-ink-muted: color-mix(in srgb, var(--color-bg) 80%, var(--color-accent));
+  grid-column: 3; grid-row: 1; position: relative; align-self: center; padding: 22px 20px; border-radius: calc(var(--radius) * 2); background: var(--color-accent);
+  text-align: center; color: var(--color-bg); box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-accent) 16%, transparent); }
+section[data-key].layout-agent-map .agent .tag { display: block; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+section[data-key].layout-agent-map .agent b { display: block; margin: 4px 0; font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); line-height: 1.1; }
+section[data-key].layout-agent-map .agent small { display: block; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-agent-map .agent::before, section[data-key].layout-agent-map .agent::after { content: ""; position: absolute; top: 50%; width: 28px; border-top: 2px solid var(--line); }
+section[data-key].layout-agent-map .agent::before { right: 100%; margin-right: 8px; }
+section[data-key].layout-agent-map .agent::after { left: 100%; margin-left: 8px; }
+section[data-key].layout-agent-map .agent > i { position: absolute; left: 50%; top: 100%; height: 30px; margin-top: 8px; border-left: 2px solid var(--line); }
+section[data-key].layout-agent-map .tools { grid-column: 1 / -1; grid-row: 2; position: relative; display: grid; grid-template-columns: repeat(var(--nt, 4), minmax(0, 1fr)); gap: 12px; margin: 0 8%; padding: 0; list-style: none; }
+section[data-key].layout-agent-map .tools::before { content: ""; position: absolute; top: -16px; left: calc((100% - (var(--nt, 4) - 1) * 12px) / var(--nt, 4) / 2); right: calc((100% - (var(--nt, 4) - 1) * 12px) / var(--nt, 4) / 2);
+  border-top: 2px solid var(--line); }
+section[data-key].layout-agent-map .tools > li { position: relative; margin: 0; border: 1.5px solid var(--color-ink); border-radius: var(--radius); background: var(--color-surface); overflow: visible; }
+section[data-key].layout-agent-map .tools > li::before { content: ""; position: absolute; left: 50%; bottom: 100%; height: 16px; border-left: 2px solid var(--line); }
+section[data-key].layout-agent-map .tools b { display: block; padding: 8px 12px 6px; font-size: var(--size-subbody); color: var(--color-ink); }
+section[data-key].layout-agent-map .tools span { display: block; padding: 5px 12px 7px; border-top: 1px solid var(--color-border); font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-agent-map .claim { margin-top: 18px; text-align: right; font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-subtitle, var(--size-title)); font-style: italic; color: var(--color-accent); }
+</style>
+<section data-key="example-agent-map" class="layout-agent-map">
+  <p class="kicker">Architecture</p>
+  <h3>An incident agent, end to end</h3>
+  <div class="map">
+    <ul class="zone ins" style="--ni: 3" data-step="1"><span class="lab">In</span>
+      <li><span>Pager alert<small>from monitoring</small></span></li>
+      <li><span>On-call question<small>in the incident channel</small></span></li>
+      <li><span>Runbook<small>for this service</small></span></li></ul>
+    <div class="agent" data-step="2"><span class="tag">agent</span><b>Incident responder</b><small>model · loop · scratch notes</small><i></i></div>
+    <ul class="zone outs" style="--no: 2" data-step="4"><span class="lab">Out</span>
+      <li><span>Ranked hypotheses<small>with the evidence for each</small></span></li>
+      <li><span>A draft fix<small>as a pull request, never merged</small></span></li></ul>
+    <ul class="tools" style="--nt: 4" data-step="3">
+      <li><b>Logs</b><span>logs MCP · read</span></li>
+      <li><b>Metrics</b><span>metrics API · read</span></li>
+      <li><b>Cluster</b><span>kubectl · read-only</span></li>
+      <li><b>Code</b><span>git · branch only</span></li>
+    </ul>
+  </div>
+  <div class="claim" data-step="4">Every tool reads; the only write is a branch.</div>
+  <aside class="notes">[click 1] What comes in. [click 2] The agent. [click 3] The tools, each with its connector and its permission. [click 4] What comes out.</aside>
+</section>

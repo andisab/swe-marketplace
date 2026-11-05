@@ -1,0 +1,44 @@
+<!-- pattern
+name: bento
+title: Bento of results
+idea: A results overview where the size of each tile says how much it matters: one hero metric, the supporting numbers around it.
+use: An eval run, a launch, a quarter, a benchmark summary; five to seven tiles on a four-column grid. .hero spans two columns and two rows (add .inverse to set it on the dark ground); .wide spans two columns. Each tile has a .l label, a .v value (unit in .u) and a .d line; .spark (optional) is a row of i bars with --h from 0 to 1; .warn marks a tile that needs attention.
+avoid: Numbers of equal weight (use stats); more than seven tiles (it becomes a dashboard).
+builds: the hero, then the rest together
+from: Neo-Grid Bold and Soft Editorial templates (metric tiles, hero tile); slides.com Form (bento grid); editorial-forest agenda tiles
+-->
+<style>
+section[data-key].layout-bento .grid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 14px; margin-top: .6em; }
+section[data-key].layout-bento .tile { display: flex; flex-direction: column; min-height: 0; padding: 16px 18px; border: 1px solid var(--color-border); border-radius: calc(var(--radius) * 1.5); background: var(--color-surface); overflow: hidden; }
+section[data-key].layout-bento .tile.hero { grid-column: span 2; grid-row: span 2; }
+section[data-key].layout-bento .tile.inverse { border-color: var(--color-bg-dark); background: var(--color-bg-dark); }
+section[data-key].layout-bento .tile.wide { grid-column: span 2; }
+section[data-key].layout-bento .l { font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-bento .v { margin-top: auto; font-family: var(--font-heading, var(--font-serif)); font-size: 34pt; font-weight: 700; line-height: 1; letter-spacing: -.02em; color: var(--color-ink); }
+section[data-key].layout-bento .u { margin-left: .08em; font-size: .5em; font-weight: 600; letter-spacing: 0; color: var(--color-accent); }
+section[data-key].layout-bento .d { margin-top: 6px; font-size: var(--size-caption); line-height: 1.4; color: var(--color-ink-body); }
+section[data-key].layout-bento .hero .l { color: color-mix(in srgb, var(--color-accent) 60%, var(--color-bg)); }
+section[data-key].layout-bento .hero .v { font-size: 96pt; }
+section[data-key].layout-bento .hero .u { color: color-mix(in srgb, var(--color-accent) 70%, var(--color-bg)); }
+section[data-key].layout-bento .hero .d { font-size: var(--size-subbody); }
+section[data-key].layout-bento .spark { display: flex; align-items: flex-end; gap: 6px; height: 70px; margin-top: 18px; }
+section[data-key].layout-bento .spark > i { flex: 1 1 0; height: calc(var(--h) * 100%); border-radius: 2px 2px 0 0; background: var(--color-ink-faint); }
+section[data-key].layout-bento .spark > i:last-child { background: var(--color-accent); }
+section[data-key].layout-bento .tile.warn { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface)); }
+section[data-key].layout-bento .tile.warn .l, section[data-key].layout-bento .tile.warn .u { color: var(--color-warning); }
+</style>
+<section data-key="example-bento" class="layout-bento">
+  <p class="kicker">Eval run 2026-10-30 · support agent v5</p>
+  <h3>Best pass rate yet, one regression to fix before release</h3>
+  <div class="grid">
+    <div class="tile hero inverse" data-step="1"><span class="l">pass@1, 48 tasks × 3 trials</span><div class="v">86<span class="u">%</span></div><p class="d">Up from 63% on v4. The test-running step in the loop did most of it.</p>
+      <div class="spark"><i style="--h: .52"></i><i style="--h: .55"></i><i style="--h: .58"></i><i style="--h: .61"></i><i style="--h: .6"></i><i style="--h: .63"></i><i style="--h: .86"></i></div></div>
+    <div class="tile" data-step="2"><span class="l">pass^3</span><div class="v">74<span class="u">%</span></div><p class="d">all three trials pass</p></div>
+    <div class="tile warn" data-step="2"><span class="l">regressions</span><div class="v">1</div><p class="d">cancel-subscription, 3/3 → 0/3</p></div>
+    <div class="tile" data-step="2"><span class="l">cost per task</span><div class="v">$0.41</div><p class="d">−18% with prompt caching</p></div>
+    <div class="tile" data-step="2"><span class="l">median time</span><div class="v">38<span class="u">s</span></div><p class="d">p95 2 min 10 s</p></div>
+    <div class="tile wide" data-step="2"><span class="l">flaky tasks</span><div class="v">3</div><p class="d">all three time out on the same slow lookup tool; a fix is in review</p></div>
+    <div class="tile wide" data-step="2"><span class="l">slowest tool · lookup_order</span><div class="v">9.8<span class="u">s</span></div><p class="d">p95 per call; 40% of the median task's wall time</p></div>
+  </div>
+  <aside class="notes">[click 1] The headline. [click 2] Everything else; the amber tile is the one to talk about.</aside>
+</section>

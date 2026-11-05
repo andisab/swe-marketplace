@@ -1,0 +1,46 @@
+<!-- pattern
+name: recommend
+title: Options with a recommendation
+idea: Two to four options side by side, each with what it gives and what it costs, and the one we recommend raised and inverted.
+use: Build, buy or adapt; fine-tune, retrieve or prompt; three hosting paths. Set --n. Each .opt has a .tag, h4, a .line, a list (li.pro and li.con) and a .cost row; .rec raises one (add .inverse to invert it) and carries a .pick label.
+avoid: Options compared on many criteria (use rating-matrix); no clear recommendation (use card-row).
+builds: the options, then the recommendation lifts
+from: slides.com Basel and Form templates (comparison with a highlighted winner); Track 03 v6 s69 (four paths, one rule)
+-->
+<style>
+section[data-key].layout-recommend .opts { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 22px; align-items: stretch; margin-top: 1.6em; }
+section[data-key].layout-recommend .opt { position: relative; display: flex; flex-direction: column; padding: 22px 22px 18px; border: 1px solid var(--color-border); border-radius: calc(var(--radius) * 1.5); background: var(--color-surface); }
+section[data-key].layout-recommend .opt .tag { font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-recommend .opt h4 { margin: 6px 0 6px; font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); font-weight: 600; letter-spacing: 0; text-transform: none; line-height: 1.15; color: var(--color-ink); }
+section[data-key].layout-recommend .opt .line { margin: 0 0 14px; font-size: var(--size-subbody); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-recommend .opt ul { margin: 0; padding: 12px 0 0; border-top: 1px solid var(--color-border); list-style: none; }
+section[data-key].layout-recommend .opt li { position: relative; margin: 0 0 10px; padding-left: 24px; font-size: var(--size-subbody); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-recommend .opt li::before { position: absolute; left: 0; top: 0; width: 16px; text-align: center; font-weight: 700; }
+section[data-key].layout-recommend .opt li.pro::before { content: "✓"; color: var(--color-success); }
+section[data-key].layout-recommend .opt li.con::before { content: "✕"; color: var(--color-ink-faint); }
+section[data-key].layout-recommend .opt .cost { display: flex; justify-content: space-between; align-items: baseline; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--color-border);
+  font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-recommend .opt .cost b { font-size: var(--size-subbody); color: var(--color-ink); }
+section[data-key].layout-recommend .opt.rec { transform: translateY(-16px); box-shadow: 0 18px 40px rgba(0, 0, 0, calc(var(--shadow-opacity) * 2)); }
+section[data-key].layout-recommend .opt.inverse { border-color: var(--color-bg-dark); background: var(--color-bg-dark); }
+section[data-key].layout-recommend .opt.rec .tag { color: color-mix(in srgb, var(--color-accent) 60%, var(--color-bg)); }
+section[data-key].layout-recommend .opt.rec li.pro::before { color: color-mix(in srgb, var(--color-success) 65%, var(--color-bg)); }
+section[data-key].layout-recommend .opt .pick { position: absolute; top: 0; right: 18px; transform: translateY(-50%); padding: 3px 10px; border-radius: 999px; background: var(--color-accent);
+  font-family: var(--font-mono); font-size: calc(var(--size-caption) * .9); letter-spacing: .06em; text-transform: uppercase; color: var(--color-bg); }
+</style>
+<section data-key="example-recommend" class="layout-recommend">
+  <p class="kicker">Teaching the model your codebase</p>
+  <h3>Three ways in; start with the cheapest one that you can change by Friday</h3>
+  <div class="opts" style="--n: 3">
+    <div class="opt" data-step="1"><span class="tag">Option A</span><h4>Fine-tune</h4><p class="line">Train a model on the team's code and reviews.</p>
+      <ul><li class="pro">Style and idioms without a prompt</li><li class="con">Stale the day the code changes</li><li class="con">Needs data, evals and a training budget</li></ul>
+      <div class="cost"><span>to change</span><b>weeks</b></div></div>
+    <div class="opt" data-step="1"><span class="tag">Option B</span><h4>Retrieval</h4><p class="line">Index the repository and the docs; fetch per question.</p>
+      <ul><li class="pro">Always current</li><li class="pro">Cites where an answer came from</li><li class="con">Misses what no single chunk says</li></ul>
+      <div class="cost"><span>to change</span><b>days</b></div></div>
+    <div class="opt rec inverse" data-step="2"><span class="pick">Recommended</span><span class="tag">Option C</span><h4>Context files and skills</h4><p class="line">Write down what a senior engineer would tell a new hire.</p>
+      <ul><li class="pro">Reviewed like code, versioned with it</li><li class="pro">The agent reads it every session</li><li class="con">Someone has to keep it short</li></ul>
+      <div class="cost"><span>to change</span><b>minutes</b></div></div>
+  </div>
+  <aside class="notes">[click 1] Two familiar options. [click 2] The one that's cheapest to change, which is what matters while the team is still learning what to write down.</aside>
+</section>

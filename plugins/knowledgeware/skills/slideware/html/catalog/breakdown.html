@@ -1,0 +1,42 @@
+<!-- pattern
+name: breakdown
+title: Number with its breakdown
+idea: One large share on the left, and beside it the parts it comes from as labelled bars, so the audience sees both the headline and where it comes from.
+use: Where the tokens or the time go, cost by component, errors by cause; three to six parts. .hero holds the .v, its label and a line. Each .row in .parts has a .k label (with an optional small), a .bar with --v from 0 to 1 and a .n value; .on marks the part the hero is about.
+avoid: Parts that don't add up to a whole (use stats or a chart); more than six parts.
+builds: the hero, then the parts top down
+from: Editorial Tri-Tone template (72% with segment meters); AI-SDLC workshop s18 (cost per completed task and its levers); Couch 2026 (finding as headline)
+-->
+<style>
+section[data-key].layout-breakdown .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: 56px; align-items: center; margin-top: .4em; }
+section[data-key].layout-breakdown .hero .v { font-family: var(--font-heading, var(--font-serif)); font-size: 150pt; font-weight: 700; line-height: .85; letter-spacing: -.04em; color: var(--color-accent); }
+section[data-key].layout-breakdown .hero .v .u { font-size: .45em; letter-spacing: 0; }
+section[data-key].layout-breakdown .hero .k { margin-top: 18px; font-size: var(--size-body); font-weight: 600; line-height: 1.35; color: var(--color-ink); }
+section[data-key].layout-breakdown .hero .d { margin-top: 8px; font-size: var(--size-caption); line-height: 1.5; color: var(--color-ink-muted); }
+section[data-key].layout-breakdown .parts { display: flex; flex-direction: column; border-top: 2px solid var(--color-ink); }
+section[data-key].layout-breakdown .parts .row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) 60px; gap: 18px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+section[data-key].layout-breakdown .parts .k { font-size: var(--size-subbody); font-weight: 600; line-height: 1.3; color: var(--color-ink); }
+section[data-key].layout-breakdown .parts .k small { display: block; font-size: var(--size-caption); font-weight: 400; color: var(--color-ink-muted); }
+section[data-key].layout-breakdown .parts .bar { height: 12px; border-radius: 6px; background: var(--color-surface-alt); overflow: hidden; }
+section[data-key].layout-breakdown .parts .bar::before { content: ""; display: block; width: calc(var(--v) * 100%); height: 100%; border-radius: 6px; background: var(--color-ink-muted); }
+section[data-key].layout-breakdown .parts .n { text-align: right; font-family: var(--font-mono); font-size: var(--size-subbody); font-variant-numeric: tabular-nums; color: var(--color-ink-body); }
+section[data-key].layout-breakdown .parts .row.on .bar::before { background: var(--color-accent); }
+section[data-key].layout-breakdown .parts .row.on .n { font-weight: 700; color: var(--color-accent); }
+section[data-key].layout-breakdown .parts .total { display: flex; justify-content: space-between; padding-top: 10px; font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-muted); }
+</style>
+<section data-key="example-breakdown" class="layout-breakdown has-sources">
+  <p class="kicker">Where an agent's tokens go</p>
+  <h3>Most of the bill is what the tools send back</h3>
+  <div class="body">
+    <div class="hero" data-step="1"><div class="v">71<span class="u">%</span></div><div class="k">of input tokens per task are tool results</div><p class="d">File reads, search hits and command output, re-read on every turn until the context is compacted.</p></div>
+    <div class="parts">
+      <div class="row on" data-step="2"><span class="k">Tool results<small>reads, search, command output</small></span><span class="bar" style="--v: .71"></span><span class="n">71%</span></div>
+      <div class="row" data-step="3"><span class="k">System prompt and tools<small>cached after the first turn</small></span><span class="bar" style="--v: .12"></span><span class="n">12%</span></div>
+      <div class="row" data-step="3"><span class="k">Conversation<small>the user's messages and replies</small></span><span class="bar" style="--v: .09"></span><span class="n">9%</span></div>
+      <div class="row" data-step="3"><span class="k">Context files and skills<small>loaded on demand</small></span><span class="bar" style="--v: .08"></span><span class="n">8%</span></div>
+      <div class="total"><span>median task · 41 turns</span><span>212k input tokens</span></div>
+    </div>
+  </div>
+  <p class="sources">Source: transcripts of 300 tasks, support agent v5 (illustrative)</p>
+  <aside class="notes">[click 1] The headline. [click 2] It's one part. [click 3] The rest are small; that's where to look last.</aside>
+</section>

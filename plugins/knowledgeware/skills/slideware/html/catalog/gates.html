@@ -1,0 +1,50 @@
+<!-- pattern
+name: gates
+title: Gates on a flow
+idea: A request passes through a row of filters, each a different kind of check, with what wraps all of them written on the frame.
+use: Guardrails around an agent, defence in depth, data validation, a release process; three to five gates. Set --n. .in and .outp label the two ends; each gate li has a .when chip (when it acts), h4 and a sentence; .inverse marks the gate the slide is about. .wrap (optional) is the label on the frame for what spans every gate.
+avoid: Stages that transform the work (use pipeline); gates with no common flow (use card-row).
+builds: one gate per click, then the frame
+from: Track 03 v6 s55 (defence-in-depth layers, one gate emphasised, infrastructure band); AI-SDLC workshop s9 (human attention moves to the gates)
+-->
+<style>
+section[data-key].layout-gates .frame { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-top: 1em; padding: 26px 26px 34px;
+  border: 1.5px dashed var(--color-ink-faint); border-radius: calc(var(--radius) * 3); }
+section[data-key].layout-gates .frame > .wrap { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%); padding: 0 12px; background: var(--color-bg);
+  font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-ink-muted); }
+section[data-key].layout-gates .flow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 0 18px; }
+section[data-key].layout-gates .end { position: relative; z-index: 1; margin-top: 48px; padding: 4px 10px; border-radius: var(--radius); font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; }
+section[data-key].layout-gates .end.in { border: 1px solid var(--color-error); color: var(--color-error); background: var(--color-bg); }
+section[data-key].layout-gates .end.outp { background: var(--color-ink); color: var(--color-bg); }
+section[data-key].layout-gates ol.gl { position: relative; display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+section[data-key].layout-gates ol.gl::before { content: ""; position: absolute; left: -18px; right: -18px; top: 60px; border-top: 2px solid var(--color-ink-muted); }
+section[data-key].layout-gates ol.gl::after { content: ""; position: absolute; right: -20px; top: 55px; border: 6px solid transparent; border-left: 8px solid var(--color-ink-muted); border-right: 0; }
+section[data-key].layout-gates ol.gl > li { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0 6px; padding: 0 12px 16px; border-radius: calc(var(--radius) * 2); text-align: center; }
+section[data-key].layout-gates ol.gl > li::before { content: ""; position: relative; z-index: 1; width: 20px; height: 120px; border: 2px solid var(--color-accent); border-radius: 9px; background: var(--color-bg); }
+section[data-key].layout-gates .when { margin: 14px 0 8px; padding: 2px 9px; border-radius: 999px; background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
+  font-family: var(--font-mono); font-size: calc(var(--size-caption) * .92); letter-spacing: .04em; white-space: nowrap; color: var(--color-accent); }
+section[data-key].layout-gates ol.gl h4 { margin: 0 0 6px; font-family: var(--font-sans); font-size: var(--size-body); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-gates ol.gl p { margin: 0; font-size: var(--size-subbody); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-gates ol.gl > li.inverse::before { border-color: var(--color-bg-dark); background: var(--color-accent); }
+section[data-key].layout-gates ol.gl > li.inverse .when { background: var(--color-accent); color: var(--color-bg); }
+section[data-key].layout-gates .note { margin-top: auto; padding-top: 14px; font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); font-style: italic; text-align: right; color: var(--color-accent); }
+</style>
+<section data-key="example-gates" class="layout-gates">
+  <p class="kicker">Guardrails</p>
+  <h3>Four gates between a request and a merge</h3>
+  <div class="frame">
+    <div class="flow">
+      <span class="end in">untrusted input</span>
+      <ol class="gl" style="--n: 4">
+        <li data-step="1"><span class="when">before the model</span><h4>Input screening</h4><p>Strip secrets, flag instructions hidden in fetched pages.</p></li>
+        <li data-step="2"><span class="when">at each tool call</span><h4>Permission rules</h4><p>Allow, ask or deny, per tool and per path.</p></li>
+        <li class="inverse" data-step="3"><span class="when">deterministic</span><h4>Hooks</h4><p>Code that runs every time; the model can't talk its way past it.</p></li>
+        <li data-step="4"><span class="when">before merge</span><h4>Human review</h4><p>A code owner approves; the agent's approval never counts.</p></li>
+      </ol>
+      <span class="end outp">merge</span>
+    </div>
+    <div class="note" data-step="5">No single gate is enough.</div>
+    <span class="wrap" data-step="5">the sandbox and the audit log wrap every gate</span>
+  </div>
+  <aside class="notes">[click 1–4] One gate each. Hooks are the one that doesn't depend on the model. [click 5] The frame.</aside>
+</section>

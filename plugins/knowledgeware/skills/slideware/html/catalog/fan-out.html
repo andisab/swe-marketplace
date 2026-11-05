@@ -1,0 +1,62 @@
+<!-- pattern
+name: fan-out
+title: Fan-out and merge
+idea: One actor splits work across parallel workers and merges what comes back; the return path shows what coordination costs.
+use: Subagents, map-reduce, sharded training, parallel tool calls, an ensemble; two to five workers. Set --n to the worker count. .src and .sink are the two ends (.inverse on one sets it apart); each .w holds a .node with an optional .tag; .ret (optional) is the dashed path back, with its label. The .rules row under it (optional) holds two or three numbered notes.
+avoid: Pipelines where each step feeds the next (use pipeline); more than five workers (draw three and label one ×N).
+builds: the source, then the workers together, then the merge and the return
+from: AI-SDLC workshop s26, s29 (engineer to sessions; orchestrator, workers, verifier); Foreman, AI for Science 2024 (collective operations)
+-->
+<style>
+section[data-key].layout-fan-out .fan { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 220px); grid-template-rows: minmax(0, 1fr) auto;
+  align-items: center; margin-top: .6em; --bus: 34px; --line: var(--color-ink-faint); }
+section[data-key].layout-fan-out .node { position: relative; padding: 12px 16px; border: 1.5px solid var(--color-ink); border-radius: var(--radius); background: var(--color-surface); }
+section[data-key].layout-fan-out .node .tag { display: block; margin-bottom: 3px; font-family: var(--font-mono); font-size: calc(var(--size-caption) * .92); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
+section[data-key].layout-fan-out .node b { display: block; font-size: var(--size-subbody); line-height: 1.25; color: var(--color-ink); }
+section[data-key].layout-fan-out .node small { display: block; margin-top: 3px; font-size: var(--size-caption); line-height: 1.4; color: var(--color-ink-muted); }
+section[data-key].layout-fan-out .node.inverse { border-color: var(--color-bg-dark); background: var(--color-bg-dark); }
+section[data-key].layout-fan-out .node.inverse .tag { color: color-mix(in srgb, var(--color-accent) 60%, var(--color-bg)); }
+section[data-key].layout-fan-out .src { grid-column: 1; grid-row: 1; }
+section[data-key].layout-fan-out .sink { grid-column: 3; grid-row: 1; }
+section[data-key].layout-fan-out .src::after, section[data-key].layout-fan-out .sink::before { content: ""; position: absolute; top: 50%; width: var(--bus); border-top: 2px solid var(--line); }
+section[data-key].layout-fan-out .src::after { left: 100%; margin-left: 1.5px; }
+section[data-key].layout-fan-out .sink::before { right: 100%; margin-right: 1.5px; }
+section[data-key].layout-fan-out .workers { grid-column: 2; grid-row: 1; position: relative; align-self: stretch; display: grid; grid-auto-rows: 1fr; padding: 0 calc(var(--bus) * 2); }
+section[data-key].layout-fan-out .workers::before, section[data-key].layout-fan-out .workers::after { content: ""; position: absolute; top: calc(50% / var(--n, 3)); bottom: calc(50% / var(--n, 3)); border-left: 2px solid var(--line); }
+section[data-key].layout-fan-out .workers::before { left: var(--bus); }
+section[data-key].layout-fan-out .workers::after { right: var(--bus); }
+section[data-key].layout-fan-out .w { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 7px 0; }
+section[data-key].layout-fan-out .w::before, section[data-key].layout-fan-out .w::after { content: ""; position: absolute; top: 50%; width: var(--bus); border-top: 2px solid var(--line); }
+section[data-key].layout-fan-out .w::before { left: calc(var(--bus) * -1); }
+section[data-key].layout-fan-out .w::after { right: calc(var(--bus) * -1); }
+section[data-key].layout-fan-out .w .node { border-color: var(--color-accent); }
+section[data-key].layout-fan-out .w .node::before { content: ""; position: absolute; left: -8px; top: 50%; margin-top: -6px; border: 6px solid transparent; border-left: 7px solid var(--line); border-right: 0; }
+section[data-key].layout-fan-out .ret { grid-column: 1 / -1; grid-row: 2; position: relative; height: 26px; margin: 10px 110px 0; border: 2px dashed var(--color-accent); border-top: 0; border-radius: 0 0 14px 14px; }
+section[data-key].layout-fan-out .ret > span { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%); padding: 0 10px; background: var(--color-bg);
+  font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-accent); white-space: nowrap; }
+section[data-key].layout-fan-out .rules { display: grid; grid-template-columns: repeat(var(--rules, 3), minmax(0, 1fr)); gap: 24px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--color-border); }
+section[data-key].layout-fan-out .rules > div { display: grid; grid-template-columns: 24px 1fr; gap: 10px; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-fan-out .rules .n { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-ink);
+  font-family: var(--font-mono); font-size: calc(var(--size-caption) * .9); color: var(--color-bg); }
+section[data-key].layout-fan-out .rules b { color: var(--color-ink); }
+</style>
+<section data-key="example-fan-out" class="layout-fan-out">
+  <p class="kicker">Subagents</p>
+  <h3>Split by question, merge by summary</h3>
+  <div class="fan" style="--n: 3">
+    <div class="node src inverse" data-step="1"><span class="tag">Lead agent</span><b>Plan the migration</b><small>Splits the work, never reads the code itself</small></div>
+    <div class="workers" data-step="2">
+      <div class="w"><div class="node"><span class="tag">Worker · fresh context</span><b>Find every caller of the old client</b></div></div>
+      <div class="w"><div class="node"><span class="tag">Worker · fresh context</span><b>Read the new API's changelog</b></div></div>
+      <div class="w"><div class="node"><span class="tag">Worker · fresh context</span><b>List the tests that cover payments</b></div></div>
+    </div>
+    <div class="node sink" data-step="3"><span class="tag">Lead agent</span><b>One plan, three sources</b><small>Each worker returns a page, not a transcript</small></div>
+    <div class="ret" data-step="3"><span>summaries back · about 1/20 of the tokens each worker read</span></div>
+  </div>
+  <div class="rules" data-step="4">
+    <div><span class="n">1</span><span><b>Split by question,</b> not by file: workers that share files collide.</span></div>
+    <div><span class="n">2</span><span><b>Fresh context</b> is the point; a worker that inherits everything is just slower.</span></div>
+    <div><span class="n">3</span><span><b>Parallel costs more</b> in total tokens; it buys wall-clock time and focus.</span></div>
+  </div>
+  <aside class="notes">[click 1] The lead. [click 2] Three workers in parallel. [click 3] What comes back. [click 4] The rules.</aside>
+</section>

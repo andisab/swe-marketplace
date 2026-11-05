@@ -1,0 +1,47 @@
+<!-- pattern
+name: phase-bars
+title: Phase bars
+idea: The same work on one time scale before and after, where one phase collapses and the bottleneck moves to the next.
+use: Build time vs review time, data prep vs training, inference cost by stage; two or three tracks. Set --total on .tracks to the longest track's length; each .seg takes --w in the same unit. .focus marks the phase that changed, .hot the new bottleneck; a .seg too short for its label gets .tiny and its label in .flag. .end (optional, --at) draws the old end through every track. .after (optional) holds two or three consequences.
+avoid: Phases that don't share a scale (say "illustrative" if they only roughly do); more than six phases.
+builds: one track per click, then the consequences
+from: AI-SDLC workshop s4 (code is no longer the bottleneck); Track 03 v6 (collapse bars)
+-->
+<style>
+section[data-key].layout-phase-bars .tracks { position: relative; display: grid; grid-template-columns: 130px minmax(0, 1fr); row-gap: 56px; margin: auto 0; }
+section[data-key].layout-phase-bars .track { display: contents; }
+section[data-key].layout-phase-bars .track > .lab { align-self: center; font-size: var(--size-subbody); font-weight: 600; color: var(--color-ink-muted); }
+section[data-key].layout-phase-bars .track > .lab small { display: block; font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 400; }
+section[data-key].layout-phase-bars .track.now > .lab { color: var(--color-ink); }
+section[data-key].layout-phase-bars .segs { position: relative; display: flex; gap: 4px; height: 88px; }
+section[data-key].layout-phase-bars .seg { position: relative; flex: 0 0 calc(var(--w) / var(--total, 10) * 100% - 4px); display: flex; align-items: center; justify-content: center; border-radius: 4px;
+  background: var(--color-surface-alt); box-shadow: inset 0 0 0 1px var(--color-border); font-size: var(--size-subbody); white-space: nowrap; color: var(--color-ink-body); }
+section[data-key].layout-phase-bars .seg.focus { background: color-mix(in srgb, var(--color-accent) 22%, var(--color-bg)); box-shadow: inset 0 0 0 1.5px var(--color-accent); font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-phase-bars .seg.hot { background: var(--color-bg-dark); box-shadow: none; font-weight: 600; color: var(--color-bg); }
+section[data-key].layout-phase-bars .seg.tiny { flex-basis: max(8px, calc(var(--w) / var(--total, 10) * 100% - 4px)); background: var(--color-accent); box-shadow: none; }
+section[data-key].layout-phase-bars .seg .flag { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 700; color: var(--color-accent); }
+section[data-key].layout-phase-bars .end { position: absolute; top: -14px; bottom: -14px; left: calc(130px + (100% - 130px) * var(--at) / var(--total, 10)); border-left: 2px dashed var(--color-ink-faint); }
+section[data-key].layout-phase-bars .end > span { position: absolute; top: -10px; left: 8px; font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-ink-muted); }
+section[data-key].layout-phase-bars .scale { grid-column: 2; display: flex; justify-content: space-between; margin-top: -22px; font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-faint); }
+section[data-key].layout-phase-bars .after { display: grid; grid-template-columns: repeat(var(--after, 3), minmax(0, 1fr)); gap: 28px; margin-top: 0; padding-top: 18px; border-top: 1px solid var(--color-border); }
+section[data-key].layout-phase-bars .after h4 { margin: 0 0 4px; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-phase-bars .after p { margin: 0; font-size: var(--size-caption); line-height: 1.5; color: var(--color-ink-body); }
+</style>
+<section data-key="example-phase-bars" class="layout-phase-bars">
+  <p class="kicker">Where a change's time goes</p>
+  <h3>Code is no longer the bottleneck; review is</h3>
+  <div class="tracks" style="--total: 9">
+    <div class="track" data-step="1"><span class="lab">Last year<small>median, days</small></span>
+      <div class="segs"><span class="seg" style="--w: 1">Spec</span><span class="seg focus" style="--w: 4.5">Build</span><span class="seg" style="--w: 1.5">Review</span><span class="seg" style="--w: 1">Release</span></div></div>
+    <div class="track now" data-step="2"><span class="lab">With agents<small>median, days</small></span>
+      <div class="segs"><span class="seg" style="--w: 1.5">Spec</span><span class="seg tiny" style="--w: .3"><span class="flag">Build</span></span><span class="seg hot" style="--w: 2.5">Review</span><span class="seg" style="--w: 1">Release</span></div></div>
+    <span class="end" style="--at: 8" data-step="2"><span>old end · 8 days</span></span>
+    <div class="scale"><span>0</span><span>3</span><span>6</span><span>9 days</span></div>
+  </div>
+  <div class="after" data-step="3">
+    <div><h4>Specs take longer</h4><p>Writing what "done" means is now most of the engineer's job.</p></div>
+    <div><h4>Review grew</h4><p>More pull requests, each bigger; reviewers are the new queue.</p></div>
+    <div><h4>The total halved</h4><p>But only where review kept up. Measure the wait, not the build.</p></div>
+  </div>
+  <aside class="notes">[click 1] Last year: build was the long bar. [click 2] Build collapses; review is now the long bar. [click 3] What follows. Illustrative numbers.</aside>
+</section>

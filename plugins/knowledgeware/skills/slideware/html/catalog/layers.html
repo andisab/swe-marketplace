@@ -1,0 +1,47 @@
+<!-- pattern
+name: layers
+title: Layer stack
+idea: Layers built from a foundation up, each adding one kind of thing, with a bracket showing what the whole stack produces.
+use: An AI application stack, defence in depth, eval layers, a test pyramid; three to five layers. List them top to bottom in the markup; the last is the .base, with .inverse. Each .layer has a .n (letter or number), h4 with a line, and an optional .ex column (examples, file names). .out (optional) is the bracket and what the stack yields.
+avoid: Layers that don't depend on the one below (use card-row); more than five.
+builds: from the base up (give the base the lowest data-step)
+from: AI-SDLC workshop s23 (four layers of checks over criteria, bracket to one file); Creative Mode template (a stack of moving parts); Track 03 v6 s44 (two bands of responsibility)
+-->
+<style>
+section[data-key].layout-layers .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: .6em; }
+section[data-key].layout-layers .body:has(.out) { grid-template-columns: minmax(0, 1fr) 270px; }
+section[data-key].layout-layers .stack { display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; min-height: 0; }
+section[data-key].layout-layers .layer { flex: 1 1 auto; max-height: 104px; display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(0, 34%); gap: 0 16px; align-items: center; padding: 12px 18px;
+  border-left: 3px solid var(--color-accent); border-radius: 0 var(--radius) var(--radius) 0; background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg)); }
+section[data-key].layout-layers .layer .n { font-family: var(--font-mono); font-size: var(--size-title); font-weight: 600; line-height: 1; color: var(--color-accent); }
+section[data-key].layout-layers .layer h4 { margin: 0 0 2px; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-layers .layer p { margin: 0; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-layers .layer .ex { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+section[data-key].layout-layers .layer .ex span { padding: 2px 8px; border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent); border-radius: var(--radius); background: var(--color-bg);
+  font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-body); }
+section[data-key].layout-layers .layer.inverse { border-left-color: var(--color-bg-dark); background: var(--color-bg-dark); }
+section[data-key].layout-layers .layer.base .n { color: color-mix(in srgb, var(--color-accent) 55%, var(--color-bg)); }
+section[data-key].layout-layers .layer.base .ex span { border-color: var(--color-border); background: transparent; }
+section[data-key].layout-layers .out { display: flex; align-items: center; gap: 14px; padding-left: 14px; }
+section[data-key].layout-layers .out::before { content: ""; flex: 0 0 16px; align-self: stretch; border: 2px solid var(--color-accent); border-left: 0; border-radius: 0 10px 10px 0; }
+section[data-key].layout-layers .out .res { position: relative; flex: 1 1 auto; padding: 14px 16px; border: 1.5px solid var(--color-ink); border-radius: var(--radius); background: var(--color-surface); }
+section[data-key].layout-layers .out .res::before { content: ""; position: absolute; right: 100%; top: 50%; width: 14px; border-top: 2px solid var(--color-accent); }
+section[data-key].layout-layers .out .res .lab { display: block; margin-bottom: 4px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
+section[data-key].layout-layers .out .res .v { font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-subtitle, var(--size-body)); line-height: 1.15; color: var(--color-ink); }
+section[data-key].layout-layers .out .res .d { margin-top: 6px; font-size: var(--size-caption); color: var(--color-ink-muted); }
+</style>
+<section data-key="example-layers" class="layout-layers">
+  <p class="kicker">What an agent run stands on</p>
+  <h3>Five layers; the model is only the bottom one</h3>
+  <div class="body">
+    <div class="stack">
+      <div class="layer" data-step="5"><span class="n">4</span><div><h4>Task</h4><p>The ticket, its acceptance criteria, the check that says done.</p></div><div class="ex"><span>T-1042.md</span><span>check.sh</span></div></div>
+      <div class="layer" data-step="4"><span class="n">3</span><div><h4>Context</h4><p>What the team knows that the model doesn't.</p></div><div class="ex"><span>CLAUDE.md</span><span>skills/</span></div></div>
+      <div class="layer" data-step="3"><span class="n">2</span><div><h4>Tools</h4><p>What it can touch, each with a permission.</p></div><div class="ex"><span>MCP servers</span><span>shell</span><span>git</span></div></div>
+      <div class="layer" data-step="2"><span class="n">1</span><div><h4>Harness</h4><p>The loop, context management, hooks, the sandbox.</p></div><div class="ex"><span>settings.json</span><span>hooks</span></div></div>
+      <div class="layer base inverse" data-step="1"><span class="n">0</span><div><h4>Model</h4><p>Reasoning and code; the same for every team.</p></div><div class="ex"><span>model + effort</span></div></div>
+    </div>
+    <div class="out" data-step="6"><div class="res"><span class="lab">Yields</span><div class="v">A pull request a reviewer can trust</div><div class="d">Layers 1–4 are yours to change.</div></div></div>
+  </div>
+  <aside class="notes">Build from the base: [click 1] the model, [click 2–5] each layer the team owns, [click 6] what the stack produces.</aside>
+</section>
