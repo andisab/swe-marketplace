@@ -24,7 +24,7 @@ The skill activates on words like "deck", "slides", "presentation", "pitch", "pp
 
 ## Workflow
 
-Both formats follow the same path: gather inputs, resolve the style, plan layouts (12 pptx archetypes, or the HTML slide pattern catalogue's patterns as starting points, varied per the anti-monotony rule), author the source, run the checker, review every slide visually, iterate. A throwaway deck of up to three slides skips the review loop. The steps and commands are in `pptx/references/workflow.md` and `html/FORMAT.md` §Workflow.
+Both formats follow the same path: gather inputs, resolve the style, plan layouts (12 pptx archetypes, or the HTML slide pattern catalogue's 39 patterns as starting points, varied per the anti-monotony rule), author the source, run the checker, review every slide visually, iterate. A throwaway deck of up to three slides skips the review loop. The steps and commands are in `pptx/references/workflow.md` and `html/FORMAT.md` §Workflow.
 
 ## What it won't do
 
@@ -41,7 +41,7 @@ Both formats follow the same path: gather inputs, resolve the style, plan layout
 | `pptx/FORMAT.md`, `html/FORMAT.md` | What Claude follows after choosing a format: mechanics, pitfalls, output convention |
 | `pptx/references/{workflow,layout-patterns,visual-principles,pptxgenjs,canonical-samples}.md` | pptx build path, 12 archetypes, design principles, API gotchas, how to use the sample decks |
 | `html/references/{runtime,visual-principles}.md` | Keys, builds, motion, presenter, overview and the editor; design principles |
-| `html/catalog/` | The slide pattern catalogue: `core` and one `<name>.html` per pattern (metadata, scoped CSS, an example slide); its README says how to use and write one |
+| `html/catalog/` | The slide pattern catalogue: `core` and 39 patterns, one `<name>.html` each (metadata, scoped CSS, an example slide); its README says how to use and write one |
 | `pptx/assets/templates/starter-deck.js` | pptx scaffold with the checklist and pitfalls inline |
 | `pptx/assets/samples/<name>/` | Three sample decks: build script, token file, rendered previews |
 | `html/runtime/{deck,presenter,lanes,loader}.js` | Inlined into every deck: the runtime (stage, navigation, builds, motion, footer, print), the presenter and overview, lane generation, and the loader that fetches the editor on `E` |
