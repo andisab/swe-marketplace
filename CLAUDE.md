@@ -9,6 +9,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 - `./scripts/validate-all.sh` passes clean. It unsets `NODE_OPTIONS` (cmux preloads a module that breaks every node call) and deletes untracked `.DS_Store` files under `plugins/`, which `claude plugin validate` would otherwise warn on.
 - `core.hooksPath` is unset in this clone, so the pre-commit check doesn't run here; enable it with `git config core.hooksPath scripts/git-hooks`.
 - Shelved: the agent pack refactor, planned below under §Shelved plan. Pick it up from there.
+- Todo: build out slideware's slide pattern catalogue (`plugins/knowledgeware/skills/slideware/html/catalog/`, 14 patterns plus core as of 2026-11-04). Candidates: the AI-SDLC workshop deck (`~/Documents/Knowledgebases/AI-SDLC-Advanced-Workshop.html`: cycle diagram, staircase, decision matrix with dot ratings, layered checks, fan-out, glossary, code with notes) and further generic layouts from decks as they're built. One file per pattern, written to `catalog/README.md` §Writing a pattern and checked with `cli.js gallery` in two brands. Andis curates the catalogue: propose candidates, don't add them unasked.
 
 ## Overview
 
