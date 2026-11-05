@@ -5,7 +5,7 @@ Context for Claude working in this repo. User-facing docs live in [README.md](./
 ## Status
 
 - 11 plugins. The last tagged catalog release is `v1.2.0` (`metadata.version` in `marketplace.json`); CHANGELOG's `[1.3.0] — unreleased` section collects what has merged since. Per-plugin versions live in `marketplace.json`: adv 0.4.0, research-team 1.3.0, knowledgeware 1.13.0, context-engineering 1.1.1, the seven agent packs 1.0.2.
-- Work happens on short-lived branches off `main`, one PR each (#13–#19 so far). Andis reviews and merges, with `--admin` when branch protection asks for a review; don't push to `main`. Open each PR against `main`, not a stacked branch. At a catalog release, set `metadata.version`, replace `unreleased` in the CHANGELOG heading with the date, and tag `vX.Y.Z`.
+- Work happens on short-lived branches off `main`, one PR each (#13–#20 so far; #20, slideware v2 with the tooling pass, is open). Andis reviews and merges, with `--admin` when branch protection asks for a review; don't push to `main`. Open each PR against `main`, not a stacked branch. At a catalog release, set `metadata.version`, replace `unreleased` in the CHANGELOG heading with the date, and tag `vX.Y.Z`.
 - `./scripts/validate-all.sh` passes clean. It unsets `NODE_OPTIONS` (cmux preloads a module that breaks every node call) and deletes untracked `.DS_Store` files under `plugins/`, which `claude plugin validate` would otherwise warn on.
 - `core.hooksPath` is unset in this clone, so the pre-commit check doesn't run here; enable it with `git config core.hooksPath scripts/git-hooks`.
 - Shelved: the agent pack refactor, planned below under §Shelved plan. Pick it up from there.

@@ -81,7 +81,7 @@ slideware builds a deck from a short outline. A PowerPoint deck is written by a 
 
 *The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
 
-Press "S" or "P" in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
+Press `P` in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written with each slide, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
 
 
 ## Install
@@ -242,7 +242,7 @@ The plugins are free and MIT-licensed. They run on whatever Claude Code already 
 
 Most plugins here are instructions that Claude reads. Their agents and skills work through the tools Claude already has, and Claude asks before running commands or editing files whenever your permission settings require it. No plugin in this marketplace installs hooks, which are commands that run automatically on Claude Code events. Three plugins do more than that:
 
-- **knowledgeware** runs its own Node.js and Python scripts on your machine to build and check decks. It also starts the official draw.io MCP server (`@drawio/mcp`, which `npx` downloads from npm on first use) to open diagrams in the draw.io editor.
+- **knowledgeware** runs its own Node.js and Python scripts on your machine to create, check and export decks. For checks and exports it runs your installed Chrome headless, and when you ask to edit an HTML deck it serves the deck on 127.0.0.1 only. It also starts the official draw.io MCP server (`@drawio/mcp`, which `npx` downloads from npm on first use) to open diagrams in the draw.io editor.
 - **adv** runs Bash scripts that send the code under review to Codex CLI and Gemini CLI, so that code goes to OpenAI and Google. It writes its reports to `.claude/reviews/` in your repository.
 - **research-team** searches the web and writes its notes and reports to `~/Documents/Claude/Research/`.
 

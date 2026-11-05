@@ -24,7 +24,7 @@ The skill activates on words like "deck", "slides", "presentation", "pitch", "pp
 
 ## Workflow
 
-Both formats follow the same path: gather inputs, resolve the style, plan layouts (12 pptx archetypes, or HTML patterns used as starting points, varied per the anti-monotony rule), author the source, run the checker, review every slide visually, iterate. A throwaway deck of up to three slides skips the review loop. The steps and commands are in `pptx/references/workflow.md` and `html/FORMAT.md` §Workflow.
+Both formats follow the same path: gather inputs, resolve the style, plan layouts (12 pptx archetypes, or the HTML slide pattern catalogue's patterns as starting points, varied per the anti-monotony rule), author the source, run the checker, review every slide visually, iterate. A throwaway deck of up to three slides skips the review loop. The steps and commands are in `pptx/references/workflow.md` and `html/FORMAT.md` §Workflow.
 
 ## What it won't do
 
