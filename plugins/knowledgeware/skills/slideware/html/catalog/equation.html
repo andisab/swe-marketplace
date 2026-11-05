@@ -1,0 +1,58 @@
+<!-- pattern
+name: equation
+title: Equation with labelled terms
+idea: A formula the audience can read: each term carries its name above it and keeps one colour, and a key below says what each term does.
+use: Attention, a loss, a metric (pass@k, recall@k), a cost model. Build it from spans: .term (with .lab for its label) in .t1 to .t4, .frac with .num and .den, .op for operators, sub and sup. The .key cards repeat the term in its colour. Override --key-1 to --key-4 per deck when the brand's status colours clash.
+avoid: Derivations (one equation per slide); more than four keyed terms; LaTeX that needs a renderer.
+builds: the equation, then one key card per click
+from: Leurent PhD defence (one colour per symbol, labelled terms); Heiss causal inference slides (colour-keyed worked example)
+-->
+<style>
+section[data-key].layout-equation { --key-1: var(--color-accent); --key-2: var(--color-success); --key-3: var(--color-warning); --key-4: var(--color-ink-muted); }
+section[data-key].layout-equation .eq { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; gap: .18em; padding: .4em 0 .2em;
+  font-family: var(--font-serif); font-size: calc(var(--size-hero) * .95); line-height: 1; color: var(--color-ink); white-space: nowrap; }
+section[data-key].layout-equation .eq i { font-style: italic; }
+section[data-key].layout-equation .eq sub, section[data-key].layout-equation .eq sup { font-size: .52em; }
+section[data-key].layout-equation .eq sup { align-self: flex-start; margin-top: -.1em; }
+section[data-key].layout-equation .eq sub { align-self: flex-end; margin-bottom: -.1em; }
+section[data-key].layout-equation .eq .op { margin: 0 .12em; color: var(--color-ink-muted); font-style: normal; }
+section[data-key].layout-equation .eq .fn { font-family: var(--font-sans); font-size: .62em; font-weight: 500; letter-spacing: -.01em; color: var(--color-ink-body); }
+section[data-key].layout-equation .eq .paren { font-weight: 200; font-size: 1.5em; color: var(--color-ink-faint); }
+section[data-key].layout-equation .term { position: relative; display: inline-flex; align-items: baseline; padding: 0 .06em .08em; border-bottom: 3px solid var(--k, var(--key-1)); }
+section[data-key].layout-equation .term > .lab { position: absolute; bottom: calc(100% + .35em); left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: var(--size-caption);
+  font-style: normal; font-weight: 600; letter-spacing: .04em; white-space: nowrap; color: var(--k, var(--key-1)); }
+section[data-key].layout-equation .term > .lab::after { content: ""; position: absolute; left: 50%; top: 100%; height: .5em; border-left: 1px solid currentColor; opacity: .5; }
+section[data-key].layout-equation .t1 { --k: var(--key-1); } section[data-key].layout-equation .t2 { --k: var(--key-2); }
+section[data-key].layout-equation .t3 { --k: var(--key-3); } section[data-key].layout-equation .t4 { --k: var(--key-4); }
+section[data-key].layout-equation .term.t1, section[data-key].layout-equation .term.t2, section[data-key].layout-equation .term.t3, section[data-key].layout-equation .term.t4 { color: var(--k); }
+section[data-key].layout-equation .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 .1em; }
+section[data-key].layout-equation .frac > .num { display: flex; gap: .3em; padding: 0 .15em .12em; }
+section[data-key].layout-equation .frac > .den { padding: .12em .15em 0; border-top: 2px solid var(--color-ink); }
+section[data-key].layout-equation .frac .term > .lab { bottom: auto; top: calc(100% + .45em); }
+section[data-key].layout-equation .frac .num .term > .lab { top: auto; bottom: calc(100% + .35em); }
+section[data-key].layout-equation .frac .term > .lab::after { top: auto; bottom: 100%; }
+section[data-key].layout-equation .frac .num .term > .lab::after { top: 100%; bottom: auto; }
+section[data-key].layout-equation .keys { display: grid; grid-template-columns: repeat(var(--keys, 4), minmax(0, 1fr)); gap: 18px; margin-top: auto; }
+section[data-key].layout-equation .keys > div { padding: 12px 14px 0; border-top: 3px solid var(--k, var(--key-1)); }
+section[data-key].layout-equation .keys .sym { display: block; margin-bottom: .3em; font-family: var(--font-serif); font-size: var(--size-title); font-style: italic; line-height: 1; color: var(--k, var(--key-1)); }
+section[data-key].layout-equation .keys h4 { margin: 0 0 .25em; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-equation .keys p { margin: 0; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+</style>
+<section data-key="example-equation" class="layout-equation">
+  <p class="kicker">Transformers · the one formula</p>
+  <h3>Attention is a weighted average of values</h3>
+  <div class="eq" data-step="1">
+    <span class="fn">Attention</span><span class="paren">(</span><i>Q</i>,<i>K</i>,<i>V</i><span class="paren">)</span><span class="op">=</span>
+    <span class="fn">softmax</span><span class="paren">(</span>
+    <span class="frac"><span class="num"><span class="term t1"><span class="lab">queries</span><i>Q</i></span><span class="term t2"><span class="lab">keys</span><i>K</i><sup>⊤</sup></span></span>
+      <span class="den"><span class="term t4"><span class="lab">scale</span>√<i>d</i><sub>k</sub></span></span></span>
+    <span class="paren">)</span><span class="term t3"><span class="lab">values</span><i>V</i></span>
+  </div>
+  <div class="keys">
+    <div class="t1" data-step="2"><span class="sym">Q</span><h4>Queries</h4><p>What each token is looking for: one row per position.</p></div>
+    <div class="t2" data-step="3"><span class="sym">K</span><h4>Keys</h4><p>What each token offers. <i>QK</i><sup>⊤</sup> scores every pair.</p></div>
+    <div class="t4" data-step="4"><span class="sym">√d<sub>k</sub></span><h4>Scale</h4><p>Keeps the scores small so softmax doesn't saturate.</p></div>
+    <div class="t3" data-step="5"><span class="sym">V</span><h4>Values</h4><p>What gets mixed. The weights decide how much of each.</p></div>
+  </div>
+  <aside class="notes">Read the formula left to right once, then one term per click; the colours stay with each term for the rest of the talk.</aside>
+</section>

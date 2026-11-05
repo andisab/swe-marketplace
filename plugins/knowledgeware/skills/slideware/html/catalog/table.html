@@ -1,0 +1,31 @@
+<!-- pattern
+name: table
+title: Table
+idea: Facts the audience compares across rows and columns: a matrix, a lineup, a decision grid.
+use: Up to about eight rows and five columns. The first column names the row (td.first); .dense tightens it; td.num aligns figures; a <colgroup> fixes column widths.
+avoid: Prose in cells; long tables (split them, or move detail to the notes or the page).
+builds: rows or row groups per click
+from: Track 03 decks (layout-table), AI-SDLC workshop s15, s28, s33
+-->
+<style>
+section[data-key].layout-table .tbl { margin-top: .8em; }
+section[data-key].layout-table table { width: 100%; border-collapse: collapse; font-size: var(--size-subbody); }
+section[data-key].layout-table th { padding: 8px 12px; border-bottom: 2px solid var(--color-ink); text-align: left; font-size: var(--size-caption); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-table td { padding: 9px 12px; border-bottom: 1px solid var(--color-border); vertical-align: top; color: var(--color-ink-body); }
+section[data-key].layout-table td.first { font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-table td.num, section[data-key].layout-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+section[data-key].layout-table tr.hi td { background: var(--color-surface-alt); }
+section[data-key].layout-table.dense td, section[data-key].layout-table.dense th { padding-top: 5px; padding-bottom: 5px; }
+</style>
+<section data-key="example-table" class="layout-table">
+  <p class="kicker">Pilot results</p>
+  <h3>Wait times fell in every pilot team</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Team</th><th class="num">Before</th><th class="num">After</th><th>What changed most</th></tr></thead>
+    <tbody>
+      <tr><td class="first">Payments</td><td class="num">19 h</td><td class="num">4 h</td><td>Style comments gone from human review</td></tr>
+      <tr><td class="first">Mobile</td><td class="num">26 h</td><td class="num">7 h</td><td>Reviews start the same morning</td></tr>
+      <tr class="hi"><td class="first">Platform</td><td class="num">11 h</td><td class="num">3 h</td><td>Most pull requests merge the same day</td></tr>
+    </tbody></table></div>
+  <aside class="notes">Read the platform row; the others follow the same shape.</aside>
+</section>

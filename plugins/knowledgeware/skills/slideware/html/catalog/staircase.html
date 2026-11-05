@@ -1,0 +1,46 @@
+<!-- pattern
+name: staircase
+title: Staircase
+idea: Options ordered on two dimensions that rise together, such as capability and cost or autonomy and risk, read from bottom left to top right.
+use: Agent architectures (one call to a fleet), maturity levels, model tiers, MLOps levels; three to six steps. Set --n; each li takes --i from 0. .inverse marks the step the slide is about, and a .here chip can say why (where we are, what we recommend). Name the axes in .yax and the .xax spans (one per tick).
+avoid: Steps that don't really get costlier or riskier (use card-row); more than six.
+builds: one step per click, bottom up
+from: AI-SDLC workshop s27 (from one subagent to a fleet, on cost and isolation axes); Deploying Claude Enterprise s1-i0 (rising tracks, current one inverted); AI SRE talk (levels of automation); Broadside template (what actually matters)
+-->
+<style>
+section[data-key].layout-staircase .stairs { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 8px 14px; margin-top: 1.2em; }
+section[data-key].layout-staircase .yax { grid-column: 1; grid-row: 1; position: relative; display: flex; align-items: center; justify-content: center; border-right: 2px solid var(--color-ink-muted); }
+section[data-key].layout-staircase .yax::before { content: ""; position: absolute; right: -7px; top: -2px; border: 6px solid transparent; border-bottom: 9px solid var(--color-ink-muted); border-top: 0; }
+section[data-key].layout-staircase .yax > span { writing-mode: vertical-rl; transform: rotate(180deg); padding-right: 10px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; white-space: nowrap; color: var(--color-ink-muted); }
+section[data-key].layout-staircase ol.st { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); align-items: end; gap: 10px; min-height: 0; margin: 0; padding: 0;
+  border-bottom: 2px solid var(--color-ink); list-style: none; }
+section[data-key].layout-staircase ol.st > li { --h: calc(34% + var(--i) * (66% / (var(--n, 5) - 1))); position: relative; box-sizing: border-box; height: var(--h); display: flex; flex-direction: column; margin: 0; padding: 14px 16px;
+  border-top: 3px solid var(--color-accent); border-radius: var(--radius) var(--radius) 0 0; background: color-mix(in srgb, var(--color-accent) 9%, var(--color-bg)); overflow: hidden; }
+section[data-key].layout-staircase ol.st .big { font-family: var(--font-heading, var(--font-serif)); font-size: 40pt; font-weight: 700; line-height: .9; color: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg)); }
+section[data-key].layout-staircase ol.st .tag { margin: 8px 0 4px; font-family: var(--font-mono); font-size: calc(var(--size-caption) * .92); letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
+section[data-key].layout-staircase ol.st h4 { margin: 0 0 6px; font-family: var(--font-sans); font-size: var(--size-body); letter-spacing: 0; text-transform: none; line-height: 1.2; color: var(--color-ink); }
+section[data-key].layout-staircase ol.st p { margin: 0; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-staircase ol.st > li.inverse { border-top-color: var(--color-bg-dark); background: var(--color-bg-dark); }
+section[data-key].layout-staircase ol.st > li.inverse .big { color: color-mix(in srgb, var(--color-accent) 70%, var(--color-bg)); }
+section[data-key].layout-staircase ol.st > li.inverse .tag { color: color-mix(in srgb, var(--color-accent) 55%, var(--color-bg)); }
+section[data-key].layout-staircase ol.st .here { position: absolute; right: 12px; top: 12px; padding: 2px 8px; border-radius: 999px; background: var(--color-accent);
+  font-family: var(--font-mono); font-size: calc(var(--size-caption) * .85); color: var(--color-bg); }
+section[data-key].layout-staircase .xax { grid-column: 2; grid-row: 2; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-staircase .xax > span:last-child::after { content: " →"; }
+</style>
+<section data-key="example-staircase" class="layout-staircase">
+  <p class="kicker">Agent architectures</p>
+  <h3>From one call to a fleet: each step buys autonomy and costs control</h3>
+  <div class="stairs">
+    <div class="yax"><span>autonomy · tokens · blast radius</span></div>
+    <ol class="st" style="--n: 5">
+      <li style="--i: 0" data-step="1"><span class="big">1</span><span class="tag">one call</span><h4>Prompt</h4><p>Input in, text out. Nothing runs.</p></li>
+      <li style="--i: 1" data-step="2"><span class="big">2</span><span class="tag">fixed steps</span><h4>Workflow</h4><p>Calls chained in code; the code decides the order.</p></li>
+      <li class="inverse" style="--i: 2" data-step="3"><span class="here">we are here</span><span class="big">3</span><span class="tag">loop + tools</span><h4>Agent</h4><p>The model picks the next tool until a check passes.</p></li>
+      <li style="--i: 3" data-step="4"><span class="big">4</span><span class="tag">delegation</span><h4>Subagents</h4><p>A lead hands questions to workers with fresh context.</p></li>
+      <li style="--i: 4" data-step="5"><span class="big">5</span><span class="tag">unattended</span><h4>Fleet</h4><p>Many agents on a schedule, budgets per run, a person reviews the output.</p></li>
+    </ol>
+    <div class="xax"><span>a person in every step</span><span>a person at the gates</span><span>a person reviews the result</span></div>
+  </div>
+  <aside class="notes">Most teams are on step three. [click 4–5] The next two steps are where the budget and the review process have to change.</aside>
+</section>

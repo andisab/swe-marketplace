@@ -1,0 +1,51 @@
+<!-- pattern
+name: chart-callout
+title: Chart with a callout
+idea: The claim on the left, the chart on the right drawn in one ink, and the single data point the claim is about ringed in the accent.
+use: A benchmark, an eval over versions, latency by release, cost by month. .story holds the argument and, at its foot, the .delta; .plot holds .bars (each .bar with --v from 0 to 1, a .val and a .x label; .ring on the one that matters) or a chartware SVG placed with data-figure-ref. --rows draws that many gridlines.
+avoid: Ringing more than one bar; charts that need a legend to read (simplify, or use figure).
+builds: the chart, then the ring and the delta
+from: slides.com Basel template (two years by quarter, one bar framed in red); Cobalt Grid and Soft Editorial templates (number and chart side by side); Couch 2026 (finding as the chart's title)
+-->
+<style>
+section[data-key].layout-chart-callout .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 44px; margin-top: .6em; }
+section[data-key].layout-chart-callout .story { display: flex; flex-direction: column; }
+section[data-key].layout-chart-callout .story p { margin: 0 0 .7em; font-size: var(--size-subbody); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-chart-callout .delta { margin-top: auto; padding-top: 14px; border-top: 2px solid var(--color-ink); }
+section[data-key].layout-chart-callout .delta .v { font-family: var(--font-heading, var(--font-serif)); font-size: 54pt; font-weight: 700; line-height: 1; color: var(--color-accent); }
+section[data-key].layout-chart-callout .delta .d { margin-top: 8px; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-chart-callout .plot { position: relative; display: flex; flex-direction: column; min-height: 0; }
+section[data-key].layout-chart-callout .plot > .cap { margin-bottom: 10px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-chart-callout .bars { flex: 1 1 auto; min-height: 0; display: flex; align-items: flex-end; gap: 4%; padding: 0 2% 0; border-bottom: 2px solid var(--color-ink);
+  background: repeating-linear-gradient(to top, var(--color-border) 0 1px, transparent 1px calc(100% / var(--rows, 4))); }
+section[data-key].layout-chart-callout .bar { position: relative; flex: 1 1 0; height: calc(var(--v) * 100%); background: var(--color-ink-muted); }
+section[data-key].layout-chart-callout .bar .val { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); padding-bottom: 6px; font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-ink-body); }
+section[data-key].layout-chart-callout .bar .x { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); padding-top: 8px; font-family: var(--font-mono); font-size: var(--size-caption); white-space: nowrap; color: var(--color-ink-muted); }
+section[data-key].layout-chart-callout .bar.ring { background: var(--color-ink); outline: 3px solid var(--color-accent); outline-offset: 7px; }
+section[data-key].layout-chart-callout .bar.ring .val { padding-bottom: 14px; font-weight: 700; color: var(--color-accent); }
+section[data-key].layout-chart-callout .bar.ring .x { padding-top: 14px; font-weight: 700; color: var(--color-ink); }
+section[data-key].layout-chart-callout .plot > .note { margin-top: 34px; font-size: var(--size-caption); color: var(--color-ink-muted); }
+</style>
+<section data-key="example-chart-callout" class="layout-chart-callout has-sources">
+  <p class="kicker">Harness versions</p>
+  <h3>The model didn't change; the loop did</h3>
+  <div class="body">
+    <div class="story">
+      <p>Six harness versions on the same model and the same 48 tasks.</p>
+      <p>Versions one to four tuned the prompt: five points in four months.</p>
+      <div class="delta" data-step="2"><div class="v">+19 pts</div><p class="d">v5 lets the agent run the tests before it answers. Nothing else changed.</p></div>
+    </div>
+    <div class="plot" data-step="1"><span class="cap">pass@1, %</span>
+      <div class="bars" style="--rows: 4">
+        <div class="bar" style="--v: .52"><span class="val">52</span><span class="x">v1</span></div>
+        <div class="bar" style="--v: .55"><span class="val">55</span><span class="x">v2</span></div>
+        <div class="bar" style="--v: .58"><span class="val">58</span><span class="x">v3</span></div>
+        <div class="bar" style="--v: .57"><span class="val">57</span><span class="x">v4</span></div>
+        <div class="bar ring" style="--v: .76"><span class="val">76</span><span class="x">v5</span></div>
+        <div class="bar" style="--v: .79"><span class="val">79</span><span class="x">v6</span></div>
+      </div>
+      <p class="note">Same model and effort throughout; three trials per task.</p></div>
+  </div>
+  <p class="sources">Source: team eval runs, June–October 2026 (illustrative)</p>
+  <aside class="notes">[click 1] Read the flat part first. [click 2] Then the jump, and why.</aside>
+</section>

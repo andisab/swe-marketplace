@@ -19,7 +19,7 @@ description: >
     management
   - "Set up JupyterHub for our data science team" → Configure multi-user environment with
     resource limits and shared storage
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#F37726"
 tags:
@@ -3014,12 +3014,6 @@ Depending on audience and purpose:
 - **Papermill pipeline**: For automated execution
 - **Slide deck**: For presentations (Reveal.js)
 - **PDF document**: For formal reports
-
-Use Context7 for comprehensive documentation on:
-- JupyterLab extensions and configuration
-- Papermill advanced patterns
-- MLflow tracking best practices
-- Kubernetes deployment for JupyterHub
 
 # References
 

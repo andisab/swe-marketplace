@@ -1,0 +1,71 @@
+<!-- pattern
+name: terminal
+title: Terminal session with a verdict
+idea: What the tool actually printed is the evidence: a command, its trimmed output with the lines that matter marked, and one sentence that says what it proves.
+use: A failing test, a compiler error, an agent run in headless mode, a benchmark command. Lines are .ln; .cmd for the prompt line, .err, .ok and .warn for output roles, .dim for noise, .hl to mark the line the verdict is about. An optional .side column holds the code that produced it.
+avoid: Raw logs (trim to the eight lines that matter); output the audience must scroll.
+builds: the command, then the output, then the verdict
+from: 47 Degrees Rust talk (code, compiler diagnostic, verdict); AI-SDLC workshop s24 (headless run in CI)
+-->
+<style>
+section[data-key].layout-terminal { --pn-bg: var(--color-bg-dark); --pn-ink: var(--color-bg); --pn-muted: color-mix(in srgb, var(--pn-ink) 50%, var(--pn-bg)); }
+section[data-key].layout-terminal .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: 22px; margin-top: .8em; }
+section[data-key].layout-terminal .body:has(.side) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
+section[data-key].layout-terminal .body:has(.side) .verdict { grid-column: 1 / -1; }
+section[data-key].layout-terminal .term { display: flex; flex-direction: column; min-height: 0; border-radius: calc(var(--radius) + 4px); background: var(--pn-bg); overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, calc(var(--shadow-opacity) * 1.5)); }
+section[data-key].layout-terminal .term .bar { display: flex; align-items: center; padding: 9px 14px; border-bottom: 1px solid color-mix(in srgb, var(--pn-ink) 12%, transparent);
+  font-family: var(--font-mono); font-size: var(--size-caption); color: var(--pn-muted); }
+section[data-key].layout-terminal .term .bar::before { content: ""; flex: 0 0 9px; height: 9px; margin-right: 38px; border-radius: 50%; background: var(--pn-muted); opacity: .5;
+  box-shadow: 15px 0 0 var(--pn-muted), 30px 0 0 var(--pn-muted); }
+section[data-key].layout-terminal .screen { flex: 1 1 auto; padding: 14px 20px; font-family: var(--font-mono); font-size: var(--size-code); line-height: 1.7; overflow: hidden; }
+section[data-key].layout-terminal .ln { display: block; margin: 0 -8px; padding: 0 8px; border-radius: 3px; white-space: pre; color: var(--pn-ink); }
+section[data-key].layout-terminal .ln.cmd::before { content: "$ "; color: var(--pn-muted); }
+section[data-key].layout-terminal .ln.cmd { font-weight: 600; }
+section[data-key].layout-terminal .ln.dim { color: var(--pn-muted); }
+section[data-key].layout-terminal .ln.err { color: color-mix(in srgb, var(--color-error) 70%, var(--pn-ink)); }
+section[data-key].layout-terminal .ln.ok { color: color-mix(in srgb, var(--color-success) 70%, var(--pn-ink)); }
+section[data-key].layout-terminal .ln.warn { color: color-mix(in srgb, var(--color-warning) 75%, var(--pn-ink)); }
+section[data-key].layout-terminal .ln.hl { background: color-mix(in srgb, var(--color-accent) 24%, transparent); box-shadow: inset 3px 0 0 var(--color-accent); }
+section[data-key].layout-terminal .ln .m { color: var(--pn-muted); }
+section[data-key].layout-terminal .side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+section[data-key].layout-terminal .side h4 { margin: 0; }
+section[data-key].layout-terminal .side .src { padding: 14px 16px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface);
+  font-family: var(--font-mono); font-size: var(--size-caption); line-height: 1.65; white-space: pre; overflow: hidden; color: var(--color-ink); }
+section[data-key].layout-terminal .side p { margin: 0; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-terminal .verdict { margin: 0; padding-top: 14px; border-top: 2px solid var(--color-ink); font-family: var(--font-heading, var(--font-serif));
+  font-size: var(--size-title); line-height: 1.2; color: var(--color-ink); }
+section[data-key].layout-terminal .verdict b { color: var(--color-accent); }
+</style>
+<section data-key="example-terminal" class="layout-terminal">
+  <p class="kicker">Evals in CI</p>
+  <h3>The agent's change passed review and failed the suite</h3>
+  <div class="body">
+    <div class="side" data-step="1">
+      <h4>The check</h4>
+      <div class="src">name: evals
+on: pull_request
+jobs:
+  run:
+    steps:
+      - run: evals run suite.yaml
+          --trials 3
+          --fail-under 0.9</div>
+      <p>Every task runs three times; the job fails below 90%.</p>
+    </div>
+    <div class="term" data-step="2"><div class="bar">ci · evals / run</div>
+      <div class="screen">
+        <span class="ln cmd">evals run suite.yaml --trials 3 --fail-under 0.9</span>
+        <span class="ln dim">loading 48 tasks · 3 trials each · 4 workers</span>
+        <span class="ln ok">  ✓ refund-policy          3/3</span>
+        <span class="ln ok">  ✓ order-lookup           3/3</span>
+        <span class="ln warn">  ~ address-change         2/3   <span class="m">flaky: timeout on trial 2</span></span>
+        <span class="ln err hl">  ✗ cancel-subscription    0/3   <span class="m">tool call skipped confirm()</span></span>
+        <span class="ln dim">  … 44 more</span>
+        <span class="ln">pass rate 0.86 (124/144)  ·  95% CI 0.79–0.91</span>
+        <span class="ln err">FAIL  below --fail-under 0.9</span>
+      </div></div>
+    <div class="verdict" data-step="3">One task in 48 fell to zero, and it was the one that <b>cancels a customer's subscription</b>.</div>
+  </div>
+  <aside class="notes">[click 1] The check, in eight lines. [click 2] The run: read only the red line. [click 3] The verdict.</aside>
+</section>

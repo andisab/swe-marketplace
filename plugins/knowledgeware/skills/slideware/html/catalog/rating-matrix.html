@@ -1,0 +1,50 @@
+<!-- pattern
+name: rating-matrix
+title: Rating matrix
+idea: Options compared across criteria where a glyph carries the level, so the eye scans the pattern before reading a word.
+use: Choosing a method, model or tool; capability or support by provider; four to seven rows, three to five rated columns. Glyphs: i.r (dots, --v out of 5, halves allowed), i.m (five segments, --v), i.y / i.n / i.p (yes, no, partial). tr.rec marks the recommended row (its .tag says so); .legend explains the glyphs once.
+avoid: Ratings that are really numbers (show the numbers in a table); more than seven rows (split).
+builds: rows per click, or the recommended row last
+from: AI-SDLC workshop s17 (model and effort per ticket, five-segment meters); Deploying Claude Enterprise s1-18 (dot matrix); Stencil & Tablet template (pilots side by side); AI SRE talk (capability matrix)
+-->
+<style>
+section[data-key].layout-rating-matrix .legend { display: flex; justify-content: flex-end; gap: 18px; margin: -1.6em 0 .6em; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-rating-matrix .legend > span { display: inline-flex; align-items: center; gap: 6px; }
+section[data-key].layout-rating-matrix .tbl { flex: 1 1 auto; min-height: 0; margin-top: .6em; }
+section[data-key].layout-rating-matrix table { width: 100%; border-collapse: collapse; }
+section[data-key].layout-rating-matrix th { padding: 0 12px 8px; border-bottom: 2px solid var(--color-ink); text-align: left; vertical-align: bottom; font-size: var(--size-caption); font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-rating-matrix th.g, section[data-key].layout-rating-matrix td.g { text-align: center; }
+section[data-key].layout-rating-matrix td { padding: 15px 12px; border-bottom: 1px solid var(--color-border); vertical-align: middle; font-size: var(--size-caption); line-height: 1.4; color: var(--color-ink-body); }
+section[data-key].layout-rating-matrix td.first { font-size: var(--size-subbody); font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-rating-matrix td.first small { display: block; font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 400; color: var(--color-ink-muted); }
+section[data-key].layout-rating-matrix tr.rec td { background: color-mix(in srgb, var(--color-accent) 9%, var(--color-bg)); }
+section[data-key].layout-rating-matrix tr.rec td.first { box-shadow: inset 4px 0 0 var(--color-accent); }
+section[data-key].layout-rating-matrix .tag { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; background: var(--color-accent); vertical-align: 2px;
+  font-family: var(--font-mono); font-size: calc(var(--size-caption) * .85); font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--color-bg); }
+section[data-key].layout-rating-matrix i.r, section[data-key].layout-rating-matrix i.m { position: relative; display: inline-block; vertical-align: middle; height: 12px; overflow: hidden; }
+section[data-key].layout-rating-matrix i.r { width: 78px; background: radial-gradient(circle at 6px 6px, transparent 4px, var(--color-ink-faint) 4.5px, var(--color-ink-faint) 5.5px, transparent 6px) 0 0 / 16.5px 12px repeat-x; }
+section[data-key].layout-rating-matrix i.r::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v, 0) * 16.5px);
+  background: radial-gradient(circle at 6px 6px, var(--color-accent) 5.5px, transparent 6px) 0 0 / 16.5px 12px repeat-x; }
+section[data-key].layout-rating-matrix i.m { width: 84px; background: repeating-linear-gradient(90deg, var(--color-border) 0 14px, transparent 14px 17.5px); border-radius: 2px; }
+section[data-key].layout-rating-matrix i.m::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v, 0) * 17.5px); background: repeating-linear-gradient(90deg, var(--color-accent) 0 14px, transparent 14px 17.5px); }
+section[data-key].layout-rating-matrix i.y, section[data-key].layout-rating-matrix i.n, section[data-key].layout-rating-matrix i.p { display: inline-block; vertical-align: middle; width: 13px; height: 13px; border-radius: 50%; }
+section[data-key].layout-rating-matrix i.y { background: var(--color-accent); }
+section[data-key].layout-rating-matrix i.n { box-shadow: inset 0 0 0 1.5px var(--color-ink-faint); }
+section[data-key].layout-rating-matrix i.p { background: linear-gradient(90deg, var(--color-accent) 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px var(--color-accent); }
+</style>
+<section data-key="example-rating-matrix" class="layout-rating-matrix">
+  <p class="kicker">Retrieval</p>
+  <h3>Pick the retriever by the questions people ask</h3>
+  <div class="legend"><span><i class="r" style="--v: 5; width: 12px"></i> stronger</span><span><i class="r" style="--v: 0; width: 12px"></i> weaker</span><span><i class="m" style="--v: 1; width: 14px"></i> effort</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Approach</th><th class="g">Exact names</th><th class="g">Paraphrase</th><th class="g">Fresh data</th><th class="g">Effort</th><th>When it wins</th></tr></thead>
+    <tbody>
+      <tr data-step="1"><td class="first">Keyword search<small>BM25</small></td><td class="g"><i class="r" style="--v: 5"></i></td><td class="g"><i class="r" style="--v: 1.5"></i></td><td class="g"><i class="r" style="--v: 5"></i></td><td class="g"><i class="m" style="--v: 1"></i></td><td>Error codes, function names, ticket ids</td></tr>
+      <tr data-step="2"><td class="first">Dense embeddings<small>one vector per chunk</small></td><td class="g"><i class="r" style="--v: 2"></i></td><td class="g"><i class="r" style="--v: 4.5"></i></td><td class="g"><i class="r" style="--v: 3"></i></td><td class="g"><i class="m" style="--v: 2"></i></td><td>"How do I…" questions in the user's own words</td></tr>
+      <tr class="rec" data-step="4"><td class="first">Hybrid + rerank<span class="tag">start here</span><small>BM25 ∪ dense → cross-encoder</small></td><td class="g"><i class="r" style="--v: 4.5"></i></td><td class="g"><i class="r" style="--v: 4.5"></i></td><td class="g"><i class="r" style="--v: 4"></i></td><td class="g"><i class="m" style="--v: 3"></i></td><td>Mixed traffic, which is most traffic</td></tr>
+      <tr data-step="3"><td class="first">Knowledge graph<small>entities and relations</small></td><td class="g"><i class="r" style="--v: 4"></i></td><td class="g"><i class="r" style="--v: 3"></i></td><td class="g"><i class="r" style="--v: 2"></i></td><td class="g"><i class="m" style="--v: 5"></i></td><td>Questions that join many documents</td></tr>
+      <tr data-step="3"><td class="first">Long context only<small>no retrieval</small></td><td class="g"><i class="r" style="--v: 4"></i></td><td class="g"><i class="r" style="--v: 4"></i></td><td class="g"><i class="r" style="--v: 1"></i></td><td class="g"><i class="m" style="--v: 1"></i></td><td>A small corpus that changes rarely</td></tr>
+    </tbody></table></div>
+  <aside class="notes">Read down the first two rated columns: keyword and dense fail in opposite places. [click 4] Hybrid covers both.</aside>
+</section>

@@ -43,7 +43,7 @@ description: >
   </commentary>
   </example>
 
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#d65d0e"
 tags:

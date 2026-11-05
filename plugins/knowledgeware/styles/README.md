@@ -11,6 +11,6 @@ One folder per entry, the same shape for the five default styles here and for br
 └── README.md      # what's in the folder, where it came from, how to use it
 ```
 
-`scripts/registry.js` finds entries in `$KNOWLEDGEWARE_BRANDS_DIR`, `brands/` and here, in that order, so a user brand shadows a plugin brand, which shadows a default style of the same name. The older flat layout (`<name>.md`, `tokens/<name>.json`, `<name>/assets/`) is still read; a folder wins over a flat file of the same name. `node scripts/list-styles.js` prints what's installed and which layout each entry uses.
+`scripts/registry.js` finds entries in the user's brands directory (`brands/` in the knowledgeware home, or `$KNOWLEDGEWARE_BRANDS_DIR`), `brands/` and here, in that order, so a user brand shadows a plugin brand, which shadows a default style of the same name. The older flat layout (`<name>.md`, `tokens/<name>.json`, `<name>/assets/`) is still read; a folder wins over a flat file of the same name. `node scripts/list-styles.js` prints what's installed and which layout each entry uses.
 
 The five styles are generic and marketplace-safe. Their marks are original and free to use; replace them with your own logo by adding a brand (see the brandware skill), not by editing the styles.

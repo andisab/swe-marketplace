@@ -48,7 +48,7 @@ description: >
   </commentary>
   </example>
 
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#8087E8"
 tags:
@@ -2512,28 +2512,6 @@ window.addEventListener('resize', () => {
 - **Tutorials**: https://www.highcharts.com/docs/getting-started/
 - **Video Courses**: YouTube channel
 - **Changelog**: https://www.highcharts.com/changelog/
-
-## Context7 Integration
-
-When using Context7 for Highcharts documentation:
-
-```javascript
-// Query examples
-"highcharts candlestick chart configuration"
-"highcharts responsive design patterns"
-"highcharts export module setup"
-"highcharts accessibility wcag compliance"
-"highcharts react integration"
-"highcharts python wrapper examples"
-```
-
-Use Context7 to retrieve:
-- Latest API changes and updates
-- Framework-specific integration guides
-- Performance optimization techniques
-- Accessibility best practices
-- Export module configuration
-- Real-time data patterns
 
 ---
 

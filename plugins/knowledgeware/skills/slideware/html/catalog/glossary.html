@@ -1,0 +1,53 @@
+<!-- pattern
+name: glossary
+title: Glossary with glyphs
+idea: A handful of terms defined precisely, each with a tiny drawing that shows what it means, under one lead definition.
+use: The vocabulary slide of a technical talk (evals, retrieval, training); four to seven terms. .def is the lead definition. Each .term row has a .t (add .code for identifiers), a .m meaning and an optional .g glyph: i.dot (.on fills it) for trials or items, i.bar with --v for a rate, i.seg for chunks. .rules (optional) is a side column of short rules.
+avoid: Terms the audience already knows; glyphs that decorate rather than explain (leave .g empty).
+builds: the definition, then the terms, then the rules
+from: AI-SDLC workshop s21 (eval vocabulary, trial circles and rate bars); Heiss causal inference slides (definition boxes)
+-->
+<style>
+section[data-key].layout-glossary .def { margin: .5em 0 0; padding: 4px 0 4px 18px; border-left: 4px solid var(--color-accent); font-family: var(--font-heading, var(--font-serif));
+  font-size: var(--size-subtitle, var(--size-title)); line-height: 1.3; color: var(--color-ink); }
+section[data-key].layout-glossary .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 1em; }
+section[data-key].layout-glossary .body:has(.rules) { grid-template-columns: minmax(0, 1fr) minmax(0, 300px); }
+section[data-key].layout-glossary .terms { display: flex; flex-direction: column; border-top: 1px solid var(--color-ink); }
+section[data-key].layout-glossary .term { display: grid; grid-template-columns: 170px minmax(0, 1fr) 120px; gap: 18px; align-items: center; flex: 1 1 auto; max-height: 64px; min-height: 42px;
+  border-bottom: 1px solid var(--color-border); }
+section[data-key].layout-glossary .term .t { font-size: var(--size-subbody); font-weight: 700; color: var(--color-ink); }
+section[data-key].layout-glossary .term .t.code { font-family: var(--font-mono); font-weight: 600; color: var(--color-accent); }
+section[data-key].layout-glossary .term .m { font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-glossary .term .g { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+section[data-key].layout-glossary .g i.dot { width: 11px; height: 11px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-ink-muted); }
+section[data-key].layout-glossary .g i.dot.on { background: var(--color-accent); box-shadow: none; }
+section[data-key].layout-glossary .g i.bar { position: relative; width: 100px; height: 7px; border-radius: 4px; background: var(--color-surface-alt); overflow: hidden; }
+section[data-key].layout-glossary .g i.bar::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v) * 100%); border-radius: 4px; background: var(--color-accent); }
+section[data-key].layout-glossary .g i.seg { width: 18px; height: 10px; border-radius: 2px; background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg)); }
+section[data-key].layout-glossary .g i.seg.on { background: var(--color-accent); }
+section[data-key].layout-glossary .g .sep { width: 1px; height: 14px; margin: 0 3px; background: var(--color-ink-faint); }
+section[data-key].layout-glossary .rules { display: flex; flex-direction: column; }
+section[data-key].layout-glossary .rules h4 { margin: 0 0 6px; }
+section[data-key].layout-glossary .rules p { position: relative; margin: 0; padding: 10px 0 10px 18px; border-top: 1px solid var(--color-border); font-size: var(--size-caption); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-glossary .rules p::before { content: ""; position: absolute; left: 0; top: 19px; width: 9px; border-top: 2px solid var(--color-accent); }
+</style>
+<section data-key="example-glossary" class="layout-glossary">
+  <p class="kicker">Retrieval vocabulary</p>
+  <h3>Six words for the rest of the talk</h3>
+  <div class="def" data-step="1">Retrieval finds the few passages a model needs and puts them in its context, so it answers from your documents instead of its memory.</div>
+  <div class="body">
+    <div class="terms" data-step="2">
+      <div class="term"><span class="t">Chunk</span><span class="m">A passage cut from a document, a few hundred tokens long.</span><span class="g"><i class="seg"></i><i class="seg on"></i><i class="seg"></i><i class="seg"></i></span></div>
+      <div class="term"><span class="t">Embedding</span><span class="m">A vector for a chunk; nearby vectors mean similar text.</span><span class="g"></span></div>
+      <div class="term"><span class="t code">top-k</span><span class="m">How many chunks the retriever returns per question.</span><span class="g"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></span></div>
+      <div class="term"><span class="t code">recall@k</span><span class="m">Share of questions whose answer is in the top k at all.</span><span class="g"><i class="bar" style="--v: .88"></i></span></div>
+      <div class="term"><span class="t">Reranker</span><span class="m">A second model that reads each question and chunk together and reorders them.</span><span class="g"><i class="dot on"></i><i class="dot on"></i><span class="sep"></span><i class="dot"></i><i class="dot"></i><i class="dot"></i></span></div>
+      <div class="term"><span class="t">Hybrid search</span><span class="m">Keyword and vector results merged before reranking.</span><span class="g"></span></div>
+    </div>
+    <div class="rules" data-step="3"><h4>Rules</h4>
+      <p>Measure recall@k before tuning the prompt; a missing chunk can't be prompted back.</p>
+      <p>Keep k small after reranking; every extra chunk is noise the model must read.</p>
+      <p>Chunk on the document's own structure first, length second.</p></div>
+  </div>
+  <aside class="notes">[click 1] The one-sentence definition. [click 2] The six terms. [click 3] Three rules that follow from them.</aside>
+</section>

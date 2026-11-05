@@ -12,7 +12,7 @@ Every `brand.md` is consumed by all four knowledgeware skills and **carries two 
 
 Derived token caches (`<name>/tokens.json`) are a third, purely internal layer: regenerated automatically (mtime-invalidated), never hand-edited, never presented to users as a setup step.
 
-**Loader contract**: the plugin's loader (`scripts/load-style.js`) parses both layers, frontmatter first; the html converter (`skills/slideware/html/scripts/load-style.js`) imports that parser and writes the tokens back out as frontmatter. **Generator contract**: anything that produces a brandbook (`scripts/derive-style.js`, the html converter's `.css` import) emits *both* layers, so the machine and prose views of a brand can never live in different files. **What each consumer does with the tokens** is that consumer's own guide; `consumer-contract.md` in this folder is the index and the rules they all follow.
+**Loader contract**: the plugin's loader (`scripts/load-style.js`) parses both layers, frontmatter first; slideware's html theme (`skills/slideware/html/engine/theme.js`) imports that parser. **Generator contract**: anything that produces a brandbook (`scripts/derive-style.js`, or a `.css` import normalized per SKILL.md §Add / import) emits *both* layers, so the machine and prose views of a brand can never live in different files. **What each consumer does with the tokens** is that consumer's own guide; `consumer-contract.md` in this folder is the index and the rules they all follow.
 
 ## Layer 1: the prose body (required)
 
@@ -143,5 +143,5 @@ The loader handles a frontmatter-bearing `.md` (precision path), a prose-only `.
 
 1. Write `<dest>/<name>/brand.md` (`<dest>` = the brands directory per SKILL.md §Add / import) — copy a bundled style or the `acmecorp` example as the template.
 2. Author the **prose body** first (it's the canonical layer), then the **frontmatter block** from the schema above. Keep the two consistent.
-3. Test: `node scripts/load-style.js <name>` (pptx tokens) and `node skills/slideware/html/scripts/load-style.js <name>` (html style.md) — sanity-check the values against your intent.
+3. Test: `node scripts/load-style.js <name>` (the tokens), and for decks `node skills/slideware/html/engine/cli.js new /tmp/try --brand <name> --title Test` then open `/tmp/try/index.html` — sanity-check the values against your intent.
 4. Optionally run the audit ("audit the brandbooks") to catch layer disagreements, spec drift, and dead asset references.

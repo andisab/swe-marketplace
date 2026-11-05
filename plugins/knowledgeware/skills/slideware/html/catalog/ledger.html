@@ -1,0 +1,48 @@
+<!-- pattern
+name: ledger
+title: Config ledger
+idea: A settings file read as a ledger: each key, a leader line across, and what that line buys.
+use: Managed settings, model or training config, permission rules, a pyproject; four to eight rows. Each .row has a .key (mono, on the panel) and a .why; mark the one row that matters with .hot. Set the panel width with --key-w.
+avoid: Keys longer than the panel (shorten or wrap the value onto its own row); explaining every line of a long file (pick the ones that change behaviour).
+builds: one row per click
+from: AI-SDLC workshop s32 (what each line buys)
+-->
+<style>
+section[data-key].layout-ledger { --pn-bg: var(--color-bg-dark); --pn-ink: var(--color-bg); --pn-muted: color-mix(in srgb, var(--pn-ink) 52%, var(--pn-bg));
+  --pn-accent: color-mix(in srgb, var(--color-accent) 60%, var(--pn-ink)); }
+section[data-key].layout-ledger .ledger { position: relative; flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: var(--key-w, 520px) 44px minmax(0, 1fr);
+  grid-template-rows: auto; grid-auto-rows: minmax(44px, 1fr); max-height: 520px; margin-top: .9em; }
+section[data-key].layout-ledger .ledger::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: var(--key-w, 520px); border-radius: calc(var(--radius) + 4px); background: var(--pn-bg); }
+section[data-key].layout-ledger .ledger > .head { display: contents; }
+section[data-key].layout-ledger .ledger > .head > * { position: relative; padding: 14px 20px 6px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .08em; text-transform: uppercase; }
+section[data-key].layout-ledger .ledger > .head > :first-child { color: var(--pn-muted); }
+section[data-key].layout-ledger .ledger > .head > :last-child { padding-left: 0; color: var(--color-ink-muted); }
+section[data-key].layout-ledger .row { display: contents; }
+section[data-key].layout-ledger .row > * { position: relative; min-height: 44px; }
+section[data-key].layout-ledger .key { display: flex; align-items: center; gap: 12px; padding: 0 0 0 20px; font-family: var(--font-mono); font-size: var(--size-code); white-space: nowrap; overflow: hidden; color: var(--pn-ink); }
+section[data-key].layout-ledger .key .k { color: var(--pn-accent); }
+section[data-key].layout-ledger .key .v { color: color-mix(in srgb, var(--color-accent2) 40%, var(--pn-ink)); }
+section[data-key].layout-ledger .key::after { content: ""; flex: 1 1 auto; min-width: 12px; height: 0; margin-right: 0; border-bottom: 1px dotted color-mix(in srgb, var(--pn-ink) 30%, transparent); }
+section[data-key].layout-ledger .link::before { content: ""; position: absolute; left: 0; right: 8px; top: 50%; border-top: 1px solid var(--color-ink-faint); }
+section[data-key].layout-ledger .link::after { content: ""; position: absolute; right: 2px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--color-accent); }
+section[data-key].layout-ledger .why { display: flex; align-items: center; padding: 8px 0 8px 4px; border-bottom: 1px solid var(--color-border); font-size: var(--size-subbody); line-height: 1.4; color: var(--color-ink-body); }
+section[data-key].layout-ledger .row.hot .key { background: color-mix(in srgb, var(--color-accent) 22%, transparent); box-shadow: inset 3px 0 0 var(--pn-accent); }
+section[data-key].layout-ledger .row.hot .why { font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-ledger .row.hot .link::before { border-top: 2px solid var(--color-accent); }
+</style>
+<section data-key="example-ledger" class="layout-ledger">
+  <p class="kicker">Managed settings</p>
+  <h3>What each line buys</h3>
+  <div class="ledger">
+    <div class="head"><span>settings.json</span><span></span><span>What it buys</span></div>
+    <div class="row" data-step="1"><span class="key"><span class="k">permissions.defaultMode</span> <span class="v">"ask"</span></span><span class="link"></span><span class="why">Every write and shell command waits for a person</span></div>
+    <div class="row" data-step="2"><span class="key"><span class="k">permissions.deny</span> <span class="v">["Read(.env*)"]</span></span><span class="link"></span><span class="why">Secrets never enter the context, even when asked</span></div>
+    <div class="row hot" data-step="3"><span class="key"><span class="k">sandbox.enabled</span> <span class="v">true</span></span><span class="link"></span><span class="why">The OS blocks what a rule misses: files outside the repo, the network</span></div>
+    <div class="row" data-step="4"><span class="key"><span class="k">allowManagedHooksOnly</span> <span class="v">true</span></span><span class="link"></span><span class="why">The approval hooks are the only hooks that run</span></div>
+    <div class="row" data-step="5"><span class="key"><span class="k">model</span> <span class="v">"team-default"</span></span><span class="link"></span><span class="why">One model to budget for; overrides need a reason</span></div>
+    <div class="row" data-step="6"><span class="key"><span class="k">cleanupPeriodDays</span> <span class="v">30</span></span><span class="link"></span><span class="why">Transcripts age out on the same schedule as logs</span></div>
+  </div>
+  <aside class="notes">Read the right-hand column; the keys are there for the people who will copy them.
+
+[click 3] The sandbox is the line that matters: rules are advice to the model, the sandbox is enforced by the OS.</aside>
+</section>

@@ -1,0 +1,53 @@
+<!-- pattern
+name: chat-trace
+title: Chat trace with tool calls
+idea: An agent run replayed turn by turn: what the user asked, each tool the model called and what came back, and the answer, so the audience sees what the model did, not only what it said.
+use: Tool use, a ReAct loop, a failure walk-through; four to seven turns. .msg.user and .msg.agent are bubbles; .msg.call is a tool call (name in b, arguments in code); .msg.result is what came back, on the user's side as the API returns it. An optional .aside column carries the point of the trace.
+avoid: Long model replies (cut them to the sentence that matters); transcripts where the tool steps don't matter (use a quote).
+builds: one turn per click
+from: Couch, re-ai 2026 and gen-ai-pharma 2026 (chat with tool steps); Kalinowski, useR! 2026 (stacked tool calls); Joe Cheng, LLM quick start (user and model lines)
+-->
+<style>
+section[data-key].layout-chat-trace .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 44px; margin-top: .6em; }
+section[data-key].layout-chat-trace .body:has(.aside) { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+section[data-key].layout-chat-trace .thread { display: flex; flex-direction: column; justify-content: flex-start; gap: 10px; min-height: 0; overflow: hidden; }
+section[data-key].layout-chat-trace .msg { max-width: 78%; padding: 10px 16px; border-radius: 16px; font-size: var(--size-subbody); line-height: 1.45; color: var(--color-ink); }
+section[data-key].layout-chat-trace .msg.user { align-self: flex-end; border-bottom-right-radius: 4px; background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg)); }
+section[data-key].layout-chat-trace .msg.agent { align-self: flex-start; border: 1px solid var(--color-border); border-bottom-left-radius: 4px; background: var(--color-surface); }
+section[data-key].layout-chat-trace .msg.call { align-self: flex-start; display: flex; align-items: baseline; gap: 12px; max-width: 86%; padding: 7px 14px; border: 1px dashed var(--color-ink-faint);
+  border-radius: var(--radius); background: transparent; font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-chat-trace .msg.call::before { content: "tool"; padding: 1px 6px; border-radius: 3px; background: var(--color-surface-alt); font-family: var(--font-mono); font-size: .85em;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-chat-trace .msg.call b { font-family: var(--font-mono); font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-chat-trace .msg.call code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); color: var(--color-ink-muted); }
+section[data-key].layout-chat-trace .msg.result { align-self: flex-end; max-width: 70%; padding: 7px 14px; border-left: 3px solid var(--color-ink-faint); border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--color-surface-alt); font-family: var(--font-mono); font-size: var(--size-caption); line-height: 1.5; white-space: pre-wrap; color: var(--color-ink-body); }
+section[data-key].layout-chat-trace .msg.result.err { border-left-color: var(--color-error); }
+section[data-key].layout-chat-trace .msg .who { display: block; margin-bottom: 2px; font-family: var(--font-mono); font-size: calc(var(--size-caption) * .9); letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-chat-trace .msg mark { padding: 0 .15em; border-radius: 2px; background: color-mix(in srgb, var(--color-warning) 30%, transparent); color: inherit; }
+section[data-key].layout-chat-trace .aside { align-self: stretch; display: flex; flex-direction: column; gap: 14px; padding-left: 24px; border-left: 1px solid var(--color-border); }
+section[data-key].layout-chat-trace .aside h4 { margin: 0; }
+section[data-key].layout-chat-trace .aside p { margin: 0; font-size: var(--size-subbody); color: var(--color-ink-body); }
+section[data-key].layout-chat-trace .aside .big { font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); line-height: 1.2; color: var(--color-ink); }
+</style>
+<section data-key="example-chat-trace" class="layout-chat-trace">
+  <p class="kicker">One agent turn</p>
+  <h3>Four tool calls behind a one-line answer</h3>
+  <div class="body">
+    <div class="thread">
+      <div class="msg user" data-step="1"><span class="who">User</span>Why did checkout errors spike at 14:00?</div>
+      <div class="msg call" data-step="2"><b>query_logs</b><code>service="checkout" level="error" since="13:30"</code></div>
+      <div class="msg result" data-step="2">1,284 errors · 97% "card_token expired"</div>
+      <div class="msg call" data-step="3"><b>list_deploys</b><code>service="payments" since="13:00"</code></div>
+      <div class="msg result" data-step="3">13:58  payments v4.12.0  "shorten token TTL"</div>
+      <div class="msg call" data-step="4"><b>read_diff</b><code>payments v4.11.3..v4.12.0 config/</code></div>
+      <div class="msg agent" data-step="5"><span class="who">Agent</span>The 13:58 payments deploy cut the card-token TTL <mark>from 15 min to 15 s</mark>; checkouts longer than that fail.</div>
+    </div>
+    <div class="aside" data-step="6">
+      <h4>What to see</h4>
+      <div class="big">The answer is one sentence. The work is the three calls above it.</div>
+      <p>Each call narrows the search: errors, then what changed, then the diff. A grader that reads only the answer can't tell a lucky guess from this.</p>
+    </div>
+  </div>
+  <aside class="notes">[click 1] The question. [click 2–4] Each call and what came back; tool results return on the user's side, as the API does. [click 5] The answer. [click 6] The point.</aside>
+</section>

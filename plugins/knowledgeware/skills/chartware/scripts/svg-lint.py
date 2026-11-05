@@ -544,7 +544,7 @@ class Lint:
         # shared attach points
         for i in range(len(ends)):
             for j in range(i + 1, len(ends)):
-                (ei, p, kind), (ej, q, kind2) = ends[i], ends[j]
+                (ei, p, _), (ej, q, _) = ends[i], ends[j]
                 if ei != ej and math.hypot(p[0] - q[0], p[1] - q[1]) <= 2:
                     self.add("error", "attach", f"edges #{ei + 1} and #{ej + 1} share the attach point ({p[0]:g},{p[1]:g}); fan exits at w·i/(n+1) instead of stacking")
         # overlap, crossings, transit, clearance
@@ -566,7 +566,7 @@ class Lint:
                         reported.add(key)
                         crossings += 1
         self.counts["crossings"] = crossings
-        for ei, a, b, curve in pieces:
+        for ei, a, b, _curve in pieces:
             for r, nel in self.nodes:
                 pts = self.edges[ei][2]
                 attached_here = self.attached(pts[0], r) or self.attached(pts[-1], r)
@@ -591,7 +591,7 @@ class Lint:
             x, y, w, h = box
             txt = (el.text or "").strip()
             on_line = False
-            for ei, a, b in pieces:
+            for _ei, a, b in pieces:
                 if seg_rect_dist(a, b, box) == 0:
                     on_line = True
                     break
@@ -608,7 +608,7 @@ class Lint:
             dx, dy = self.offset.get(el, (0.0, 0.0))
             x, y = x + dx, y + dy
             txt = (el.text or "").strip()
-            for r, nel in self.nodes:
+            for r, _nel in self.nodes:
                 rx, ry, rw, rh = r
                 if rx <= x <= rx + rw and ry <= y <= ry + rh:
                     cx = rx + rw / 2

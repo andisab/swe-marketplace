@@ -53,8 +53,6 @@ Claude hands a task to one of these agents when the task matches the agent's des
 
 **Can refactor-agent run my tests?** No. It can read and edit files, but it has no Bash tool, so it can't run commands. Run your tests after it finishes.
 
-**Do the agents need Context7?** No, but they use it when it's there. Every agent here except `fastapi-architect` and `refactor-agent` can call the [Context7](https://context7.com) MCP server to look up current library documentation. Without it, an agent answers from the model's own knowledge, which can lag behind recent releases. To add Context7, run `/plugin install context7@claude-plugins-official`.
-
 ---
 
 Part of [swe-marketplace](../../README.md). Changes are in the [changelog](../../CHANGELOG.md). Common questions are in the [FAQ](../../README.md#faq). MIT license.

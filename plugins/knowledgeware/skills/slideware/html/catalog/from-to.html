@@ -1,0 +1,44 @@
+<!-- pattern
+name: from-to
+title: From and to
+idea: One number before and after, the old one dimmed and the new one bright, so the change reads before anyone reads the labels.
+use: A build time, a latency, a cost per task, a count of services. .was and .now each hold a .v (unit in .u) and a caption; .more (optional) adds two to four smaller from-to pairs under a rule. Put the source in .sources.
+avoid: A qualitative change (use before-after); numbers in different units.
+builds: the old value, then the new one, then the smaller pairs
+from: slides.com Lumen template (12 → 1); Track 03 v6 s31 (16% → 54% with mini bars)
+-->
+<style>
+section[data-key].layout-from-to .ft { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 36px; }
+section[data-key].layout-from-to .ft .lab { display: block; margin-bottom: 8px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .1em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-from-to .ft .v { font-family: var(--font-heading, var(--font-serif)); font-size: 132pt; font-weight: 700; line-height: .9; letter-spacing: -.03em; white-space: nowrap; }
+section[data-key].layout-from-to .ft .u { margin-left: .06em; font-size: .36em; font-weight: 600; letter-spacing: 0; }
+section[data-key].layout-from-to .ft .cap { margin-top: 14px; max-width: 30ch; font-size: var(--size-subbody); line-height: 1.45; }
+section[data-key].layout-from-to .was .v, section[data-key].layout-from-to .was .cap { color: var(--color-ink-faint); }
+section[data-key].layout-from-to .now .v { color: var(--color-ink); }
+section[data-key].layout-from-to .now .u { color: var(--color-accent); }
+section[data-key].layout-from-to .now .lab { color: var(--color-accent); }
+section[data-key].layout-from-to .now .cap { color: var(--color-ink-body); }
+section[data-key].layout-from-to .arrow { font-size: 54pt; font-weight: 200; line-height: 1; color: var(--color-ink-faint); }
+section[data-key].layout-from-to .more { display: grid; grid-template-columns: repeat(var(--more, 3), minmax(0, 1fr)); gap: 28px; margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--color-border); }
+section[data-key].layout-from-to .more > div { display: flex; flex-direction: column; gap: 2px; }
+section[data-key].layout-from-to .more .pair { font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); font-weight: 700; color: var(--color-ink); white-space: nowrap; }
+section[data-key].layout-from-to .more .pair s { margin-right: .25em; font-weight: 400; text-decoration: none; color: var(--color-ink-faint); }
+section[data-key].layout-from-to .more .pair s::after { content: " →"; }
+section[data-key].layout-from-to .more .l { font-size: var(--size-caption); color: var(--color-ink-muted); }
+</style>
+<section data-key="example-from-to" class="layout-from-to has-sources">
+  <p class="kicker">Six weeks of evals in CI</p>
+  <h3>Regressions now surface before review, not after release</h3>
+  <div class="ft">
+    <div class="was" data-step="1"><span class="lab">Before</span><div class="v">9<span class="u">days</span></div><p class="cap">from a prompt change to finding out it broke refunds</p></div>
+    <div class="arrow" data-step="2">→</div>
+    <div class="now" data-step="2"><span class="lab">Now</span><div class="v">14<span class="u">min</span></div><p class="cap">the eval job fails on the pull request that caused it</p></div>
+  </div>
+  <div class="more" data-step="3">
+    <div><span class="pair"><s>0</s>48</span><span class="l">tasks graded on every change</span></div>
+    <div><span class="pair"><s>3</s>0</span><span class="l">regressions that reached customers</span></div>
+    <div><span class="pair"><s>—</s>$11</span><span class="l">eval cost per pull request</span></div>
+  </div>
+  <p class="sources">Source: CI pipeline events, Sept–Oct 2026, 212 pull requests (illustrative)</p>
+  <aside class="notes">[click 1] Nine days. [click 2] Fourteen minutes. [click 3] What it costs.</aside>
+</section>

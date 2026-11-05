@@ -1,7 +1,7 @@
 ---
 name: cpp-expert
 description: Expert in writing high-quality, efficient, and modern C++ code.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#00599c"
 tags:

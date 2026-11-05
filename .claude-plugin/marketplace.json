@@ -56,42 +56,6 @@
       }
     },
     {
-      "name": "arch",
-      "source": "./plugins/arch",
-      "description": "Repository housekeeping agents: keep the CLAUDE.md context files Claude Code relies on accurate as a codebase evolves, and manage Docker and Make workflows.",
-      "version": "1.0.1",
-      "author": {
-        "name": "Andis A. Blukis",
-        "email": "andis.blukis@gmail.com",
-        "url": "https://github.com/andisab"
-      },
-      "homepage": "https://github.com/andisab/swe-marketplace",
-      "repository": "https://github.com/andisab/swe-marketplace",
-      "license": "MIT",
-      "keywords": [
-        "architecture",
-        "orchestration",
-        "system-design",
-        "coordination",
-        "planning"
-      ],
-      "category": "architecture",
-      "strict": true,
-      "agents": [
-        "./agents/arch-context-agent.md",
-        "./agents/build-orchestrator.md"
-      ],
-      "metadata": {
-        "directory": {
-          "icon": "./.claude-plugin/icon.png",
-          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/arch/README.md",
-          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
-          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
-          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
-        }
-      }
-    },
-    {
       "name": "context-engineering",
       "source": "./plugins/context-engineering",
       "description": "Comprehensive toolkit for creating production-ready Claude Code resources: agents, skills, plugins, commands, hooks, MCP tools, MCP servers, and patterns. Expert guidance with templates, examples, and best practices following Anthropic specifications.",
@@ -189,7 +153,7 @@
       "name": "knowledgeware",
       "source": "./plugins/knowledgeware",
       "description": "Style-driven deliverable suite: slide decks (PowerPoint or HTML), multi-page HTML knowledge bases, and diagrams/data charts (Mermaid, SVG, or draw.io) that all render from one shared brand/style registry. Works out of the box with 5 built-in styles; add your own brand once and every deliverable matches. A librarian agent keeps sites and decks current: what's due, update plans, and scheduled fact-check sweeps.",
-      "version": "1.12.6",
+      "version": "1.13.0",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -201,7 +165,7 @@
       "keywords": [
         "slides",
         "pptx",
-        "reveal.js",
+        "html-slides",
         "knowledge-base",
         "diagrams",
         "drawio",
@@ -248,7 +212,7 @@
       "name": "data",
       "source": "./plugins/data",
       "description": "Data science and data engineering agents for visualization (D3, Highcharts), notebooks (Jupyter, Google Colab), R, and Python data engineering.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -290,7 +254,7 @@
       "name": "databases",
       "source": "./plugins/databases",
       "description": "Database experts for SQL, NoSQL, graph databases, and vector databases. Includes Postgres, MongoDB, Neo4j, Cassandra, MariaDB, and vector DB specialists.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -335,7 +299,7 @@
       "name": "dev",
       "source": "./plugins/dev",
       "description": "Development experts for 10 programming languages (Python, TypeScript, JavaScript, Go, Rust, C++, Kotlin, PHP, Lua and Perl), plus FastAPI and Node.js specialists and a refactoring agent.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -386,7 +350,7 @@
       "name": "frontend",
       "source": "./plugins/frontend",
       "description": "Frontend development specialists for React, Vue, Next.js, CSS, HTML, and UI/UX design. Comprehensive coverage of modern frontend technologies.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -426,45 +390,10 @@
       }
     },
     {
-      "name": "genai",
-      "source": "./plugins/genai",
-      "description": "Generative AI development specialist focused on LangChain for building LLM applications, chains, and agents.",
-      "version": "1.0.1",
-      "author": {
-        "name": "Andis A. Blukis",
-        "email": "andis.blukis@gmail.com",
-        "url": "https://github.com/andisab"
-      },
-      "homepage": "https://github.com/andisab/swe-marketplace",
-      "repository": "https://github.com/andisab/swe-marketplace",
-      "license": "MIT",
-      "keywords": [
-        "genai",
-        "langchain",
-        "llm",
-        "ai-development",
-        "chains"
-      ],
-      "category": "ai",
-      "strict": true,
-      "agents": [
-        "./agents/genai-langchain-expert.md"
-      ],
-      "metadata": {
-        "directory": {
-          "icon": "./.claude-plugin/icon.png",
-          "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/genai/README.md",
-          "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
-          "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
-          "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
-        }
-      }
-    },
-    {
       "name": "infrastructure",
       "source": "./plugins/infrastructure",
       "description": "Infrastructure and DevOps specialists for AWS, GCP, Kubernetes, Docker, Terraform, GitHub Actions, GitLab CI, and security auditing.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -510,7 +439,7 @@
       "name": "machine-learning",
       "source": "./plugins/machine-learning",
       "description": "Machine learning framework specialists for PyTorch, TensorFlow, and scikit-learn. Expert guidance for ML model development and training.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",
@@ -548,7 +477,7 @@
       "name": "product-management",
       "source": "./plugins/product-management",
       "description": "Product management specialists for PRD writing, content creation, and project planning. Tools for product managers and technical writers.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Andis A. Blukis",
         "email": "andis.blukis@gmail.com",

@@ -1,7 +1,7 @@
 ---
 name: php-expert
 description: Specialized in developing efficient, secure, and modern PHP applications adhering to best practices.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#777bb4"
 tags:

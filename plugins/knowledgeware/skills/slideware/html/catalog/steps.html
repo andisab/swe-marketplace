@@ -1,0 +1,39 @@
+<!-- pattern
+name: steps
+title: Numbered steps
+idea: A sequence the audience follows in order, with the artefact or result beside it.
+use: Procedures, runbooks, a rollout; three to six steps, each a short heading and a line. The .panel (optional) shows what the steps produce: a file, a command, a checklist.
+avoid: Items without an order (use card-row); more than six steps (split them).
+builds: one step per click
+from: AI-SDLC workshop s11, s19, s22
+-->
+<style>
+section[data-key].layout-steps .body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 40px; margin-top: .8em; }
+section[data-key].layout-steps .body:not(:has(.panel)) { grid-template-columns: 1fr; }
+section[data-key].layout-steps ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+section[data-key].layout-steps ol.steps > li { counter-increment: step; position: relative; margin: 0 0 14px; padding-left: 46px; }
+section[data-key].layout-steps ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border: 2px solid var(--color-accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 700; color: var(--color-accent); }
+section[data-key].layout-steps ol.steps > li h4 { margin: 3px 0 2px; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-steps ol.steps > li p { margin: 0; font-size: var(--size-caption); color: var(--color-ink-body); }
+section[data-key].layout-steps .panel { align-self: start; padding: 16px 18px; border-radius: var(--radius); background: var(--color-surface-alt); font-size: var(--size-caption); }
+section[data-key].layout-steps .panel pre { margin: 0; white-space: pre-wrap; }
+</style>
+<section data-key="example-steps" class="layout-steps">
+  <p class="kicker">Turning it on</p>
+  <h3>Four steps per repository</h3>
+  <div class="body">
+    <ol class="steps">
+      <li data-step="1"><h4>Add the workflow file</h4><p>Copy review.yml from the template repository.</p></li>
+      <li data-step="2"><h4>Set the reviewers</h4><p>CODEOWNERS decides who approves after the bot.</p></li>
+      <li data-step="3"><h4>Run it on one pull request</h4><p>Check the comments read well before the team sees them.</p></li>
+      <li data-step="4"><h4>Turn on the merge gate</h4><p>No merge without a human approval.</p></li>
+    </ol>
+    <div class="panel"><pre>.github/workflows/review.yml
+on: pull_request
+jobs:
+  review:
+    uses: org/templates/review@v2</pre></div>
+  </div>
+  <aside class="notes">[click 1] … [click 4] The gate is the step people forget.</aside>
+</section>

@@ -1,6 +1,6 @@
 #!/bin/sh
-# Stops a commit whose staged files leave a generated plugin.json out of sync
-# with marketplace.json, as CI would.
+# Stops a commit whose staged files leave a generated plugin.json, or the
+# README's catalog tables, out of step with marketplace.json, as CI would.
 #
 # Enable once per clone:  git config core.hooksPath scripts/git-hooks
 # Skip for one commit:    git commit --no-verify
@@ -20,10 +20,11 @@ run_check() {
 }
 
 run_check "$staged/scripts/synthesize-plugin-manifests.py" --check
+run_check "$staged/scripts/check-readme-catalog.py"
 
 if [ "$status" -ne 0 ]; then
     echo
-    echo "pre-commit: generated files are out of sync with the staged changes."
-    echo "Run the command above, stage its output and commit again."
+    echo "pre-commit: the staged changes leave a file above out of step with marketplace.json."
+    echo "Regenerate (python scripts/synthesize-plugin-manifests.py) or fix the README, stage it and commit again."
 fi
 exit "$status"

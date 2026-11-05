@@ -26,9 +26,8 @@ Find the row that matches what you want to do, install that plugin, and then ask
 | Get a second and third opinion on code changes | [`adv`](./plugins/adv/) | *"Use the adv-review agent to review my uncommitted changes"* |
 | Research a topic with parallel agents and get one written report | [`research-team`](./plugins/research-team/) | *"Use research-team to research vector database pricing"* |
 | Build your own agents, skills, hooks, plugins or MCP servers | [`context-engineering`](./plugins/context-engineering/) | *"Help me create a skill that drafts our release notes"* |
-| Bring in a specialist for a language, framework, cloud or database | [`dev`](./plugins/dev/), [`frontend`](./plugins/frontend/), [`infrastructure`](./plugins/infrastructure/), [`databases`](./plugins/databases/), [`data`](./plugins/data/), [`machine-learning`](./plugins/machine-learning/), [`genai`](./plugins/genai/) | *"Have the Terraform engineer review this module"* |
+| Bring in a specialist for a language, framework, cloud or database | [`dev`](./plugins/dev/), [`frontend`](./plugins/frontend/), [`infrastructure`](./plugins/infrastructure/), [`databases`](./plugins/databases/), [`data`](./plugins/data/), [`machine-learning`](./plugins/machine-learning/) | *"Have the Terraform engineer review this module"* |
 | Write PRDs and project plans | [`product-management`](./plugins/product-management/) | *"Draft a PRD for single sign-on"* |
-| Keep CLAUDE.md files accurate as the code changes | [`arch`](./plugins/arch/) | *"Update CLAUDE.md for the changes on this branch"* |
 
 To install one, run this in Claude Code (v2.1.275 or later), with any plugin name from the table in place of `knowledgeware`:
 
@@ -36,7 +35,7 @@ To install one, run this in Claude Code (v2.1.275 or later), with any plugin nam
 /plugin install knowledgeware --marketplace andisab/swe-marketplace
 ```
 
-[Install](#install) is one command; [docs/install.md](./docs/install.md) covers older Claude Code versions, shells, teams, Claude Desktop, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other nine are agent packs, a set of agent definitions each and nothing more.
+[Install](#install) is one command; [docs/install.md](./docs/install.md) covers older Claude Code versions, shells, teams, Claude Desktop, claude.ai and the Agent SDK. The [catalog](#catalog) lists every skill, command and agent. The plugins fall into three groups: knowledgeware and research-team are the ones I maintain most actively; adv and context-engineering are experimental; the other seven are agent packs, a set of agent definitions each and nothing more.
 
 ## What knowledgeware makes
 
@@ -72,17 +71,17 @@ chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, h
 
 ### **slideware**: decks in PowerPoint or HTML
 
-![Six slides from three HTML decks in three built-in styles](docs/images/decks.jpg)
+![Nine HTML slides in three built-in styles, a row each: an agent loop, a trust boundary and a staircase; a heatmap, blast-radius rings and a token breakdown; an agent system map, a layer stack and an equation with labelled terms](docs/images/decks.jpg)
 
-*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+*Nine HTML slides in three built-in styles, a row each. Material Olive: an agent loop with its hand-offs, a trust boundary, a staircase. Dark Precision: a chartware heatmap, blast-radius rings, a breakdown. Editorial Light: an agent system map, a layer stack, attention with labelled terms. The numbers are illustrative.*
 
-slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
+slideware builds a deck from a short outline. A PowerPoint deck is written by a pptxgenjs build script. An HTML deck is one `index.html` file that holds the slides, the brand and everything needed to present them, so it runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand. HTML slides build from a catalogue of 39 patterns, each a proven way to express one kind of idea, written against the brand's tokens. Beyond titles, cards and tables, it covers what technical talks need: architectures and agent loops drawn in HTML that adapt to the number of boxes, code read line by line, terminal output with a verdict, equations with labelled terms, and results that put the claim first. `cli.js catalog` lists them, `cli.js gallery` builds a deck of every example in the brand of your choice, and charts come in as chartware templates placed as figures.
 
 ![A deck slide beside its presenter view with notes and pacing](docs/images/presenter.jpg)
 
 *The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
 
-Press "S" or "P" in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
+Press `P` in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written with each slide, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
 
 
 ## Install
@@ -107,7 +106,7 @@ The two plugins I use daily and keep current. Both carry scripts, templates and 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`knowledgeware`](./plugins/knowledgeware/) | 1.12.6 | Slide decks (PowerPoint, or HTML with a presenter view), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
+| [`knowledgeware`](./plugins/knowledgeware/) | 1.13.0 | Slide decks (PowerPoint, or HTML with a presenter view and an in-browser editor), offline HTML knowledge bases, diagrams and charts, all in one style from a shared registry. A librarian agent keeps sites and decks current. | 1 agent · 4 skills · 2 commands · 1 MCP server |
 | [`research-team`](./plugins/research-team/) | 1.3.0 | Multi-agent web research. Parallel researchers take one subtopic each, then a writer turns their notes into one report, as plain Markdown or formatted for Obsidian or Joplin. | 2 agents · 2 skills |
 
 ### Experimental plugins
@@ -125,15 +124,13 @@ One domain each, and nothing but agent definitions: no scripts, no MCP servers, 
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
-| [`dev`](./plugins/dev/) | 1.0.1 | Specialists for 10 languages, FastAPI and Node.js, plus cross-language refactoring. | 13 agents |
-| [`frontend`](./plugins/frontend/) | 1.0.1 | React, Vue, Next.js, HTML and CSS specialists, plus a designer that turns mockups into specs. | 6 agents |
-| [`infrastructure`](./plugins/infrastructure/) | 1.0.1 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
-| [`databases`](./plugins/databases/) | 1.0.1 | SQL, NoSQL, graph and vector databases. | 7 agents |
-| [`data`](./plugins/data/) | 1.0.1 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, and Python data engineering. | 6 agents |
-| [`machine-learning`](./plugins/machine-learning/) | 1.0.1 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
-| [`genai`](./plugins/genai/) | 1.0.1 | LangChain and LangGraph applications. More frameworks on the way. | 1 agent |
-| [`product-management`](./plugins/product-management/) | 1.0.1 | PRDs, project plans, and clear writing. | 3 agents |
-| [`arch`](./plugins/arch/) | 1.0.1 | Repository housekeeping: CLAUDE.md context files, and Docker and Make workflows. | 2 agents |
+| [`dev`](./plugins/dev/) | 1.0.2 | Specialists for 10 languages, FastAPI and Node.js, plus cross-language refactoring. | 13 agents |
+| [`frontend`](./plugins/frontend/) | 1.0.2 | React, Vue, Next.js, HTML and CSS specialists, plus a designer that turns mockups into specs. | 6 agents |
+| [`infrastructure`](./plugins/infrastructure/) | 1.0.2 | AWS, GCP, Docker, Kubernetes, Terraform, CI/CD and security audits. | 8 agents |
+| [`databases`](./plugins/databases/) | 1.0.2 | SQL, NoSQL, graph and vector databases. | 7 agents |
+| [`data`](./plugins/data/) | 1.0.2 | Visualization (D3, Highcharts), notebooks (Jupyter, Colab), R, and Python data engineering. | 6 agents |
+| [`machine-learning`](./plugins/machine-learning/) | 1.0.2 | PyTorch, TensorFlow and scikit-learn. | 3 agents |
+| [`product-management`](./plugins/product-management/) | 1.0.2 | PRDs, project plans, and clear writing. | 3 agents |
 
 Each plugin's README covers its components, examples and requirements. Versions are pinned in [`marketplace.json`](./.claude-plugin/marketplace.json), and the [changelog](./CHANGELOG.md) says what changed in each. To hear about new releases, watch this repository's releases (**Watch → Custom → Releases**).
 
@@ -146,7 +143,7 @@ Claude loads a skill when your request matches the skill's description. You can 
 | `knowledgeware:knowledgebase` | Multi-page, offline HTML knowledge bases (field guides, handbooks, runbooks, study guides), each with a maintenance page so it can be kept current. |
 | `knowledgeware:brandware` | The shared brand registry. It imports, derives or edits the brandbooks and logos that every deliverable uses. |
 | `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
-| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, a section overview, session pacing, speaker notes, and a review mode for editing text and notes in the browser. |
+| `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, a section overview, session pacing, speaker notes, and an editor in the browser for text, notes, layout and slide order, plus PowerPoint export and import. |
 | `research-team:coordinator` | Runs the research pipeline. It splits a topic into subtopics, researches them in parallel, then has the report written. |
 | `research-team:report-formats` | Format profiles (Markdown, Obsidian, Joplin) and six report types for the research reports. |
 | `context-engineering:agent-dev` | Designing subagents: frontmatter, system prompt, tool access, example-driven descriptions. |
@@ -225,12 +222,9 @@ An agent is a specialist with its own instructions and its own context window. C
 | machine-learning | `pytorch-expert` | Deep learning models in PyTorch. |
 | machine-learning | `tensorflow-expert` | Developing and deploying TensorFlow models. |
 | machine-learning | `scikit-learn-expert` | scikit-learn: preprocessing, model selection, pipelines, tuning. |
-| genai | `langchain-expert` | LangChain and LangGraph: LCEL chains, RAG, multi-agent systems. |
 | product-management | `prd-writer` | Product requirements documents. |
 | product-management | `project-planner` | Turning a PRD into a development task list. |
 | product-management | `content-writer` | Clear articles and outlines on complex topics. |
-| arch | `context-agent` | Keeping CLAUDE.md files in sync with the repository. |
-| arch | `build-orchestrator` | Docker and Make workflows: images, containers, volumes, build targets. |
 
 </details>
 
@@ -248,7 +242,7 @@ The plugins are free and MIT-licensed. They run on whatever Claude Code already 
 
 Most plugins here are instructions that Claude reads. Their agents and skills work through the tools Claude already has, and Claude asks before running commands or editing files whenever your permission settings require it. No plugin in this marketplace installs hooks, which are commands that run automatically on Claude Code events. Three plugins do more than that:
 
-- **knowledgeware** runs its own Node.js and Python scripts on your machine to build and check decks. It also starts the official draw.io MCP server (`@drawio/mcp`, which `npx` downloads from npm on first use) to open diagrams in the draw.io editor.
+- **knowledgeware** runs its own Node.js and Python scripts on your machine to create, check and export decks. For checks and exports it runs your installed Chrome headless, and when you ask to edit an HTML deck it serves the deck on 127.0.0.1 only. It also starts the official draw.io MCP server (`@drawio/mcp`, which `npx` downloads from npm on first use) to open diagrams in the draw.io editor.
 - **adv** runs Bash scripts that send the code under review to Codex CLI and Gemini CLI, so that code goes to OpenAI and Google. It writes its reports to `.claude/reviews/` in your repository.
 - **research-team** searches the web and writes its notes and reports to `~/Documents/Claude/Research/`.
 
@@ -308,9 +302,10 @@ The marketplace ships two manifests. The catalog, `.claude-plugin/marketplace.js
 ```bash
 python scripts/synthesize-plugin-manifests.py          # regenerate every plugin.json
 python scripts/synthesize-plugin-manifests.py --check  # fail if any plugin.json has drifted (CI runs this)
-python scripts/check-agent-tools.py                    # agent tool names (CI runs this)
+python scripts/check-readme-catalog.py                 # this README's catalog tables vs marketplace.json (CI runs this)
+python scripts/check-agent-tools.py                    # agent tool grants (CI runs this)
 ./scripts/validate-all.sh                              # full validation (CI runs this)
-git config core.hooksPath scripts/git-hooks            # optional: run the drift check before each commit
+git config core.hooksPath scripts/git-hooks            # optional: run both catalog checks before each commit
 ```
 
 The pre-commit hook checks the staged files, not the working tree, so a commit with a stale `plugin.json` fails even when the tree is in sync. `git commit --no-verify` skips it for one commit.

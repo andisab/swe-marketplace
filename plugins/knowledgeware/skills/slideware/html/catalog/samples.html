@@ -1,0 +1,52 @@
+<!-- pattern
+name: samples
+title: Graded samples
+idea: One input beside several model outputs that look equally convincing, then the verdicts all at once: the case for evals in one picture.
+use: Hallucination, prompt or model comparisons, grader calibration; three samples, sometimes four. The .input holds the stimulus (text, data, a figure); each .sample has its decisive phrase in mark and a .verdict (.pass or .fail) that shares one data-step so all verdicts arrive together.
+avoid: Samples that obviously differ (the point is that they don't); more than four.
+builds: one sample per click, then every verdict together
+from: Couch, gen-ai-pharma 2026 (the answers look the same)
+-->
+<style>
+section[data-key].layout-samples .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.5fr); gap: 40px; align-items: center; margin-top: .6em; }
+section[data-key].layout-samples .input { align-self: stretch; display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; border-radius: var(--radius); background: var(--color-surface-alt); }
+section[data-key].layout-samples .input h4 { margin: 0; }
+section[data-key].layout-samples .input .q { margin: 0; font-family: var(--font-heading, var(--font-serif)); font-size: var(--size-title); line-height: 1.25; color: var(--color-ink); }
+section[data-key].layout-samples .input .ctx { margin: auto 0 0; padding: 10px 12px; border-radius: var(--radius); background: var(--color-surface); font-family: var(--font-mono); font-size: var(--size-caption);
+  line-height: 1.55; white-space: pre; color: var(--color-ink-body); }
+section[data-key].layout-samples .list { display: flex; flex-direction: column; gap: 14px; }
+section[data-key].layout-samples .sample { position: relative; padding: 14px 96px 14px 18px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, var(--shadow-opacity)); }
+section[data-key].layout-samples .sample .who { display: block; margin-bottom: 4px; font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-samples .sample p { margin: 0; font-size: var(--size-subbody); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-samples .sample mark { background: none; color: var(--color-ink); font-weight: 600; text-decoration: underline 3px var(--color-accent); text-underline-offset: 5px; }
+section[data-key].layout-samples .verdict { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+section[data-key].layout-samples .verdict::before { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-sans); font-size: 22px; color: var(--color-bg); }
+section[data-key].layout-samples .verdict.pass { color: var(--color-success); }
+section[data-key].layout-samples .verdict.pass::before { content: "✓"; background: var(--color-success); }
+section[data-key].layout-samples .verdict.fail { color: var(--color-error); }
+section[data-key].layout-samples .verdict.fail::before { content: "✕"; background: var(--color-error); }
+section[data-key].layout-samples .sample:has(.verdict.pass) { border-color: color-mix(in srgb, var(--color-success) 40%, var(--color-border)); }
+</style>
+<section data-key="example-samples" class="layout-samples">
+  <p class="kicker">Why we grade</p>
+  <h3>Three answers, equally sure of themselves</h3>
+  <div class="body">
+    <div class="input">
+      <h4>The task</h4>
+      <div class="q">Can this customer get a refund?</div>
+      <div class="ctx">order    #48213
+placed   2026-10-02
+opened   yes
+policy   30 days, unopened only
+today    2026-10-21</div>
+    </div>
+    <div class="list">
+      <div class="sample" data-step="1"><span class="who">Sample 1</span><p>Yes. The order is <mark>within the 30-day window</mark>, so a full refund applies.</p><span class="verdict fail" data-step="4">Fail</span></div>
+      <div class="sample" data-step="2"><span class="who">Sample 2</span><p>No. It's within 30 days, but the policy covers <mark>unopened items only</mark>; offer an exchange.</p><span class="verdict pass" data-step="4">Pass</span></div>
+      <div class="sample" data-step="3"><span class="who">Sample 3</span><p>Yes, <mark>opened items can be returned</mark> within 30 days for store credit.</p><span class="verdict fail" data-step="4">Fail</span></div>
+    </div>
+  </div>
+  <aside class="notes">[click 1–3] Let the room guess as each one lands. [click 4] All three verdicts at once: same length, same tone, one of them right.</aside>
+</section>

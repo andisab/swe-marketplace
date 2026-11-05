@@ -9,6 +9,7 @@ inlines them and sets a style's CSS variables, which the token block reads. Run 
 """
 import math
 import os
+import random
 import re
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "charts")
@@ -172,7 +173,6 @@ s += '    </g>\n  </g>\n</svg>\n'
 write("waterfall.svg", s)
 
 # 5. heatmap: 7 days x 24 hours -------------------------------------------------------------------
-import random
 random.seed(7)
 days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 def load(d, h):
@@ -318,12 +318,12 @@ edges = [  # (class, path, label, (x, y, anchor) or None); gutters at x=240, 380
     ("edge", "M760,441 L812,441 Q820,441 820,433 L820,300 Q820,292 828,292 L860,292", "reads", (832, 370, "start")),
     ("edge", "M760,463 L860,463", "artifacts", (810, 476, "middle")),
 ]
-for cls, d, lab, pos in edges:
+for cls, d, _lab, _pos in edges:
     s += f'  <path class="{cls}" d="{d}" marker-end="url(#dg-arrow)"/>\n'
-for cls, d, lab, pos in edges:
+for _cls, _d, lab, pos in edges:
     if pos: s += f'  <text class="elbl" x="{pos[0]}" y="{pos[1]}" text-anchor="{pos[2]}">{lab}</text>\n'
 s += '  <g>\n'
-for nid, (x, y, w, h, cls, lab, sub, ic) in nodes.items():
+for _nid, (x, y, w, h, cls, lab, sub, ic) in nodes.items():
     cx = x + w / 2
     s += f'    <rect class="{cls}" x="{x}" y="{y}" width="{w}" height="{h}" rx="8"/>\n    <g class="ic"><use href="#cwi-{ic}" x="{x+12}" y="{y+h/2-11}" width="22" height="22"/></g>\n'
     s += f'    <text class="lbl" x="{cx}" y="{y+h/2-4}">{lab}<tspan class="sub" x="{cx}" dy="1.25em">{sub}</tspan></text>\n'

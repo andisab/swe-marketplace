@@ -1,0 +1,27 @@
+<!-- pattern
+name: two-column
+title: Two columns
+idea: Two related bodies of content side by side: two options, two audiences, a claim and its evidence.
+use: Two lists or two short texts of similar weight; set the split with --cols (1fr 1fr, 2fr 3fr). Each column leads with a strong heading.
+avoid: Before/after on the same items (use before-after); more than two options (use card-row).
+builds: left, then right
+from: Track 03 decks (layout-two-column), AI-SDLC workshop s12
+-->
+<style>
+section[data-key].layout-two-column .columns { display: grid; grid-template-columns: var(--cols, 1fr 1fr); gap: var(--gap, 48px); align-items: start; margin-top: .6em; }
+section[data-key].layout-two-column .columns > * { min-width: 0; }
+section[data-key].layout-two-column .columns > * > :is(strong, h4):first-child { display: block; margin: 0 0 .5em; padding-bottom: .4em; border-bottom: 1px solid var(--color-border); font-size: var(--size-subbody); }
+section[data-key].layout-two-column .columns li { margin-bottom: .45em; }
+</style>
+<section data-key="example-two-column" class="layout-two-column">
+  <p class="kicker">Who does what</p>
+  <h3>The bot reads first, people decide</h3>
+  <div class="columns">
+    <div class="col-left" data-step="1"><strong>The review bot</strong><ul><li>Style, tests and obvious bugs on every pull request</li><li>Comments within two minutes</li><li>Never approves or merges</li></ul></div>
+    <div class="col-right" data-step="2"><strong>The human reviewer</strong><ul><li>Design, risk and intent</li><li>Resolves or dismisses the bot's comments</li><li>Approves the merge</li></ul></div>
+  </div>
+  <aside class="notes">One line on the split.
+
+[click 1] The bot's job.
+[click 2] The reviewer's job.</aside>
+</section>

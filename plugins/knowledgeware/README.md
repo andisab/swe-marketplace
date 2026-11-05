@@ -27,7 +27,7 @@ In Claude Code v2.1.275 or later, one command does both:
 
 In Claude Desktop: **Customize → Plugins → Add → Add marketplace**, enter `andisab/swe-marketplace`, then install **knowledgeware**. Shell commands, team settings, zip upload and claude.ai options are in the marketplace's [install guide](../../docs/install.md).
 
-You need **Node.js** for deck builds, the style scripts and the draw.io server, and **Python 3** for the deck and diagram checks, which use only the standard library. Mermaid diagrams and SVG charts need neither. Ask in plain language; Claude prints the full path of every file it writes. If you don't say whether you want PowerPoint or HTML, slideware asks before it builds.
+You need **Node.js** (22 or newer for HTML decks) for the deck engine, the style scripts and the draw.io server, **Python 3** for the PowerPoint and diagram checks, which use only the standard library, and **Chrome** (or Edge, Brave, Chromium) to edit HTML decks and to check and export them. Mermaid diagrams and SVG charts need neither. Ask in plain language; Claude prints the full path of every file it writes. If you don't say whether you want PowerPoint or HTML, slideware asks before it builds.
 
 ## **knowledgebase**: sites for the material a team reads repeatedly
 
@@ -49,7 +49,7 @@ Facts such as prices, quotas, versions and release status go out of date. A know
 - **`/knowledgeware:librarian plan [library]`** writes `librarian-plan.md` at the library root. The plan lists this week's sweeps, the sources shared across items (so each is checked once), what's coming up, the backlog, and what needs a person. Each plan picks up where the last one stopped.
 - **`/knowledgeware:librarian sweep <site-dir>`** checks one site. It re-checks only the facts whose check interval has passed, sends research subagents to the primary sources, and writes what it found to `librarian-audit-<date>.md` in the site's folder: each verdict with its source, and each proposed edit as the exact old and new text. The site itself is untouched. Read the audit, mark any proposal you don't want as `skip`, then run **`sweep <site-dir> --apply <audit-file>`** to land the rest, with the `Last verified` stamps it earned and a changelog row. **`sweep <site-dir> --apply`** without a file does the research and the edits in one run, for a site you're happy to have maintained unattended. Either way it reports structural problems as suggestions and never restructures the site.
 
-The library is the folder you pass, or else the folder in the `KNOWLEDGEWARE_LIBRARY` environment variable. The librarian never edits a deck, because re-checking a deck means editing its source and rebuilding it, which slideware does. A deck built from research gets a **spec** instead: a one-page site beside it with the deck's facts, their sources and check intervals. The librarian sweeps the spec like any site and tells you which slides each stale fact feeds; a deck without a spec is reported from the `Last verified` dates on its sources slide, and you can ask for a spec to be built from the deck itself.
+The library is the folder you pass, or else the folder in the `KNOWLEDGEWARE_LIBRARY` environment variable. The librarian never edits a deck, because re-checking a deck means editing it (an HTML deck in place, a PowerPoint deck through its build script), which slideware does. A deck built from research gets a **spec** instead: a one-page site beside it with the deck's facts, their sources and check intervals. The librarian sweeps the spec like any site and tells you which slides each stale fact feeds; a deck without a spec is reported from the `Last verified` dates on its sources slide, and you can ask for a spec to be built from the deck itself.
 
 Sweeps are designed to run weekly from cron, launchd or any other scheduler. One sweep per site and one plan for the whole library looks like this:
 
@@ -103,46 +103,45 @@ python3 scripts/fetch-resource.py <drive-share-url> $BRANDS/example/brand.md
 # 3. Write one by hand, following skills/brandware/references/brandbook-spec.md and the acmecorp example
 ```
 
-Logos and wordmarks go in the brand's `assets/` folder, and a stylesheet or starters can sit beside them in `css/` and `starters/`. If you have a design kit or brand plugin already, copy its brandbook, logos and stylesheet into this shape and note where they came from in the folder's README. slideware installs a brand's Google Fonts when it builds a PowerPoint deck. To install them yourself, run `bash scripts/install-fonts.sh example`.
+Logos and wordmarks go in the brand's `assets/` folder, and a stylesheet or starters can sit beside them in `css/` and `starters/`. A `css/slideware.css` refines slideware's slide patterns for the brand: colours, fonts and the details its guidelines call for. If you have a design kit or brand plugin already, copy its brandbook, logos and stylesheet into this shape and note where they came from in the folder's README. slideware installs a brand's Google Fonts when it builds a PowerPoint deck. To install them yourself, run `bash scripts/install-fonts.sh example`.
 
-### Bring your own brands directory
+### Your knowledgeware home
 
-Brands stored inside the plugin's install folder are replaced whenever the plugin updates. Keep your brands in a directory you own instead, anywhere on disk, and point the plugin at it in `~/.claude/settings.json`. Set it there rather than in your shell profile, so every Claude Code session has it:
+Your own brands and slide patterns live in one folder outside the plugin, so plugin updates never touch them: `~/.claude/knowledgeware/` by default, or wherever `KNOWLEDGEWARE_HOME` points. Set it in `~/.claude/settings.json` rather than your shell profile, so every Claude Code session has it:
 
 ```jsonc
 // ~/.claude/settings.json
 {
   "env": {
-    "KNOWLEDGEWARE_BRANDS_DIR": "~/my-brands"
+    "KNOWLEDGEWARE_HOME": "~/my-knowledgeware"
   }
 }
 ```
 
-The directory has the same layout as the plugin's own brands folder:
-
 ```
-~/my-brands/
-├── DEFAULT                # optional: one line naming your go-to brand, e.g. "acmecorp"
-└── <name>/
-    ├── brand.md           # the brandbook
-    ├── tokens.json        # a cache derived from the brandbook (regenerated automatically)
-    ├── assets/            # logos, marks, wordmarks
-    ├── css/<name>.css     # optional stylesheet
-    └── README.md          # optional: provenance and notes
+~/my-knowledgeware/
+├── README.md              # what the folder holds
+├── .gitignore             # leaves out caches and renders
+├── brands/
+│   ├── DEFAULT            # optional: one line naming your go-to brand, e.g. "acmecorp"
+│   └── <name>/
+│       ├── brand.md       # the brandbook
+│       ├── tokens.json    # a cache derived from the brandbook (regenerated automatically)
+│       ├── assets/        # logos, marks, wordmarks
+│       ├── css/           # optional: <name>.css for pages, slideware.css for decks
+│       └── README.md      # optional: provenance and notes
+└── slideware/
+    └── catalog/           # your own slide patterns, beside the ones the plugin ships
 ```
 
-Brands in the older flat layout (`<name>.md` next to `tokens/<name>.json` and `<name>/assets/`) keep working; move one into a folder whenever you edit it.
-
-Everything in this directory survives plugin updates, and it works well as a private git repository. Its entries win over same-named entries in the plugin, and its `DEFAULT` file wins over the plugin's.
-
-Without the environment variable, brands go in `styles/brands/` inside the plugin install, which every plugin update replaces. In that setup, keep the originals somewhere else and copy them back after each update (`cp -Rp ~/my-brands/. <plugin-root>/styles/brands/`). `styles/brands/README.md` has the details.
+`node scripts/home.js` prints where each folder is, and `node scripts/home.js init` creates the home with its README and `.gitignore`. Its entries win over same-named entries in the plugin, and its `DEFAULT` file wins over the plugin's. It works well as a private git repository. To keep brands somewhere else, set `KNOWLEDGEWARE_BRANDS_DIR` to that folder; it takes the place of `brands/` in the home. Brands in the older flat layout (`<name>.md` next to `tokens/<name>.json` and `<name>/assets/`) keep working; move one into a folder whenever you edit it.
 
 ### How style resolution works
 
 When a request names a style or brand, the skills look for it in three places, in this order:
 
 ```
-$KNOWLEDGEWARE_BRANDS_DIR/     # your directory (checked first)
+<home>/brands/                 # your brands (checked first; or $KNOWLEDGEWARE_BRANDS_DIR)
 styles/brands/                 # brandbooks inside the plugin install
 styles/                        # the five built-in styles (checked last)
 ```
@@ -167,25 +166,25 @@ chartware picks the medium by fit: Mermaid for diagrams that live in Markdown, h
 
 ## **slideware**: decks in PowerPoint or HTML
 
-![Six slides from three HTML decks in three built-in styles](../../docs/images/decks.jpg)
+![Nine HTML slides in three built-in styles, a row each: an agent loop, a trust boundary and a staircase; a heatmap, blast-radius rings and a token breakdown; an agent system map, a layer stack and an equation with labelled terms](../../docs/images/decks.jpg)
 
-*Six slides from three HTML decks, each in a built-in style: Editorial Light, Dark Precision and Material Olive.*
+*Nine HTML slides in three built-in styles, a row each. Material Olive: an agent loop with its hand-offs, a trust boundary, a staircase. Dark Precision: a chartware heatmap, blast-radius rings, a breakdown. Editorial Light: an agent system map, a layer stack, attention with labelled terms. The numbers are illustrative.*
 
-slideware builds a deck from a short outline: a `slides.js` file with one descriptor per slide, naming a layout and holding the content. It renders to PowerPoint through pptxgenjs, or to a single HTML file with Reveal.js inlined, so the HTML deck runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand; the decks above differ only in the style name. The charts on the slides are chartware templates placed as figures.
+slideware builds a deck from a short outline. A PowerPoint deck is written by a pptxgenjs build script. An HTML deck is one `index.html` file that holds the slides, the brand and everything needed to present them, so it runs offline and travels as one file. Styles come from the shared registry, so one outline renders in any of the five built-in styles or in your brand. HTML slides build from a catalogue of 39 patterns, each a proven way to express one kind of idea, written against the brand's tokens. Beyond titles, cards and tables, it covers what technical talks need: architectures and agent loops drawn in HTML that adapt to the number of boxes, code read line by line, terminal output with a verdict, equations with labelled terms, and results that put the claim first. `cli.js catalog` lists them, `cli.js gallery` builds a deck of every example in the brand of your choice, and charts come in as chartware templates placed as figures.
 
 ![A deck slide beside its presenter view with notes and pacing](../../docs/images/presenter.jpg)
 
 *The big-number slide beside its presenter view: previous and next slides, the session timer with per-slide pacing, and the formatted speaker notes.*
 
-Press "S" or "P" in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written in the slide descriptors, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
+Press `P` in an HTML deck and a second window opens with this view, kept in sync with the audience window. Notes are written with each slide, with `[pause]` markers and bold where you want them. The pacing plan comes from the deck's total minutes or from named sessions, and the header says whether you're ahead or behind. A slide marked hidden stays out of the deck and out of the plan.
 
-**Try it.** *"Make a 6-slide PowerPoint deck on our Q3 platform roadmap in style-3."* slideware builds a `.pptx` file in your current folder, runs its layout checks, and fixes what they find before it hands the deck over. *"Turn this markdown document into an HTML deck I can present from a browser."* slideware writes a deck folder whose `index.html` holds the whole deck; open it in a browser and press `S` for the presenter view.
+**Try it.** *"Make a 6-slide PowerPoint deck on our Q3 platform roadmap in style-3."* slideware builds a `.pptx` file in your current folder, runs its layout checks, and fixes what they find before it hands the deck over. *"Turn this markdown document into an HTML deck I can present from a browser."* slideware writes a deck folder whose `index.html` holds the whole deck; open it in a browser and press `P` for the presenter view.
 
 **PowerPoint or HTML?** Choose PowerPoint when people will edit the slides or need a `.pptx` file, which opens in PowerPoint, Keynote and Google Slides. Choose HTML when you'll present from a browser and want the presenter view with its pacing timer, or when you want to share a single file or a link.
 
-**Where the files go.** Decks are saved in your current folder unless you name another location, and Claude prints each file's full path. An HTML deck is a folder that holds `index.html` and the files it was built from (`slides.js`, `style.md` and `node_modules`). Only `index.html` is the deck, but if it shows local images, keep them next to it. The first build of each deck runs `npm install` in the deck folder, so it needs a network connection. After that, an HTML deck runs offline, and only its Google Fonts fall back to system fonts without a connection.
+**Where the files go.** Decks are saved in your current folder unless you name another location, and Claude prints each file's full path. An HTML deck is a folder holding `index.html`, plus a file per lane and a `lanes/` folder when it has lanes. Pictures live inside `index.html`, so nothing else has to travel with it. Nothing is installed per deck. Without a connection, only its Google Fonts fall back to system fonts.
 
-**The presenter view.** Open the deck's `index.html` in a browser and press `S` (or `P`). The presenter view opens in a second window, and moving either window moves both. If nothing happens, allow pop-ups for the page. `N` shows the notes at the bottom of the deck itself for rehearsal, and `?` lists every key.
+**The presenter view.** Open the deck's `index.html` in a browser and press `P`. The deck's keys are capital letters, so hold Shift (or turn on Caps Lock); the lowercase letter does nothing. The presenter view opens in a second window, and moving either window moves both. If nothing happens, allow pop-ups for the page. `N` shows the notes at the bottom of the deck itself for rehearsal (drag the drawer's top edge to make it taller), and `?` lists every key.
 
 **A running footer.** Ask for one ("put the program name in the footer") and every slide but the cover gets the text on the left and the page number on the right, with your brand's logo beside it when the deck uses a brand from the registry. Decks in the five built-in styles get the footer without a logo. Each deck's browser tab also shows a small slide icon in the deck's colours, so deck tabs stand apart from knowledge-base tabs.
 
@@ -195,13 +194,15 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 
 **The overview.** Press `O` in the deck or the presenter view to see every slide as a thumbnail, grouped under the deck's section slides, with the current slide outlined. Click a slide to go to it, or move with the arrow keys and press Enter; Esc closes. The overview takes its colors and fonts from the deck's style, so a dark deck has a dark overview. Opening the deck with `?overview` after its address starts in it. The `i` at the end of the navigation bar lists every key.
 
-**Editing the deck yourself.** Ask for the deck "with review mode" (or ask Claude to turn it on for an existing deck). You get two files: `index.html` to share, and `index.review.html` for you. In the review file, press `E` and every heading, body and card becomes editable in place, with a panel at the bottom for the slide's speaker notes and a comment to Claude; a small bar over a paragraph offers bold, italic, code, a link, a brand colour and a size. Press `L` and the slide's blocks get dotted outlines: drag a card or bullet to reorder it, press Del to remove it, drag a block or picture to nudge it, resize a picture with its corner, drag the bar between two columns to change their split, and set the slide's gap and padding with sliders. The overview (`O`) edits the deck's shape the same way: an eye on each slide hides or shows it, an X deletes it, dragging reorders. The deck changes as you do it. Connect the deck folder once from the review bar and your edits save themselves into a small `edits.json` file next to the deck; then tell Claude "rebuild the deck", and the page reloads with the edits folded into the source, so they survive every later change. (Without the folder, press Save, or Copy and paste the edits to Claude.) Review mode is for words, notes and the arrangement of what's on a slide. New layouts, images and style changes still go through Claude.
+**Editing the deck yourself.** Ask Claude to open the deck for editing: it starts a small local server and gives you an address, which works in any browser with nothing to approve. Press `E`. Double-click any text to change it, format words or a whole block from the bar above it (bold, italic, size, your brand's fonts and colours, alignment), drag anything on a slide to move it, resize it from its corners, or pin it in place; a panel at the bottom holds the slide's speaker notes and a comment for Claude. The overview (`O`) hides, deletes and reorders slides. Press `S` to save into `index.html` itself; saves after each edit are automatic. You can also open `index.html` directly in Chrome, Edge or Brave and press `E`; the first save then asks for the deck folder, and the editor shows and copies its path for the picker. When Claude changes the deck while you have it open, the page reloads on the same slide and keeps your unsaved edits. With lanes, pick a lane in the editor's bar to edit just that lane; `B` rebuilds every lane file and checks the slides for overflow. A copy you send to someone else presents normally; `E` only works where the plugin is installed.
 
-**A PDF of an HTML deck.** Open the deck in Chrome with `?print-pdf` added to the end of its address, then choose **File → Print → Save as PDF**. Print mode can misplace the footer on title slides. If the footers matter, ask Claude to render the slides as images instead.
+**Slide patterns.** HTML decks are built from a catalogue of slide patterns: proven layouts such as numbered steps, a timeline, before and after, or a row of numbers, each written to take on your brand's colours and fonts. They're starting points, not a fixed set: Claude adapts them, combines them and invents new layouts when the material needs one, and can save a good new one to your own catalogue in your [knowledgeware home](#your-knowledgeware-home). Ask for the pattern gallery to see them all in your brand.
+
+**A PDF or PowerPoint copy of an HTML deck.** Ask Claude to export it. A PDF has one page per slide, fully built. A PowerPoint copy shows each slide as a picture with the text in editable text boxes on top, and keeps the speaker notes and hidden slides. Claude can also bring a PowerPoint deck in, either as an outline to redesign in your style or as a faithful copy with every shape in place.
 
 **The fonts look wrong.** A PowerPoint file names its fonts but doesn't embed them, so it shows substitutes on any computer that lacks them. Before a build, slideware installs the style's missing Google Fonts and tells you which other fonts to install by hand. An HTML deck loads its fonts from Google Fonts, so without a connection it shows the fallback fonts the style names.
 
-**Changing a deck after delivery.** Ask for the change, and slideware rebuilds the deck from its source. If you edited the delivered file by hand in the meantime, slideware compares it with its last build first and carries your edits into the rebuild. Text and notes edits made in review mode are folded in by every build, and Claude reads the comments you left.
+**Changing a deck after delivery.** Ask for the change, and Claude edits the deck in place, so your own edits stay. Ask Claude to "address my comments" and it acts on the comments you left in the editor and removes them. A deck made with an older version of slideware is converted the first time Claude changes it: Claude compares every slide against the old version and deletes the old files only after you approve.
 
 **For maintainers.** The skill's own [README](./skills/slideware/README.md) has the six ways people prompt it, what it won't do, and the file map.
 
@@ -211,7 +212,7 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 |---|---|---|---|
 | **LibreOffice** | PowerPoint slide previews for the visual check | The deck still builds, without a preview review. | `brew install --cask libreoffice` · `sudo apt-get install -y libreoffice` |
 | **poppler** (`pdftoppm`) | PowerPoint slide previews | Same as LibreOffice. | `brew install poppler` · `sudo apt-get install -y poppler-utils` |
-| **Playwright MCP** (or Claude in Chrome) | Screenshot checks of HTML decks | The deck is still produced, without a screenshot review. | `claude plugin install playwright@claude-plugins-official` |
+| **Chrome** (or Edge, Brave, Chromium) | Editing HTML decks, and the overflow checks, pictures, PDF and PowerPoint export | The deck is still produced and presents in any browser, without a screenshot review or exports. | [google.com/chrome](https://www.google.com/chrome/) |
 | **markitdown** | Reading an existing `.pptx`, to copy its style or to update it | Claude can't read the text of existing decks. | `pip install markitdown` |
 | **Google Fonts access** | Installing a style's fonts for PowerPoint, and loading them in HTML | Text falls back to system fonts. | — |
 
@@ -222,14 +223,14 @@ Press "S" or "P" in an HTML deck and a second window opens with this view, kept 
 | **knowledgebase** skill | Builds multi-page HTML knowledge bases that work offline, such as field guides, handbooks, runbooks and study guides. A site whose facts change over time, such as prices or versions, gets a maintenance page so the librarian can keep it current. |
 | **brandware** skill | Manages the style registry the other three skills read: the built-in styles, your brands, and their logos and fonts. |
 | **chartware** skill | Draws diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files, with a geometry lint, thirteen templates, an icon sprite, and import-and-redraw with a fidelity ledger. |
-| **slideware** skill | Builds slide decks as PowerPoint files or as single-file HTML (Reveal.js) decks. Both formats carry speaker notes, session pacing and hidden slides. |
+| **slideware** skill | Builds slide decks as PowerPoint files or as single-file HTML decks you edit in the browser. Both formats carry speaker notes, session pacing and hidden slides. |
 | **librarian** agent and `/knowledgeware:librarian` | Reports which facts are due for re-checking across your sites and decks, writes an update plan, and fact-checks one site against its sources. See [Keeping sites and decks current](#keeping-sites-and-decks-current). |
 | `/knowledgeware:kb-maintain` | A deprecated alias for `librarian sweep`, kept so existing scheduled jobs keep running. |
 | **drawio** MCP server | The official draw.io server (`@drawio/mcp`, pinned to 1.10.0), which chartware uses to open diagrams in draw.io. `npx` fetches it from the npm registry the first time it runs. |
 
 ## What it runs, and what leaves your machine
 
-Everything the plugin runs is a readable script inside the plugin folder: Node.js for the style registry and deck builds, Python (standard library only) for the deck, diagram and site checks, and shell scripts that call them. The network is used in these cases and no others:
+Everything the plugin runs is a readable script inside the plugin folder: Node.js for the style registry and the deck engine, Python (standard library only) for the PowerPoint, diagram and site checks, and shell scripts that call them. On your machine, the deck engine also runs your installed Chrome headless to check and export HTML decks, and when you ask to edit a deck it serves it on 127.0.0.1 only (`serve`, stopped when you're done). The network is used in these cases and no others:
 
 - **The draw.io MCP server.** `npx` downloads `@drawio/mcp@1.10.0` from the npm registry the first time chartware opens a diagram in draw.io, and the server opens the diagram in the draw.io web editor. It runs only in Claude Code and Cowork; claude.ai doesn't start local MCP servers.
 - **Fonts.** `scripts/install-fonts.sh` downloads a style's fonts from Google Fonts when you ask for them, and HTML decks link Google Fonts stylesheets. Without access, text falls back to system fonts.
@@ -237,7 +238,7 @@ Everything the plugin runs is a readable script inside the plugin folder: Node.j
 - **Files you point it at.** `scripts/fetch-resource.py` downloads the one URL you give it, such as a brandbook on Google Drive. For a Drive file behind the virus-scan page it keeps Google's confirmation cookie in a temporary file for that download and deletes it afterwards.
 - **The librarian.** A sweep fetches the sources a site cites and runs web searches to re-verify facts.
 
-Nothing is sent anywhere else, no telemetry is collected, and no credential, token or key is read from your environment or files. Deck, site and diagram files are written where you ask, in your current folder by default.
+Nothing is sent anywhere else, no telemetry is collected, and no credential, token or key is read from your environment or files. Deck, site and diagram files are written where you ask, in your current folder by default. Two things live outside it: a copy of the HTML deck editor in Claude Code's plugin data folder (`~/.claude/plugins/data/`), which `new` and `refresh` keep current so `E` works in any deck, and your knowledgeware home (`~/.claude/knowledgeware`, or `KNOWLEDGEWARE_HOME`) when you keep brands or slide patterns there.
 
 ## Questions and troubleshooting
 

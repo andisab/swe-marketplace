@@ -41,9 +41,10 @@ resolve_families() {
 }
 
 installed_matches() {  # any installed file for this family?
-  local fam="$1" squashed
+  local fam="$1" squashed dashed
   squashed="$(echo "$fam" | tr -d ' ')"
-  ls "$FONT_DIR" 2>/dev/null | grep -i -e "$squashed" -e "$(echo "$fam" | tr ' ' '-')" | head -3
+  dashed="$(echo "$fam" | tr ' ' '-')"
+  find "$FONT_DIR" -maxdepth 1 \( -iname "*$squashed*" -o -iname "*$dashed*" \) -exec basename {} \; 2>/dev/null | head -3
 }
 
 install_family() {

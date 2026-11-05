@@ -1,0 +1,53 @@
+<!-- pattern
+name: rings
+title: Concentric rings
+idea: Scope that grows outward from a small core, each ring wider and riskier, arriving in step with the question that opens it.
+use: Blast radius and permissions, rollout rings (pilot, team, org), context layers, privacy tiers; three or four rings. The .qs list asks one question per ring; .rings holds the rings outermost first, each with --i (1 is the innermost) and a .lab, then the .core. Give a question and its ring the same data-step. .hot marks the ring that needs care.
+avoid: Scopes that don't nest (use a table); more than four rings.
+builds: a question and its ring together, inside out
+from: Track 03 v6 s18 and Deploying Claude Enterprise s1-walk (the blast-radius walk); Track 03 v6 s73 (pilot first, then rings)
+-->
+<style>
+section[data-key].layout-rings .body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 36px; align-items: center; margin-top: .2em; }
+section[data-key].layout-rings ol.qs { margin: 0; padding: 0; list-style: none; }
+section[data-key].layout-rings ol.qs > li { position: relative; display: grid; grid-template-columns: 34px 1fr; gap: 0 14px; margin: 0; padding: 0 0 18px; }
+section[data-key].layout-rings ol.qs > li:not(:last-child)::before { content: ""; position: absolute; left: 16px; top: 34px; bottom: 0; border-left: 2px solid var(--color-border); }
+section[data-key].layout-rings ol.qs .n { width: 34px; height: 34px; border: 2px solid var(--color-ink-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-bg);
+  font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 700; color: var(--color-ink); }
+section[data-key].layout-rings ol.qs > li.hot .n { border-color: var(--color-error); color: var(--color-error); }
+section[data-key].layout-rings ol.qs h4 { margin: 5px 0 3px; font-family: var(--font-sans); font-size: var(--size-subbody); letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+section[data-key].layout-rings ol.qs p { margin: 0; font-size: var(--size-caption); line-height: 1.45; color: var(--color-ink-body); }
+section[data-key].layout-rings ol.qs .cons { margin-top: 3px; font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-ink-muted); }
+section[data-key].layout-rings ol.qs > li.hot .cons { color: var(--color-error); }
+section[data-key].layout-rings .rings { position: relative; height: 100%; min-height: 0; --core: 112px; --step: 92px; }
+section[data-key].layout-rings .ring, section[data-key].layout-rings .core { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; }
+section[data-key].layout-rings .ring { width: calc(var(--core) + var(--i) * var(--step)); height: calc(var(--core) + var(--i) * var(--step));
+  border: 2px dashed var(--color-ink-faint); background: color-mix(in srgb, var(--color-accent) 7%, transparent); }
+section[data-key].layout-rings .ring.hot { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 6%, transparent); }
+section[data-key].layout-rings .ring .lab { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); padding: 3px 10px; border: 1px solid var(--color-border); border-radius: 999px;
+  background: var(--color-bg); font-family: var(--font-mono); font-size: var(--size-caption); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; color: var(--color-ink-body); }
+section[data-key].layout-rings .ring.hot .lab { border-color: var(--color-error); color: var(--color-error); }
+section[data-key].layout-rings .core { width: var(--core); height: var(--core); display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--color-accent);
+  text-align: center; font-family: var(--font-mono); font-size: var(--size-caption); font-weight: 700; line-height: 1.25; letter-spacing: .04em; text-transform: uppercase; color: var(--color-bg);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+</style>
+<section data-key="example-rings" class="layout-rings">
+  <p class="kicker">Blast radius</p>
+  <h3>Four questions before an agent runs unattended</h3>
+  <div class="body">
+    <ol class="qs">
+      <li data-step="1"><span class="n">1</span><div><h4>What can it read?</h4><p>Everything the session can open is in the context.</p><div class="cons">default: the repository</div></div></li>
+      <li data-step="2"><span class="n">2</span><div><h4>What can it change?</h4><p>Writes outside the repo are the first thing to deny.</p><div class="cons">default: the working tree</div></div></li>
+      <li data-step="3"><span class="n">3</span><div><h4>What can it reach?</h4><p>Network access turns a bad read into a leak.</p><div class="cons">default: allowlisted hosts</div></div></li>
+      <li class="hot" data-step="4"><span class="n">4</span><div><h4>What can it spend or ship?</h4><p>Credentials that deploy or pay need a person.</p><div class="cons">default: none</div></div></li>
+    </ol>
+    <div class="rings">
+      <div class="ring hot" style="--i: 4" data-step="4"><span class="lab">Production</span></div>
+      <div class="ring" style="--i: 3" data-step="3"><span class="lab">Network</span></div>
+      <div class="ring" style="--i: 2" data-step="2"><span class="lab">Machine</span></div>
+      <div class="ring" style="--i: 1" data-step="1"><span class="lab">Repository</span></div>
+      <div class="core">One<br>session</div>
+    </div>
+  </div>
+  <aside class="notes">Each question opens one ring. [click 4] The outer ring is where a person has to approve.</aside>
+</section>

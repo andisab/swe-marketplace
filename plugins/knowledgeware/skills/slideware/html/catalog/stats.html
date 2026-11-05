@@ -1,0 +1,27 @@
+<!-- pattern
+name: stats
+title: Stats row
+idea: Two to four numbers of equal weight that together make the point.
+use: Results, scale, cost and speed side by side. Each .stat has a value (.v, unit in .u), a label (.l) and an optional detail (.d).
+avoid: One number that matters most (use bignumber); numbers that need a chart to compare.
+builds: one number per click
+from: AI-SDLC workshop s18, s26 (multi-stat rows)
+-->
+<style>
+section[data-key].layout-stats .stats { display: grid; grid-template-columns: repeat(var(--count, 3), minmax(0, 1fr)); gap: var(--gap, 28px); margin-top: 1em; }
+section[data-key].layout-stats .stat { padding-top: 14px; border-top: 2px solid var(--color-accent); }
+section[data-key].layout-stats .v { font-family: var(--font-heading, var(--font-serif)); font-size: 54pt; font-weight: 700; line-height: 1; color: var(--color-ink); }
+section[data-key].layout-stats .u { margin-left: .1em; font-size: var(--size-title); font-weight: 600; color: var(--color-accent); }
+section[data-key].layout-stats .l { margin: .5em 0 .2em; font-size: var(--size-subbody); font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-stats .d { margin: 0; font-size: var(--size-caption); color: var(--color-ink-muted); }
+</style>
+<section data-key="example-stats" class="layout-stats" style="--count: 3">
+  <p class="kicker">Six weeks in</p>
+  <h3>Faster reviews, fewer escapes</h3>
+  <div class="stats">
+    <div class="stat" data-step="1"><div class="v">4<span class="u">h</span></div><p class="l">Median wait</p><p class="d">From 19 h before the pilot</p></div>
+    <div class="stat" data-step="2"><div class="v">31<span class="u">%</span></div><p class="l">Fewer review rounds</p><p class="d">Per merged pull request</p></div>
+    <div class="stat" data-step="3"><div class="v">0</div><p class="l">Unreviewed merges</p><p class="d">Down from 2 a month</p></div>
+  </div>
+  <aside class="notes">[click 1] … [click 2] … [click 3] …</aside>
+</section>

@@ -1,0 +1,49 @@
+<!-- pattern
+name: spectrum
+title: Spectrum with a default
+idea: One ordered choice with named stops, the default or recommended stop marked, and a note under each stop on when to pick it.
+use: Autonomy or permission levels, reasoning effort, temperature, isolation, quantisation; four to six stops. Set --n. Each li has a .name (mono) and a sentence; .on is the default, with a .pin label. .ends names the two directions; .range (optional, grid-column: a / b) brackets a run of stops with its note.
+avoid: Unordered options (use card-row or recommend); stops that need a paragraph each.
+builds: the axis, then the stops left to right, then the bracket
+from: AI-SDLC workshop s13, s16 (permission modes, effort levels, default haloed, bracket over a range); one-shot agents deck (autonomy spectrum)
+-->
+<style>
+section[data-key].layout-spectrum .spec { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); grid-template-rows: auto auto auto; align-content: center; margin-top: .4em; }
+section[data-key].layout-spectrum .ends { grid-column: 1 / -1; grid-row: 1; display: flex; justify-content: space-between; margin-bottom: 10px; font-family: var(--font-mono); font-size: var(--size-caption);
+  letter-spacing: .06em; text-transform: uppercase; color: var(--color-ink-muted); }
+section[data-key].layout-spectrum .ends > span:first-child::before { content: "← "; }
+section[data-key].layout-spectrum .ends > span:last-child::after { content: " →"; }
+section[data-key].layout-spectrum .range { grid-row: 2; position: relative; height: 34px; margin: 0 calc(50% / 2 - 8px); }
+section[data-key].layout-spectrum .range::before { content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 10px; border: 2px solid var(--color-accent); border-bottom: 0; border-radius: 4px 4px 0 0; }
+section[data-key].layout-spectrum .range > span { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); padding: 0 8px; background: var(--color-bg); font-family: var(--font-heading, var(--font-serif));
+  font-size: var(--size-subbody); font-style: italic; white-space: nowrap; color: var(--color-accent); }
+section[data-key].layout-spectrum ol.stops { grid-column: 1 / -1; grid-row: 3; position: relative; display: grid; grid-template-columns: subgrid; margin: 0; padding: 0; list-style: none; }
+section[data-key].layout-spectrum ol.stops::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; border-top: 2px solid var(--color-ink-muted); }
+section[data-key].layout-spectrum ol.stops::after { content: ""; position: absolute; right: -2px; top: 8px; border: 6px solid transparent; border-left: 9px solid var(--color-ink-muted); border-right: 0; }
+section[data-key].layout-spectrum ol.stops > li { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 0 12px; text-align: center; }
+section[data-key].layout-spectrum ol.stops > li::before { content: ""; position: relative; z-index: 1; width: 14px; height: 14px; margin: 6px 0 18px; border: 2px solid var(--color-ink-muted); border-radius: 50%; background: var(--color-bg); }
+section[data-key].layout-spectrum ol.stops > li.on::before { width: 22px; height: 22px; margin: 2px 0 14px; border-color: var(--color-accent); background: var(--color-accent); box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+section[data-key].layout-spectrum .name { font-family: var(--font-mono); font-size: calc(var(--size-body) * 1.25); font-weight: 600; color: var(--color-ink); }
+section[data-key].layout-spectrum li.on .name { color: var(--color-accent); }
+section[data-key].layout-spectrum .pin { margin: 4px 0 0; padding: 1px 8px; border-radius: 999px; background: var(--color-accent); font-family: var(--font-mono); font-size: calc(var(--size-caption) * .9); color: var(--color-bg); }
+section[data-key].layout-spectrum ol.stops p { margin: 10px 0 0; font-size: var(--size-subbody); line-height: 1.5; color: var(--color-ink-body); }
+section[data-key].layout-spectrum ol.stops .warn { margin-top: 8px; font-size: var(--size-caption); font-style: italic; color: var(--color-warning); }
+section[data-key].layout-spectrum .lesson { margin-top: 18px; }
+</style>
+<section data-key="example-spectrum" class="layout-spectrum">
+  <p class="kicker">Permission modes</p>
+  <h3>How much an agent may do before it asks</h3>
+  <div class="spec" style="--n: 5">
+    <div class="ends"><span>more control</span><span>more autonomy</span></div>
+    <div class="range" style="grid-column: 3 / 5" data-step="6"><span>where a tight spec makes it safe</span></div>
+    <ol class="stops">
+      <li data-step="1"><span class="name">plan</span><p>Reads and proposes; changes nothing. For unfamiliar code.</p></li>
+      <li class="on" data-step="2"><span class="name">ask</span><span class="pin">team default</span><p>Every edit and command waits for a yes.</p></li>
+      <li data-step="3"><span class="name">edit</span><p>Edits files freely; asks before shell commands.</p></li>
+      <li data-step="4"><span class="name">allowlist</span><p>Runs the commands the project allows, asks for the rest.</p></li>
+      <li data-step="5"><span class="name">unattended</span><p>Runs everything in a sandbox, with a budget.</p><span class="warn">only with no secrets in reach</span></li>
+    </ol>
+  </div>
+  <p class="lesson" data-step="6">Move right one stop at a time, and only when the check that says "done" is automatic.</p>
+  <aside class="notes">[click 1–5] One stop each. [click 6] The bracket: the middle stops are safe when the spec is tight.</aside>
+</section>

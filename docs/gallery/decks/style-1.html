@@ -1,0 +1,55 @@
+<!-- deck: style-1 · title: Platform engineering review, Q3 · footer: Platform team · October 2026 · minutes: 25 -->
+<section data-key="title" class="layout-title" data-chrome="none">
+  <p class="kicker">Platform team · Q3 review</p>
+  <h1>Platform engineering review, Q3</h1>
+  <p class="subtitle">What changed in how a change reaches production</p>
+  <div class="srule"></div>
+  <p class="meta">Platform team · October 2026</p>
+  <aside class="notes">Open with the one number on the next slide, then the three changes.
+
+- Keep the intro under a minute [pause]</aside>
+</section>
+<section data-key="speed" class="layout-bignumber">
+  <div class="stat">
+    <p class="label">Merged pull request to production, median</p>
+    <div class="figure-row"><span class="figure">3.4</span><span class="unit">× faster</span></div>
+    <p class="context">Q1: 38 min · Q3: 11 min. Source: deploy pipeline events, 2,140 deploys.</p>
+  </div>
+  <aside class="notes">Lead with the number, then the story behind it.
+
+- **No mandate:** teams opted in after a two-week pilot
+- The shared setup did most of the work [pause]</aside>
+</section>
+<section data-key="built" class="layout-card-row" style="--card-count: 3">
+  <p class="kicker">What got built</p>
+  <h3>Three changes that mattered</h3>
+  <div class="cards">
+    <div class="card top" data-step="1"><span class="n">01</span><h4>Inline CI</h4><p>Tests run in the pull request's own branch. No remote queue, no second checkout.</p></div>
+    <div class="card top" data-step="2"><span class="n">02</span><h4>Per-route p99</h4><p>Latency alerts per route, not per service. 47% fewer pages.</p></div>
+    <div class="card top" data-step="3"><span class="n">03</span><h4>Canary by default</h4><p>Every deploy goes 1% → 10% → 50% → 100%. Zero user-facing incidents in Q3.</p></div>
+  </div>
+  <aside class="notes">[click 1] CI. [click 2] Alerts. [click 3] Canaries.</aside>
+</section>
+<section data-key="cost" class="layout-figure">
+  <p class="kicker">Cost per deploy</p>
+  <h3>Net down a point, Q1 to Q3</h3>
+  <div class="fig"><svg data-figure-ref="waterfall" style="width: 900px"></svg></div>
+  <p class="figfoot">Price and volume effects added; mix, costs and FX took away.</p>
+  <aside class="notes">Walk the bars left to right.</aside>
+</section>
+<section data-key="engineer" class="layout-before-after">
+  <p class="kicker">For an engineer</p>
+  <h3>The same change, Q1 and Q3</h3>
+  <div class="ba">
+    <div class="row head"><span></span><span>Q1</span><span></span><span>Q3</span></div>
+    <div class="row"><span class="k">Tests</span><span class="from">Wait for the shared runner</span><span class="arrow">→</span><span class="to">CI runs in the branch</span></div>
+    <div class="row"><span class="k">Release</span><span class="from">Ask #deploys for a slot</span><span class="arrow">→</span><span class="to">Merge; the canary starts itself</span></div>
+    <div class="row"><span class="k">After</span><span class="from">Watch the dashboard for an hour</span><span class="arrow">→</span><span class="to">Paged only for your route</span></div>
+  </div>
+  <aside class="notes">Read one row; the others follow.</aside>
+</section>
+<section data-key="voice" class="layout-quote">
+  <blockquote>I stopped keeping a browser tab open for deploys. That's the whole review.</blockquote>
+  <p class="attribution">Staff engineer, payments team, Q3 retro</p>
+  <aside class="notes">Close on it.</aside>
+</section>

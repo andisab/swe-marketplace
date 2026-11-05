@@ -1,0 +1,30 @@
+<!-- pattern
+name: timeline
+title: Timeline
+idea: Stages or dates in order along one line, with where we are now marked.
+use: A rollout plan, a history, the stages of a process; three to seven points. Each li has a .when (date or stage) and a short .what; .on marks the current one.
+avoid: Steps with real detail (use steps); parallel tracks (use a table or a figure).
+builds: one point per click, left to right
+from: AI-SDLC workshop s2, s5, s24
+-->
+<style>
+section[data-key].layout-timeline ol.timeline { position: relative; display: grid; grid-template-columns: repeat(var(--points, 4), minmax(0, 1fr)); gap: 20px; margin: 1.6em 0 0; padding: 0; list-style: none; }
+section[data-key].layout-timeline ol.timeline::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: var(--color-border); }
+section[data-key].layout-timeline ol.timeline > li { position: relative; padding-top: 34px; }
+section[data-key].layout-timeline ol.timeline > li::before { content: ""; position: absolute; left: 0; top: 2px; width: 14px; height: 14px; border: 2px solid var(--color-accent); border-radius: 50%; background: var(--color-bg); }
+section[data-key].layout-timeline ol.timeline > li.on::before { background: var(--color-accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+section[data-key].layout-timeline .when { display: block; margin-bottom: .3em; font-family: var(--font-mono); font-size: var(--size-caption); color: var(--color-accent); }
+section[data-key].layout-timeline .what { margin: 0; font-size: var(--size-subbody); color: var(--color-ink-body); }
+section[data-key].layout-timeline li.on .what { font-weight: 600; color: var(--color-ink); }
+</style>
+<section data-key="example-timeline" class="layout-timeline" style="--points: 4">
+  <p class="kicker">Rollout</p>
+  <h3>Every team by the end of January</h3>
+  <ol class="timeline">
+    <li><span class="when">Oct</span><p class="what">Pilot with three teams</p></li>
+    <li class="on"><span class="when">Nov</span><p class="what">Results and the policy update</p></li>
+    <li><span class="when">Dec</span><p class="what">All backend repositories</p></li>
+    <li><span class="when">Jan</span><p class="what">Mobile and web; the merge gate goes on</p></li>
+  </ol>
+  <aside class="notes">We're at the second point.</aside>
+</section>

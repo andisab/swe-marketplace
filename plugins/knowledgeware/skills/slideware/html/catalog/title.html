@@ -1,0 +1,24 @@
+<!-- pattern
+name: title
+title: Cover
+idea: Opens the deck: what it is, for whom, and the one line that frames it.
+use: The first slide, with data-chrome="none". Kicker for the programme or event, title, subtitle, an accent rule, a meta line.
+avoid: Agenda or content on the cover; it carries the title only.
+builds: none; entrance motion only
+from: Track 03 decks (layout-title), AI-SDLC workshop s1
+-->
+<style>
+section[data-key].layout-title { justify-content: center; padding: 0 calc(var(--margin) * 1.6); }
+section[data-key].layout-title h1 { max-width: 18ch; margin: .1em 0 .25em; font-size: var(--size-hero); line-height: 1.05; }
+section[data-key].layout-title .subtitle { max-width: 40ch; margin: 0; font-size: var(--size-title); line-height: 1.3; color: var(--color-ink-muted); }
+section[data-key].layout-title .srule { width: 160px; height: 4px; margin: 1.4em 0 0; border-radius: 2px; background: var(--color-accent); }
+section[data-key].layout-title .meta { position: absolute; left: calc(var(--margin) * 1.6); bottom: var(--margin); font-size: var(--size-caption); color: var(--color-ink-muted); }
+</style>
+<section data-key="example-title" class="layout-title" data-chrome="none">
+  <p class="kicker">Platform engineering · Q4 rollout</p>
+  <h1>Code review, automated</h1>
+  <p class="subtitle">What changes in the pull request flow on 1 December, and why</p>
+  <div class="srule"></div>
+  <p class="meta">Engineering all-hands · 2026-11-20</p>
+  <aside class="notes">Why we're here, in one sentence.</aside>
+</section>

@@ -41,11 +41,11 @@ Note: styles 4/5 use a single sans family — Material Design intentionally avoi
 
 ## Spacing
 
-`build-deck.js` handles inter-slide spacing via Reveal's slide-frame model. Within a slide:
+Each slide is its own 1280 × 720 canvas. Within a slide:
 
-- `padding: var(--margin)` on every `<section>` — the brandbook's `marginIn` value (default 0.5in).
-- Card gap in `card-row`: `1.2em` — tuned for the default body size; scales with `--size-body`.
-- Column gap in `two-column`: `2em` — wider than card gap because column content is denser.
+- `padding: var(--margin)` on every `<section>` — the brandbook's `marginIn` value (default 0.5in); `--pad` on a section overrides it.
+- Card gap in `.cards`: `1.2em` — tuned for the default body size; scales with `--size-body`.
+- Column gap in `.cols`: `2em` — wider than card gap because column content is denser.
 
 Don't override these with inline styles. If a layout needs different spacing, add a new layout archetype.
 
@@ -67,7 +67,7 @@ A slide should fit the eye at a single glance — about 7 ± 2 chunks of informa
 - **No drop shadows on text.** Use `--color-ink` if it needs more weight.
 - **No gratuitous gradients.** CSS supports them but the brandbook doesn't define them — adding one inserts a token outside the system.
 - **No icon-for-icon's-sake.** If an icon doesn't carry meaning (status, category, action), skip it.
-- **No fly-in animations.** Default Reveal transition is `fade` for a reason — let content land, don't perform it.
+- **No fly-in animations.** Slides fade for a reason — let content land, don't perform it. Entrance motion (`data-a`) is a short arrival, not a show.
 
 ## What good looks like
 

@@ -1,7 +1,7 @@
 ---
 name: javascript-expert
 description: Expert in modern JavaScript specializing in language features, optimization, and best practices. Handles asynchronous patterns, code quality, and performance tuning. Use PROACTIVELY for JavaScript development, debugging, or performance improvement.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__context7__*, mcp__plugin_context7_context7__*
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 color: "#fabd2f"
 tags:

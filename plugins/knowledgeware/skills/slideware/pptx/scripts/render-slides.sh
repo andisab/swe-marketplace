@@ -44,12 +44,12 @@ EOF
 fi
 
 TMPDIR="$(mktemp -d -t pptx-render.XXXXXX)"
-trap "rm -rf '$TMPDIR'" EXIT
+trap 'rm -rf "$TMPDIR"' EXIT
 
 echo "→ Converting to PDF…" >&2
 # Use a per-run profile dir so a stale soffice instance can't block us via the user profile lock.
 PROFILE_DIR="$(mktemp -d -t soffice-profile.XXXXXX)"
-trap "rm -rf '$TMPDIR' '$PROFILE_DIR'" EXIT
+trap 'rm -rf "$TMPDIR" "$PROFILE_DIR"' EXIT
 SOFFICE_STDERR="$(mktemp -t soffice-err.XXXXXX)"
 "$SOFFICE" --headless \
   "-env:UserInstallation=file://$PROFILE_DIR" \
