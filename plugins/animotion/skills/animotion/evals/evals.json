@@ -1,0 +1,95 @@
+{
+  "skill_name": "animotion",
+  "notes": "Calibration briefs drawn from the scenes that inspired animotion (a pixel-agent explainer deck). Each run gets a copy of fixtures/blocky/animotion/ beside its file as the visual language. Graders read the run's contact sheet (cli.js frames) as well as the file.",
+  "evals": [
+    {
+      "id": 0,
+      "name": "multiply-into-a-team",
+      "prompt": "Make an animated scene for a standalone HTML page (./multiply.html): one AI agent becomes a team of ten working in parallel. Each finishes: most with a green check, one with an amber warning, and when all are done there's a small celebration. Use the visual language in ./animotion/.",
+      "expected_output": "One HTML page with one <am-scene> in which a lead agent pops in, clones into a grid of ten that fly out of it, badges resolve per agent (nine ok, one warn), and a burst plays; poster on the resolved state; check --render clean.",
+      "assertions": [
+        {
+          "text": "`node <plugin>/scripts/cli.js check ./multiply.html --render` reports 0 errors"
+        },
+        {
+          "text": "The scene has an aria-label and a named poster label that shows all ten agents with their badges"
+        },
+        {
+          "text": "The ten agents come from s.clone (or are entered from the lead's position), not ten unrelated pop-ins"
+        },
+        {
+          "text": "Exactly one agent ends in the warn state and the rest ok"
+        },
+        {
+          "text": "The agent is drawn with the kit's sprite (AM.sprite with the kit's rows) or kit classes, not a new drawing"
+        },
+        {
+          "text": "No Math.random, timers or network in the timeline"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "two-tracks-on-a-slide",
+      "prompt": "Add an animated slide to the slideware deck at ./deck/index.html, after the title: 'Supervised autonomy is time back'. Two tracks: on the top one ('You babysit') the agent walks station to station through 8 stops (brief, approve, answer, approve, fix it, re-explain, approve, review), stopping at each with a speech bubble showing a person icon; on the bottom one ('You write the spec once, it checks itself') it runs straight through, checks filling in green, with only 2 stops. Big counters at the right: '8 stops' and '2 stops'. Use the visual language in ./deck/animotion/.",
+      "expected_output": "A new slide in the deck with one <am-scene> sized inside the 1280×720 canvas: the agent moves station to station on the top track with bubbles, then (or in parallel) across the bottom track with checks, counters visible; slideware check --render and animotion check --render both clean.",
+      "assertions": [
+        {
+          "text": "The deck's slideware `check --render` reports 0 errors"
+        },
+        {
+          "text": "`animotion check ./deck/index.html --render` reports 0 errors"
+        },
+        {
+          "text": "Stations are anchors the agent moves to (s.move to a selector), not hand-computed coordinates"
+        },
+        {
+          "text": "The scene has a poster that shows both tracks complete with both counters"
+        },
+        {
+          "text": "The runtime and the kit are inlined (am-runtime script and am-kit template present)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "assistant-session-with-preview",
+      "prompt": "Make an animated scene in ./session.html of a coding-assistant session: on the left a chat where the user types 'verify this app' and the assistant replies with status lines (✓ Added moving boxes to the cart, ✗ Card declined, ✓ Order placed with 4242 4242 4242 4242, ✓ Arriving Thursday); on the right a live preview of a small shop checkout where a cursor clicks Add, the cart count goes to 1, the first payment is declined, the retry succeeds and 'Arriving Thursday' is highlighted. Use the visual language in ./animotion/.",
+      "expected_output": "One page, one scene: typed prompt, status lines appearing in sync with preview changes driven by a fake cursor, mono for machine text, highlight at the end; check --render clean.",
+      "assertions": [
+        {
+          "text": "`check ./session.html --render` reports 0 errors"
+        },
+        {
+          "text": "The prompt is typed with s.type; status lines appear in step with the preview changes they describe"
+        },
+        {
+          "text": "A cursor element moves to the buttons with s.move to anchors and they change state on click"
+        },
+        {
+          "text": "Machine text (card number, URL) uses the mono face"
+        },
+        {
+          "text": "The poster shows the order placed and the highlight"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "near-miss-bullets",
+      "prompt": "On the slide 'Why we changed' in ./deck/index.html, make the three bullet points fade in one after another as I click.",
+      "expected_output": "No <am-scene>: the three bullets get slideware click builds (data-step 1–3, optionally data-a fade), because motion here is a reveal, not an explanation.",
+      "assertions": [
+        {
+          "text": "No <am-scene> or am-runtime is added to the deck"
+        },
+        {
+          "text": "The three bullets carry data-step (or class fragment) so they appear one per click"
+        },
+        {
+          "text": "The reply doesn't offer or build an animated scene for a plain reveal (if the animotion skill was loaded, it says slideware builds cover it)"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "animotion",
+  "description": "Animated scenes for single-file HTML: slideware decks, knowledgebase pages or any page. Each scene is one isolated <am-scene> element whose timeline of verbs (enter, move, clone, type, count, set state) runs on one seekable clock, so it plays while it can be seen and otherwise rests on a poster frame for print, export, thumbnails and reduced motion. Scenes follow a visual language derived from a brand, a named drawing idiom or a reference; a curated index of online icon, illustration and motion sources lists what may be fetched and how to credit it. A CLI inlines the runtime, checks scenes in Chrome and draws contact sheets of their frames.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Andis A. Blukis",
+    "email": "andis.blukis@gmail.com",
+    "url": "https://github.com/andisab"
+  },
+  "homepage": "https://github.com/andisab/swe-marketplace",
+  "repository": "https://github.com/andisab/swe-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "animation",
+    "html",
+    "slides",
+    "motion",
+    "svg",
+    "explainer",
+    "visual-language",
+    "offline"
+  ],
+  "skills": [
+    "./skills/animotion"
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/andisab/swe-marketplace/blob/main/plugins/animotion/README.md",
+  "supportUrl": "https://github.com/andisab/swe-marketplace/issues",
+  "privacyPolicyUrl": "https://github.com/andisab/swe-marketplace/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/andisab/swe-marketplace/blob/main/LICENSE"
+}
