@@ -40,6 +40,8 @@ jobs:
         run: bash plugins/knowledgeware/tests/diagram-digest-test.sh
       - name: Test slideware's HTML engine
         run: node plugins/knowledgeware/tests/slideware-engine-test.js
+      - name: Test animotion's timeline and source index
+        run: node plugins/animotion/tests/runtime-test.js && node plugins/animotion/tests/cli-test.js && node plugins/animotion/tests/sources-test.js
 
   validate-manifests:
     name: claude plugin validate

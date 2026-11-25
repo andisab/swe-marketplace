@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>animotion guide</title>
+<meta name="description" content="How the animotion plugin works, and how to ask it for animated scenes that come out right.">
+<style>
+  :root {
+    --bg: #FBFAF7; --surface: #FFFFFF; --sunken: #F3F1EC; --ink: #1C1B19; --body: #45433E; --muted: #6E6B64; --line: #E6E3DC;
+    --accent: #D97757; --accent-ink: #A9472A; --accent-tint: #FBF0EA; --ok: #3C7D3A; --ok-tint: #E8F2E6; --warn: #B4691E; --warn-tint: #FBF0E3; --stop: #B3392F; --stop-tint: #FBECEA;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --color-bg: var(--surface); --color-ink: var(--ink); --color-accent: var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151413; --surface: #1E1D1B; --sunken: #262421; --ink: #F2F0EB; --body: #CFCBC3; --muted: #A29E95; --line: #34322E;
+      --accent: #E3906F; --accent-ink: #F0AE97; --accent-tint: #2E1F1A; --ok: #7CC27A; --ok-tint: #1D2A1C; --warn: #E3A35A; --warn-tint: #2E2318; --stop: #F07C70; --stop-tint: #321C1A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151413; --surface: #1E1D1B; --sunken: #262421; --ink: #F2F0EB; --body: #CFCBC3; --muted: #A29E95; --line: #34322E;
+    --accent: #E3906F; --accent-ink: #F0AE97; --accent-tint: #2E1F1A; --ok: #7CC27A; --ok-tint: #1D2A1C; --warn: #E3A35A; --warn-tint: #2E2318; --stop: #F07C70; --stop-tint: #321C1A;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--body); font: 17px/1.6 var(--font-sans); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 56px; }
+  @media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; } nav.toc { display: none; } }
+  nav.toc { position: sticky; top: 0; align-self: start; padding: 48px 0; font-size: 14px; }
+  nav.toc b { display: block; font: 600 12px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  nav.toc a { display: block; padding: 4px 0 4px 12px; border-left: 2px solid var(--line); color: var(--body); text-decoration: none; }
+  nav.toc a:hover { border-color: var(--accent); color: var(--ink); }
+  main { padding: 48px 0 96px; min-width: 0; }
+  h1, h2, h3 { color: var(--ink); line-height: 1.2; letter-spacing: -.02em; }
+  h1 { font-size: clamp(34px, 5vw, 48px); margin: 0 0 12px; }
+  h2 { font-size: 28px; margin: 64px 0 12px; padding-top: 8px; }
+  h3 { font-size: 19px; margin: 32px 0 8px; letter-spacing: -.01em; }
+  p { margin: 0 0 14px; max-width: 70ch; }
+  a { color: var(--accent-ink); }
+  .eyebrow { font: 600 13px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 12px; }
+  .lede { font-size: 20px; color: var(--body); max-width: 62ch; }
+  code, kbd { font: 14px var(--font-mono); background: var(--sunken); border-radius: 5px; padding: 1px 6px; color: var(--ink); }
+  pre { background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font: 14px/1.55 var(--font-mono); color: var(--ink); }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 20px; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { font: 600 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .table-scroll { overflow-x: auto; }
+  .hero { margin: 28px 0 8px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+  .hero .scroll { overflow-x: auto; }
+  @media (max-width: 800px) { .hero .scroll { zoom: .8; } }
+  @media (max-width: 660px) { .hero .scroll { zoom: .64; } }
+  @media (max-width: 540px) { .hero .scroll { zoom: .52; } }
+  @media (max-width: 440px) { .hero .scroll { zoom: .44; } }
+  .hero figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 16px 0 8px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { font-size: 15px; margin: 0; }
+  .tag { display: inline-block; font: 600 12px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+  .tag.ok { background: var(--ok-tint); color: var(--ok); } .tag.warn { background: var(--warn-tint); color: var(--warn); } .tag.stop { background: var(--stop-tint); color: var(--stop); } .tag.acc { background: var(--accent-tint); color: var(--accent-ink); }
+  .prompt { position: relative; margin: 12px 0 18px; padding: 14px 18px 14px 44px; background: var(--accent-tint); border-radius: 12px; color: var(--ink); font-size: 16px; }
+  .prompt::before { content: "›"; position: absolute; left: 18px; top: 10px; font: 700 22px var(--font-mono); color: var(--accent); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 10px 0 18px; }
+  @media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+  .pair > div { border-radius: 12px; padding: 14px 16px; font-size: 15px; }
+  .pair .weak { background: var(--sunken); color: var(--body); }
+  .pair .strong { background: var(--ok-tint); color: var(--ink); }
+  .pair b { display: block; font: 600 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+  .pair .weak b { color: var(--muted); } .pair .strong b { color: var(--ok); }
+  ol.check { padding-left: 22px; } ol.check li { margin-bottom: 8px; } ol.check li::marker { font-family: var(--font-mono); color: var(--accent-ink); }
+  .note { border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 16px 0; font-size: 15px; }
+  footer { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc" aria-label="Contents">
+    <b>Contents</b>
+    <a href="#what">What it is</a>
+    <a href="#when">When to use it</a>
+    <a href="#how">How it works</a>
+    <a href="#prompting">Prompting for good results</a>
+    <a href="#examples">Example requests</a>
+    <a href="#iterate">Iterating</a>
+    <a href="#language">The visual language</a>
+    <a href="#sources">Outside sources</a>
+    <a href="#commands">Commands</a>
+    <a href="#trouble">Troubleshooting</a>
+  </nav>
+
+  <main>
+    <p class="eyebrow">Claude Code plugin · swe-marketplace</p>
+    <h1>animotion</h1>
+    <p class="lede">Animated scenes for single-file HTML: slide decks, knowledge-base pages, any page you build with Claude. You describe what should happen; Claude builds a scene that shows it, checks it in a browser and looks at its frames before handing it over.</p>
+
+    <figure class="hero" id="what">
+      <div class="scroll">
+        <am-scene name="guide-hero" loop="2" hold="2" poster="done" style="display: block; width: 720px; height: 300px"
+          aria-label="A request is typed; Claude settles the visual language, builds the layout and the timeline, checks it and reads its frames; meanwhile the preview shows one agent becoming a team of ten, nine finishing with a check and one with a warning.">
+          <template>
+            <style>
+              :host { font-family: var(--font-sans); color: var(--ink); }
+              .col { position: absolute; top: 0; }
+              .lbl { font: 600 12px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+              #ask { left: 0; width: 200px; }
+              #bubble { margin-top: 8px; min-height: 120px; padding: 12px 14px; background: var(--accent-tint); border-radius: 12px; font: 15px/1.45 var(--font-sans); color: var(--ink); }
+              #steps { left: 216px; width: 160px; }
+              #steps ol { list-style: none; margin: 8px 0 0; padding: 0; }
+              #steps li { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; margin-bottom: 6px; border: 1px solid var(--line); border-radius: 9px; font: 14px var(--font-sans); color: var(--muted); background: var(--surface); }
+              #steps li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--line); flex: none; }
+              #steps li[data-state=active] { border-color: var(--accent); color: var(--ink); }
+              #steps li[data-state=active]::before { border-color: var(--accent); }
+              #steps li[data-state=done] { color: var(--ink); background: var(--ok-tint); border-color: transparent; }
+              #steps li[data-state=done]::before { background: var(--ok); border-color: var(--ok); }
+              #view { left: 392px; width: 328px; height: 300px; }
+              #pane { position: relative; margin-top: 8px; height: 262px; background: var(--sunken); border-radius: 12px; }
+              #lead { position: absolute; left: 137px; top: 112px; }
+              #grid { position: absolute; left: 17px; top: 90px; display: grid; grid-template-columns: repeat(5, 54px); gap: 34px 6px; }
+              .bot { position: relative; line-height: 0; }
+              .bot::after { content: ""; position: absolute; left: 50%; top: -19px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: transparent; }
+              .bot[data-state=ok]::after { background: var(--ok); }
+              .bot[data-state=warn]::after { background: var(--warn); }
+              #count { position: absolute; left: 14px; bottom: 12px; font: 600 14px var(--font-mono); color: var(--ink); }
+            </style>
+            <div class="col" id="ask"><span class="lbl">You ask</span><div id="bubble"></div></div>
+            <div class="col" id="steps"><span class="lbl">Claude does</span>
+              <ol><li id="st1">Visual language</li><li id="st2">Final layout</li><li id="st3">Timeline</li><li id="st4">check --render</li><li id="st5">Frame sheet</li></ol></div>
+            <div class="col" id="view"><span class="lbl">The scene</span>
+              <div id="pane">
+                <i class="bot" id="lead" data-am-sprite="agent:neutral"></i>
+                <div id="grid"></div>
+                <span id="count">0 agents</span>
+              </div>
+            </div>
+            <script type="application/json" data-am-sprites>{"agent": {"unit": 3, "palette": {"A": "#D97757", "K": "#1C1B19"}, "poses": {"neutral": ["...AAAAAAAAAAAA...", "...AAKAAAAAAKAA...", ".AAAAAAAAAAAAAAAA.", "...AAAAAAAAAAAA...", "....A.A....A.A...."], "happy": [".A.AAAAAAAAAAAA.A.", ".AAAAKAAAAAAKAAAA.", "...AAAAAAAAAAAA...", "...AAAAAAAAAAAA...", "....A.A....A.A...."]}}}</script>
+            <script type="text/animotion">
+              const plural = (n) => (Math.round(n) === 1 ? "1 agent" : `${Math.round(n)} agents`);
+              s.type("#bubble", "Create an animated slide: one agent becomes a team of ten. Most finish with a check, one with a warning.", 0.3, { cps: 48 })
+               .label("asked", "+=0.3")
+               .set("#st1", { state: "active" }, "asked").set("#st1", { state: "done" }, "+=0.5")
+               .set("#st2", { state: "active" }, "<").enter("#lead", "up", "<").count("#count", { from: 0, to: 1, format: plural }, "<", { dur: 0.2 })
+               .set("#st2", { state: "done" }, "+=0.5").set("#st3", { state: "active" }, "<")
+               .clone("#lead", 10, "<", { into: "#grid", from: "center", each: 0.07 })
+               .exit("#lead", "fade", "<")
+               .count("#count", { to: 10, format: plural }, "<", { dur: 0.7 })
+               .set("#st3", { state: "done" }, ">").set("#st4", { state: "active" }, "<");
+              for (let i = 1; i <= 10; i++) s.set("#lead-" + i, { state: i === 4 ? "warn" : "ok", pose: i === 4 ? "neutral" : "happy" }, i === 1 ? ">" : "<0.09");
+              s.set("#st4", { state: "done" }, "+=0.3").set("#st5", { state: "active" }, "<").set("#st5", { state: "done" }, "+=0.6")
+               .label("done", "+=0.2")
+               .expect("done", "#count", { text: "10 agents" });
+            </script>
+          </template>
+        </am-scene>
+      </div>
+      <figcaption>This is a live animotion scene. It plays when it scrolls into view, pauses on hover (the button at its corner), and rests on its last frame afterwards. With reduced motion turned on, you only see that frame.</figcaption>
+    </figure>
+
+    <p>animotion is a Claude Code skill plus a small runtime. A scene is <strong>one self-contained element</strong>, <code>&lt;am-scene&gt;</code>, that holds its own markup and a short script of steps: things appear, move to other things, multiply, type, count, change state. The runtime plays that script on one clock it can jump to any moment, so the scene plays while someone is looking at it and otherwise rests on a chosen <strong>poster</strong> frame. That frame is what printing, PDF and PowerPoint exports, slide thumbnails and viewers who prefer reduced motion get.</p>
+
+    <h2 id="when">When to use it, and when not</h2>
+    <p>Ask for a scene when <strong>the motion carries the explanation</strong>: a process unfolding in order, things multiplying, state changing over time, a request passing through checks, a before and after. A good test: with the motion turned off, would the explanation feel broken?</p>
+    <div class="cards">
+      <div class="card"><span class="tag ok">A scene fits</span><h3>Processes and systems</h3><p>Setup steps in order, a request through gates, agents fanning out and reporting back, a rollout over weeks, a form failing on bad input.</p></div>
+      <div class="card"><span class="tag warn">Use slideware instead</span><h3>Reveals and entrances</h3><p>Bullets appearing one per click, a chart fading in. Slideware's click builds and entrance effects do this without a scene; Claude will say so.</p></div>
+      <div class="card"><span class="tag stop">Out of scope</span><h3>Video and PowerPoint motion</h3><p>Real footage, 3D, physics simulations, and animation inside .pptx files. PowerPoint gets the poster frame.</p></div>
+    </div>
+    <p>The skill only starts when you ask for animation by name: "animated slide", "animate this scene", "add an animated scene", or "animotion".</p>
+
+    <h2 id="how">How it works</h2>
+    <h3>What Claude does with your request</h3>
+    <ol class="check">
+      <li><strong>Settles the visual language.</strong> It looks for one beside the file (<code>animotion/language.md</code>), else derives one from your brand, a drawing style you pick, or a reference you point at. A new language comes with a <em>specimen</em> for you to approve.</li>
+      <li><strong>Writes the beats</strong>: the three to six moments the scene shows, in order.</li>
+      <li><strong>Builds the final layout</strong> in HTML and CSS, then a timeline that hides, moves and changes it.</li>
+      <li><strong>Checks it in Chrome</strong>: nothing leaves its box, the poster isn't blank, every jump in time gives the same frame, text is large enough, nothing flashes.</li>
+      <li><strong>Reads a contact sheet</strong> of its frames (saved beside the file in <code>animotion/frames/</code>) and fixes what looks wrong before handing it over.</li>
+    </ol>
+    <h3>How a scene behaves</h3>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Where</th><th>What the scene does</th></tr></thead>
+      <tbody>
+        <tr><td>A slideware deck, on its slide</td><td>Plays from the start each time the slide comes up. With <code>trigger="steps"</code>, your clicks move it beat by beat, and going back steps it back.</td></tr>
+        <tr><td>Another slide, thumbnails, presenter window</td><td>Shows the poster.</td></tr>
+        <tr><td>Blackout, a hidden tab</td><td>Freezes, then carries on.</td></tr>
+        <tr><td>Any other page</td><td>Plays when it scrolls into view.</td></tr>
+        <tr><td>Print, PDF, PNG, PowerPoint export</td><td>Shows the poster.</td></tr>
+        <tr><td>Reduced motion</td><td>Shows the poster only.</td></tr>
+      </tbody>
+    </table></div>
+    <p>A playing scene has a pause button on hover. In a deck, <kbd>m</kbd> pauses or plays the current slide's scenes.</p>
+
+    <h2 id="prompting">Prompting for good results</h2>
+    <p>Claude can improvise a scene from one line, but the best results come from saying what a director would. Cover what you can of these; Claude asks about the rest or picks sensible defaults and says which.</p>
+    <ol class="check">
+      <li><strong>Ask for animation by name</strong>: "an animated slide", "an animated scene", "animotion". That's what starts the skill.</li>
+      <li><strong>Say where it goes</strong>: the file, and for a deck which slide ("after the title of ./deck/index.html", "replace the figure on the rollout slide").</li>
+      <li><strong>Give the beats</strong>: three to six short sentences, in order, each saying what changes. "The admin verifies the domain. SSO is set up but not enforced. …" This matters more than anything else.</li>
+      <li><strong>Name the point</strong>, the frame that should tell the story on its own (the poster): "end on all ten agents done, one with a warning".</li>
+      <li><strong>Say how it should play</strong>: when it comes into view (the default), looping, or step by step on your clicks while presenting.</li>
+      <li><strong>Say how it should look</strong>: your brand ("in the AcmeCorp brand"), a drawing style ("blocky pixel characters", "flat line drawings", "a UI mock-up"), or a reference ("derive the style from this site / this screenshot").</li>
+      <li><strong>Separate real from invented</strong>: give the real numbers and names, and say whether Claude may invent example values ("label made-up numbers as examples").</li>
+      <li><strong>Mention constraints</strong>: length ("under 15 seconds"), size, the audience ("projected in a big room"), house rules ("no bounce").</li>
+    </ol>
+    <div class="note">Words do one job and motion another: on-slide text says why or how much; the scene shows where and how. If you find yourself describing the text the scene should contain, put that text on the slide and keep the scene for the motion.</div>
+
+    <h2 id="examples">Example requests</h2>
+    <div class="pair">
+      <div class="weak"><b>Vague</b>Animate my rollout slide.</div>
+      <div class="strong"><b>Clear</b>Animate the rollout slide in ./deck/index.html: a week marker runs from 11-02 to 12-18; each of the five rings goes live as the marker reaches it, with its member count; the total climbs to 997. Play it when the slide comes up and end on all rings live.</div>
+    </div>
+    <div class="pair">
+      <div class="weak"><b>Vague</b>Make a cool agent animation.</div>
+      <div class="strong"><b>Clear</b>Create an animated scene in ./agents.html: one agent becomes a team of ten that fly out of it into a grid. Each finishes: nine with a check, one with a warning. A small celebration when all are done. Blocky pixel characters; end on the finished team.</div>
+    </div>
+    <div class="pair">
+      <div class="weak"><b>Vague</b>Show how spend caps work.</div>
+      <div class="strong"><b>Clear</b>Add an animated slide after slide 4: first find the member's monthly number (the first cap level that sets one), then show her requests passing the organization limit and the pooled budget until she reaches her own $200 and stops. Example values are fine; label them. Step through it on my clicks.</div>
+    </div>
+    <p>And one that shouldn't become a scene:</p>
+    <p class="prompt">Make the three bullets on "Why we changed" fade in one per click.</p>
+    <p>Claude uses slideware's click builds for this; no animation runtime is added to the deck.</p>
+
+    <h2 id="iterate">Iterating on a scene</h2>
+    <p>Ask for changes the way you'd direct a rehearsal. Claude edits the timeline, rechecks and rereads the frames.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>You say</th><th>What changes</th></tr></thead>
+      <tbody>
+        <tr><td>"Hold longer after the third beat."</td><td>A pause before the next step.</td></tr>
+        <tr><td>"Make it step on my clicks."</td><td>The scene moves one beat per click while presenting.</td></tr>
+        <tr><td>"End on the moment the request is blocked."</td><td>The poster: the frame every still view shows.</td></tr>
+        <tr><td>"Only one thing should move at a time."</td><td>Beats are split so each has one lead.</td></tr>
+        <tr><td>"Show me the frames."</td><td>A contact sheet of the scene at each beat.</td></tr>
+        <tr><td>"Use a check badge, not a red cross, for passed."</td><td>The kit, so every scene in the deck changes together.</td></tr>
+        <tr><td>"Reuse this scene on slide 7 with the Q4 numbers."</td><td>A copy of the element with new values.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="language">The visual language</h2>
+    <p>Brand colours and fonts aren't enough for drawings: a scene also needs to know what a document looks like, how "done" is drawn, how thick a line is and how things move. animotion keeps those decisions in a short spec, <code>animotion/language.md</code>, and a kit of shared parts, <code>animotion/kit.html</code>, beside your deck or page. Every scene uses the kit, so a correction made once reaches every scene.</p>
+    <div class="cards">
+      <div class="card"><span class="tag acc">From your brand</span><h3>No questions asked</h3><p>Colours become states (done, warning, stop), the brand's motion rules become timings. A brand whose motion rules say "no bounce" gets fades and short moves, nothing more.</p></div>
+      <div class="card"><span class="tag acc">From a style you pick</span><h3>Named drawing idioms</h3><p>Blocky pixel, flat shapes, line drawing, hand-drawn, isometric or UI mock-up. Claude shows two or three as small specimens.</p></div>
+      <div class="card"><span class="tag acc">From a reference</span><h3>Point at an example</h3><p>A website, screenshot, PDF or screen recording. Claude measures what it can and judges the rest, then shows you a specimen to approve.</p></div>
+    </div>
+    <p class="prompt">Set up an animotion visual language from our brand and show me a specimen.</p>
+    <p class="prompt">Derive the animotion style from https://example.com, then show me a specimen. Don't copy their mascot.</p>
+    <p>A reference teaches construction rules, never content: "blocky flat figure, expression in the eyes only" is fine to learn; another company's logo or character is not, and Claude lists those under "do not reproduce".</p>
+
+    <h2 id="sources">Outside sources</h2>
+    <p>The plugin keeps an index of about 145 online sources: icon sets (Lucide, Tabler, Phosphor, pixel sets), illustration and character libraries, palettes, motion systems, animation catalogues, exemplars to study and style-reference sites. It holds links and licence terms, never copies. When a scene needs an icon or a character, Claude fetches only that item from a source whose licence allows it, restyles it to the language, embeds it in the page (which stays offline) and adds the credit. Some popular libraries forbid automated fetching (unDraw, ManyPixels); Claude won't fetch from them, but you can download a file yourself and hand it over.</p>
+    <p>Licences change, so the index is re-checked by hand on request; <a href="index/MAINTAINING.md">index/MAINTAINING.md</a> has the procedure.</p>
+
+    <h2 id="commands">Commands</h2>
+    <p>Claude runs these for you; they're here for when you want to check something yourself. <code>$AM</code> is the plugin's folder.</p>
+<pre><code>node $AM/scripts/cli.js inline page.html                       # add or refresh the runtime and the kit
+node $AM/scripts/cli.js check page.html --render               # checks, in Chrome
+node $AM/scripts/cli.js frames page.html --scene name          # a contact sheet in animotion/frames/
+node $AM/scripts/cli.js sources --idiom line --use fetch-embed # what the index offers for a drawing style
+node $AM/scripts/cli.js list page.html                         # the scenes, their length and labels</code></pre>
+    <p>Needs Node 22 or newer; <code>check --render</code>, <code>frames</code> and <code>list</code> also need Chrome, Edge, Brave or Chromium. Slideware decks need the knowledgeware plugin too.</p>
+
+    <h2 id="trouble">Troubleshooting</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>You see</th><th>Why, and what to do</th></tr></thead>
+      <tbody>
+        <tr><td>The scene shows its final layout and never moves</td><td>The runtime isn't in the page, or the timeline failed. Ask Claude to run <code>check</code>; it names the problem.</td></tr>
+        <tr><td>It doesn't animate when I open the deck</td><td>Reduced motion is on in your system settings, or the scene is on another slide. Scenes driven by clicks only step while presenting (press <kbd>P</kbd>).</td></tr>
+        <tr><td>Something lands in the wrong place</td><td>Moves go to anchor elements in the final layout. Ask Claude to keep the layout final and let the timeline hide things.</td></tr>
+        <tr><td>The PDF shows the wrong moment</td><td>That's the poster. Ask for a different one ("end on the moment …").</td></tr>
+        <tr><td>I can't edit a scene in slideware's editor</td><td>You can move and resize it as one element; change its contents through Claude.</td></tr>
+      </tbody>
+    </table></div>
+
+    <footer>animotion 0.1.0 · experimental · MIT · part of <a href="https://github.com/andisab/swe-marketplace">swe-marketplace</a>. The scene above runs on this plugin's own runtime (<code>runtime/animotion.js</code>), so open this page from the plugin folder to see it move.</footer>
+  </main>
+</div>
+<script src="runtime/animotion.js"></script>
+</body>
+</html>

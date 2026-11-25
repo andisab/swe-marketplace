@@ -106,6 +106,20 @@ if ! node plugins/knowledgeware/tests/slideware-engine-test.js; then
   failed=1
 fi
 
+# animotion: the timeline core, the file handling and checks, and the source index (no browser); then the runtime
+# and the playback policy in Chrome (skipped without one)
+for t in runtime-test cli-test sources-test render-test policy-test; do
+  if ! node "plugins/animotion/tests/$t.js"; then
+    failed=1
+  fi
+done
+# animotion carries a copy of slideware's Chrome driver so it works without knowledgeware; the two must not drift
+if ! cmp -s <(sed -n '/^"use strict";/,$p' plugins/animotion/scripts/cdp.js | sed 's/animotion-chrome-/slideware-chrome-/') \
+            <(sed -n '/^"use strict";/,$p' plugins/knowledgeware/skills/slideware/html/engine/cdp.js); then
+  echo "animotion/scripts/cdp.js has drifted from slideware's engine/cdp.js: copy the change across" >&2
+  failed=1
+fi
+
 for dir in plugins/*/; do
   [ -d "$dir" ] || continue
   run_validate "$dir" "$(basename "$dir")"

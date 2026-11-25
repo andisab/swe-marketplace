@@ -1,0 +1,82 @@
+<style>
+  :host {
+    --am-unit: 8px;
+    --am-dur-xs: 150ms; --am-dur-sm: 250ms; --am-dur-md: 400ms; --am-dur-lg: 600ms; --am-dur-xl: 900ms;
+    --am-ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1); --am-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+    --am-ease-move: cubic-bezier(0.2, 0, 0, 1); --am-ease-effect: cubic-bezier(0.33, 0, 0.67, 1);
+    --am-accent: var(--color-accent, #C8643B);
+    --am-tint-60: color-mix(in oklab, var(--am-accent) 60%, var(--color-bg, #FAF9F5));
+    --am-tint-30: color-mix(in oklab, var(--am-accent) 30%, var(--color-bg, #FAF9F5));
+    --am-ok: var(--color-success, #3C7D3A); --am-warn: var(--color-warning, #D99A1E); --am-error: var(--color-error, #B3392F);
+    --am-grey: #CFCCC2; --am-paper: var(--color-surface, #FFFFFF); --am-line: var(--color-border, #DEDCD3);
+    font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-ink, #1F1E1C);
+  }
+  .am-badge { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font: 700 12px/1 var(--font-sans, system-ui); box-sizing: border-box; }
+  .am-badge[data-state=ok] { background: var(--am-ok); } .am-badge[data-state=ok]::before { content: "✓"; }
+  .am-badge[data-state=warn] { background: var(--am-warn); } .am-badge[data-state=warn]::before { content: "!"; }
+  .am-badge[data-state=error] { background: var(--am-error); } .am-badge[data-state=error]::before { content: "!"; }
+  .am-badge[data-state=pending] { background: none; border: 2px solid var(--am-grey); }
+  .am-badge[data-state=idle] { width: 24px; height: 6px; border-radius: 0; background: var(--am-accent); }
+  .am-doc { width: 112px; height: 144px; background: var(--am-paper); padding: 16px; box-sizing: border-box; display: grid; gap: 8px; align-content: start; }
+  .am-doc i { display: block; height: 8px; background: var(--am-grey); }
+  .am-doc i:nth-child(3n) { width: 60%; }
+  .am-row { display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--am-paper); }
+  .am-window { background: var(--am-paper); border: 1px solid var(--am-line); border-radius: 2px; overflow: hidden; }
+  .am-window-bar { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 8px; background: #EFEDE6; }
+  .am-window-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--am-grey); }
+  .am-window-bar .am-url { margin-left: 8px; flex: 1; background: #fff; font: 12px var(--font-mono, ui-monospace, monospace); padding: 2px 8px; color: #6B6A64; }
+  .am-bubble { position: absolute; background: #fff; border: 1px solid var(--am-line); padding: 8px; display: flex; gap: 6px; align-items: center; }
+  .am-bubble::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; background: #fff; border-right: 1px solid var(--am-line); border-bottom: 1px solid var(--am-line); transform: translateX(-50%) rotate(45deg); }
+  .am-agent { display: inline-block; line-height: 0; position: relative; color: var(--am-accent); }
+  .am-agent.am-sub { color: var(--am-tint-60); }
+  .am-agent::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: -6px; height: 4px; border-radius: 50%; background: rgba(0,0,0,.12); }
+  .am-mono { font-family: var(--font-mono, ui-monospace, monospace); }
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="am-person" viewBox="0 0 16 16"><circle cx="8" cy="5" r="3" fill="currentColor"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6z" fill="currentColor"/></symbol>
+  <symbol id="am-check" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+<!-- The agent: <i class="am-agent" data-am-sprite="agent:neutral"></i>; s.pose("#bot", "happy") swaps its eyes. -->
+<script type="application/json" data-am-sprites>
+{
+ "agent": {
+  "unit": 4,
+  "palette": {
+   "A": "currentColor",
+   "K": "#1F1E1C"
+  },
+  "poses": {
+   "neutral": [
+    "..AA........AA..",
+    "..AAAAAAAAAAAA..",
+    "AAAAAAAAAAAAAAAA",
+    "AAAAKKAAAAKKAAAA",
+    "AAAAKKAAAAKKAAAA",
+    "..AAAAAAAAAAAA..",
+    "..AA.AA..AA.AA..",
+    "..AA.AA..AA.AA.."
+   ],
+   "happy": [
+    "..AA........AA..",
+    "..AAAAAAAAAAAA..",
+    "AAAAAAAAAAAAAAAA",
+    "AAAAKKAAAAKKAAAA",
+    "AAAKAAKAAKAAKAAA",
+    "..AAAAAAAAAAAA..",
+    "..AA.AA..AA.AA..",
+    "..AA.AA..AA.AA.."
+   ],
+   "waiting": [
+    "..AA........AA..",
+    "..AAAAAAAAAAAA..",
+    "AAAAAAAAAAAAAAAA",
+    "AAAAAAAAAAAAAAAA",
+    "AAAKKKKAAKKKKAAA",
+    "..AAAAAAAAAAAA..",
+    "..AA.AA..AA.AA..",
+    "..AA.AA..AA.AA.."
+   ]
+  }
+ }
+}
+</script>

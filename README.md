@@ -23,6 +23,7 @@ Find the row that matches what you want to do, install that plugin, and then ask
 | You want to… | Install | Then ask Claude |
 |---|---|---|
 | Make slide decks, knowledge-base sites or diagrams in one consistent style | [`knowledgeware`](./plugins/knowledgeware/) | *"Make a 6-slide HTML deck on our Q3 results in style-3"* |
+| Add animated scenes to an HTML deck or page | [`animotion`](./plugins/animotion/) | *"Create an animated slide: one agent becomes a team of ten, each finishing with a check"* |
 | Get a second and third opinion on code changes | [`adv`](./plugins/adv/) | *"Use the adv-review agent to review my uncommitted changes"* |
 | Research a topic with parallel agents and get one written report | [`research-team`](./plugins/research-team/) | *"Use research-team to research vector database pricing"* |
 | Build your own agents, skills, hooks, plugins or MCP servers | [`context-engineering`](./plugins/context-engineering/) | *"Help me create a skill that drafts our release notes"* |
@@ -111,12 +112,13 @@ The two plugins I use daily and keep current. Both carry scripts, templates and 
 
 ### Experimental plugins
 
-Both work, and both change: adv depends on the Codex and Gemini CLIs, whose flags and models change between months, and context-engineering teaches conventions that Anthropic's plugin and skill guides keep updating. Expect their interfaces to move between minor versions.
+They work, and they change: adv depends on the Codex and Gemini CLIs, whose flags and models change between months; context-engineering teaches conventions that Anthropic's plugin and skill guides keep updating; animotion is new, and its verbs and scene contract may still move before 1.0. Expect their interfaces to move between minor versions.
 
 | Plugin | Version | What it's for | Contents |
 |---|---|---|---|
 | [`adv`](./plugins/adv/) | 0.4.0 | Adversarial multi-model code review. Claude, Codex CLI and Gemini CLI review in parallel, then cross-examine each other's findings. | 1 agent · 1 skill · 3 commands |
 | [`context-engineering`](./plugins/context-engineering/) | 1.1.1 | The plugin for building other plugins: agents, skills, commands, hooks, plugins, MCP tools and servers, to Anthropic's specs. | 1 agent · 7 skills |
+| [`animotion`](./plugins/animotion/) | 0.1.0 | Animated scenes in single-file HTML (slideware decks, knowledgebase pages, any page): isolated elements on one seekable clock, in a visual language derived from a brand or a reference, with an index of online icon, illustration and motion sources. | 1 skill |
 
 ### Agent packs
 
@@ -144,6 +146,7 @@ Claude loads a skill when your request matches the skill's description. You can 
 | `knowledgeware:brandware` | The shared brand registry. It imports, derives or edits the brandbooks and logos that every deliverable uses. |
 | `knowledgeware:chartware` | Architecture diagrams and data charts as Mermaid, hand-written SVG, or editable draw.io files. |
 | `knowledgeware:slideware` | Slide decks as PowerPoint, or a single-file HTML deck that runs offline, with a presenter view, a section overview, session pacing, speaker notes, and an editor in the browser for text, notes, layout and slide order, plus PowerPoint export and import. |
+| `animotion:animotion` | Animated scenes for HTML decks and pages: a visual language from a brand, a drawing idiom or a reference, scenes written as verb timelines, checked in Chrome and reviewed as frame sheets. Only when you ask for animation. |
 | `research-team:coordinator` | Runs the research pipeline. It splits a topic into subtopics, researches them in parallel, then has the report written. |
 | `research-team:report-formats` | Format profiles (Markdown, Obsidian, Joplin) and six report types for the research reports. |
 | `context-engineering:agent-dev` | Designing subagents: frontmatter, system prompt, tool access, example-driven descriptions. |

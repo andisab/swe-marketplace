@@ -1,0 +1,2478 @@
+# animotion source index
+#
+# Pointers to ONLINE sources that Claude consults or fetches from at authoring
+# time. Nothing is mirrored: this repo and the local disk hold no copy of any
+# library. Claude fetches only what one scene needs, embeds it in that deck
+# (an offline single file), and writes the item into the deck's credits block.
+#
+# Every entry declares one of three uses:
+#   fetch-embed  Claude may fetch items at authoring time and embed them in a
+#                deliverable, under the entry's licence block.
+#   consult      read for rules or numbers (tokens, guidelines, techniques);
+#                nothing from it is embedded.
+#   study-only   look at for ideas or style, or as evidence for deriving a
+#                visual language; never a source of assets. A study-only entry
+#                with access.method user-supplied and license.embed yes or
+#                conditional may be embedded only when the user downloads the
+#                file and hands it over (the user then holds the licence).
+#
+# Fields (merged schema, research note sources-and-derivation.md §1.2):
+#   id, name, kind, use, idioms, consult_when, extract, urls, access, license,
+#   [style], [animation], [motion], [tool], [exclude], [auto_select], traps,
+#   last_verified, cadence
+#   kind      hub | icon-set | emoji | logos | illustration | character |
+#             palette | game-assets | animation-assets | component-gallery |
+#             motion-tokens | easing-tool | motion-guidance | guideline |
+#             tutorial | exemplar | style-board | extraction-tool | token-format
+#   idioms    0-3 fit for pixel, flat, line, hand, iso, wire; `any` when the
+#             source is idiom-agnostic (motion, tools, mood boards)
+#   access.method  iconify | npm-cdn | gh-cdn | rest | graphql | registry |
+#                  mcp | zip | web | user-supplied | none
+#   access.auth    none | api-key | oauth | paid
+#   license.embed        yes | conditional | no | n/a
+#   license.attribution  none | notice (HTML comment) | visible |
+#                        per-item-author | per-set | n/a
+#   license.modify       allowed | share-alike | not-allowed | n/a
+#   auto_select    false = never pick automatically; only on explicit request
+#   traps     strings; a trap starting "unconfirmed:" is a fact the research
+#             could not confirm and must be checked before relying on it
+#   cadence   monthly | quarterly | yearly (manual re-check; see MAINTAINING.md)
+#
+# In recipes, `{version}` means a pinned x.y.z (resolve with
+# `npm view <pkg> version`), never @latest, so a re-fetch is reproducible.
+# Sources: reports/sources-icons.md, sources-illustration.md,
+# sources-motion.md, derivation-pipeline.md (2026-11-11).
+
+schema: 1
+updated: 2026-11-11
+
+sources:
+
+  # ───────────────────────── Icons: hub ─────────────────────────
+
+  - id: iconify
+    name: Iconify (API hub for open icon sets)
+    kind: hub
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 3, line: 3, hand: 2, iso: 0, wire: 3 }
+    consult_when: [any-icon, icon-search, set-licence-lookup]
+    extract: >-
+      Search here first (276 sets, 467,286 icons incl. variants on 2026-11-11).
+      Read each set's licence from its info record, batch-fetch bodies, and
+      fetch the set's original file when parts must animate separately.
+    urls:
+      home: https://iconify.design
+      machine: https://api.iconify.design
+      docs: https://iconify.design/docs/api/
+      search_docs: https://iconify.design/docs/api/search.html
+      svg_docs: https://iconify.design/docs/api/svg.html
+      metadata_mirror: https://cdn.jsdelivr.net/npm/@iconify/collections/collections.json
+    access:
+      method: iconify
+      auth: none
+      recipe: |
+        search:    GET https://api.iconify.design/search?query={q}&limit=32&prefixes=lucide,tabler,ph
+                   (limit min 32, default 64, max 999; also prefix, start, category;
+                    query keywords style=stroke|fill, palette=true|false, prefix:{p})
+        one SVG:   GET https://api.iconify.design/{prefix}/{name}.svg?height=24&color=%23d97757
+        batch:     GET https://api.iconify.design/{prefix}.json?icons={a},{b},{c}
+        set info:  GET https://api.iconify.design/collection?prefix={prefix}&info=true
+        all sets:  GET https://api.iconify.design/collections   (cache for the session)
+        names:     GET https://api.iconify.design/keywords?prefix={stem}
+        no-API metadata: "https://cdn.jsdelivr.net/npm/@iconify-json/{prefix"}/info.json
+                         https://cdn.jsdelivr.net/npm/@iconify-json/{prefix}/icons.json (whole set)
+      rate_limit: >-
+        Undocumented. About 25 calls in a few minutes returned HTTP 429
+        (Cloudflare 1015, retry-after 3596 s) for an hour. Search on the API,
+        fetch icons in batches, read set metadata from jsDelivr.
+    license:
+      name: per set (Iconify's own MIT does not cover the icons)
+      url: https://iconify.design/docs/icons/icon-set-basics.html
+      embed: conditional
+      attribution: per-set
+      modify: allowed
+      conditions: >-
+        All icons in a set share one licence; apply that set's entry here, or
+        the set's info.license when it has no entry. Mix on 2026-11-11: 144
+        MIT, 53 CC-BY-4.0, 31 Apache-2.0, 13 OFL-1.1, 10 CC0, 7 CC-BY-SA-4.0,
+        4 ISC, 6 GPL variants, 1 CC-BY-NC-SA-4.0, 1 CC-BY-NC-4.0.
+    exclude:
+      spdx: [CC-BY-SA-*, GPL-*, "*-NC-*"]
+      prefixes: [openmoji, cbi, ps, dashicons, gridicons, icomoon-free, et, gala,
+                 wordpress, typcn, arcticons, "entypo*", si-glyph, brandico,
+                 fontelico, emojione-v1]
+    animation: { draw_on: depends-on-set, separable_parts: false }
+    traps:
+      - "Output is optimised: separate parts are merged into one path (Lucide bot: 6 elements in source, 3 from Iconify)."
+      - "SVG output carries no licence comment; build the credit from the set's info record."
+      - "Iconify's SPDX field can lag upstream (Remix Icon, Health Icons); trust the upstream licence URL in the set's own entry."
+      - "unconfirmed: the exact rate limit; ~25 requests is one observation, not a published number."
+    last_verified: 2026-11-11
+    cadence: monthly
+
+  # ───────────────────────── Icons: line and UI ─────────────────────────
+
+  - id: lucide
+    name: Lucide
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 1, line: 3, hand: 0, iso: 0, wire: 3 }
+    consult_when: [line-idiom, wire-idiom, ui-chrome, state-badges]
+    extract: "2,046 icons; 24 px grid, 2 px stroke, round caps and joins, rx=2 rects, 1 px padding. Fetch the source SVG for separable parts."
+    urls:
+      home: https://lucide.dev
+      machine: "https://cdn.jsdelivr.net/npm/lucide-static@{version}/icons/{name}.svg"
+      metadata: "https://cdn.jsdelivr.net/npm/lucide-static@{version}/tags.json"
+      docs: https://github.com/lucide-icons/lucide/blob/main/docs/contribute/icons/design-principles.md
+      design_guide: https://lucide.dev/guide/design/icon-design-guide
+    access:
+      method: npm-cdn
+      auth: none
+      recipe: "Iconify prefix lucide for search; source SVG from lucide-static (pinned_version 1.72.0 on 2026-11-11)."
+      rate_limit: none known (jsDelivr)
+    license:
+      spdx: ISC
+      url: https://github.com/lucide-icons/lucide/blob/main/LICENSE
+      embed: "yes"
+      attribution: notice
+      modify: allowed
+      conditions: "Feather-derived icons are MIT (listed in the LICENSE file)."
+    style: { render: stroke, grid: 24, stroke_width: 2, caps_joins: round, corner_radius: 2 }
+    animation: { draw_on: true, separable_parts: true, notes: "rects carry rx, so radius can be re-tokened" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: tabler
+    name: Tabler Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 3, hand: 0, iso: 0, wire: 3 }
+    consult_when: [line-idiom, wire-idiom, ui-chrome]
+    extract: "6,287 icons (5,233 outline, 1,054 filled); same 2 px / 24 grid as Lucide, so the two mix."
+    urls:
+      home: https://github.com/tabler/tabler-icons
+      machine: "https://cdn.jsdelivr.net/npm/@tabler/icons@{version}/icons/{outline|filled}/{name}.svg"
+      metadata: "https://cdn.jsdelivr.net/npm/@tabler/icons@{version}/icons.json"
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix tabler; icons.json has tags and categories", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/tabler/tabler-icons", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: stroke, grid: 24, stroke_width: 2, caps_joins: round }
+    animation: { draw_on: true, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: iconoir
+    name: Iconoir
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 3, hand: 0, iso: 0, wire: 2 }
+    consult_when: [line-idiom]
+    extract: "1,671 icons; stroke 1.5 on a 24 grid."
+    urls: { home: "https://api.iconify.design/collection?prefix=iconoir&info=true", machine: "https://cdn.jsdelivr.net/npm/iconoir@{version}/icons/regular/{name}.svg" }
+    access: { method: iconify, auth: none, recipe: "Iconify prefix iconoir", rate_limit: see iconify }
+    license: { spdx: MIT, url: "https://api.iconify.design/collection?prefix=iconoir&info=true", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: stroke, grid: 24, stroke_width: 1.5 }
+    animation: { draw_on: true, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: hugeicons
+    name: Hugeicons (free set)
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 3, hand: 0, iso: 0, wire: 2 }
+    consult_when: [line-idiom]
+    extract: "6,065 free icons; stroke 1.5 on a 24 grid."
+    urls: { home: "https://api.iconify.design/collection?prefix=hugeicons&info=true" }
+    access: { method: iconify, auth: none, recipe: "Iconify prefix hugeicons", rate_limit: see iconify }
+    license: { spdx: MIT, url: "https://api.iconify.design/collection?prefix=hugeicons&info=true", embed: "yes", attribution: notice, modify: allowed, conditions: "free set only" }
+    style: { render: stroke, grid: 24, stroke_width: 1.5 }
+    animation: { draw_on: true, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: heroicons
+    name: Heroicons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 2, hand: 0, iso: 0, wire: 3 }
+    consult_when: [wire-idiom, ui-chrome, dense-ui]
+    extract: "1,288 icons; 24 outline (stroke 1.5); solid at 24, 20 (mini) and 16 (micro) for dense UI."
+    urls:
+      home: https://github.com/tailwindlabs/heroicons
+      machine: "https://cdn.jsdelivr.net/npm/heroicons@{version}/{24/outline|24/solid|20/solid|16/solid}/{name}.svg"
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix heroicons for search", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/tailwindlabs/heroicons", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: stroke-and-fill, grid: [24, 20, 16], stroke_width: 1.5 }
+    animation: { draw_on: outline-only, separable_parts: partial }
+    traps: ["Closed to new icons; the set will not grow."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: feather
+    name: Feather
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 2, hand: 0, iso: 0, wire: 2 }
+    consult_when: [legacy-feather-match]
+    extract: "286 icons, stroke 2, 24 grid, round. Use only to match legacy work; Lucide is its maintained successor."
+    urls: { home: "https://github.com/feathericons/feather", machine: "https://cdn.jsdelivr.net/npm/feather-icons@{version}/dist/icons/{name}.svg" }
+    access: { method: npm-cdn, auth: none, recipe: "", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/feathericons/feather", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: stroke, grid: 24, stroke_width: 2, caps_joins: round }
+    animation: { draw_on: true, separable_parts: true }
+    traps: ["Dormant: last push 2025-03-11."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: bootstrap-icons
+    name: Bootstrap Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 0, wire: 3 }
+    consult_when: [wire-idiom, ui-chrome]
+    extract: "2,078 icons; fill on a 16 grid."
+    urls: { home: "https://github.com/twbs/icons", machine: "https://cdn.jsdelivr.net/npm/bootstrap-icons@{version}/icons/{name}.svg" }
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix bi", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/twbs/icons", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: fill, grid: 16 }
+    animation: { draw_on: false, separable_parts: false }
+    traps: ["16 grid: don't mix with 24-grid sets in one scene (looks collected, not designed)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: fluent-system-icons
+    name: Fluent UI System Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 0, wire: 3 }
+    consult_when: [wire-idiom, microsoft-native-look]
+    extract: "19,945 files (sizes x styles); outlined fills, 16-48 sizes, soft corners."
+    urls: { home: "https://github.com/microsoft/fluentui-system-icons", machine: "https://cdn.jsdelivr.net/npm/@fluentui/svg-icons@{version}/icons/{name}_{size}_{regular|filled}.svg" }
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix fluent", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/microsoft/fluentui-system-icons", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: fill-outline, grid: [16, 20, 24, 28, 32, 48] }
+    animation: { draw_on: false, separable_parts: false }
+    traps: ["Fill-outlined: a draw-on traces the outline and looks wrong; use a clip-path wipe or scale-in."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  # ───────────────────────── Icons: fill and flat ─────────────────────────
+
+  - id: phosphor
+    name: Phosphor Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 2, hand: 0, iso: 0, wire: 2 }
+    consult_when: [flat-idiom, objects]
+    extract: "About 1,500 icons x 6 weights (thin, light, regular, bold, fill, duotone; 9,072 variants). Pick the weight that matches the spec; fills can't change stroke."
+    urls: { home: "https://github.com/phosphor-icons/core", machine: "https://cdn.jsdelivr.net/npm/@phosphor-icons/core@{version}/assets/{weight}/{name}[-{weight}].svg" }
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix ph", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/phosphor-icons/core", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: fill-outline, grid: 256, variants: [thin, light, regular, bold, fill, duotone] }
+    animation: { draw_on: false, separable_parts: few }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: material-symbols
+    name: Material Symbols
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 2, hand: 0, iso: 0, wire: 3 }
+    consult_when: [flat-idiom, wire-idiom, material-brand]
+    extract: "15,777 in Iconify (variants). viewBox 0 -960 960 960; axes FILL 0-1, wght 100-700, GRAD, opsz 20-48. Outlined, rounded or sharp to match the brand radius."
+    urls:
+      home: https://developers.google.com/fonts/docs/material_symbols
+      machine: "https://fonts.gstatic.com/s/i/short-term/release/materialsymbols{outlined|rounded|sharp}/{name}/{default|wght300fill1}/24px.svg"
+      docs: https://developers.google.com/fonts/docs/material_icons
+    access: { method: rest, auth: none, recipe: "gstatic URL above (verified with smart_toy); Iconify prefix material-symbols for search", rate_limit: none known }
+    license: { spdx: Apache-2.0, url: "https://developers.google.com/fonts/docs/material_icons", embed: "yes", attribution: notice, modify: allowed, conditions: "On-screen credit 'not required'; keep a licence reference and a modified note in a source comment." }
+    style: { render: fill-outline, grid: 24, variants: [outlined, rounded, sharp] }
+    animation: { draw_on: false, separable_parts: false }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: remix-icon
+    name: Remix Icon
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 1, hand: 0, iso: 0, wire: 2 }
+    consult_when: [flat-idiom]
+    extract: "3,188 icons; fill on a 24 grid in line/fill pairs."
+    urls:
+      home: https://github.com/Remix-Design/RemixIcon
+      machine: "https://cdn.jsdelivr.net/npm/remixicon@{version}/icons/{Category}/{name}-{line|fill}.svg"
+      license: https://github.com/Remix-Design/RemixIcon/blob/master/License
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix ri", rate_limit: none known }
+    license:
+      name: Remix Icon License v1.0
+      url: https://github.com/Remix-Design/RemixIcon/blob/master/License
+      embed: "yes"
+      attribution: none
+      modify: allowed
+      conditions: "Recolour, resize, restroke allowed (§2.2); no copyright notice needed in presentations (§5); never as a logo or brand mark (§3.3); no competing icon library."
+    style: { render: fill, grid: 24, variants: [line, fill] }
+    animation: { draw_on: false, separable_parts: false }
+    traps:
+      - "Licence changed in January 2026 from Apache-2.0 to the custom Remix Icon License v1.0; Iconify metadata still says Apache-2.0 (v4.8.0). Trust the upstream licence file."
+    last_verified: 2026-11-11
+    cadence: monthly
+
+  - id: carbon-icons
+    name: IBM Carbon Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 1, flat: 2, line: 0, hand: 0, iso: 0, wire: 3 }
+    consult_when: [wire-idiom, square-brand, ibm-brand]
+    extract: "2,644 icons; fill on a 32 grid; squared IBM geometry."
+    urls: { home: "https://github.com/carbon-design-system/carbon/tree/main/packages/icons", machine: "https://cdn.jsdelivr.net/npm/@carbon/icons@{version}/svg/32/{name}.svg" }
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix carbon", rate_limit: none known }
+    license: { spdx: Apache-2.0, url: "https://github.com/carbon-design-system/carbon", embed: "yes", attribution: notice, modify: allowed, conditions: "note modified files in the source comment" }
+    style: { render: fill, grid: 32 }
+    animation: { draw_on: false, separable_parts: false }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: font-awesome-free
+    name: Font Awesome Free
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 0, wire: 2 }
+    consult_when: [flat-idiom, user-asks-font-awesome]
+    extract: "v7: 2,000 solid, 272 regular, plus brands; fill, varying widths."
+    urls:
+      home: https://fontawesome.com
+      machine: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@{version}/svgs/{solid|regular|brands}/{name}.svg"
+      license: https://github.com/FortAwesome/Font-Awesome/blob/7.x/LICENSE.txt
+      license_page: https://fontawesome.com/license/free
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix fa7-solid", rate_limit: none known }
+    license: { spdx: CC-BY-4.0, url: "https://github.com/FortAwesome/Font-Awesome/blob/7.x/LICENSE.txt", embed: conditional, attribution: visible, modify: allowed, conditions: "SVGs CC BY 4.0 (fonts OFL, code MIT). Keep the in-file comment or add a visible credit; say 'modified'." }
+    style: { render: fill, grid: varies }
+    animation: { draw_on: false, separable_parts: false }
+    traps:
+      - "Each file's `<!--! Font Awesome Free ... License ... -->` comment is the attribution, and SVGO and Iconify strip it: re-add the credit."
+      - "unconfirmed: whether the terse in-file comment fully satisfies CC BY 4.0's licence-link requirement (debated); a visible credit removes the doubt."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: health-icons
+    name: Health Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 2, hand: 0, iso: 0, wire: 0 }
+    consult_when: [people, medical, healthcare-deck]
+    extract: "2,128 icons; 48 grid outline and filled; people and medical objects."
+    urls:
+      home: https://github.com/resolvetosavelives/healthicons
+      machine: "https://cdn.jsdelivr.net/npm/healthicons@{version}/public/icons/svg/{outline|filled}/{category}/{name}.svg"
+      license: https://github.com/resolvetosavelives/healthicons/blob/main/LICENSE
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix healthicons", rate_limit: none known }
+    license: { spdx: CC0-1.0, url: "https://github.com/resolvetosavelives/healthicons/blob/main/LICENSE", embed: "yes", attribution: none, modify: allowed, conditions: "" }
+    style: { render: stroke-and-fill, grid: 48 }
+    animation: { draw_on: outline-only, separable_parts: partial }
+    traps: ["Repo says CC0; Iconify says MIT. Both permissive; record the upstream value."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: game-icons
+    name: game-icons.net
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, silhouettes]
+    extract: "4,133 detailed fill silhouettes on a 512 grid."
+    urls:
+      home: https://game-icons.net
+      machine: "https://cdn.jsdelivr.net/gh/game-icons/icons@master/{author}/{name}.svg"
+      machine_alt: "https://raw.githubusercontent.com/game-icons/icons/master/{author}/{name}.svg"
+      license: https://github.com/game-icons/icons/blob/master/license.txt
+      faq: https://game-icons.net/faq.html
+    access: { method: gh-cdn, auth: none, recipe: "Search with Iconify prefix game-icons, then resolve the author from the repo path {author}/{name}.svg (GitHub tree API), e.g. delapouite/robot-golem.svg", rate_limit: see iconify }
+    license: { spdx: CC-BY-3.0, url: "https://github.com/game-icons/icons/blob/master/license.txt", embed: conditional, attribution: per-item-author, modify: allowed, conditions: "'Icons made by {author}' visible per author; a credits page is acceptable; a few authors are CC0." }
+    style: { render: fill, grid: 512 }
+    animation: { draw_on: false, separable_parts: false }
+    traps:
+      - "Iconify returns only the set-level author 'GameIcons', never the per-icon author the licence requires."
+      - "Detailed silhouettes look heavy below 32 px; many authors, so consistency is uneven."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  # ───────────────────────── Icons: pixel and hand-drawn ─────────────────────────
+
+  - id: pixelarticons
+    name: Pixelarticons (free set)
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 0, line: 0, hand: 0, iso: 0, wire: 1 }
+    consult_when: [pixel-idiom, blocky-idiom, props]
+    extract: "1,036 free icons on a strict 24 px pixel grid, no anti-aliasing, pure <path>, currentColor. Scale only by whole multiples (24/48/72/96); add shape-rendering=crispEdges."
+    urls: { home: "https://github.com/halfmage/pixelarticons", machine: "https://cdn.jsdelivr.net/npm/pixelarticons@{version}/svg/{name}.svg", license: "https://github.com/halfmage/pixelarticons/blob/master/LICENSE" }
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix pixelarticons", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/halfmage/pixelarticons/blob/master/LICENSE", embed: "yes", attribution: notice, modify: allowed, conditions: "free subset only; Pro icons (5,497 total) are paid" }
+    style: { render: fill, grid: 24, antialias: none }
+    animation: { draw_on: false, separable_parts: "pixels can be split into rects" }
+    traps: ["Icons supply props (folder, mail, lock, robot), not the mascot; build characters with sprite(matrix)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: hackernoon-pixel
+    name: HackerNoon Pixel Icon Library
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 0, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [pixel-idiom]
+    extract: "578 icons in the repo and Iconify; fill on a 24 grid."
+    urls: { home: "https://github.com/hackernoon/pixel-icon-library", license: "https://hackernoon.com/new-licensing-options-for-pixel-icon-library-free-starter-and-pro-plans" }
+    access: { method: iconify, auth: none, recipe: "Iconify prefix pixel; npm @hackernoon/pixel-icon-library", rate_limit: see iconify }
+    license: { spdx: CC-BY-4.0, url: "https://github.com/hackernoon/pixel-icon-library", embed: conditional, attribution: visible, modify: allowed, conditions: "free tier needs credit; paid tiers (since 2025-11-24) drop it" }
+    style: { render: fill, grid: 24 }
+    animation: { draw_on: false, separable_parts: partial }
+    traps: ["unconfirmed: icon count; 578 in repo and Iconify vs '2300+' on the site (the rest may be paid)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: streamline-icons
+    name: Streamline open icon sets (Pixel, Freehand, Plump, Flex, Emojis...)
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 2, flat: 2, line: 1, hand: 2, iso: 0, wire: 0 }
+    consult_when: [pixel-idiom, hand-idiom]
+    extract: "500-2,000 icons per set; Pixel on a 32 grid, Freehand hand-drawn; streamline-emojis 787 flat."
+    urls:
+      home: https://github.com/webalys-hq/streamline-vectors
+      license: https://help.streamlinehq.com/en/articles/5354376-streamline-free-license
+    access: { method: iconify, auth: none, recipe: "Iconify prefixes streamline-pixel, streamline-freehand, streamline-plump, streamline-flex, streamline-emojis", rate_limit: see iconify }
+    license: { spdx: CC-BY-4.0, url: "https://help.streamlinehq.com/en/articles/5354376-streamline-free-license", embed: conditional, attribution: visible, modify: allowed, conditions: "Followed (no nofollow) link to streamlinehq.com; at most 50 icons per project; never offered as a library inside an editor or picker UI." }
+    style: { render: varies, grid: varies }
+    animation: { draw_on: freehand-only, separable_parts: varies }
+    auto_select: false
+    traps:
+      - "unconfirmed: whether the Free License cap (50 icons per project) binds icons fetched via Iconify or GitHub under plain CC BY 4.0; treat the cap as applying."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: doodle-icons
+    name: Doodle Icons
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 1, hand: 3, iso: 0, wire: 0 }
+    consult_when: [hand-idiom]
+    extract: "204 hand-drawn stroke icons on a 48 grid. Supply is thin: otherwise roughen Lucide/Tabler strokes in the kit (allowed under MIT/ISC)."
+    urls: { home: "https://github.com/oreo-design/doodle-icons" }
+    access: { method: iconify, auth: none, recipe: "Iconify prefix doodle-icons", rate_limit: see iconify }
+    license: { spdx: MIT, url: "https://github.com/oreo-design/doodle-icons", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: stroke, grid: 48 }
+    animation: { draw_on: true, separable_parts: partial }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: line-md
+    name: line-md (animated line icons)
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 3, hand: 0, iso: 0, wire: 2 }
+    consult_when: [line-idiom, state-badges, draw-on]
+    extract: "1,218 icons, stroke 2, 24 grid; ships SMIL draw-on (stroke-dasharray plus <animate>). Animated check/close for state badges."
+    urls: { home: "https://github.com/cyberalien/line-md", metadata: "https://cdn.jsdelivr.net/npm/@iconify-json/line-md/icons.json" }
+    access: { method: iconify, auth: none, recipe: "Iconify prefix line-md", rate_limit: see iconify }
+    license: { spdx: MIT, url: "https://github.com/cyberalien/line-md", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: stroke, grid: 24, stroke_width: 2 }
+    animation: { draw_on: built-in, separable_parts: true, format: smil }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: svg-spinners
+    name: SVG Spinners
+    kind: icon-set
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 1, line: 2, hand: 0, iso: 0, wire: 2 }
+    consult_when: [pending-state, loader]
+    extract: "46 animated loaders for the pending state."
+    urls: { home: "https://github.com/n3r4zzurr0/svg-spinners" }
+    access: { method: iconify, auth: none, recipe: "Iconify prefix svg-spinners", rate_limit: see iconify }
+    license: { spdx: MIT, url: "https://github.com/n3r4zzurr0/svg-spinners", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    animation: { draw_on: n/a, separable_parts: true, format: smil }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Emoji ─────────────────────────
+
+  - id: fluent-emoji
+    name: Fluent Emoji (flat, high contrast, 3D)
+    kind: emoji
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 2, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, faces, props, people]
+    extract: "3,145 flat and 1,595 high-contrast glyphs on a 32 grid; Flat suits flat geometric, High Contrast suits line."
+    urls:
+      home: https://github.com/microsoft/fluentui-emoji
+      machine: "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/{Name}/Flat/{name}_flat.svg"
+    access: { method: iconify, auth: none, recipe: "Iconify prefixes fluent-emoji-flat, fluent-emoji-high-contrast, fluent-emoji; e.g. https://api.iconify.design/fluent-emoji-flat/robot.svg", rate_limit: see iconify }
+    license: { spdx: MIT, url: "https://github.com/microsoft/fluentui-emoji", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    style: { render: color, grid: 32 }
+    animation: { draw_on: false, separable_parts: "flat parts" }
+    traps: ["Multi-colour: remap the palette to tokens element by element, or keep real colour when the spec allows."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: noto-emoji
+    name: Noto Emoji
+    kind: emoji
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, faces, props]
+    extract: "3,729 colour glyphs on a 128 grid."
+    urls:
+      home: https://github.com/googlefonts/noto-emoji
+      machine: "https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji@main/2D/svg/emoji_u{hex}.svg"
+      license: https://github.com/googlefonts/noto-emoji#license
+    access: { method: gh-cdn, auth: none, recipe: "Iconify prefix noto", rate_limit: none known }
+    license: { spdx: Apache-2.0, url: "https://github.com/googlefonts/noto-emoji#license", embed: "yes", attribution: notice, modify: allowed, conditions: "images Apache-2.0 (fonts OFL-1.1); include the licence notice" }
+    style: { render: color, grid: 128 }
+    animation: { draw_on: false, separable_parts: partial }
+    traps:
+      - "The top-level LICENSE file starts with OFL text, which misleads a quick check; the SVG images are Apache-2.0 per the README."
+      - "Repo layout moved SVGs to 2D/svg/; the old svg/ path is stale."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: twemoji
+    name: Twemoji (jdecked fork)
+    kind: emoji
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, faces, props, people]
+    extract: "3,988 flat-colour glyphs on a 36 grid, no outlines."
+    urls:
+      home: https://github.com/jdecked/twemoji
+      machine: "https://cdn.jsdelivr.net/gh/jdecked/twemoji@{version}/assets/svg/{hex}.svg"
+      license: https://github.com/jdecked/twemoji#attribution-requirements
+    access: { method: gh-cdn, auth: none, recipe: "Iconify prefix twemoji", rate_limit: none known }
+    license: { spdx: CC-BY-4.0, url: "https://github.com/jdecked/twemoji#attribution-requirements", embed: "yes", attribution: notice, modify: allowed, conditions: "Graphics CC BY 4.0, code MIT. A mention in the HTML/JS source is accepted; mark modified glyphs." }
+    style: { render: color, grid: 36 }
+    animation: { draw_on: false, separable_parts: "flat parts" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: openmoji
+    name: OpenMoji
+    kind: emoji
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 3, hand: 1, iso: 0, wire: 0 }
+    consult_when: [line-idiom, user-accepts-share-alike]
+    extract: "4,546 glyphs on a 72 grid. The black version is pure stroke 2 with round caps and id=line groups; the colour version has black outlines."
+    urls:
+      home: https://openmoji.org
+      machine: "https://cdn.jsdelivr.net/npm/openmoji@{version}/{color|black}/svg/{HEX}.svg"
+      faq: https://openmoji.org/faq/
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix openmoji (in Iconify's exclude list)", rate_limit: none known }
+    license: { spdx: CC-BY-SA-4.0, url: "https://openmoji.org/faq/", embed: conditional, attribution: visible, modify: share-alike, conditions: "Visible credit; any modified glyph stays CC BY-SA. Use unmodified and credited, on explicit request only." }
+    style: { render: stroke, grid: 72, stroke_width: 2, caps_joins: round }
+    animation: { draw_on: true, separable_parts: true }
+    auto_select: false
+    traps:
+      - "ShareAlike: a restyled or animated glyph must stay CC BY-SA. Whether a scene built around it is an adaptation of the whole scene is unsettled (the FAQ doesn't say)."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  # ───────────────────────── Logos (trademarks) ─────────────────────────
+
+  - id: simple-icons
+    name: Simple Icons
+    kind: logos
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 0, hand: 0, iso: 0, wire: 3 }
+    consult_when: [brand-logos, mock-ui]
+    extract: "3,470 single-path brand marks on a 24 grid; brand hex, guidelines link and per-icon licence in the metadata JSON."
+    urls:
+      home: https://github.com/simple-icons/simple-icons
+      machine: "https://cdn.jsdelivr.net/npm/simple-icons@{version}/icons/{slug}.svg"
+      metadata: "https://cdn.jsdelivr.net/npm/simple-icons@{version}/data/simple-icons.json"
+      disclaimer: https://github.com/simple-icons/simple-icons/blob/develop/DISCLAIMER.md
+    access: { method: npm-cdn, auth: none, recipe: "Iconify prefix simple-icons; read entry.guidelines and entry.license from the metadata JSON", rate_limit: none known }
+    license: { spdx: CC0-1.0, url: "https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md", embed: conditional, attribution: none, modify: not-allowed, conditions: "CC0 covers the drawing, not the trademark; follow each brand's guidelines; never restyle a mark into the scene's idiom." }
+    style: { render: fill, grid: 24 }
+    traps:
+      - "224 icons carry their own licence (e.g. '30 seconds of code' CC-BY-4.0); 842 link brand guidelines."
+      - "Brands that asked to be removed are missing (OpenAI, Microsoft Azure, AWS, Slack on 2026-11-11); use svgl, Lobe Icons or theSVG."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: svgl
+    name: svgl
+    kind: logos
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 0, hand: 0, iso: 0, wire: 2 }
+    consult_when: [brand-logos, mock-ui]
+    extract: "Official colour logos with light/dark routes and wordmarks."
+    urls: { home: "https://svgl.app/api", docs: "https://svgl.app/api" }
+    access: { method: rest, auth: none, recipe: "GET https://api.svgl.app?search={brand}", rate_limit: none known }
+    license: { name: per logo (trademarks), url: "https://svgl.app/api", embed: conditional, attribution: none, modify: not-allowed, conditions: "follow each brand's rules; keep marks as shipped" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: lobe-icons
+    name: Lobe Icons (AI and LLM brand logos)
+    kind: logos
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 0, hand: 0, iso: 0, wire: 2 }
+    consult_when: [brand-logos, ai-vendor-logos]
+    extract: "Mono fill AI/LLM logos on a 24 grid (verified for claude, openai)."
+    urls: { home: "https://github.com/lobehub/lobe-icons", machine: "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@{version}/icons/{name}.svg" }
+    access: { method: npm-cdn, auth: none, recipe: "pick names from the package file list", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/lobehub/lobe-icons", embed: conditional, attribution: notice, modify: not-allowed, conditions: "MIT covers the code; the logos are trademarks of their owners" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: thesvg
+    name: theSVG
+    kind: logos
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 0, hand: 0, iso: 0, wire: 2 }
+    consult_when: [brand-logos, cloud-icons]
+    extract: "7,600+ (claimed) official logos and cloud icons."
+    urls: { home: "https://thesvg.org/api/registry?q=", legal: "https://github.com/glincker/thesvg/blob/main/LEGAL.md" }
+    access: { method: rest, auth: none, recipe: "GET https://thesvg.org/api/registry?q={brand}; also npm/CDN", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/glincker/thesvg/blob/main/LEGAL.md", embed: conditional, attribution: none, modify: not-allowed, conditions: "MIT covers the code; logos belong to their owners" }
+    traps: ["unconfirmed: the 7,600+ count is the site's claim."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  # ───────────────────────── Icons: not for automatic use ─────────────────────────
+
+  - id: noun-project
+    name: The Noun Project
+    kind: icon-set
+    use: study-only
+    idioms: { pixel: 1, flat: 1, line: 1, hand: 1, iso: 1, wire: 1 }
+    consult_when: [concept-search-for-ideas]
+    extract: "Millions of crowd-sourced icons; style varies by creator, which breaks one-idiom consistency."
+    urls:
+      home: https://thenounproject.com
+      docs: https://api.thenounproject.com/documentation.html
+      legal: https://thenounproject.com/legal/
+      developers: https://thenounproject.com/developers/
+    access: { method: rest, auth: oauth, recipe: "REST v2, OAuth 1.0a: GET /v2/icon?query={q}&styles=line&line_weight=18-20&include_svg=1", rate_limit: "free API: 150 icon calls a month" }
+    license: { spdx: CC-BY-3.0, url: "https://thenounproject.com/legal/", embed: "no", attribution: per-item-author, modify: allowed, conditions: "Free icons CC BY 3.0 with credit per creator; paid royalty-free. Not for automatic authoring." }
+    auto_select: false
+    traps:
+      - "Free download endpoint is 'limited to public domain icons'; unacceptable-use list includes 'Distributing icons, including for free' and AI training without approval."
+      - "unconfirmed: whether include_svg works on a free key, and whether API-delivered icons need visible credit (a blog post implies not; the API docs don't say)."
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: svg-repo
+    name: SVG Repo
+    kind: icon-set
+    use: study-only
+    idioms: { pixel: 1, flat: 1, line: 1, hand: 1, iso: 1, wire: 1 }
+    consult_when: [discover-then-fetch-from-origin]
+    extract: "500k+ aggregated SVGs. Use only to discover an icon, then fetch the same icon from its original set."
+    urls: { home: "https://www.svgrepo.com", license: "https://www.svgrepo.com/page/licensing/" }
+    access: { method: none, auth: none, recipe: "search UI only; no documented API", rate_limit: "direct fetches returned HTTP 429" }
+    license: { name: "per icon or collection (SVG Repo License, CC BY, BY-SA, NC, MIT...)", url: "https://www.svgrepo.com/page/licensing/", embed: "no", attribution: per-item-author, modify: n/a, conditions: "terms 'can change per company or author basis'; re-hosts sets whose upstream licence may differ" }
+    auto_select: false
+    traps:
+      - "unconfirmed: whether a public API exists (none found) and the full licensing page text (read from search snippets; direct fetch got 429)."
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: lucide-animated
+    name: lucide-animated (animated Lucide icons)
+    kind: component-gallery
+    use: study-only
+    idioms: { pixel: 0, flat: 0, line: 3, hand: 0, iso: 0, wire: 2 }
+    consult_when: [icon-micro-motion, choreography-reference]
+    extract: "Per-icon motion ideas for line icons; React + Motion, so a choreography reference, not a drop-in for vanilla decks."
+    urls: { home: "https://lucide-animated.com/", repo: "https://github.com/pqoqubbw/icons" }
+    access: { method: web, auth: none, recipe: "", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/pqoqubbw/icons", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Characters: DiceBear ─────────────────────────
+
+  - id: dicebear
+    name: DiceBear (character and avatar API)
+    kind: hub
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 3, line: 2, hand: 2, iso: 0, wire: 0 }
+    consult_when: [characters, avatars, character-schema]
+    extract: >-
+      61 styles (42 CC0, 14 CC BY 4.0, 1 MIT, 4 artist's own terms). Each style
+      is a base plus named parts at anchors, each with variants and a colour
+      option; output keeps every part as <g id="<slot>-<variant>-<hash>"> placed
+      by <use transform>, so parts animate one at a time. Same seed, same figure
+      in every core. The model for animotion's character schema.
+    urls:
+      home: https://www.dicebear.com
+      machine: https://api.dicebear.com/10.x
+      docs: https://www.dicebear.com/how-to-use/http-api/
+      llms: https://www.dicebear.com/llms.txt
+      license: https://www.dicebear.com/licenses/
+      repo: https://github.com/dicebear/dicebear
+    access:
+      method: rest
+      auth: none
+      recipe: |
+        styles:     GET https://api.dicebear.com/10.x
+        svg:        GET https://api.dicebear.com/10.x/{style}/svg?seed={seed}&{slot}Variant={v}
+        json:       GET https://api.dicebear.com/10.x/{style}/json?seed={seed}
+        slots:      GET https://api.dicebear.com/10.x/{style}/options.json
+        definition: GET https://api.dicebear.com/10.x/{style}/definition.json
+      rate_limit: "SVG 50 requests/s; self-hostable; JS/PHP/Python/Rust/Go/Dart/C# cores give byte-identical output"
+    license:
+      name: per style (code MIT)
+      url: https://www.dicebear.com/licenses/
+      embed: conditional
+      attribution: per-set
+      modify: allowed
+      conditions: "CC0 styles: none. CC BY 4.0 styles: credit author, licence link and changes. Artist-terms styles: read the style's licence. Licence and author ship as RDF <metadata> inside each SVG; keep it."
+    animation: { draw_on: false, separable_parts: true }
+    traps:
+      - "unconfirmed: llms.txt marks some styles as animated; not examined yet."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-pixel-art
+    name: DiceBear pixel-art and pixel-art-neutral
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 1, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [pixel-idiom, blocky-idiom, characters, mascot]
+    extract: "16x16 viewBox, shape-rendering=crispEdges. Slots: accessories, beard, clothes, eyes (12), glasses (14), hair (45), hat (10), mouth (23: happy01-13, sad01-10), each with a colour option."
+    urls: { home: "https://www.dicebear.com/styles/pixel-art/", machine: "https://api.dicebear.com/10.x/pixel-art/svg?seed={seed}", options: "https://api.dicebear.com/10.x/pixel-art/options.json" }
+    access: { method: rest, auth: none, recipe: "see dicebear; style ids pixel-art, pixel-art-neutral", rate_limit: see dicebear }
+    license: { spdx: CC0-1.0, url: "https://www.dicebear.com/licenses/", embed: "yes", attribution: none, modify: allowed, conditions: "credits block still records it" }
+    style: { render: rects, grid: 16, antialias: none }
+    animation: { draw_on: false, separable_parts: true, notes: "expression = swap the eyes or mouth group" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-pixelbot
+    name: DiceBear pixelbot
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 1, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [pixel-idiom, blocky-idiom, robots, agents]
+    extract: "16x16 pixel robots with named parts."
+    urls: { home: "https://www.dicebear.com/licenses/", machine: "https://api.dicebear.com/10.x/pixelbot/svg?seed={seed}" }
+    access: { method: rest, auth: none, recipe: "see dicebear; read slots from /10.x/pixelbot/options.json", rate_limit: see dicebear }
+    license: { spdx: CC0-1.0, url: "https://www.dicebear.com/licenses/", embed: "yes", attribution: none, modify: allowed, conditions: "" }
+    style: { render: rects, grid: 16 }
+    animation: { draw_on: false, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-open-peeps
+    name: Open Peeps via DiceBear (open-peeps style)
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 1, line: 2, hand: 3, iso: 0, wire: 0 }
+    consult_when: [hand-idiom, people, expressions]
+    extract: "Hand-drawn people with named parts: head 48, expression 30 (awe, calm, concerned...), facialHair 16, accessories 8, mask 2."
+    urls: { home: "https://www.openpeeps.com/", machine: "https://api.dicebear.com/10.x/open-peeps/svg?seed={seed}", options: "https://api.dicebear.com/10.x/open-peeps/options.json" }
+    access: { method: rest, auth: none, recipe: "see dicebear", rate_limit: see dicebear }
+    license: { spdx: CC0-1.0, url: "https://www.openpeeps.com/", embed: "yes", attribution: none, modify: allowed, conditions: "CC0 remix of Pablo Stanley's Open Peeps" }
+    style: { render: stroke-and-fill, palette: black-and-white base }
+    animation: { draw_on: false, separable_parts: true, notes: "expression lives in one slot" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-notionists-lorelei
+    name: DiceBear notionists and lorelei
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 1, line: 3, hand: 1, iso: 0, wire: 0 }
+    consult_when: [line-idiom, people]
+    extract: "Line-style faces; notionists adds a gesture slot."
+    urls: { home: "https://www.dicebear.com/licenses/", machine: "https://api.dicebear.com/10.x/{notionists|lorelei}/svg?seed={seed}" }
+    access: { method: rest, auth: none, recipe: "see dicebear", rate_limit: see dicebear }
+    license: { spdx: CC0-1.0, url: "https://www.dicebear.com/licenses/", embed: "yes", attribution: none, modify: allowed, conditions: "" }
+    animation: { draw_on: false, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-shapes-bottts-neutral
+    name: DiceBear shapes and bottts-neutral
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, abstract-avatars, robots]
+    extract: "Flat geometric CC0 styles."
+    urls: { home: "https://www.dicebear.com/licenses/", machine: "https://api.dicebear.com/10.x/{shapes|bottts-neutral}/svg?seed={seed}" }
+    access: { method: rest, auth: none, recipe: "see dicebear", rate_limit: see dicebear }
+    license: { spdx: CC0-1.0, url: "https://www.dicebear.com/licenses/", embed: "yes", attribution: none, modify: allowed, conditions: "" }
+    animation: { draw_on: false, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-croodles
+    name: DiceBear croodles
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 2, hand: 3, iso: 0, wire: 0 }
+    consult_when: [hand-idiom, doodle-faces]
+    extract: "Doodled faces; one of the 14 CC BY styles."
+    urls: { home: "https://www.dicebear.com/licenses/", machine: "https://api.dicebear.com/10.x/croodles/svg?seed={seed}" }
+    access: { method: rest, auth: none, recipe: "see dicebear", rate_limit: see dicebear }
+    license: { spdx: CC-BY-4.0, url: "https://www.dicebear.com/licenses/", embed: conditional, attribution: visible, modify: allowed, conditions: "credit the author, link the licence, state changes" }
+    animation: { draw_on: false, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: dicebear-artist-terms
+    name: DiceBear artist-terms styles (avataaars, bottts...)
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, robots, avatars]
+    extract: "bottts slots: eyes, head, mouth, sides, texture, top. Four styles carry the artist's own terms."
+    urls: { home: "https://www.dicebear.com/licenses/", machine: "https://api.dicebear.com/10.x/{avataaars|bottts}/svg?seed={seed}" }
+    access: { method: rest, auth: none, recipe: "see dicebear", rate_limit: see dicebear }
+    license: { name: artist's own terms (free for personal and commercial use), url: "https://www.dicebear.com/licenses/", embed: conditional, attribution: per-set, modify: allowed, conditions: "read the style's own licence on the licences page before embedding" }
+    animation: { draw_on: false, separable_parts: true }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  # ───────────────────────── Characters: other systems ─────────────────────────
+
+  - id: humaaans
+    name: Humaaans (Pablo Stanley)
+    kind: character
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom, people, mix-and-match-figures]
+    extract: "Flat people from swappable hairdos, tops, pants and rotatable limbs."
+    urls: { home: "https://www.humaaans.com/" }
+    access: { method: user-supplied, auth: none, recipe: "Gumroad download (Sketch/Studio) or Blush; no API, so Claude can't fetch parts", rate_limit: n/a }
+    license: { spdx: CC0-1.0, url: "https://www.humaaans.com/", embed: "yes", attribution: none, modify: allowed, conditions: "embed when the user supplies the files" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: boring-avatars
+    name: Boring Avatars
+    kind: character
+    use: consult
+    idioms: { pixel: 1, flat: 2, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [abstract-avatars]
+    extract: "No body parts: variant (marble, beam, pixel, sunset, ring, bauhaus) + colors palette + name seed; beam is a simple face. Port the generator idea."
+    urls: { home: "https://github.com/boringdesigners/boring-avatars" }
+    access: { method: npm-cdn, auth: none, recipe: "React component; the hosted service is paid", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/boringdesigners/boring-avatars", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: multiavatar
+    name: Multiavatar
+    kind: character
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [avatars, slot-grammar]
+    extract: "6 parts (env, clothes, head, mouth, eyes, top) x 3 themes; 48 base avatars; parts kept in the SVG."
+    urls: { home: "https://github.com/multiavatar/Multiavatar", machine: "https://api.multiavatar.com/{id}.svg", license: "https://raw.githubusercontent.com/multiavatar/Multiavatar/main/LICENSE" }
+    access: { method: rest, auth: none, recipe: "GET https://api.multiavatar.com/{id}.svg", rate_limit: none known }
+    license: { name: Multiavatar licence, url: "https://raw.githubusercontent.com/multiavatar/Multiavatar/main/LICENSE", embed: "yes", attribution: none, modify: allowed, conditions: "commercial OK, credit optional; may not repackage the set or build a competing product" }
+    traps: ["Dormant: repo last pushed 2022."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: lpc-spritesheet
+    name: Universal LPC Spritesheet Character Generator
+    kind: character
+    use: study-only
+    idioms: { pixel: 2, flat: 0, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [pixel-walk-cycles]
+    extract: "Layered body, hair, clothes, weapons; walk/slash/cast animation rows; exports a CREDITS file."
+    urls: { home: "https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator" }
+    access: { method: user-supplied, auth: none, recipe: "web app, PNG sheets", rate_limit: n/a }
+    license: { name: "per asset (CC-BY-SA 3.0, OGA-BY 3.0, GPL 3.0)", url: "https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator", embed: conditional, attribution: per-item-author, modify: share-alike, conditions: "share-alike; raster frames" }
+    traps: ["Not a fit for a brand mascot (share-alike)."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Illustration libraries ─────────────────────────
+
+  - id: open-doodles
+    name: Open Doodles
+    kind: illustration
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 2, hand: 3, iso: 0, wire: 0 }
+    consult_when: [hand-idiom, spot-illustration]
+    extract: "Sketchy hand-drawn single illustrations; the best fetchable hand-drawn set."
+    urls: { home: "https://www.opendoodles.com/", machine: "https://opendoodles.s3-us-west-1.amazonaws.com/{name}.svg" }
+    access: { method: rest, auth: none, recipe: "direct S3 SVG URL, e.g. .../clumsy.svg; names from the site", rate_limit: none known }
+    license: { spdx: CC0-1.0, url: "https://www.opendoodles.com/", embed: "yes", attribution: none, modify: allowed, conditions: "'No need to credit, license, or anything'" }
+    animation: { draw_on: partial, separable_parts: false }
+    traps: ["unconfirmed: whether the site's generator recolours."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: undraw
+    name: unDraw
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom-style-reference]
+    extract: "Flat geometric scenes with one accent colour (#6c63ff in every SVG). Style reference only."
+    urls: { home: "https://undraw.co", license: "https://undraw.co/license" }
+    access: { method: user-supplied, auth: none, recipe: "Claude never fetches, searches or links. The user downloads and hands files over.", rate_limit: n/a }
+    license: { name: unDraw licence, url: "https://undraw.co/license", embed: "no", attribution: none, modify: n/a, conditions: "Forbids automated or non-automated linking, embedding, scraping, searching or downloading without consent, and 'automated processing for AI or machine learning' without written permission. User-supplied only; the user bears the licence." }
+    auto_select: false
+    traps:
+      - "Never auto-fetch: the licence forbids automated access and AI processing. Don't rediscover it as a free flat library."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: manypixels
+    name: ManyPixels gallery
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 2, hand: 0, iso: 2, wire: 0 }
+    consult_when: [flat-idiom-style-reference]
+    extract: "Five named styles: Playstroke, Birdview, Chromablue, Colossalflat, Azureline."
+    urls: { home: "https://www.manypixels.co/gallery" }
+    access: { method: user-supplied, auth: none, recipe: "Claude never fetches", rate_limit: n/a }
+    license: { name: ManyPixels terms, url: "https://www.manypixels.co/gallery", embed: "no", attribution: none, modify: n/a, conditions: "free, commercial, no credit; forbids competing, packs, and 'integrations or automated embedding'" }
+    auto_select: false
+    traps: ["Never auto-fetch: forbids automated embedding. Same handling as unDraw."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: absurd-design
+    name: Absurd Design
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 0, line: 1, hand: 3, iso: 0, wire: 0 }
+    consult_when: [hand-idiom-style-reference]
+    extract: "Surreal hand-drawn illustrations; look only."
+    urls: { home: "https://absurd.design", license: "https://absurd.design/freelicense" }
+    access: { method: none, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: Absurd free licence (2026-10-15), url: "https://absurd.design/freelicense", embed: "no", attribution: visible, modify: n/a, conditions: "free tier non-commercial only with a credit link; paid licence separate; forbids letting others extract an asset as a standalone file" }
+    auto_select: false
+    traps: ["Free licence became non-commercial on 2026-10-15; client decks are commercial. Exclude."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: drawkit
+    name: DrawKit
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 2, line: 2, hand: 0, iso: 0, wire: 0 }
+    consult_when: [style-reference]
+    extract: "Flat and line packs."
+    urls: { home: "https://www.drawkit.com", license: "https://www.drawkit.com/license" }
+    access: { method: user-supplied, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: DrawKit licence (2021-05-11), url: "https://www.drawkit.com/license", embed: "no", attribution: none, modify: n/a, conditions: "'your own' commercial use; no redistribution; no AI training" }
+    auto_select: false
+    traps: ["unconfirmed: whether client work and agent use are allowed; treat as red."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: blush
+    name: Blush
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 2, line: 1, hand: 2, iso: 0, wire: 0 }
+    consult_when: [style-reference, people]
+    extract: "Many artists' styles; customiser composes parts."
+    urls: { home: "https://blush.design", license: "https://blush.design/license", free_plan: "https://intercom.help/blushdesign/en/articles/4865890-what-does-the-free-plan-include" }
+    access: { method: user-supplied, auth: none, recipe: "web customiser, Figma plugin; no API", rate_limit: n/a }
+    license: { name: Blush licence, url: "https://blush.design/license", embed: conditional, attribution: none, modify: allowed, conditions: "commercial and client End Products allowed; free tier is PNG only, SVG needs Pro" }
+    traps: ["Free tier exports PNG only; not for agent fetch."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: ira-design
+    name: IRA Design (Creative Tim)
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 2, hand: 0, iso: 0, wire: 0 }
+    consult_when: [flat-idiom]
+    extract: "200+ components (characters, objects, backgrounds); five gradient sets; outline variant."
+    urls: { home: "https://iradesign.io/" }
+    access: { method: user-supplied, auth: none, recipe: "online builder; SVG/PNG/AI downloads; no API", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://iradesign.io/", embed: "yes", attribution: notice, modify: allowed, conditions: "embed when the user supplies the files from the builder" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: storyset
+    name: Storyset (Freepik)
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 1, hand: 0, iso: 1, wire: 0 }
+    consult_when: [flat-idiom-style-reference]
+    extract: "Flat scenes in five styles; the online editor animates layers."
+    urls: { home: "https://storyset.com/", terms: "https://storyset.com/terms" }
+    access: { method: user-supplied, auth: none, recipe: "online editor, Figma plugin; no API", rate_limit: n/a }
+    license: { name: Storyset terms (Feb 2022), url: "https://storyset.com/terms", embed: conditional, attribution: visible, modify: allowed, conditions: "free with credit (none with Flaticon Premium); no redistribution, no stock or template inclusion; narrow rules on authorising third parties" }
+    traps:
+      - "unconfirmed: the exact credit line (terms say credit 'as stated by the Company from time to time')."
+      - "unconfirmed: the exported SVG structure (parts) was not checked; check the third-party clause before a client deck."
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: icons8-ouch
+    name: Icons8 illustrations (Ouch)
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 2, line: 2, hand: 2, iso: 2, wire: 0 }
+    consult_when: [iso-idiom-style-reference, style-reference]
+    extract: "Many styles including isometric."
+    urls: { home: "https://icons8.com/illustrations", license: "https://icons8.com/license", mcp: "https://icons8.com/mcp/claude" }
+    access: { method: user-supplied, auth: none, recipe: "website; Mega Creator; a reported MCP for Claude", rate_limit: n/a }
+    license: { name: Icons8 licence, url: "https://icons8.com/license", embed: conditional, attribution: visible, modify: n/a, conditions: "free with a link to Icons8; paid removes credit" }
+    traps:
+      - "unconfirmed: licence terms (the licence page returned 403; terms from search results) and the MCP endpoint."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: streamline-illustrations
+    name: Streamline illustrations
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 1, flat: 2, line: 2, hand: 2, iso: 1, wire: 0 }
+    consult_when: [style-reference]
+    extract: "Many styles; free tier gets SVG only for free sets."
+    urls: { home: "https://www.streamlinehq.com", license: "https://help.streamlinehq.com/en/articles/5354376-streamline-free-license" }
+    access: { method: user-supplied, auth: none, recipe: "website, plugins; an API under separate terms (not checked)", rate_limit: n/a }
+    license: { spdx: CC-BY-4.0, url: "https://help.streamlinehq.com/en/articles/5354376-streamline-free-license", embed: conditional, attribution: visible, modify: allowed, conditions: "credit 'Free illustrations from Streamline' linked to streamlinehq.com without nofollow; at most 25 illustrations per project; client projects and presentations allowed; some sets CC BY 4.0" }
+    traps: ["Cap is 25 illustrations per project (icons: 50)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: isometric-online
+    name: Isometric (isometric.online)
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 1, line: 0, hand: 0, iso: 3, wire: 0 }
+    consult_when: [iso-idiom]
+    extract: "Isometric scenes, SVG/PNG downloads."
+    urls: { home: "https://www.producthunt.com/products/isometric-3", secondary: "https://uxplanet.org/isometric-free-isometric-illustrations-for-any-projects-27af857e6ad0" }
+    access: { method: user-supplied, auth: none, recipe: "downloads", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://www.producthunt.com/products/isometric-3", embed: conditional, attribution: none, modify: allowed, conditions: "promote to fetch-embed once the licence is confirmed on the site" }
+    traps: ["unconfirmed: MIT and no-attribution come from UX Planet and Product Hunt, not the site itself."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: kitbitz
+    name: Kitbitz
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 1, line: 1, hand: 3, iso: 0, wire: 0 }
+    consult_when: [hand-idiom, game-themes]
+    extract: "Hand-drawn game kits: 13 themes, 2,043 assets (new, 2026-08); Figma libraries with colour variables."
+    urls: { home: "https://chatgate.ai/post/kitbitz", mcp: mcp.kitbitz.art, writeup: "https://chatgate.ai/post/kitbitz" }
+    access: { method: mcp, auth: none, recipe: "public read-only MCP at mcp.kitbitz.art (single source)", rate_limit: unknown }
+    license: { spdx: CC0-1.0, url: "https://chatgate.ai/post/kitbitz", embed: conditional, attribution: none, modify: allowed, conditions: "assets CC0; site, plugin and MCP code proprietary; promote to fetch-embed once the endpoint is verified" }
+    traps: ["unconfirmed: the MCP endpoint and licence come from one secondary write-up."]
+    last_verified: 2026-11-11
+    cadence: monthly
+
+  - id: illlustrations-co
+    name: illlustrations.co (Vijay Verma)
+    kind: illustration
+    use: study-only
+    idioms: { pixel: 0, flat: 1, line: 1, hand: 2, iso: 0, wire: 0 }
+    consult_when: [hand-idiom-style-reference]
+    extract: "Hand-drawn SVG/PNG illustrations."
+    urls: { home: "https://www.producthunt.com/posts/illlustrations", secondary: "https://www.producthunt.com/posts/illlustrations" }
+    access: { method: user-supplied, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: "'open source', personal and commercial", url: "https://www.producthunt.com/posts/illlustrations", embed: conditional, attribution: none, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: exact licence; check before use."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Palettes and game assets ─────────────────────────
+
+  - id: lospec-palettes
+    name: Lospec palette list
+    kind: palette
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 2, line: 0, hand: 0, iso: 1, wire: 0 }
+    consult_when: [pixel-idiom, palette]
+    extract: "4,546 palettes, filterable by colour count and tag. Embed colours, credit the palette author."
+    urls:
+      home: https://lospec.com/palette-list
+      machine: "https://lospec.com/palette-list/{slug}.json"
+      tutorials: https://lospec.com
+    access:
+      method: rest
+      auth: none
+      recipe: |
+        one palette: GET https://lospec.com/palette-list/{slug}.json  -> {name, author, colors[]}  (also .hex .gpl .pal .ase, PNG)
+        listing (undocumented): GET https://lospec.com/palette-list/load?colorNumberFilterType=max&colorNumber=8&page=0&tag=&sortingType=downloads
+      rate_limit: none known
+    license: { name: not stated (colour lists), url: "https://www.copyright.gov/title37/202/37cfr202-1.html", embed: "yes", attribution: notice, modify: allowed, conditions: "colour variations aren't registrable (37 CFR 202.1); credit the palette author anyway" }
+    traps: ["The listing endpoint is undocumented; treat it as unstable."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: kenney
+    name: Kenney game assets
+    kind: game-assets
+    use: fetch-embed
+    idioms: { pixel: 3, flat: 2, line: 0, hand: 0, iso: 3, wire: 0 }
+    consult_when: [pixel-idiom, iso-idiom, tiles, game-scenes]
+    extract: "Thousands of CC0 assets, mostly PNG sheets: 1-Bit Pack (16x16 tiles), Isometric Miniature Dungeon, Isometric Blocks, Shape Characters (geometric)."
+    urls:
+      home: https://kenney.nl/assets
+      machine: "https://kenney.nl/assets/{slug}"
+      license: https://kenney.nl/support
+      packs: ["https://kenney.nl/assets/1-bit-pack", "https://kenney.nl/assets/isometric-miniature-dungeon", "https://kenney-assets.itch.io/isometric-blocks", "https://kenney.nl/assets/shape-characters"]
+    access: { method: zip, auth: none, recipe: "zip download per pack page; extract into an empty temp dir; embed only the tiles a scene uses", rate_limit: none known }
+    license: { spdx: CC0-1.0, url: "https://kenney.nl/support", embed: "yes", attribution: none, modify: allowed, conditions: "" }
+    style: { render: raster, notes: "integer scale only; image-rendering: pixelated" }
+    traps: ["unconfirmed: which packs ship SVG/vector; assume raster."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: opengameart
+    name: OpenGameArt
+    kind: game-assets
+    use: study-only
+    idioms: { pixel: 2, flat: 1, line: 0, hand: 0, iso: 1, wire: 0 }
+    consult_when: [pixel-idiom]
+    extract: "Large mixed library; licence and special attribution instructions per asset."
+    urls: { home: "https://opengameart.org", faq: "https://opengameart.org/content/oga-by-30-faq" }
+    access: { method: user-supplied, auth: none, recipe: "site blocked automated fetch (403)", rate_limit: n/a }
+    license: { name: "per asset (CC0, CC-BY, OGA-BY 3.0, CC-BY-SA, GPL)", url: "https://opengameart.org/content/oga-by-30-faq", embed: conditional, attribution: per-item-author, modify: n/a, conditions: "user-supplied; credit per asset" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: itch-io-packs
+    name: itch.io free asset packs
+    kind: game-assets
+    use: study-only
+    idioms: { pixel: 2, flat: 1, line: 0, hand: 1, iso: 1, wire: 0 }
+    consult_when: [pixel-idiom-style-reference]
+    extract: "Many pixel packs with creator-written terms."
+    urls: { home: "https://itch.io/post/15882506", guide: "https://app.cinevva.com/guides/game-asset-licenses", examples: "https://itch.io/post/15882506" }
+    access: { method: user-supplied, auth: none, recipe: "user downloads and saves the licence text with the files", rate_limit: n/a }
+    license: { name: creator-written (no platform default), url: "https://app.cinevva.com/guides/game-asset-licenses", embed: conditional, attribution: per-item-author, modify: n/a, conditions: "common pattern 'commercial OK, no resale of raw assets'; some packs have no licence text; some bar print" }
+    auto_select: false
+    traps: ["Exclude from automated use; packs without licence text are unusable."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: androidarts-pixel-tutorial
+    name: androidarts pixel-art tutorial (Arne Niklas Jansson)
+    kind: tutorial
+    use: consult
+    idioms: { pixel: 3, flat: 0, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [pixel-idiom, defining-spec]
+    extract: "Rules: small unified palette with hue-shifted ramps; selective outlines, none where an object meets the ground; minimal or no AA; clean stepped lines; flat or hard-edged shading, never pillow shading; sparing dither; no orphan pixels; silhouette must read small and animated."
+    urls: { home: "https://www.androidarts.com/pixtut/pixelart.htm" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://www.androidarts.com/pixtut/pixelart.htm", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: slynyrd-pixelblog
+    name: Slynyrd Pixelblog (Raymond Schlitter)
+    kind: tutorial
+    use: consult
+    idioms: { pixel: 3, flat: 0, line: 0, hand: 0, iso: 1, wire: 0 }
+    consult_when: [pixel-idiom, palette]
+    extract: "Palette building by hue shift rather than mixing black and white; about 4 colours per character."
+    urls: { home: "https://slynyrd.com/pixelblog-catalogue", palettes: "https://www.slynyrd.com/blog/2018/1/10/pixelblog-1-color-palettes" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://slynyrd.com/pixelblog-catalogue", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: pixel-parmesan-aa
+    name: Pixel Parmesan, anti-aliasing fundamentals
+    kind: tutorial
+    use: consult
+    idioms: { pixel: 3, flat: 0, line: 0, hand: 0, iso: 0, wire: 0 }
+    consult_when: [pixel-idiom]
+    extract: "AA blurs pixel clarity: none for blocky idioms, minimal otherwise."
+    urls: { home: "https://pixelparmesan.com/anti-aliasing-fundamentals-for-pixel-artists" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://pixelparmesan.com/anti-aliasing-fundamentals-for-pixel-artists", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Published illustration guidelines ─────────────────────────
+
+  - id: ibm-illustration
+    name: IBM Design Language, illustration
+    kind: guideline
+    use: consult
+    idioms: { pixel: 0, flat: 3, line: 3, hand: 0, iso: 3, wire: 3 }
+    consult_when: [defining-spec, flat-idiom, line-idiom, iso-idiom, wire-idiom, people, greeking]
+    extract: >-
+      The most concrete published spec. Line: 4 px grid, <=4 line weights.
+      Flat: 8 px grid, shapes and gaps >=8 px, 8 px overlap. All: angles in
+      15-degree steps, curves from circle segments, opaque shapes, no blend
+      modes. Isometric: triangle grid, one light source, one shadow type.
+      People: eight heads high, neutral expressions. Hybrid UI: fidelity
+      high/mid/low; greek bar = x-height, gap 1.5x bar; spacers 8/16/32/48;
+      pictograms 48 px in 72 px squares or 84 px circles.
+    urls:
+      home: https://www.ibm.com/design/language/illustration/overview
+      machine: https://github.com/carbon-design-system/design-language-website/tree/master/src/pages/illustration
+      flat: https://www.ibm.com/design/language/illustration/flat-style/design
+      line: https://www.ibm.com/design/language/illustration/line-style/design/
+      people: https://ibm.com/design/language/illustration/people
+    access: { method: web, auth: none, recipe: "read the MDX source on GitHub (gh api) when pages render poorly", rate_limit: n/a }
+    license: { name: facts-only, url: "https://www.ibm.com/design/language/illustration/overview", embed: n/a, attribution: none, modify: n/a, conditions: "rules, not artwork; never copy IBM illustrations" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: atlassian-illustrations
+    name: Atlassian illustration guidelines
+    kind: guideline
+    use: consult
+    idioms: { pixel: 0, flat: 2, line: 2, hand: 0, iso: 0, wire: 3 }
+    consult_when: [defining-spec, wire-idiom, when-not-to-illustrate]
+    extract: "Types: spot (one concept), low-fidelity UI ('basic shapes, sharp corners, and mostly gray tones'), ambient pattern. Illustration supports copy, never replaces it; don't overuse; no real screenshots in product; collage only in marketing."
+    urls: { home: "https://atlassian.design/foundations/illustrations" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://atlassian.design/foundations/illustrations", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["No numeric illustration parameters published."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: gitlab-pajamas-illustration
+    name: GitLab Pajamas, illustration
+    kind: guideline
+    use: consult
+    idioms: any
+    consult_when: [defining-spec, size-tiers]
+    extract: "Size tiers with roles: 288 px feature promotion, 144 px empty and error states, 72 px spot (banners), 36 px elements combined into compositions."
+    urls: { home: "https://design.gitlab.com/product-foundations/illustration" }
+    access: { method: web, auth: none, recipe: "creation and export pages need GitLab sign-in (not read)", rate_limit: n/a }
+    license: { name: facts-only, url: "https://design.gitlab.com/product-foundations/illustration", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: salesforce-slds-illustration
+    name: Salesforce Lightning illustration
+    kind: guideline
+    use: consult
+    idioms: any
+    consult_when: [defining-spec, colour-roles, size-tiers, mascot-rules]
+    extract: "Size tiers small max 300x200, large max 600x400. Recolour by role: parts carry slds-illustration__fill-primary/secondary and __stroke-primary/secondary classes mapped to theme tokens. Characters sit in the background as outlines. Skip images that add no understanding; copy lines under 66 characters."
+    urls:
+      home: http://spring-20.lightningdesignsystem.com/components/illustration/
+      empty_state: https://spring-20.lightningdesignsystem.com/guidelines/empty-state
+      machine: https://github.com/salesforce-ux/design-system/blob/master/ui/components/illustration/base/_index.scss
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "http://spring-20.lightningdesignsystem.com/components/illustration/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["Read from the spring-20 archive; the current site's illustration page did not return content."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: fluent-illustration
+    name: Microsoft Fluent illustration principles
+    kind: guideline
+    use: consult
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 2, wire: 0 }
+    consult_when: [defining-spec, inclusion, people]
+    extract: "Principles: humanity (simplified universal human symbols, not detailed people), one shared palette with dark-mode variants, 3D forms following elevation and camera angle, sophistication, playful organic shapes. Headline above, description or buttons below. No numbers."
+    urls: { home: "https://microsoft.design/articles/embracing-vibrant-universality-in-fluent-illustrations/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://microsoft.design/articles/embracing-vibrant-universality-in-fluent-illustrations/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: material-imagery
+    name: Google Material imagery (M1)
+    kind: guideline
+    use: consult
+    idioms: any
+    consult_when: [when-to-illustrate, composition]
+    extract: "Photography for specific entities, illustration for concepts and metaphors; avoid literal stock or clipart; one clear focal point with few elements."
+    urls: { home: "https://m1.material.io/style/imagery.html", m2: "https://m2.material.io/design/communication/imagery.html" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://m1.material.io/style/imagery.html", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: M2's illustration section renders client-side and couldn't be retrieved."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: mailchimp-style
+    name: Mailchimp content style guide (mascot rules)
+    kind: guideline
+    use: consult
+    idioms: any
+    consult_when: [mascot-rules, characters]
+    extract: "Freddie smiles, winks and high-fives but never speaks; don't write in his voice. 2018 COLLINS system: 'purposefully naive' illustration against fixed core elements."
+    urls: { home: "https://uithub.com/mailchimp/content-style-guide", rebrand: "https://www.designweek.co.uk/issues/1-7-october-2018/mailchimp-rebrand-aims-to-unify-bran" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://uithub.com/mailchimp/content-style-guide", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: polaris-illustration
+    name: Shopify Polaris illustrations
+    kind: guideline
+    use: consult
+    idioms: any
+    consult_when: [when-not-to-illustrate]
+    extract: "Spot illustrations reserved for rare cases."
+    urls: { home: "https://shopify.dev/docs/api/polaris", thread: "https://community.shopify.dev/t/illustration-guidelines-update/26288" }
+    access: { method: web, auth: none, recipe: "polaris.shopify.com/design/illustrations now redirects to shopify.dev", rate_limit: n/a }
+    license: { name: facts-only, url: "https://shopify.dev/docs/api/polaris", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: current spec; a late-2025 thread says the guidelines were being reworked."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: dropbox-illustration
+    name: Dropbox illustration
+    kind: guideline
+    use: consult
+    idioms: any
+    consult_when: [style-reference]
+    extract: "The 2017 'more human brand' system, described in Dropbox Design's series."
+    urls: { home: "https://brand.dropbox.com/", series: "https://medium.com/dropbox-design/illustrating-a-more-human-brand-part-1-e1cfe3c28d9" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://brand.dropbox.com/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: current spec; the illustration page returned 404 to fetch."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: wikimedia-codex-illustrations
+    name: Wikimedia Codex illustration guidelines
+    kind: guideline
+    use: consult
+    idioms: { pixel: 0, flat: 2, line: 2, hand: 0, iso: 0, wire: 1 }
+    consult_when: [defining-spec]
+    extract: "One of two systems (with IBM) found to publish numeric illustration parameters."
+    urls: { home: "https://doc.wikimedia.org/codex/latest/style-guide/illustrations.html" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://doc.wikimedia.org/codex/latest/style-guide/illustrations.html", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: the parameters themselves were not extracted in the research; read the page before relying on it."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Style-reference boards (study-only) ─────────────────────────
+
+  - id: dribbble
+    name: Dribbble
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board, derive-from-reference]
+    extract: "Shots and designers. Extract grammar (idiom, unit, palette roles, motion verbs); never trace or embed a shot."
+    urls: { home: "https://dribbble.com", api: "https://help.dribbble.com/en/articles/11065925-about-the-dribbble-api" }
+    access: { method: user-supplied, auth: oauth, recipe: "v2 API covers the authenticated user's own shots only; no Popular feed, no documented keyword search; the user brings screenshots or URLs", rate_limit: n/a }
+    license: { name: all rights reserved (per artist), url: "https://dribbble.com", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["Redrawing a recognisable shot is copying; style is free, specific artwork is not."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: behance
+    name: Behance
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board, derive-from-reference]
+    extract: "Projects; website only."
+    urls: { home: "https://www.behance.net", api_status: "https://experienceleaguecommunities.adobe.com/adobe-developer-20/where-can-i-find-behance-api-144990" }
+    access: { method: user-supplied, auth: none, recipe: "public API closed to new clients", rate_limit: n/a }
+    license: { name: all rights reserved (per artist), url: "https://www.behance.net", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: API closure is a secondhand quote (Adobe said 'migration', no date)."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: mobbin
+    name: Mobbin
+    kind: style-board
+    use: study-only
+    idioms: { pixel: 0, flat: 0, line: 0, hand: 0, iso: 0, wire: 3 }
+    consult_when: [wire-idiom, abstraction-ladder, ui-reference]
+    extract: "600k+ real app and web screens, flows and sections: what a real settings page or checkout contains before greeking."
+    urls: { home: "https://mobbin.com", mcp_launch: "https://www.businesswire.com/news/home/20260511053592/en/Mobbin-Launches-MCP-Server-Giving-AI-Tools-621500-Real-App-Screens-to-Reference" }
+    access: { method: mcp, auth: paid, recipe: "official MCP at api.mobbin.com/mcp (OAuth, paid plans, launched May 2026); REST API on Team/Enterprise", rate_limit: unknown }
+    license: { name: all rights reserved, url: "https://mobbin.com", embed: "no", attribution: n/a, modify: n/a, conditions: "never embed screens; draw UI per the spec" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: recent-godly
+    name: Recent (formerly Godly)
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board, motion-reference]
+    extract: "Curated web, branding, motion and illustration work."
+    urls: { home: "https://recent.design/", rename: "https://uiuxshowcase.com/resources/recent-design-best-web-design-inspiration/" }
+    access: { method: user-supplied, auth: none, recipe: "no API found", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://recent.design/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: land-book
+    name: Land-book
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board]
+    extract: "Landing pages."
+    urls: { home: "https://land-book.com/" }
+    access: { method: user-supplied, auth: none, recipe: "no API found; the site blocked fetch", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://land-book.com/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: pinterest
+    name: Pinterest
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board]
+    extract: "Pins and boards; the user brings references."
+    urls: { home: "https://www.pinterest.com", api: "https://developers.pinterest.com/docs/key-concepts/access-tiers/" }
+    access: { method: user-supplied, auth: oauth, recipe: "API v5: Trial tier for exploration, Standard needs review; heavy approval, not worth it", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://www.pinterest.com", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: search endpoint access on the Trial tier."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: are-na
+    name: Are.na
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board, user-board]
+    extract: "Channels and blocks; good for the user's own mood board, which Claude reads to derive a spec."
+    urls: { home: "https://www.are.na", api: "https://www.are.na/developers" }
+    access: { method: rest, auth: api-key, recipe: "v3 REST API with a personal token or OAuth; read the user's channel", rate_limit: unknown }
+    license: { name: per item, url: "https://www.are.na/developers", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: savee
+    name: Savee
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [mood-board, user-board]
+    extract: "Saves, boards, public search; reading a user's saves to answer them is allowed."
+    urls: { home: "https://savee.com", api: "https://docs.savee.com/" }
+    access: { method: rest, auth: paid, recipe: "read-only REST and an MCP server for subscribers", rate_limit: "search is tightly rate-limited" }
+    license: { name: Savee developer terms, url: "https://docs.savee.com/", embed: "no", attribution: n/a, modify: n/a, conditions: "no downloading, archiving or republishing; no model training or embedding indexes; cache at most 24 h" }
+    traps: ["Never store or embed fetched images; cache no longer than 24 h."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: gsap-showcase
+    name: GSAP showcase
+    kind: style-board
+    use: study-only
+    idioms: any
+    consult_when: [motion-reference, signature-move]
+    extract: "Award-style sites and showreels; study motion, never copy."
+    urls: { home: "https://gsap.com/showcase/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: "©2026 GSAP - A Webflow Product. All rights reserved.", url: "https://gsap.com/showcase/", embed: "no", attribution: n/a, modify: n/a, conditions: "showcased sites belong to their owners" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Motion token systems ─────────────────────────
+
+  - id: material3-motion
+    name: Material 3 motion tokens
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, brand-has-material, choosing-springs, transition-pattern]
+    extract: "Duration scale, easing standard/emphasized, spring schemes (spatial may overshoot, effects never), fade-through and shared-axis numbers."
+    urls:
+      home: https://github.com/material-components/material-components-android/blob/master/docs/theming/Motion.md
+      machine: https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ExpressiveMotionTokens.kt
+      machine_standard: https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/StandardMotionTokens.kt
+      transitions: https://github.com/material-components/material-components-android/tree/master/lib/java/com/google/android/material/transition
+      human: https://m3.material.io/styles/motion/overview/how-it-works
+      flutter: https://api.flutter.dev/flutter/material/Easing-class.html
+    access: { method: web, auth: none, recipe: "raw Motion.md from raw.githubusercontent.com; Compose token files via googlesource '?format=TEXT' (base64)", rate_limit: n/a }
+    license: { spdx: Apache-2.0, url: "https://github.com/material-components/material-components-android/blob/master/LICENSE", embed: n/a, attribution: none, modify: n/a, conditions: "numbers are facts" }
+    motion:
+      durations_ms: { short: [50, 100, 150, 200], medium: [250, 300, 350, 400], long: [450, 500, 550, 600], extraLong: [700, 800, 900, 1000] }
+      easing: { standard: [0.2, 0, 0, 1], standardDecelerate: [0, 0, 0, 1], standardAccelerate: [0.3, 0, 1, 1], emphasizedDecelerate: [0.05, 0.7, 0.1, 1], emphasizedAccelerate: [0.3, 0, 0.8, 0.15], emphasized: "two-segment path; needs linear()" }
+      springs: { standard_spatial: "fast 0.9/1400, default 0.9/700, slow 0.9/300", expressive_spatial: "fast 0.6/800, default 0.8/380, slow 0.8/200", effects: "fast 1/3800, default 1/1600, slow 1/800 (damping/stiffness, mass 1)" }
+      presets: "fade through: out over first 35%, in from scale 0.92, long1 450 ms emphasized; shared axis: 30 dp slide, long1; fade: in from 0.8, 300 ms, out 150 ms; container transform: background to 0.85"
+    traps:
+      - "m3.material.io renders only with JavaScript; read values from the Android and Compose sources."
+      - "unconfirmed: the Compose expressive spring values are on androidx-main and may still be revised."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: carbon-motion
+    name: IBM Carbon motion
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, brand-has-carbon, personality]
+    extract: "Productive (task focus) vs expressive (significant moments) personalities; deliberately non-linear duration scale."
+    urls: { home: "https://carbondesignsystem.com/elements/motion/overview/", generator: "https://ibm.github.io/motion/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://carbondesignsystem.com/elements/motion/overview/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    motion:
+      durations_ms: { fast-01: 70, fast-02: 110, moderate-01: 150, moderate-02: 240, slow-01: 400, slow-02: 700 }
+      easing: { productive_standard: [0.2, 0, 0.38, 0.9], productive_entrance: [0, 0, 0.38, 0.9], productive_exit: [0.2, 0, 1, 0.9], expressive_standard: [0.4, 0.14, 0.3, 1], expressive_entrance: [0, 0, 0.3, 1], expressive_exit: [0.4, 0.14, 1, 1] }
+      usage: "fast-01 buttons and toggles; moderate-02 expansions and toasts; slow-01 large expansions; slow-02 background dimming; micro-interactions 90-120 ms"
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: fluent2-motion
+    name: Fluent 2 motion tokens
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, brand-has-fluent]
+    extract: "Duration and curve tokens; Min/Mid/Max is an intensity axis. Principles: larger elements get more time; linear for constant-rate motion."
+    urls:
+      home: https://fluent2.microsoft.design/motion
+      machine: https://raw.githubusercontent.com/microsoft/fluentui/master/packages/tokens/src/global/durations.ts
+      machine_curves: https://raw.githubusercontent.com/microsoft/fluentui/master/packages/tokens/src/global/curves.ts
+    access: { method: web, auth: none, recipe: "read the two .ts files raw", rate_limit: n/a }
+    license: { name: facts-only, url: "https://github.com/microsoft/fluentui", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    motion:
+      durations_ms: { ultraFast: 50, faster: 100, fast: 150, normal: 200, gentle: 250, slow: 300, slower: 400, ultraSlow: 500 }
+      easing: { easyEase: [0.33, 0, 0.67, 1], easyEaseMax: [0.8, 0, 0.2, 1], decelerateMid: [0, 0, 0, 1], decelerateMax: [0.1, 0.9, 0.2, 1], decelerateMin: [0.33, 0, 0.1, 1], accelerateMid: [1, 0, 1, 1], accelerateMax: [0.9, 0.1, 1, 0.2], accelerateMin: [0.8, 0, 0.78, 1] }
+    traps: ["unconfirmed: no published guidance maps the duration tokens to uses."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: atlassian-motion
+    name: Atlassian motion tokens
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, brand-has-atlassian, springs-as-linear]
+    extract: "Exits 50-100 ms shorter than entrances; interactions 50-150 ms, transitions 150-400 ms; ships a spring as a CSS linear() token."
+    urls:
+      home: https://atlassian.design/foundations/motion
+      applying: https://atlassian.design/foundations/motion/applying-motion
+      machine: https://unpkg.com/@atlaskit/tokens/dist/esm/artifacts/palettes-raw/motion-palette.js
+      machine_keyframes: https://unpkg.com/@atlaskit/tokens/dist/esm/artifacts/themes/atlassian-motion.js
+    access: { method: npm-cdn, auth: none, recipe: "npm view @atlaskit/tokens version (20.11.0 on 2026-11-11), then read the two artifacts on unpkg", rate_limit: none known }
+    license: { name: facts-only, url: "https://atlassian.design/foundations/motion", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    motion:
+      durations_ms: { instant: 0, xxshort: 50, xshort: 100, short: 150, medium: 200, long: 250, xlong: 400, xxlong: 600 }
+      easing: { EaseBoldInOut: [0.4, 0, 0, 1], EaseCubicInOut: [0.65, 0, 0.35, 1], EaseBoldOut: [0, 0.4, 0, 1], EasePracticalOut: [0.4, 1, 0.6, 1], EasePracticalIn: [0.6, 0, 0.8, 0.6], EaseSpring: "65-point linear() peaking at 1.024" }
+      presets: "slide in 8 or 2 px, out 4 or 2 px; scale in from 0.8 or 0.95; panels slide 50% or 100%"
+      usage: "popup exit xshort / enter short; modal or flag exit medium / enter long; page transitions xlong; onboarding xxlong"
+    traps:
+      - "Token names and values come from the npm package under feature flag platform-dst-motion-uplift; the docs site uses display names."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: polaris-motion
+    name: Shopify Polaris motion tokens
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, keyframe-presets]
+    extract: "motion-duration-0..500 in steps of 50, plus 5000; keyframe tokens appear-above/appear-below (one space step plus fade), bounce, pulse, spin, fade-in."
+    urls: { home: "https://polaris-react.shopify.com/tokens/motion", machine: "https://raw.githubusercontent.com/Shopify/polaris/main/polaris-tokens/src/themes/base/motion.ts" }
+    access: { method: web, auth: none, recipe: "read motion.ts raw", rate_limit: n/a }
+    license: { name: facts-only, url: "https://github.com/Shopify/polaris", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    motion:
+      easing: { ease: [0.25, 0.1, 0.25, 1], ease-in-out: [0.42, 0, 0.58, 1], ease-out: [0.19, 0.91, 0.38, 1], ease-in: [0.42, 0, 1, 1] }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: primer-motion
+    name: GitHub Primer motion tokens
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, easing-by-role]
+    extract: "base-duration-0, 50, 100, 200...1000; each easing token carries a usage comment."
+    urls: { home: "https://primer.style/product/getting-started/foundations/motion/", machine: "https://unpkg.com/@primer/primitives/dist/css/base/motion/motion.css" }
+    access: { method: npm-cdn, auth: none, recipe: "npm view @primer/primitives version (11.10.0 on 2026-11-11)", rate_limit: none known }
+    license: { name: facts-only, url: "https://primer.style/product/getting-started/foundations/motion/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    motion:
+      easing: { easeInOut: [0.6, 0, 0.2, 1], easeOut: [0.3, 0.8, 0.6, 1], easeIn: [0.7, 0.1, 0.75, 0.9] }
+      usage: "easeInOut moving or morphing within the viewport; easeOut entering; easeIn exiting; linear for progress bars or loaders; ease for hover"
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: spectrum-motion
+    name: Adobe Spectrum motion
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, brand-has-spectrum]
+    extract: "Spectrum 1 legacy CSS vars only; Spectrum 2 motion is 'still being developed'."
+    urls: { home: "https://spectrum.adobe.com/page/motion/", machine: "https://unpkg.com/@spectrum-css/vars/dist/spectrum-global.css" }
+    access: { method: npm-cdn, auth: none, recipe: "@spectrum-css/vars 9.0.8; @adobe/spectrum-tokens 15.6.0 has no animation tokens", rate_limit: none known }
+    license: { name: facts-only, url: "https://spectrum.adobe.com/page/motion/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    motion:
+      durations_ms: [0, 130, 160, 190, 220, 250, 300, 350, 400, 450, 500, 1000, 2000]
+      easing: { ease-in-out: [0.45, 0, 0.40, 1], ease-out: [0, 0, 0.40, 1], ease-in: [0.50, 0, 1, 1] }
+    traps: ["Re-check whether Spectrum 2 has published motion tokens."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: slds-motion
+    name: Salesforce SLDS motion tokens
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, brand-has-salesforce]
+    extract: "Durations only: instantly 0, immediately 50, quickly 100, promptly 200, slowly 400, paused 3200; toasts 4800 and 9600. No easing tokens."
+    urls: { home: "https://www.lightningdesignsystem.com/guidelines/motion/", machine: "https://unpkg.com/@salesforce-ux/design-system/design-tokens/dist/primitive.json", machine_toasts: "https://unpkg.com/@salesforce-ux/design-system/design-tokens/dist/ui-force.json" }
+    access: { method: npm-cdn, auth: none, recipe: "@salesforce-ux/design-system 2.264.3", rate_limit: none known }
+    license: { name: facts-only, url: "https://www.lightningdesignsystem.com/guidelines/motion/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: no motion guideline page returned content."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: apple-motion
+    name: Apple HIG motion and SwiftUI springs
+    kind: motion-tokens
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, choosing-springs, reduced-motion]
+    extract: >-
+      No duration scale. Rules: add motion purposefully, make it optional, keep
+      feedback brief and precise, let people cancel; avoid sustained oscillation
+      near 0.2 Hz (visionOS). Springs as perceptual duration + bounce: ~15%
+      'doesn't feel very bouncy', ~30% noticeable. Conversion: mass 1,
+      stiffness (2 pi / d)^2, damping (1 - bounce) x 4 pi / d.
+    urls:
+      home: https://developer.apple.com/design/human-interface-guidelines/motion
+      machine: https://developer.apple.com/tutorials/data/design/human-interface-guidelines/motion.json
+      springs: https://developer.apple.com/videos/play/wwdc2023/10158/
+      swiftui: https://developer.apple.com/documentation/swiftui/animation
+    access: { method: web, auth: none, recipe: "HIG pages render with JS; read the tutorials/data JSON", rate_limit: n/a }
+    license: { name: facts-only, url: "https://developer.apple.com/design/human-interface-guidelines/motion", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps:
+      - "The WWDC page's copy-code block renders the damping parentheses ambiguously; the form above gives critical damping at bounce 0."
+      - "unconfirmed: numeric .smooth/.snappy/.bouncy presets (third parties say 0.5/0, 0.5/0.15, 0.5/0.3)."
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: dtcg-format
+    name: W3C Design Tokens (DTCG) format 2025.10
+    kind: token-format
+    use: consult
+    idioms: any
+    consult_when: [token-export, language-tokens-json]
+    extract: "First stable version 2025-10-28. Types include duration, cubicBezier, transition, color, dimension, shadow, typography; $extensions for provenance (tools must preserve it). No spring, keyframe or radius types: export springs as compiled linear() strings."
+    urls: { home: "https://www.designtokens.org/tr/2025.10/format/", drafts: "https://www.designtokens.org/tr/drafts/format/", announcement: "https://www.w3.org/community/design-tokens/2025/10/28/design-tokens-specification-reaches-first-stable-version/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: W3C Community Group final report, url: "https://www.designtokens.org/tr/2025.10/format/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Easing tools and references ─────────────────────────
+
+  - id: easings-net
+    name: easings.net
+    kind: easing-tool
+    use: consult
+    idioms: any
+    consult_when: [choosing-easing, named-curves]
+    extract: "Penner's 30 curves with cubic-bezier values, e.g. easeOutCubic 0.33,1,0.68,1; easeOutQuint 0.22,1,0.36,1; easeOutExpo 0.16,1,0.3,1; easeInOutCubic 0.65,0,0.35,1; easeOutBack 0.34,1.56,0.64,1. Elastic and bounce have no CSS cubic-bezier."
+    urls: { home: "https://easings.net/", machine: "https://github.com/ai/easings.net/blob/master/src/easings.yml" }
+    access: { method: web, auth: none, recipe: "read easings.yml raw", rate_limit: n/a }
+    license: { spdx: GPL-3.0, url: "https://github.com/ai/easings.net", embed: n/a, attribution: none, modify: n/a, conditions: "numbers are facts; never copy the site's code into the plugin" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: cubic-bezier-com
+    name: cubic-bezier.com (Lea Verou)
+    kind: easing-tool
+    use: consult
+    idioms: any
+    consult_when: [tuning-easing]
+    extract: "Visual editor and side-by-side comparison of two curves; for human tuning."
+    urls: { home: "https://cubic-bezier.com/", repo: "https://github.com/LeaVerou/cubic-bezier" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/LeaVerou/cubic-bezier", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: linear-easing-generator
+    name: Linear Easing Generator (Jake Archibald, Adam Argyle)
+    kind: easing-tool
+    use: consult
+    idioms: any
+    consult_when: [choosing-springs, springs-as-linear]
+    extract: "Converts a JS easing function or SVG path to a simplified linear(); spring and bounce presets; derives duration from spring settings. The algorithm to replicate in animotion's spring compiler (CSS duration = settling time, not d)."
+    urls: { home: "https://linear-easing-generator.netlify.app/", repo: "https://github.com/jakearchibald/linear-easing-generator", docs: "https://developer.chrome.com/docs/css-ui/css-linear-easing-function", support: "https://github.com/mdn/browser-compat-data/blob/main/css/types/easing-function.json" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: Apache-2.0, url: "https://github.com/jakearchibald/linear-easing-generator", embed: n/a, attribution: notice, modify: n/a, conditions: "source may be studied; credit if code is adapted" }
+    traps: ["linear() support: Chrome 113, Firefox 112, Safari 17.2."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: easing-wizard
+    name: Easing Wizard
+    kind: easing-tool
+    use: consult
+    idioms: any
+    consult_when: [tuning-easing]
+    extract: "Bezier, spring, bounce, wiggle and overshoot curves to linear(), with adjustable precision; human tuning."
+    urls: { home: "https://easingwizard.com/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: not stated, url: "https://easingwizard.com/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: motion-springs
+    name: Motion (motion.dev) spring docs
+    kind: easing-tool
+    use: consult
+    idioms: any
+    consult_when: [choosing-springs]
+    extract: "visualDuration + bounce, the same mental model as Apple's; adopt the parameterisation, not the tool (the CSS spring generator is paid Motion+ / AI Kit)."
+    urls: { home: "https://motion.dev/docs/spring", ai_kit: "https://motion.dev/docs/ai-kit-generate-css" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://motion.dev/docs/spring", embed: n/a, attribution: none, modify: n/a, conditions: "library MIT; generator paid" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Motion guidance ─────────────────────────
+
+  - id: emil-kowalski
+    name: Emil Kowalski skills and articles
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [choreography, choosing-easing, choosing-springs, reduced-motion, motion-spec]
+    extract: >-
+      The most directly reusable guidance. choreograph skill: cast lead,
+      support, decoration, static; together/overlap/sequence/carry; product
+      stagger 30-80 ms (total under ~300 ms), hero stagger 100-150 ms on
+      0.5-0.6 s entrances; 'Uniform stagger is forbidden'; exits simultaneous and
+      shorter; reduced motion collapses the choreography. animate skill: UI
+      ease-out 0.23,1,0.32,1; on-screen 0.77,0,0.175,1; drawer 0.32,0.72,0,1;
+      never ease-in on UI; spring {0.5 s, bounce 0.2}, bounce 0.1-0.3. Never
+      from scale(0): start at 0.9-0.97; press at 0.97; 2 px blur on a crossfade.
+    urls:
+      home: https://github.com/emilkowalski/skills
+      choreograph: https://github.com/emilkowalski/skills/blob/main/skills/choreograph/SKILL.md
+      animate: https://github.com/emilkowalski/skills/blob/main/skills/animate/SKILL.md
+      tips: https://emilkowal.ski/ui/7-practical-animation-tips
+      great: https://emilkowal.ski/ui/great-animations
+      when_not: https://emilkowal.ski/ui/you-dont-need-animations
+      course: https://animations.dev/
+    access: { method: web, auth: none, recipe: "read SKILL.md files raw from GitHub", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/emilkowalski/skills", embed: n/a, attribution: notice, modify: allowed, conditions: "skills repo MIT (about 56k stars): animotion may adapt text with attribution; articles are facts only; animations.dev is a paid course" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: nngroup-animation
+    name: NN/g animation duration and usability
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, duration-rules]
+    extract: "100-400 ms in most cases; ~100 ms feedback; 200-300 ms modals; 400 ms only for big movements; enter slightly longer than exit; too long is more common than too short. Peripheral motion grabs attention; slides attract faster than fades; cause-and-effect must start within 0.1 s; animate sparingly, only to add meaning."
+    urls: { home: "https://www.nngroup.com/articles/animation-duration/", usability: "https://www.nngroup.com/articles/animation-usability/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://www.nngroup.com/articles/animation-duration/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: twelve-principles-web
+    name: Disney's 12 principles for the web (cssanimation.rocks)
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [signature-move, anticipation, follow-through]
+    extract: "A web reading of each principle: anticipation, follow-through, arcs, staging, squash and stretch, appeal."
+    urls: { home: "https://cssanimation.rocks/principles/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://cssanimation.rocks/principles/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: val-head
+    name: Val Head on animation design systems
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, reduced-motion]
+    extract: "Audit, then principles, then duration tokens, then three custom curves (out, in, in-out) plus an optional dramatic one; keep the named-effects library minimal; custom curves build 'motion equity'."
+    urls: { home: "https://www.smashingmagazine.com/2019/02/animation-design-system/", book: "https://rosenfeldmedia.com/books/designing-interface-animation/", reduced_motion: "https://valhead.com/2020/05/09/reduced-motion-in-the-wild/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://www.smashingmagazine.com/2019/02/animation-design-system/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: sarah-drasner
+    name: Sarah Drasner, Animation in Design Systems
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [motion-spec, signature-move]
+    extract: "'Take a stance' (e.g. never flip things); durations named like a type scale (t1-t5, default ~0.25 s); eases by role (entrance, exit, emphasis); start with 5 or 6 animations; 'put it back where it came from'."
+    urls: { home: "https://24ways.org/2016/animation-in-design-systems/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://24ways.org/2016/animation-in-design-systems/", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: rachel-nabors
+    name: Rachel Nabors, Animation at Work
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [storyboarding, specimen-board]
+    extract: "Animation patterns and how to document them; storyboards with reserved action colours (matches the specimen board's motion strip)."
+    urls: { home: "https://abookapart.com/products/animation-at-work", excerpt: "https://alistapart.com/article/communicating-animation/", storyboards: "https://www.creativebloq.com/web-design/create-storyboards-your-animations-21619177" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://abookapart.com/products/animation-at-work", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: rauno-freiberg
+    name: Rauno Freiberg, Invisible details of interaction design
+    kind: motion-guidance
+    use: consult
+    idioms: any
+    consult_when: [spatial-honesty, transitions]
+    extract: "Launch from the source; morph shapes for continuity; interruptibility; skip animation for high-frequency actions. Things come from somewhere and go somewhere."
+    urls: { home: "https://rauno.me/craft/interaction-design" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: facts-only, url: "https://rauno.me/craft/interaction-design", embed: n/a, attribution: none, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Animation asset catalogues ─────────────────────────
+
+  - id: lottiefiles
+    name: LottieFiles public animations
+    kind: animation-assets
+    use: fetch-embed
+    idioms: { pixel: 1, flat: 3, line: 2, hand: 1, iso: 1, wire: 1 }
+    consult_when: [icon-loop, loader, spot-illustration, character-loop]
+    extract: "jsonUrl of a chosen animation; check frameRate, size and colours against the brand; recolour fills from tokens at embed time; embed with lottie_light."
+    urls:
+      home: https://lottiefiles.com/free-animations
+      machine: https://graphql.lottiefiles.com/2022-08
+      license: https://lottiefiles.com/page/license
+      mcp: https://docs.lottiefiles.com/en/platform/mcp
+    access:
+      method: graphql
+      auth: none
+      recipe: |
+        POST https://graphql.lottiefiles.com/2022-08   (Content-Type: application/json)
+        {"query":"{ searchPublicAnimations(query:\"{q}\", first:5){ edges{ node{ name jsonUrl lottieUrl gifUrl frameRate bgColor createdBy{username} downloads } } } }"}
+        Documented alternative: the account-scoped LottieFiles MCP (OAuth, four GraphQL tools).
+      rate_limit: unknown (endpoint undocumented)
+    license:
+      name: Lottie Simple License (FL 9.13.21)
+      url: https://lottiefiles.com/page/license
+      embed: "yes"
+      attribution: notice
+      modify: allowed
+      conditions: "Download, reproduce, modify, publish, distribute, including commercially; attribution not required but 'strongly encouraged'; redistributed files keep the same licence; no right to 'collect or compile Files from LottieFiles'."
+    animation: { format: lottie, notes: "colours and fonts are baked into the file" }
+    traps:
+      - "Never build a mirror or cache: fetch per deck, on demand, with the user's consent."
+      - "unconfirmed: the GraphQL endpoint works without auth but isn't documented as a public API; its rate limits and terms are unknown."
+    last_verified: 2026-11-11
+    cadence: monthly
+
+  - id: useanimations
+    name: useAnimations
+    kind: animation-assets
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 1, line: 3, hand: 0, iso: 0, wire: 3 }
+    consult_when: [state-pairs, micro-interactions, ui-chrome]
+    extract: "Micro-animation icons (menu/close, play/pause, loading) as Lottie JSON plus static SVGs per state; state pairs map onto `set state`."
+    urls: { home: "https://useanimations.com/", repo: "https://github.com/useAnimations/react-useanimations" }
+    access: { method: npm-cdn, auth: none, recipe: "files in the npm package and the repo; no URL pattern verified", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/useAnimations/react-useanimations", embed: "yes", attribution: notice, modify: allowed, conditions: "'Attribution is appreciated but not required'" }
+    animation: { format: lottie }
+    traps: ["unconfirmed: icon count ('300' per the site, not counted)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: lordicon
+    name: Lordicon
+    kind: animation-assets
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 3, hand: 0, iso: 0, wire: 2 }
+    consult_when: [polished-animated-icons, user-requests-lordicon]
+    extract: "High-polish animated icons; presentations explicitly allowed."
+    urls: { home: "https://lordicon.com/", license: "https://lordicon.com/licenses", api: "https://lordicon.com/docs/api/documentation", api_developers: "https://lordicon.com/api-developers" }
+    access: { method: rest, auth: api-key, recipe: "REST API in beta at api.lordicon.com, e.g. GET /v1/variants; free icons unlimited, PRO pay-per-download", rate_limit: unknown }
+    license: { name: CC BY-ND 4.0 modified for commercial use (free tier), url: "https://lordicon.com/licenses", embed: conditional, attribution: visible, modify: not-allowed, conditions: "free: attribution required, no derivatives; including icons in HTML templates or themes is prohibited unless the API terms are met (a user's own deck is fine, a shipped deck template isn't); PRO: no attribution" }
+    animation: { format: lottie }
+    auto_select: false
+    traps:
+      - "Recolouring a free icon may count as a derivative (ND)."
+      - "unconfirmed: API authentication (directories disagree; official docs are beta)."
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: iconscout-lottie
+    name: IconScout Lottie
+    kind: animation-assets
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 3, line: 2, hand: 1, iso: 2, wire: 1 }
+    consult_when: [user-has-iconscout-key]
+    extract: "Large commercial stock of Lotties and animated icons."
+    urls: { home: "https://iconscout.com/api", attribution: "https://help.iconscout.com/do-i-need-to-provide-attribution-or-credit-for-premium-animations", license: "https://iconscout.com/licenses" }
+    access: { method: rest, auth: api-key, recipe: "REST API v3.0 with credits; a Lottie costs 20 credits; free tier exists", rate_limit: credits }
+    license: { name: IconScout licence, url: "https://iconscout.com/licenses", embed: conditional, attribution: visible, modify: n/a, conditions: "free assets: attribution mandatory; premium: not required" }
+    animation: { format: lottie }
+    traps: ["unconfirmed: licence text (licences page returned 403) and the 'Simple License' naming."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: rive-marketplace
+    name: Rive Marketplace
+    kind: animation-assets
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 1, hand: 1, iso: 1, wire: 2 }
+    consult_when: [interactive-state-machines, characters]
+    extract: "Interactive state machines, characters and UI widgets."
+    urls: { home: "https://rive.app/marketplace", docs: "https://rive.app/docs/community/marketplace-overview.md" }
+    access: { method: user-supplied, auth: none, recipe: "no public search API found; download or remix through the editor", rate_limit: n/a }
+    license: { spdx: CC-BY-4.0, url: "https://rive.app/docs/community/marketplace-overview.md", embed: conditional, attribution: visible, modify: allowed, conditions: "'Marketplace files are all shared under a CC BY license'; embed only a user-supplied file with a visible credit" }
+    animation: { format: rive, notes: "runtime about 1.7 MB per deck" }
+    traps: ["Needs the Rive runtime (about 1.7 MB per deck); reuse only if the user accepts that cost."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: animista
+    name: Animista
+    kind: animation-assets
+    use: consult
+    idioms: any
+    consult_when: [keyframe-recipes, entrances, attention]
+    extract: "Generator for single-element CSS keyframes (entrances, exits, text, attention); adapt recipes into the verb set."
+    urls: { home: "https://animista.net/", faq: "https://animista.net/faq" }
+    access: { method: web, auth: none, recipe: "web UI only; no API", rate_limit: n/a }
+    license: { name: FreeBSD licence, url: "https://animista.net/faq", embed: "yes", attribution: notice, modify: allowed, conditions: "output 'free for personal and commercial usage' under the FreeBSD licence: keep the copyright notice" }
+    animation: { format: css }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: animate-css
+    name: Animate.css v4
+    kind: animation-assets
+    use: study-only
+    idioms: any
+    consult_when: [effect-vocabulary]
+    extract: "A named vocabulary of about 90 keyframe effects; use names and keyframes as reference."
+    urls: { home: "https://animate.style/", license: "https://github.com/animate-css/animate.css/blob/main/LICENSE" }
+    access: { method: npm-cdn, auth: none, recipe: "CDN (jsDelivr/unpkg)", rate_limit: none known }
+    license: { name: Hippocratic License 2.1, url: "https://github.com/animate-css/animate.css/blob/main/LICENSE", embed: "no", attribution: n/a, modify: n/a, conditions: "not OSI-approved, with human-rights conditions; never vendor into the MIT plugin; a user's deck pulling it in is the user's call" }
+    animation: { format: css }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: codepen
+    name: CodePen public pens
+    kind: animation-assets
+    use: study-only
+    idioms: any
+    consult_when: [motion-experiments]
+    extract: "Millions of motion experiments; reuse a specific pen only with its MIT notice."
+    urls: { home: "https://codepen.io", license: "https://blog.codepen.io/documentation/licensing/" }
+    access: { method: web, auth: none, recipe: "pen export, or .js/.css URLs per pen; no search API used", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://blog.codepen.io/documentation/licensing/", embed: conditional, attribution: notice, modify: allowed, conditions: "public pens are automatically MIT; private pens have no licence; keep the notice" }
+    traps: ["Pens often hotlink third-party assets under their own terms; check before reusing."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: magic-ui
+    name: Magic UI
+    kind: component-gallery
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 1, hand: 0, iso: 0, wire: 3 }
+    consult_when: [animated-beam, number-ticker, marquee, border-beam]
+    extract: "React/Tailwind motion components; fetch the source from the registry and port the idea to vanilla JS/CSS."
+    urls: { home: "https://magicui.design/", repo: "https://github.com/magicuidesign/magicui", machine: "https://magicui.design/r/registry.json" }
+    access: { method: registry, auth: none, recipe: "GET https://magicui.design/r/registry.json (260 items); GET https://magicui.design/r/{name}.json returns the source", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/magicuidesign/magicui", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    traps: ["React and Tailwind: port, don't embed the component as is."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: react-bits
+    name: React Bits
+    kind: component-gallery
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 2, line: 1, hand: 0, iso: 0, wire: 2 }
+    consult_when: [text-effects, backgrounds]
+    extract: "Text effects (split, blur, shiny, decrypt), backgrounds, animated content."
+    urls: { home: "https://reactbits.dev/", license: "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md", machine: "https://reactbits.dev/r/registry.json" }
+    access: { method: registry, auth: none, recipe: "shadcn registry at https://reactbits.dev/r/registry.json", rate_limit: none known }
+    license: { name: MIT + Commons Clause, url: "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md", embed: conditional, attribution: notice, modify: allowed, conditions: "use in an application, website or product is allowed; never sell, sublicense or redistribute the components themselves" }
+    auto_select: false
+    traps: ["A deck that uses one is fine; a plugin catalogue of ports is not."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: aceternity-ui
+    name: Aceternity UI
+    kind: component-gallery
+    use: study-only
+    idioms: { pixel: 0, flat: 2, line: 0, hand: 0, iso: 1, wire: 2 }
+    consult_when: [hero-effects]
+    extract: "Showy hero effects (beams, spotlight, 3D cards)."
+    urls: { home: "https://ui.aceternity.com/components", license: "https://ui.aceternity.com/licence" }
+    access: { method: registry, auth: none, recipe: "shadcn-style registry, e.g. https://ui.aceternity.com/registry/3d-card.json", rate_limit: none known }
+    license: { name: custom (Pro); free tier unconfirmed, url: "https://ui.aceternity.com/licence", embed: "no", attribution: n/a, modify: n/a, conditions: "Pro: end products allowed, no redistribution" }
+    traps: ["unconfirmed: the free tier's licence (third parties call it MIT)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: motion-examples
+    name: Motion examples (motion.dev)
+    kind: component-gallery
+    use: study-only
+    idioms: any
+    consult_when: [motion-reference, page-transitions, text-motion]
+    extract: "526 examples in 27 categories, graded S-F by MotionScore, in vanilla JS and React."
+    urls: { home: "https://motion.dev/examples", pricing: "https://motion.dev/pricing" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: Motion+ (MIT once purchased), url: "https://motion.dev/pricing", embed: "no", attribution: n/a, modify: n/a, conditions: "Motion+ unlocks source" }
+    traps: ["unconfirmed: the licence of the free examples, as distinct from Motion+."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: shiki-magic-move
+    name: Shiki Magic Move
+    kind: component-gallery
+    use: fetch-embed
+    idioms: { pixel: 0, flat: 0, line: 0, hand: 0, iso: 0, wire: 2 }
+    consult_when: [code-diff-animation]
+    extract: "Animated code diffs."
+    urls: { home: "https://github.com/shikijs/shiki-magic-move" }
+    access: { method: npm-cdn, auth: none, recipe: "npm view @shikijs/magic-move version", rate_limit: none known }
+    license: { spdx: MIT, url: "https://github.com/shikijs/shiki-magic-move", embed: "yes", attribution: notice, modify: allowed, conditions: "" }
+    traps: ["Renamed @shikijs/magic-move; the old repo is archived and v4.2.0+ is a re-export."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  # ───────────────────────── Explainer exemplars (study-only) ─────────────────────────
+
+  - id: ciechanowski
+    name: Bartosz Ciechanowski articles
+    kind: exemplar
+    use: study-only
+    idioms: any
+    consult_when: [mechanism-explainer, physical-system, parameter-sweep]
+    extract: "One manipulable model reused across figures; one new variable per figure; motion driven by a parameter the reader or presenter controls."
+    urls: { home: "https://ciechanow.ski/archives/", example: "https://ciechanow.ski/mechanical-watch/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://ciechanow.ski/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["The rule is the researcher's observation; no interview on his process was found."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: red-blob-games
+    name: Red Blob Games (Amit Patel)
+    kind: exemplar
+    use: study-only
+    idioms: any
+    consult_when: [mechanism-explainer, algorithm-explainer]
+    extract: "Static diagram first, then interaction; algorithm separate from drawing; one diagram per step; layers; scrubbable numbers. Author the end state statically, animate only the delta (animotion's seek(t))."
+    urls: { home: "https://www.redblobgames.com/", making_of: "https://www.redblobgames.com/making-of/line-drawing/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: not checked, url: "https://www.redblobgames.com/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: distill-interactive-articles
+    name: Distill, Communicating with Interactive Articles
+    kind: exemplar
+    use: study-only
+    idioms: any
+    consult_when: [explainer-structure, narration]
+    extract: "Animation works 'specifically for communicating state transitions'; segment with play, pause and scrub; narration should add information, not repeat it (Mayer); slideshow layouts beat scroll layouts for comprehension in one study."
+    urls: { home: "https://distill.pub/2020/communicating-with-interactive-articles/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: not checked, url: "https://distill.pub/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: josh-comeau
+    name: Josh Comeau animation articles
+    kind: exemplar
+    use: study-only
+    idioms: any
+    consult_when: [choosing-springs, comparison-demos]
+    extract: "Side-by-side eased vs spring demos: show the comparison, not the claim; springs for anything that should feel physical; linear() for springs."
+    urls: { home: "https://joshwcomeau.com/animation/a-friendly-introduction-to-spring-physics/", linear: "https://www.joshwcomeau.com/animation/linear-timing-function/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: not checked, url: "https://www.joshwcomeau.com/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: kurzgesagt
+    name: Kurzgesagt production process
+    kind: exemplar
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 0, hand: 0, iso: 1, wire: 0 }
+    consult_when: [narration, pacing]
+    extract: "Script first with expert fact-checking; narration sets the animation's timing. For slides: the presenter's click is the clock."
+    urls: { home: "https://kurzgesagt.org/youtube/", summary: "https://also.kottke.org/20/02/how-to-make-a-kurzgesagt-video-in-just-1200-hours" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://kurzgesagt.org/youtube/", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: stripe-connect-animation
+    name: Stripe Connect front-end experience (2017)
+    kind: exemplar
+    use: study-only
+    idioms: { pixel: 0, flat: 3, line: 1, hand: 0, iso: 2, wire: 2 }
+    consult_when: [dom-illustration, reduced-motion]
+    extract: "WAAPI with custom cubic-beziers; transform and opacity only; most animations under 500 ms; 3D cubes on CSS perspective; start when fully visible; reduced motion stops decorative loops first."
+    urls: { home: "https://stripe.com/blog/connect-front-end-experience" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://stripe.com/blog/connect-front-end-experience", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: stripe-checkout-animation
+    name: Stripe Checkout animations (2014)
+    kind: exemplar
+    use: study-only
+    idioms: any
+    consult_when: [motion-carries-meaning]
+    extract: "The test: with animations off, does the flow feel broken? If yes, they carry meaning."
+    urls: { home: "https://medium.com/p/3d1b0a9b810e" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://medium.com/p/3d1b0a9b810e", embed: "no", attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: author attribution to Michael Villar comes from a secondary source."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: anthropic-youtube
+    name: Anthropic YouTube channel
+    kind: exemplar
+    use: study-only
+    idioms: any
+    consult_when: [anthropic-deck, motion-reference]
+    extract: "The place to look for Anthropic animated explainers."
+    urls: { home: "https://www.youtube.com/@anthropic-ai" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: all rights reserved, url: "https://www.youtube.com/@anthropic-ai", embed: "no", attribution: n/a, modify: n/a, conditions: "never reproduce mascots or named characters" }
+    traps: ["unconfirmed: no public curated collection of Anthropic animated explainers was found."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  # ───────────────────────── Extraction tools (derivation pipeline) ─────────────────────────
+
+  - id: dembrandt
+    name: Dembrandt
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-site, benchmark-harvest]
+    extract: "The broadest open extractor and the only one claiming motion; borrow its confidence-per-value and --compare drift gate; benchmark the live-site harvest against it."
+    urls: { home: "https://github.com/dembrandt/dembrandt" }
+    access: { method: npm-cdn, auth: none, recipe: "npm view dembrandt version license", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/dembrandt/dembrandt", embed: n/a, attribution: notice, modify: allowed, conditions: "code may be borrowed with attribution" }
+    tool:
+      technique: Playwright render, computed styles; --ai predicts the primary colour
+      recovers: logo, colours (roles, gradients, variables), type, spacing, borders, shadows, motion (duration, easing, hover), components, breakpoints, icons
+      output: JSON, DTCG, DESIGN.md, Tailwind v4, shadcn, HTML report, PDF; MCP server
+      gets_wrong: hover and focus only sampled; canvas and WebGL unreadable; dark mode needs a flag
+      version: 0.39.2 (2026-10-11)
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: project-wallace
+    name: Project Wallace css-analyzer
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-site, css-inventory]
+    extract: "Deterministic static CSS inventory, including durations, timing functions and animation names."
+    urls: { home: "https://github.com/projectwallace/css-analyzer" }
+    access: { method: npm-cdn, auth: none, recipe: "npm view @projectwallace/css-analyzer version license", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/projectwallace/css-analyzer", embed: n/a, attribution: notice, modify: allowed, conditions: "" }
+    tool: { technique: static CSS parse, output: JS object with counts and uniqueness, gets_wrong: "no roles; no JS-injected styles; no cascade", version: 9.9.7 (2026-11-08) }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: css-stats
+    name: CSS Stats
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [css-inventory]
+    extract: "Static CSS statistics, same family as Wallace; dormant."
+    urls: { home: "https://github.com/cssstats/cssstats" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/cssstats/cssstats", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["Dormant: last release 2020; prefer Project Wallace."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: firecrawl-branding
+    name: Firecrawl branding format
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-site, semantic-colour-roles]
+    extract: "In-page script plus a GPT-4o(-mini) generateObject step over the screenshot: colour roles incl. success/warning/error, fonts and type scale, spacing, radius, buttons, inputs, logo, 'personality'."
+    urls: { home: "https://docs.firecrawl.dev/features/scrape", blog: "https://www.firecrawl.dev/blog/branding-format-v2", code: "https://github.com/firecrawl/firecrawl/blob/main/apps/api/src/lib/branding/llm.ts" }
+    access: { method: rest, auth: paid, recipe: "AGPL self-hosted, or paid API", rate_limit: n/a }
+    license: { name: AGPL (self-hosted) or paid API, url: "https://github.com/firecrawl/firecrawl", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["No formal schema; the LLM step can return malformed output, and roles have no evidence trail."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: brandfetch
+    name: Brandfetch Brand API
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [brand-logos, brand-colours]
+    extract: "Crawled database: logos typed by kind and theme, colours with type, fonts, optional palette roles. Cleanest separation of brand assets from style; no geometry, radii or motion."
+    urls: { home: "https://docs.brandfetch.com/reference/brand-api.md", overview: "https://docs.brandfetch.com/brand-api/overview.md" }
+    access: { method: rest, auth: api-key, recipe: "", rate_limit: "100 free requests, then paid" }
+    license: { name: commercial API, url: "https://docs.brandfetch.com/reference/brand-api.md", embed: n/a, attribution: n/a, modify: n/a, conditions: "logos remain trademarks" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: context-dev
+    name: context.dev (formerly brand.dev) styleguide
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-site]
+    extract: "Colours, h1-p typography, spacing, shadows, button and card CSS as JSON."
+    urls: { home: "https://docs.context.dev/api-reference/screenshot-styleguide/extract-design-system-and-styleguide-from-website" }
+    access: { method: rest, auth: api-key, recipe: "", rate_limit: "credits; free tier" }
+    license: { name: commercial API, url: "https://docs.context.dev/api-reference/screenshot-styleguide/extract-design-system-and-styleguide-from-website", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: method undocumented (probably rendered; has colour-scheme emulation)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: openbrand
+    name: OpenBrand
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [brand-logos]
+    extract: "Static HTML parse; colours from theme-color, manifest and logo pixels; logos and backdrops. No type, geometry or motion."
+    urls: { home: "https://github.com/ethanjyx/openbrand" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://github.com/ethanjyx/openbrand", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: superposition
+    name: Superposition
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-site]
+    extract: "Desktop app: 'Colors, typography, spacing' to CSS, Swift, Android, Figma."
+    urls: { home: "https://superposition.design/" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: free, url: "https://superposition.design/", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: technique and whether it is maintained."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: css-peeper
+    name: CSS Peeper
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [manual-inspection]
+    extract: "Chrome extension reading computed styles: colours, fonts, assets; interactive UI only, no export."
+    urls: { home: "https://csspeeper.com/blog/introducing-the-new-css-peeper" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: freemium, url: "https://csspeeper.com/blog/introducing-the-new-css-peeper", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: google-design-md
+    name: Google DESIGN.md
+    kind: token-format
+    use: consult
+    idioms: any
+    consult_when: [language-md-format, token-export]
+    extract: "YAML tokens plus markdown rationale in one file; CLI lint, diff, export --dtcg. No motion group (animotion would extend it)."
+    urls: { home: "https://github.com/google-labs-code/design.md" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: Apache-2.0, url: "https://github.com/google-labs-code/design.md", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["Alpha (0.4.0); format may change. unconfirmed: Google Stitch extracting DESIGN.md from a URL (third-party claims only)."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: style-dictionary
+    name: Style Dictionary
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [token-export]
+    extract: "Token build tool: DTCG in; CSS, JS, iOS, Android out. First-class DTCG since v4; full 2025.10 support 'a work in progress in v5'."
+    urls: { home: "https://styledictionary.com/info/dtcg/" }
+    access: { method: npm-cdn, auth: none, recipe: "npm view style-dictionary version license", rate_limit: n/a }
+    license: { spdx: Apache-2.0, url: "https://styledictionary.com/info/dtcg/", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    tool: { version: 5.8.0 }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: tokens-studio
+    name: Tokens Studio (Figma plugin)
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-figma]
+    extract: "Variables and styles out of Figma as DTCG; the non-Enterprise route out of Figma."
+    urls: { home: "https://tokens.studio/plugin" }
+    access: { method: web, auth: none, recipe: "user runs the plugin and hands over the export", rate_limit: n/a }
+    license: { name: MIT core; Pro paid, url: "https://tokens.studio/plugin", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: figma-mcp
+    name: Figma MCP server and variables REST API
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-figma, motion-context]
+    extract: "First-party: variables, design context, screenshots and motion context (the only first-party source returning motion data); selection-scoped."
+    urls: { home: "https://developers.figma.com/docs/figma-mcp-server/tools-and-prompts", rest: "https://developers.figma.com/docs/rest-api/variables-endpoints" }
+    access: { method: mcp, auth: paid, recipe: "MCP tools on a Figma plan; REST GET /v1/files/{file_key}/variables/local", rate_limit: n/a }
+    license: { name: Figma plan terms, url: "https://developers.figma.com/docs/figma-mcp-server/tools-and-prompts", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: the variables REST endpoint appears to need an Enterprise plan (the report calls Tokens Studio 'the non-Enterprise route')."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: claude-design
+    name: Claude Design
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-deck-or-pdf]
+    extract: "LLM over codebase, Figma, decks, PDFs and screenshots: palette, typography, components, spacing, grid. Accepts decks and PDFs as brand sources."
+    urls: { home: "https://support.claude.com/en/articles/14604397" }
+    access: { method: web, auth: paid, recipe: "", rate_limit: n/a }
+    license: { name: Claude plan terms, url: "https://support.claude.com/en/articles/14604397", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["A URL as input isn't documented."]
+    last_verified: 2026-11-11
+    cadence: quarterly
+
+  - id: builder-io-dsi
+    name: Builder.io design-system intelligence
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-codebase]
+    extract: "Repo scan to tokens by type, over MCP; claims 'typically... 70% mapping accuracy'."
+    urls: { home: "https://www.builder.io/c/docs/builder-code-design-system-intelligence" }
+    access: { method: mcp, auth: paid, recipe: "", rate_limit: n/a }
+    license: { name: commercial, url: "https://www.builder.io/c/docs/builder-code-design-system-intelligence", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: motiscope
+    name: motiscope
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-video, easing-fit]
+    extract: "Video motion-energy curve and Bezier fit from the velocity profile; the same shape as animotion's video path. Needs ffmpeg."
+    urls: { home: "https://github.com/KumarSashank/motiscope" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: open source (licence not recorded), url: "https://github.com/KumarSashank/motiscope", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: accuracy."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: mblode-reverse-engineer-animation
+    name: mblode reverse-engineer-animation skill
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [derive-from-video, easing-fit]
+    extract: "Agent skill that fits motion timing and easing from video; needs ffmpeg."
+    urls: { home: "https://github.com/mblode/agent-skills" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { name: open source (licence not recorded), url: "https://github.com/mblode/agent-skills", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: ["unconfirmed: accuracy."]
+    last_verified: 2026-11-11
+    cadence: yearly
+
+  - id: design2code
+    name: Design2Code benchmark
+    kind: extraction-tool
+    use: consult
+    idioms: any
+    consult_when: [compare-step, metrics]
+    extract: "Screenshot-to-code metrics that correlate with humans: block-match, text, position, colour (CIEDE2000), CLIP. Measures layout fidelity, not style."
+    urls: { home: "https://arxiv.org/abs/2403.03163" }
+    access: { method: web, auth: none, recipe: "", rate_limit: n/a }
+    license: { spdx: MIT, url: "https://arxiv.org/abs/2403.03163", embed: n/a, attribution: n/a, modify: n/a, conditions: "" }
+    traps: []
+    last_verified: 2026-11-11
+    cadence: yearly
