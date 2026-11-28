@@ -57,7 +57,7 @@ Stable conceptual tables (pattern selectors, checklists) are not stamped.
 <div class="grid2"><div class="card"><h4>Option A</h4><p>…</p></div><div class="card">…</div></div>
 ```
 
-**Scenario drills** — collected in a dedicated `<h2>Scenario drills</h2>` section just before the pagenav; each drill opens with a one-line link to the section it exercises:
+**Scenario drills** — on instructional pages only (SKILL.md §Content quality bar: reference pages get none, and a drill that has to be invented to fit is left out), collected in a dedicated `<h2>Scenario drills</h2>` section just before the pagenav; each drill opens with a one-line link to the section it exercises:
 ```html
 <div class="q"><div class="qh">Scenario drill</div>
 <p><em>Exercises: <a href="#anchor">Section name</a>.</em> …realistic situation…</p>
@@ -94,7 +94,7 @@ Keep the `.drawio` XML in `diagrams/` beside the PNG so it stays editable.
 1. Opening frame: what this page decides, in 2–4 sentences; cross-link siblings.
 2. The runbook / decision sequence (if the page is a process) — numbered, imperative, at the top.
 3. Big-decision sections with tables + "choose on" rules + one Mermaid decision tree.
-4. Detail sections (per-option depth, mechanics, worked examples with real arithmetic).
+4. Detail sections (per-option depth, mechanics, worked examples with real arithmetic from the research).
 5. Operational/fine detail (failure modes, quotas, diagnosis tables).
-6. Scenario drills section.
+6. Scenario drills section (instructional pages only).
 7. Refs callout (key sources) where the page leans on external facts.

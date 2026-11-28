@@ -23,7 +23,7 @@ Watch for: WebSearch budgets exhausting mid-run (agents should fall back to dire
 One agent per 1–3 pages. Every writer brief must contain, verbatim:
 
 1. **Template mechanics**: read the working template; replace all placeholders; set `class="pl active"` on the page's own nav link **in both the side nav and mobile bar**; zero `{{ }}` may remain (verify with `grep -c '{{'`).
-2. **Format rules**: every `<table>` wrapped in `<div class="tscroll">`; Mermaid via `<pre class="mermaid">` (≤12 nodes, no raw `<` `>` in labels); volatile tables stamped `<p class="tag">Last verified: YYYY-MM-DD</p>`; scenario drills in a dedicated end section with links to the sections they exercise; HTML-escape text.
+2. **Format rules**: every `<table>` wrapped in `<div class="tscroll">`; Mermaid via `<pre class="mermaid">` (≤12 nodes, no raw `<` `>` in labels); volatile tables stamped `<p class="tag">Last verified: YYYY-MM-DD</p>`; scenario drills only on pages the page map marks instructional (none on reference pages; drawn from the research, never invented to fill the section), in a dedicated end section with links to the sections they exercise; HTML-escape text.
 3. **Exact PAGENAV** prev/next values.
 4. **Source files to read** (research/*.md and any sibling page to mirror structurally).
 5. **Tone directive**: engineering, concise, decision-first, big→medium→small.
@@ -37,7 +37,7 @@ Idle-with-no-report → check the output file on disk first; it's often complete
 
 ## Phase D — Sweeps (main session or one cleanup agent)
 
-- Consistency pass on pages written before conventions settled (stamps, drill sections, diagram conversion — triage `<pre><code>` blocks: only actual diagrams convert to Mermaid; code/arithmetic stays).
+- Consistency pass on pages written before conventions settled (stamps; drill sections on instructional pages, and none on reference pages, removing any that crept in; diagram conversion — triage `<pre><code>` blocks: only actual diagrams convert to Mermaid; code/arithmetic stays).
 - Pagenav chain repair after any page additions/splits.
 - Index page map update (it lists every page — new pages need rows).
 
